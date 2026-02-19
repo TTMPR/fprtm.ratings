@@ -1,0 +1,1 @@
+# fprtm.ratings
