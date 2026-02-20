@@ -536,6 +536,37 @@
   }
   .btn-cancel:hover { color: var(--text); }
 
+  /* ─── TTM PR BADGE ─── */
+  .ttmpr-badge {
+    display: flex; align-items: center; gap: 7px;
+    text-decoration: none;
+    padding: 6px 14px; border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .ttmpr-badge:hover {
+    border-color: var(--accent);
+    background: rgba(232,184,75,0.07);
+  }
+  .ttmpr-logo {
+    width: 22px; height: 22px; border-radius: 5px;
+    object-fit: contain; display: block;
+  }
+  .ttmpr-label { line-height: 1.2; }
+  .ttmpr-label .powered {
+    font-size: 9px; color: var(--muted);
+    letter-spacing: 1.5px; text-transform: uppercase;
+    display: block;
+  }
+  .ttmpr-label .brand {
+    font-family: 'Bebas Neue'; font-size: 16px;
+    letter-spacing: 2px; color: var(--accent);
+    display: block; line-height: 1;
+  }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+
   /* login/user button in header */
   .login-btn {
     background: none !important; border: 1px solid var(--border) !important;
@@ -568,7 +599,19 @@
     <button id="navMembresia" style="display:none" onclick="showPage('membresia')">🪪 Membresía</button>
     <button id="navAdmin" style="display:none" onclick="showPage('admin')">⚙ Admin</button>
   </nav>
-  <button class="login-btn" id="loginBtn" onclick="showLogin()">🔐 Iniciar Sesión</button>
+  <div class="header-right">
+    <a class="ttmpr-badge" href="https://ttmpr.xyz" target="_blank" rel="noopener noreferrer">
+      <img class="ttmpr-logo"
+           src="https://ttmpr.xyz/favicon.ico"
+           onerror="this.style.display='none'"
+           alt="TTM PR logo">
+      <div class="ttmpr-label">
+        <span class="powered">Powered by</span>
+        <span class="brand">TTM PR</span>
+      </div>
+    </a>
+    <button class="login-btn" id="loginBtn" onclick="showLogin()">🔐 Iniciar Sesión</button>
+  </div>
 </header>
 
 <!-- ══════════════════════════════════════════
