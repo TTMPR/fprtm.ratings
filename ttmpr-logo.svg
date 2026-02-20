@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 70" width="220" height="70">
+  <!-- T (first) -->
+  <text x="0" y="58" font-family="Arial Black,Arial,sans-serif" font-size="62" font-weight="900" fill="white">T</text>
+
+  <!-- Blue accent line between T and T -->
+  <rect x="44" y="12" width="4" height="38" rx="2" fill="#3B8EEA"/>
+
+  <!-- T (second) -->
+  <text x="51" y="58" font-family="Arial Black,Arial,sans-serif" font-size="62" font-weight="900" fill="white">T</text>
+
+  <!-- Person figure head (above M) -->
+  <circle cx="120" cy="13" r="8" fill="white"/>
+
+  <!-- M — person body doubles as M -->
+  <text x="95" y="58" font-family="Arial Black,Arial,sans-serif" font-size="62" font-weight="900" fill="white">M</text>
+
+  <!-- PR in cyan -->
+  <text x="145" y="58" font-family="Arial Black,Arial,sans-serif" font-size="44" font-weight="900" fill="#00E5FF">PR</text>
+</svg>
