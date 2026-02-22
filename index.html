@@ -55,19 +55,15 @@
   }
 
   .logo {
-    display: flex; align-items: center; gap: 12px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
   }
-  .logo-badge {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, var(--accent), var(--blue));
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue'; font-size: 18px; color: var(--navy);
-    letter-spacing: 0.5px;
+  .fprtm-logo-img {
+    height: 52px; width: auto; display: block; object-fit: contain;
   }
-  .logo-text { line-height: 1; }
-  .logo-text strong { font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 2px; color: var(--text); }
-  .logo-text span { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+  .fprtm-logo-sub {
+    font-size: 10px; letter-spacing: 2px; color: var(--muted);
+    text-transform: uppercase; font-weight: 600;
+  }
 
   nav { display: flex; gap: 4px; }
   nav button {
@@ -548,7 +544,7 @@
     text-transform: lowercase;
   }
   .ttmpr-logo {
-    width: 100px; height: 26px;
+    width: 120px; height: auto;
     object-fit: contain; display: block;
   }
   .header-right { display: flex; align-items: center; gap: 10px; }
@@ -573,15 +569,12 @@
 
 <header>
   <div class="logo">
-    <div class="logo-badge">TM</div>
-    <div class="logo-text">
-      <strong>FPRTM</strong><br>
-      <span>SISTEMA DE RATINGS</span>
-    </div>
+    <img src="fprtm-logo.jpg" alt="FPRTM Logo" class="fprtm-logo-img">
+    <span class="fprtm-logo-sub">SISTEMA DE RATINGS</span>
   </div>
   <nav>
     <button id="navRankings" class="active" onclick="showPage('rankings')">🏆 Rankings</button>
-    <button id="navCalculator" style="display:none" onclick="showPage('calculator')">⚡ Calcular Rating</button>
+    <button id="navCalculator" onclick="showPage('calculator')">⚡ Calcular Rating</button>
     <button id="navMembresia" style="display:none" onclick="showPage('membresia')">🪪 Membresía</button>
     <button id="navAdmin" style="display:none" onclick="showPage('admin')">⚙ Admin</button>
   </nav>
@@ -978,7 +971,7 @@ async function sbPost(table, body) {
 // ══════════════════════════════════════════
 function updateAuthUI() {
   const isLoggedIn = !!currentUser;
-  ['navCalculator', 'navMembresia', 'navAdmin'].forEach(id => {
+  ['navMembresia', 'navAdmin'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = isLoggedIn ? '' : 'none';
   });
@@ -1202,7 +1195,7 @@ const pages = {
 };
 
 function showPage(key) {
-  const PROTECTED = ['calculator', 'membresia', 'admin'];
+  const PROTECTED = ['membresia', 'admin'];
   if (PROTECTED.includes(key) && !currentUser) {
     showLogin();
     return;
@@ -1284,8 +1277,10 @@ async function showProfile(player) {
   document.getElementById('profileName').textContent   = player.name;
   document.getElementById('profileId').textContent     = 'FPRTM #' + String(player.rank).padStart(4, '0');
   document.getElementById('profileClub').textContent   = player.club || 'Sin club';
-  document.getElementById('profileBadge').textContent  = player.member ? '✓ Miembro' : '✗ No Miembro';
-  document.getElementById('profileBadge').className    = 'badge ' + (player.member ? 'member' : 'no');
+  const _badge = document.getElementById('profileBadge');
+  _badge.textContent   = player.member ? '✓ Miembro' : '✗ No Miembro';
+  _badge.className     = 'badge ' + (player.member ? 'member' : 'no');
+  _badge.style.display = '';
   document.getElementById('profileRating').textContent = player.rating;
   document.getElementById('profileCategory').textContent =
     [player.cat, player.sex, player.age ? player.age + ' años' : ''].filter(Boolean).join(' · ');
