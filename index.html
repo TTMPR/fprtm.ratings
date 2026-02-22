@@ -343,16 +343,6 @@
   .calc-wrap {
     max-width: 800px; margin: 0 auto; padding: 0 32px 40px;
   }
-  .upload-zone {
-    border: 2px dashed var(--border); border-radius: 16px;
-    padding: 48px; text-align: center; cursor: pointer;
-    transition: all 0.2s; margin-bottom: 32px;
-    background: var(--card);
-  }
-  .upload-zone:hover { border-color: var(--accent); background: rgba(232,184,75,0.05); }
-  .upload-icon { font-size: 48px; margin-bottom: 16px; }
-  .upload-zone h3 { font-family: 'Bebas Neue'; font-size: 24px; letter-spacing: 2px; }
-  .upload-zone p { color: var(--muted); font-size: 13px; margin-top: 8px; }
 
   .manual-entry {
     background: var(--card); border: 1px solid var(--border);
@@ -752,18 +742,10 @@
   <div class="page-hero">
     <div class="overline">Herramienta</div>
     <h1>CALCULAR RATING</h1>
-    <p>Sube foto de resultados o ingresa partidos manualmente</p>
+    <p>Ingresa ratings y resultados de partidos para estimar nuevos resultados</p>
   </div>
 
   <div class="calc-wrap">
-    <div class="upload-zone" onclick="document.getElementById('imgUpload').click()">
-      <input type="file" id="imgUpload" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
-      <div class="upload-icon">📸</div>
-      <h3>SUBE FOTO DE RESULTADOS</h3>
-      <p>Foto de grupos, llaves o tabla de resultados<br>El sistema leerá los resultados automáticamente</p>
-      <button class="btn-primary" style="margin-top:16px;pointer-events:none">Seleccionar imagen</button>
-    </div>
-
     <div class="manual-entry">
       <h3>ENTRADA MANUAL DE PARTIDOS</h3>
       <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Nombre del torneo: <input id="tournName" style="background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text);font-family:DM Sans;font-size:13px;outline:none" placeholder="Ej: Clasif. Febrero 2026"></p>
@@ -1599,13 +1581,6 @@ async function applyRatings() {
     ALL_PLAYERS.forEach((p, i) => { p.rank = i + 1; RANK_BY_ID[p.id] = p.rank; });
     filterPlayers();
   }
-}
-
-function handleImageUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  alert('📸 Imagen recibida: ' + file.name + '\n\nFuncionalidad OCR próximamente.\nPor ahora ingresa los resultados manualmente.');
-  e.target.value = '';
 }
 
 // ══════════════════════════════════════════
