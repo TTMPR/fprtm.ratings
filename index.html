@@ -1693,14 +1693,21 @@ const FILTER_MAP = {
 let searchTimeout = null;
 
 async function filterPlayers() {
-  const q = document.getElementById('searchInput').value.trim();
-  const filter = { ...(FILTER_MAP[currentFilter] || {}) };
-  if (q.length >= 2) filter.search = q;
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
 
   try {
-    // Fetch filtered players from Supabase, then fix their rank using the full-list map
-    const results = await loadPlayers(filter);
-    results.forEach(p => { if (RANK_BY_ID[p.id] !== undefined) p.rank = RANK_BY_ID[p.id]; });
+    // Filter from the full in-memory list so gender chips never exclude non-members
+    let results = ALL_PLAYERS.slice();
+
+    if (currentFilter === 'masc') {
+      results = results.filter(p => playerSexGroup(p) === 'masc');
+    } else if (currentFilter === 'fem') {
+      results = results.filter(p => playerSexGroup(p) === 'fem');
+    }
+
+    if (q.length >= 2) {
+      results = results.filter(p => String(p.name || '').toLowerCase().includes(q));
+    }
 
     PLAYERS = results;
     displayedCount = PAGE_SIZE;
