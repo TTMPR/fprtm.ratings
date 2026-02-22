@@ -7,20 +7,20 @@
   </defs>
 
   <!-- ══ T1 ══ -->
-  <rect x="2"  y="12" width="112" height="22" rx="4" fill="#111d4a"/>
-  <rect x="47" y="34" width="22"  height="118" rx="4" fill="#111d4a"/>
+  <rect x="2"  y="12" width="112" height="22" rx="4" fill="#ffffff"/>
+  <rect x="47" y="34" width="22"  height="118" rx="4" fill="#ffffff"/>
 
   <!-- ══ Pin accent ══ -->
   <circle cx="129" cy="17" r="7"  fill="url(#pin)"/>
   <rect   x="126"  y="24" width="6" height="64" rx="3" fill="url(#pin)"/>
 
   <!-- ══ T2 ══ -->
-  <rect x="138" y="12" width="112" height="22" rx="4" fill="#111d4a"/>
-  <rect x="183" y="34" width="22"  height="118" rx="4" fill="#111d4a"/>
+  <rect x="138" y="12" width="112" height="22" rx="4" fill="#ffffff"/>
+  <rect x="183" y="34" width="22"  height="118" rx="4" fill="#ffffff"/>
 
   <!-- ══ Person / M ══ -->
   <!-- Head -->
-  <circle cx="366" cy="22" r="20" fill="#111d4a"/>
+  <circle cx="366" cy="22" r="20" fill="#ffffff"/>
   <!-- Body -->
   <path d="
     M 314,50
@@ -31,7 +31,7 @@
     L 438,152
     C 448,100 438,65 418,50
     Q 366,38 314,50 Z
-  " fill="#111d4a"/>
+  " fill="#ffffff"/>
 
   <!-- ══ PR ══ -->
   <text x="458" y="148"
