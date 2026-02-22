@@ -1051,34 +1051,32 @@ function showError(msg) {
 }
 
 async function loadPlayers(filter = {}) {
-  let params = '?order=rating_actual.desc&limit=600';
+  let params = '?order=Rating.desc&limit=600';
   if (filter.sexoAny?.length) {
     const sexoOr = filter.sexoAny
-      .map(v => `sexo.eq.${encodeURIComponent(v)}`)
+      .map(v => `Sex.eq.${encodeURIComponent(v)}`)
       .join(',');
     params += `&or=(${sexoOr})`;
   } else if (filter.sexo) {
-    params += `&sexo=eq.${encodeURIComponent(filter.sexo)}`;
+    params += `&Sex=eq.${encodeURIComponent(filter.sexo)}`;
   }
-  if (filter.categoria) params += `&categoria=eq.${encodeURIComponent(filter.categoria)}`;
-  if (filter.member)    params += `&membresia_status=eq.Miembro`;
-  if (filter.search)    params += `&nombre_completo=ilike.*${encodeURIComponent(filter.search)}*`;
 
-  const data = await sbGet('jugadores', params);
+  const data = await sbGet('Base%20de%20Datos', params);
   console.log(`loadPlayers: ${data.length} filas recibidas de Supabase`);
   if (data.length > 0) console.log('Primer jugador (raw):', JSON.stringify(data[0]));
+  const now = new Date();
   return data.map((p, i) => ({
-    id: p.id,
+    id: p['Member ID'],
     rank: i + 1,
-    name: p.nombre_completo || `${p.primer_nombre || ''} ${p.primer_apellido || ''}`.trim(),
-    sex: p.sexo || p.genero || p.rama || '',
-    gender: p.genero || p.rama || '',
-    age: p.edad,
-    cat: p.categoria,
-    club: p.club,
-    member: p.membresia_status === 'Miembro',
-    rating: p.rating_actual,
-    ratingStart: p.rating_inicio_2026 || p.rating_inicio_2025 || p.rating_actual
+    name: `${p['First Name'] || ''} ${p['Last Name'] || ''}`.trim(),
+    sex: p['Sex'] || '',
+    gender: p['Sex'] || '',
+    age: p['Date of Birth'] ? Math.floor((now - new Date(p['Date of Birth'])) / 31557600000) : null,
+    cat: null,
+    club: p['Club'],
+    member: p['Expiration Date'] ? new Date(p['Expiration Date']) > now : false,
+    rating: p['Rating'],
+    ratingStart: p['Rating']
   }));
 }
 
@@ -1562,7 +1560,7 @@ async function applyRatings() {
     // Update player A rating
     if (r.idA) {
       try {
-        await sbPatch('jugadores', `id=eq.${r.idA}`, { rating_actual: newRA });
+        await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${r.idA}`, { Rating: newRA });
         // Update local cache
         const p = PLAYERS.find(x => x.id === r.idA);
         if (p) p.rating = newRA;
@@ -1573,7 +1571,7 @@ async function applyRatings() {
     // Update player B rating
     if (r.idB) {
       try {
-        await sbPatch('jugadores', `id=eq.${r.idB}`, { rating_actual: newRB });
+        await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${r.idB}`, { Rating: newRB });
         const p = PLAYERS.find(x => x.id === r.idB);
         if (p) p.rating = newRB;
         applied++;
