@@ -1698,11 +1698,13 @@ function filterPlayers() {
   let results = [...ALL_PLAYERS];
 
   // Gender chip: apply playerSexGroup which checks sexo → genero → rama → categoria.
+  // Players with no recognizable gender (sexGroup = '') are always included so they
+  // never disappear from the list regardless of the active chip.
   // 'female' is evaluated before 'male' in sexGroup() to avoid false positives.
   if (currentFilter === 'masc') {
-    results = results.filter(p => playerSexGroup(p) === 'masc');
+    results = results.filter(p => { const g = playerSexGroup(p); return g === 'masc' || g === ''; });
   } else if (currentFilter === 'fem') {
-    results = results.filter(p => playerSexGroup(p) === 'fem');
+    results = results.filter(p => { const g = playerSexGroup(p); return g === 'fem'  || g === ''; });
   }
 
   console.log(`Filtro '${currentFilter}' → ${results.length} jugadores`);
