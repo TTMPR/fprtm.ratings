@@ -1216,8 +1216,9 @@ function initials(name) {
 function sexGroup(value) {
   const v = String(value || '').trim().toLowerCase();
   if (!v) return '';
-  if (v === 'm' || v === 'masculino' || v === 'male' || v.includes('masculino') || v.includes('male')) return 'masc';
+  // IMPORTANT: evaluate female first so 'female' is not captured by 'male' substring checks.
   if (v === 'f' || v === 'femenino' || v === 'female' || v.includes('femenino') || v.includes('female')) return 'fem';
+  if (v === 'm' || v === 'masculino' || v === 'male' || v.includes('masculino') || v.includes('male')) return 'masc';
   return '';
 }
 
