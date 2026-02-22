@@ -1065,6 +1065,8 @@ async function loadPlayers(filter = {}) {
   if (filter.search)    params += `&nombre_completo=ilike.*${encodeURIComponent(filter.search)}*`;
 
   const data = await sbGet('jugadores', params);
+  console.log(`loadPlayers: ${data.length} filas recibidas de Supabase`);
+  if (data.length > 0) console.log('Primer jugador (raw):', JSON.stringify(data[0]));
   return data.map((p, i) => ({
     id: p.id,
     rank: i + 1,
