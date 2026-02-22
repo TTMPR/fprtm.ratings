@@ -1686,10 +1686,16 @@ let searchTimeout = null;
 // Filters entirely in memory from ALL_PLAYERS (the full 600-player master list).
 // Never re-fetches from Supabase so non-members are never excluded by gender chips.
 function filterPlayers() {
+  console.log("Lista maestra:", ALL_PLAYERS.length, "jugadores");
+  if (!ALL_PLAYERS || ALL_PLAYERS.length === 0) {
+    console.error("filterPlayers: ALL_PLAYERS está vacía — datos aún no cargados.");
+    return;
+  }
+
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
 
   // Always start from the complete master list — never from a pre-filtered subset.
-  let results = ALL_PLAYERS.slice();
+  let results = [...ALL_PLAYERS];
 
   // Gender chip: apply playerSexGroup which checks sexo → genero → rama → categoria.
   // 'female' is evaluated before 'male' in sexGroup() to avoid false positives.
@@ -1699,9 +1705,12 @@ function filterPlayers() {
     results = results.filter(p => playerSexGroup(p) === 'fem');
   }
 
+  console.log(`Filtro '${currentFilter}' → ${results.length} jugadores`);
+
   // Text search (min 2 chars) applied on top of gender filter.
   if (q.length >= 2) {
     results = results.filter(p => String(p.name || '').toLowerCase().includes(q));
+    console.log(`Búsqueda '${q}' → ${results.length} jugadores`);
   }
 
   PLAYERS = results;
