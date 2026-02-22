@@ -608,6 +608,8 @@
     <div class="filter-chip on" onclick="setFilter(this,'all')">Todos</div>
     <div class="filter-chip" onclick="setFilter(this,'masc')">Masculino</div>
     <div class="filter-chip" onclick="setFilter(this,'fem')">Femenino</div>
+    <div class="filter-chip" onclick="setFilter(this,'masc_m')">♂ Masc. Miembro</div>
+    <div class="filter-chip" onclick="setFilter(this,'fem_m')">♀ Fem. Miembro</div>
   </div>
 
   <div class="stats-row">
@@ -1681,9 +1683,11 @@ function setMembFilter(el, val) {
 // Map each chip key → Supabase filter fields.
 // Adjust the categoria values here if your DB uses different strings.
 const FILTER_MAP = {
-  'all':  {},
-  'masc': { sexo: 'Masculino' },
-  'fem':  { sexo: 'Femenino'  },
+  'all':    {},
+  'masc':   { sexo: 'Masculino' },
+  'fem':    { sexo: 'Femenino'  },
+  'masc_m': { sexo: 'Masculino', member: true },
+  'fem_m':  { sexo: 'Femenino',  member: true },
 };
 
 let searchTimeout = null;
