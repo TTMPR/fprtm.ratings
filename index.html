@@ -1034,7 +1034,8 @@ async function signOut() {
 // DATA (live from Supabase)
 // ══════════════════════════════════════════
 let ALL_PLAYERS = []; // full list with correct national ranks
-let PLAYERS = [];     // currently displayed (filtered) slice
+let RANK_BY_ID  = {}; // { player_id: rank } lookup from full list
+let PLAYERS = [];
 let MEMBERS = [];
 // Cache player lookup by name for calculator autocomplete fill
 let PLAYER_BY_NAME = {};
@@ -1593,9 +1594,9 @@ async function applyRatings() {
   } else {
     alert(`✅ ${applied} ratings actualizados en Supabase.\n\nLos cambios son visibles en tiempo real.`);
     document.getElementById('calcResult').classList.remove('show');
-    // Re-sort master list and recompute ranks
+    // Re-sort master list and rebuild rank lookup
     ALL_PLAYERS.sort((a, b) => b.rating - a.rating);
-    ALL_PLAYERS.forEach((p, i) => p.rank = i + 1);
+    ALL_PLAYERS.forEach((p, i) => { p.rank = i + 1; RANK_BY_ID[p.id] = p.rank; });
     filterPlayers();
   }
 }
@@ -1687,20 +1688,25 @@ const FILTER_MAP = {
 
 let searchTimeout = null;
 
-function filterPlayers() {
-  const q = document.getElementById('searchInput').value.trim().toLowerCase();
-  const filter = FILTER_MAP[currentFilter] || {};
+async function filterPlayers() {
+  const q = document.getElementById('searchInput').value.trim();
+  const filter = { ...(FILTER_MAP[currentFilter] || {}) };
+  if (q.length >= 2) filter.search = q;
 
-  let results = ALL_PLAYERS;
-  if (filter.sexo) results = results.filter(p => p.sex === filter.sexo);
-  if (q.length >= 2) results = results.filter(p => p.name.toLowerCase().includes(q));
-
-  PLAYERS = results;
-  displayedCount = PAGE_SIZE;
-  renderPlayers(PLAYERS.slice(0, PAGE_SIZE));
-  const lm = document.getElementById('loadMore');
-  if (lm) lm.style.display = PLAYERS.length > displayedCount ? '' : 'none';
-  updateStats();
+  try {
+    // Fetch filtered players from Supabase, then fix their rank using the full-list map
+    const results = await loadPlayers(filter);
+    results.forEach(p => { if (RANK_BY_ID[p.id] !== undefined) p.rank = RANK_BY_ID[p.id]; });
+    PLAYERS = results;
+    displayedCount = PAGE_SIZE;
+    renderPlayers(PLAYERS.slice(0, PAGE_SIZE));
+    const lm = document.getElementById('loadMore');
+    if (lm) lm.style.display = PLAYERS.length > displayedCount ? '' : 'none';
+    updateStats();
+  } catch (e) {
+    console.error(e);
+    showError('No se pudo conectar a Supabase. Verifica tu conexión e intenta de nuevo.');
+  }
 }
 
 function setFilter(el, val) {
@@ -1738,6 +1744,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   showLoading(true);
   try {
     [ALL_PLAYERS, MEMBERS] = await Promise.all([loadPlayers(), loadMembers()]);
+    ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
     PLAYERS = ALL_PLAYERS;
   } catch (e) {
     console.error('Error cargando datos:', e);
