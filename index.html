@@ -1069,7 +1069,8 @@ async function loadPlayers(filter = {}) {
     id: p.id,
     rank: i + 1,
     name: p.nombre_completo || `${p.primer_nombre || ''} ${p.primer_apellido || ''}`.trim(),
-    sex: p.sexo,
+    sex: p.sexo || p.genero || p.rama || '',
+    gender: p.genero || p.rama || '',
     age: p.edad,
     cat: p.categoria,
     club: p.club,
@@ -1218,6 +1219,16 @@ function sexGroup(value) {
   if (v === 'm' || v === 'masculino' || v === 'male' || v.includes('masculino') || v.includes('male')) return 'masc';
   if (v === 'f' || v === 'femenino' || v === 'female' || v.includes('femenino') || v.includes('female')) return 'fem';
   return '';
+}
+
+
+function playerSexGroup(player) {
+  return (
+    sexGroup(player?.sex) ||
+    sexGroup(player?.gender) ||
+    sexGroup(player?.cat) ||
+    ''
+  );
 }
 
 function renderPlayers(list, append = false) {
@@ -1681,9 +1692,9 @@ async function filterPlayers() {
     let results = ALL_PLAYERS.slice();
 
     if (currentFilter === 'masc') {
-      results = results.filter(p => sexGroup(p.sex) === 'masc');
+      results = results.filter(p => playerSexGroup(p) === 'masc');
     } else if (currentFilter === 'fem') {
-      results = results.filter(p => sexGroup(p.sex) === 'fem');
+      results = results.filter(p => playerSexGroup(p) === 'fem');
     }
 
     if (q.length >= 2) {
