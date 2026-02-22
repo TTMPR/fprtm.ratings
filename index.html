@@ -55,19 +55,15 @@
   }
 
   .logo {
-    display: flex; align-items: center; gap: 12px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
   }
-  .logo-badge {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, var(--accent), var(--blue));
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue'; font-size: 18px; color: var(--navy);
-    letter-spacing: 0.5px;
+  .fprtm-logo-img {
+    height: 52px; width: auto; display: block; object-fit: contain;
   }
-  .logo-text { line-height: 1; }
-  .logo-text strong { font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 2px; color: var(--text); }
-  .logo-text span { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+  .fprtm-logo-sub {
+    font-size: 10px; letter-spacing: 2px; color: var(--muted);
+    text-transform: uppercase; font-weight: 600;
+  }
 
   nav { display: flex; gap: 4px; }
   nav button {
@@ -573,11 +569,8 @@
 
 <header>
   <div class="logo">
-    <div class="logo-badge">TM</div>
-    <div class="logo-text">
-      <strong>FPRTM</strong><br>
-      <span>SISTEMA DE RATINGS</span>
-    </div>
+    <img src="fprtm logo.jpg" alt="FPRTM Logo" class="fprtm-logo-img">
+    <span class="fprtm-logo-sub">SISTEMA DE RATINGS</span>
   </div>
   <nav>
     <button id="navRankings" class="active" onclick="showPage('rankings')">🏆 Rankings</button>
