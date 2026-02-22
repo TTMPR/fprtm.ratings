@@ -581,7 +581,7 @@
   </div>
   <nav>
     <button id="navRankings" class="active" onclick="showPage('rankings')">🏆 Rankings</button>
-    <button id="navCalculator" style="display:none" onclick="showPage('calculator')">⚡ Calcular Rating</button>
+    <button id="navCalculator" onclick="showPage('calculator')">⚡ Calcular Rating</button>
     <button id="navMembresia" style="display:none" onclick="showPage('membresia')">🪪 Membresía</button>
     <button id="navAdmin" style="display:none" onclick="showPage('admin')">⚙ Admin</button>
   </nav>
@@ -978,7 +978,7 @@ async function sbPost(table, body) {
 // ══════════════════════════════════════════
 function updateAuthUI() {
   const isLoggedIn = !!currentUser;
-  ['navCalculator', 'navMembresia', 'navAdmin'].forEach(id => {
+  ['navMembresia', 'navAdmin'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = isLoggedIn ? '' : 'none';
   });
@@ -1202,7 +1202,7 @@ const pages = {
 };
 
 function showPage(key) {
-  const PROTECTED = ['calculator', 'membresia', 'admin'];
+  const PROTECTED = ['membresia', 'admin'];
   if (PROTECTED.includes(key) && !currentUser) {
     showLogin();
     return;
