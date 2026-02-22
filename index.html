@@ -1052,7 +1052,14 @@ function showError(msg) {
 
 async function loadPlayers(filter = {}) {
   let params = '?order=rating_actual.desc&limit=600';
-  if (filter.sexo)      params += `&sexo=eq.${encodeURIComponent(filter.sexo)}`;
+  if (filter.sexoAny?.length) {
+    const sexoOr = filter.sexoAny
+      .map(v => `sexo.eq.${encodeURIComponent(v)}`)
+      .join(',');
+    params += `&or=(${sexoOr})`;
+  } else if (filter.sexo) {
+    params += `&sexo=eq.${encodeURIComponent(filter.sexo)}`;
+  }
   if (filter.categoria) params += `&categoria=eq.${encodeURIComponent(filter.categoria)}`;
   if (filter.member)    params += `&membresia_status=eq.Miembro`;
   if (filter.search)    params += `&nombre_completo=ilike.*${encodeURIComponent(filter.search)}*`;
@@ -1659,8 +1666,9 @@ function setMembFilter(el, val) {
 // Adjust the categoria values here if your DB uses different strings.
 const FILTER_MAP = {
   'all':  {},
-  'masc': { sexo: 'Masculino' },
-  'fem':  { sexo: 'Femenino'  },
+  // Accept multiple DB variants so the chip always returns all players in that gender group.
+  'masc': { sexoAny: ['Masculino', 'M', 'Masculino/Male', 'Male'] },
+  'fem':  { sexoAny: ['Femenino', 'F', 'Femenino/Female', 'Female'] },
 };
 
 let searchTimeout = null;
