@@ -167,10 +167,11 @@
   }
 
   .player-card {
-    background: var(--card);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
     border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px 24px;
-    display: flex; align-items: center; gap: 16px;
+    border-radius: 14px; padding: 0;
+    display: grid; grid-template-columns: 86px 1fr auto; gap: 16px;
+    align-items: center;
     cursor: pointer; transition: all 0.2s;
     position: relative; overflow: hidden;
   }
@@ -178,31 +179,35 @@
     content: ''; position: absolute; left: 0; top: 0; bottom: 0;
     width: 3px; background: transparent; transition: background 0.2s;
   }
-  .player-card:hover { background: var(--card2); border-color: rgba(255,255,255,0.15); transform: translateY(-1px); }
+  .player-card:hover { background: var(--card2); border-color: rgba(255,255,255,0.18); transform: translateY(-1px); }
   .player-card:hover::before { background: var(--accent); }
-  .player-card.no-member { border-color: rgba(239,68,68,0.2); }
-  .player-card.no-member::before { background: var(--red); }
 
   .rank-num {
-    font-family: 'Bebas Neue'; font-size: 28px; color: var(--muted);
-    min-width: 36px; text-align: center; line-height: 1;
+    font-family: 'Bebas Neue'; font-size: 30px; color: var(--muted);
+    min-width: 36px; text-align: left; line-height: 1; margin-bottom: 4px;
   }
   .rank-num.top3 { color: var(--accent); }
 
+  .avatar-wrap {
+    height: 100%; min-height: 112px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06));
+    border-right: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+  }
   .avatar {
-    width: 48px; height: 48px; border-radius: 50%;
+    width: 54px; height: 54px; border-radius: 50%;
     background: linear-gradient(135deg, var(--blue), var(--navy2));
     border: 2px solid var(--border);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue'; font-size: 18px; color: var(--accent);
+    font-family: 'Bebas Neue'; font-size: 20px; color: var(--accent);
     flex-shrink: 0;
   }
 
-  .player-info { flex: 1; min-width: 0; }
-  .player-name { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .player-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .player-info { flex: 1; min-width: 0; padding: 14px 0; }
+  .player-name { font-weight: 700; font-size: 30px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Bebas Neue'; letter-spacing: 1px; }
+  .player-meta { font-size: 12px; color: var(--muted); margin-top: 6px; }
 
-  .player-right { text-align: right; flex-shrink: 0; }
+  .player-right { text-align: right; flex-shrink: 0; padding: 14px 20px 14px 0; }
   .rating-num {
     font-family: 'Bebas Neue'; font-size: 28px; color: var(--text);
     display: flex; align-items: center; gap: 6px; justify-content: flex-end;
@@ -215,8 +220,6 @@
     padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600;
     margin-left: 6px;
   }
-  .badge.member { background: rgba(34,197,94,0.15); color: var(--green); }
-  .badge.no { background: rgba(239,68,68,0.15); color: var(--red); }
 
   /* ─── PLAYER PROFILE ─── */
   #profilePage { display: none; }
@@ -343,16 +346,6 @@
   .calc-wrap {
     max-width: 800px; margin: 0 auto; padding: 0 32px 40px;
   }
-  .upload-zone {
-    border: 2px dashed var(--border); border-radius: 16px;
-    padding: 48px; text-align: center; cursor: pointer;
-    transition: all 0.2s; margin-bottom: 32px;
-    background: var(--card);
-  }
-  .upload-zone:hover { border-color: var(--accent); background: rgba(232,184,75,0.05); }
-  .upload-icon { font-size: 48px; margin-bottom: 16px; }
-  .upload-zone h3 { font-family: 'Bebas Neue'; font-size: 24px; letter-spacing: 2px; }
-  .upload-zone p { color: var(--muted); font-size: 13px; margin-top: 8px; }
 
   .manual-entry {
     background: var(--card); border: 1px solid var(--border);
@@ -622,9 +615,9 @@
       <div class="sub">En el sistema</div>
     </div>
     <div class="stat-card">
-      <div class="label">Miembros 2026</div>
+      <div class="label">Promedio Rating</div>
       <div class="value" id="statMembers">—</div>
-      <div class="sub">Registrados</div>
+      <div class="sub">General del ranking</div>
     </div>
     <div class="stat-card">
       <div class="label">Actualizado</div>
@@ -653,7 +646,7 @@
       <div class="profile-name" id="profileName">Jerall Montijo</div>
       <div class="profile-id" id="profileId">ATH# —</div>
       <div class="profile-club" id="profileClub">Naguabo</div>
-      <span id="profileBadge" class="badge member">✓ Miembro</span>
+      <span id="profileBadge" class="badge">Jugador activo</span>
 
       <div class="profile-rating-box">
         <div class="rating-label">RATING FPRTM</div>
@@ -752,18 +745,10 @@
   <div class="page-hero">
     <div class="overline">Herramienta</div>
     <h1>CALCULAR RATING</h1>
-    <p>Sube foto de resultados o ingresa partidos manualmente</p>
+    <p>Ingresa ratings y resultados de partidos para estimar nuevos resultados</p>
   </div>
 
   <div class="calc-wrap">
-    <div class="upload-zone" onclick="document.getElementById('imgUpload').click()">
-      <input type="file" id="imgUpload" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
-      <div class="upload-icon">📸</div>
-      <h3>SUBE FOTO DE RESULTADOS</h3>
-      <p>Foto de grupos, llaves o tabla de resultados<br>El sistema leerá los resultados automáticamente</p>
-      <button class="btn-primary" style="margin-top:16px;pointer-events:none">Seleccionar imagen</button>
-    </div>
-
     <div class="manual-entry">
       <h3>ENTRADA MANUAL DE PARTIDOS</h3>
       <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Nombre del torneo: <input id="tournName" style="background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text);font-family:DM Sans;font-size:13px;outline:none" placeholder="Ej: Clasif. Febrero 2026"></p>
@@ -1067,7 +1052,14 @@ function showError(msg) {
 
 async function loadPlayers(filter = {}) {
   let params = '?order=rating_actual.desc&limit=600';
-  if (filter.sexo)      params += `&sexo=eq.${encodeURIComponent(filter.sexo)}`;
+  if (filter.sexoAny?.length) {
+    const sexoOr = filter.sexoAny
+      .map(v => `sexo.eq.${encodeURIComponent(v)}`)
+      .join(',');
+    params += `&or=(${sexoOr})`;
+  } else if (filter.sexo) {
+    params += `&sexo=eq.${encodeURIComponent(filter.sexo)}`;
+  }
   if (filter.categoria) params += `&categoria=eq.${encodeURIComponent(filter.categoria)}`;
   if (filter.member)    params += `&membresia_status=eq.Miembro`;
   if (filter.search)    params += `&nombre_completo=ilike.*${encodeURIComponent(filter.search)}*`;
@@ -1141,7 +1133,8 @@ function updateStats() {
   document.getElementById('statTopName').textContent   = top.name
     ? top.name.split(' ').slice(0, 2).join(' ') : '—';
   document.getElementById('statTotal').textContent   = PLAYERS.length;
-  document.getElementById('statMembers').textContent = PLAYERS.filter(p => p.member).length;
+  const avgRating = PLAYERS.length ? Math.round(PLAYERS.reduce((acc, p) => acc + (Number(p.rating) || 0), 0) / PLAYERS.length) : 0;
+  document.getElementById('statMembers').textContent = avgRating || '—';
 
   // Membresía page stats
   const active  = MEMBERS.filter(m => m.status === 'active').length;
@@ -1218,6 +1211,15 @@ function initials(name) {
   return name.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
 }
 
+
+function sexGroup(value) {
+  const v = String(value || '').trim().toLowerCase();
+  if (!v) return '';
+  if (v === 'm' || v === 'masculino' || v === 'male' || v.includes('masculino') || v.includes('male')) return 'masc';
+  if (v === 'f' || v === 'femenino' || v === 'female' || v.includes('femenino') || v.includes('female')) return 'fem';
+  return '';
+}
+
 function renderPlayers(list, append = false) {
   const grid = document.getElementById('playerGrid');
   if (!append) grid.innerHTML = '';
@@ -1229,15 +1231,13 @@ function renderPlayers(list, append = false) {
 
   list.forEach(p => {
     const card = document.createElement('div');
-    card.className = 'player-card' + (!p.member ? ' no-member' : '');
+    card.className = 'player-card';
     card.onclick = () => showProfile(p);
     card.innerHTML = `
-      <div class="rank-num ${p.rank <= 3 ? 'top3' : ''}">#${p.rank}</div>
-      <div class="avatar">${initials(p.name)}</div>
+      <div class="avatar-wrap"><div class="avatar">${initials(p.name)}</div></div>
       <div class="player-info">
-        <div class="player-name">${p.name}
-          <span class="badge ${p.member ? 'member' : 'no'}">${p.member ? '✓ Miembro' : '✗ No Miembro'}</span>
-        </div>
+        <div class="rank-num ${p.rank <= 3 ? 'top3' : ''}">#${p.rank}</div>
+        <div class="player-name">${p.name}</div>
         <div class="player-meta">${p.cat || '—'} · ${p.club || 'Sin club'} · ${p.sex || '—'}</div>
       </div>
       <div class="player-right">
@@ -1271,9 +1271,9 @@ async function showProfile(player) {
   document.getElementById('profileId').textContent     = 'FPRTM #' + String(player.rank).padStart(4, '0');
   document.getElementById('profileClub').textContent   = player.club || 'Sin club';
   const _badge = document.getElementById('profileBadge');
-  _badge.textContent   = player.member ? '✓ Miembro' : '✗ No Miembro';
-  _badge.className     = 'badge ' + (player.member ? 'member' : 'no');
-  _badge.style.display = '';
+  _badge.textContent = 'Jugador activo';
+  _badge.className = 'badge';
+  _badge.style.display = 'none';
   document.getElementById('profileRating').textContent = player.rating;
   document.getElementById('profileCategory').textContent =
     [player.cat, player.sex, player.age ? player.age + ' años' : ''].filter(Boolean).join(' · ');
@@ -1601,13 +1601,6 @@ async function applyRatings() {
   }
 }
 
-function handleImageUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  alert('📸 Imagen recibida: ' + file.name + '\n\nFuncionalidad OCR próximamente.\nPor ahora ingresa los resultados manualmente.');
-  e.target.value = '';
-}
-
 // ══════════════════════════════════════════
 // MEMBRESÍA
 // ══════════════════════════════════════════
@@ -1678,25 +1671,25 @@ function setMembFilter(el, val) {
 // ══════════════════════════════════════════
 // FILTER / SEARCH
 // ══════════════════════════════════════════
-// Map each chip key → Supabase filter fields.
-// Adjust the categoria values here if your DB uses different strings.
-const FILTER_MAP = {
-  'all':  {},
-  'masc': { sexo: 'Masculino' },
-  'fem':  { sexo: 'Femenino'  },
-};
-
 let searchTimeout = null;
 
 async function filterPlayers() {
-  const q = document.getElementById('searchInput').value.trim();
-  const filter = { ...(FILTER_MAP[currentFilter] || {}) };
-  if (q.length >= 2) filter.search = q;
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
 
   try {
-    // Fetch filtered players from Supabase, then fix their rank using the full-list map
-    const results = await loadPlayers(filter);
-    results.forEach(p => { if (RANK_BY_ID[p.id] !== undefined) p.rank = RANK_BY_ID[p.id]; });
+    // Filter from full in-memory list so chip filters never exclude non-members by backend query behavior.
+    let results = ALL_PLAYERS.slice();
+
+    if (currentFilter === 'masc') {
+      results = results.filter(p => sexGroup(p.sex) === 'masc');
+    } else if (currentFilter === 'fem') {
+      results = results.filter(p => sexGroup(p.sex) === 'fem');
+    }
+
+    if (q.length >= 2) {
+      results = results.filter(p => String(p.name || '').toLowerCase().includes(q));
+    }
+
     PLAYERS = results;
     displayedCount = PAGE_SIZE;
     renderPlayers(PLAYERS.slice(0, PAGE_SIZE));
@@ -1705,7 +1698,7 @@ async function filterPlayers() {
     updateStats();
   } catch (e) {
     console.error(e);
-    showError('No se pudo conectar a Supabase. Verifica tu conexión e intenta de nuevo.');
+    showError('No se pudo procesar el filtro de jugadores.');
   }
 }
 
