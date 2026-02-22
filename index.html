@@ -1069,7 +1069,8 @@ async function loadPlayers(filter = {}) {
     id: p.id,
     rank: i + 1,
     name: p.nombre_completo || `${p.primer_nombre || ''} ${p.primer_apellido || ''}`.trim(),
-    sex: p.sexo,
+    sex: p.sexo || p.genero || p.rama || '',
+    gender: p.genero || p.rama || '',
     age: p.edad,
     cat: p.categoria,
     club: p.club,
@@ -1209,6 +1210,24 @@ const PAGE_SIZE = 20;
 function initials(name) {
   if (!name || name === '—') return '??';
   return name.split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+}
+
+
+function sexGroup(value) {
+  const v = String(value || '').trim().toLowerCase();
+  if (!v) return '';
+  if (v === 'f' || v === 'femenino' || v === 'female' || v.includes('femenino') || v.includes('female')) return 'fem';
+  if (v === 'm' || v === 'masculino' || v === 'male' || v.includes('masculino') || v.includes('male')) return 'masc';
+  return '';
+}
+
+function playerSexGroup(player) {
+  return (
+    sexGroup(player?.sex) ||
+    sexGroup(player?.gender) ||
+    sexGroup(player?.cat) ||
+    ''
+  );
 }
 
 function renderPlayers(list, append = false) {
@@ -1682,6 +1701,7 @@ async function filterPlayers() {
     // Fetch filtered players from Supabase, then fix their rank using the full-list map
     const results = await loadPlayers(filter);
     results.forEach(p => { if (RANK_BY_ID[p.id] !== undefined) p.rank = RANK_BY_ID[p.id]; });
+
     PLAYERS = results;
     displayedCount = PAGE_SIZE;
     renderPlayers(PLAYERS.slice(0, PAGE_SIZE));
