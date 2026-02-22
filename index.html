@@ -1243,14 +1243,14 @@ function renderPlayers(list, append = false) {
 
   list.forEach(p => {
     const card = document.createElement('div');
-    card.className = 'player-card' + (currentUser && !p.member ? ' no-member' : '');
+    card.className = 'player-card' + (!p.member ? ' no-member' : '');
     card.onclick = () => showProfile(p);
     card.innerHTML = `
       <div class="rank-num ${p.rank <= 3 ? 'top3' : ''}">#${p.rank}</div>
       <div class="avatar">${initials(p.name)}</div>
       <div class="player-info">
         <div class="player-name">${p.name}
-          ${currentUser ? `<span class="badge ${p.member ? 'member' : 'no'}">${p.member ? '✓ Miembro' : '✗ No Miembro'}</span>` : ''}
+          <span class="badge ${p.member ? 'member' : 'no'}">${p.member ? '✓ Miembro' : '✗ No Miembro'}</span>
         </div>
         <div class="player-meta">${p.cat || '—'} · ${p.club || 'Sin club'} · ${p.sex || '—'}</div>
       </div>
@@ -1285,13 +1285,9 @@ async function showProfile(player) {
   document.getElementById('profileId').textContent     = 'FPRTM #' + String(player.rank).padStart(4, '0');
   document.getElementById('profileClub').textContent   = player.club || 'Sin club';
   const _badge = document.getElementById('profileBadge');
-  if (currentUser) {
-    _badge.textContent = player.member ? '✓ Miembro' : '✗ No Miembro';
-    _badge.className   = 'badge ' + (player.member ? 'member' : 'no');
-    _badge.style.display = '';
-  } else {
-    _badge.style.display = 'none';
-  }
+  _badge.textContent   = player.member ? '✓ Miembro' : '✗ No Miembro';
+  _badge.className     = 'badge ' + (player.member ? 'member' : 'no');
+  _badge.style.display = '';
   document.getElementById('profileRating').textContent = player.rating;
   document.getElementById('profileCategory').textContent =
     [player.cat, player.sex, player.age ? player.age + ' años' : ''].filter(Boolean).join(' · ');
