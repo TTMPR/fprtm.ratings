@@ -440,6 +440,70 @@
   }
   .memb-search-wrap input:focus { border-color: var(--accent); }
 
+  /* ─── TORNEOS LIST PAGE ─── */
+  .torneos-grid {
+    max-width: 900px; margin: 0 auto; padding: 0 32px 40px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .torneo-card {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    gap: 16px;
+  }
+  .torneo-card:hover { border-color: var(--accent); background: rgba(232,184,75,0.04); }
+  .torneo-card-left { flex: 1; min-width: 0; }
+  .torneo-card-name { font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 2px; }
+  .torneo-card-date { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .torneo-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+  .torneo-card-count { font-family: 'DM Mono'; font-size: 22px; font-weight: 700; color: var(--accent); }
+  .torneo-card-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ─── TORNEO EVENTO PAGE ─── */
+  .evento-header {
+    max-width: 900px; margin: 0 auto 24px; padding: 0 32px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  }
+  .evento-meta { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .evento-search-wrap { padding: 0 32px; max-width: 900px; margin: 0 auto 16px; }
+  .evento-search-wrap input {
+    width: 100%; box-sizing: border-box;
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 16px; color: var(--text);
+    font-family: 'DM Sans'; font-size: 14px; outline: none;
+  }
+  .evento-search-wrap input:focus { border-color: var(--accent); }
+  .evento-grid {
+    max-width: 900px; margin: 0 auto; padding: 0 32px 40px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .evento-row {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .evento-rank {
+    font-family: 'DM Mono'; font-size: 13px; color: var(--muted);
+    width: 28px; text-align: center; flex-shrink: 0;
+  }
+  .evento-player { flex: 1; min-width: 0; }
+  .evento-player-name { font-weight: 600; font-size: 15px; }
+  .evento-player-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .evento-rating-flow { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .evento-rating-val { font-family: 'DM Mono'; font-size: 14px; }
+  .evento-arrow { color: var(--muted); font-size: 14px; }
+  .evento-delta {
+    font-family: 'DM Mono'; font-size: 14px; font-weight: 700;
+    padding: 3px 8px; border-radius: 6px; flex-shrink: 0;
+  }
+  .evento-delta.gain { color: var(--green); background: rgba(34,197,94,0.12); }
+  .evento-delta.loss { color: var(--red);   background: rgba(239,68,68,0.12); }
+  .evento-delta.tie  { color: var(--muted); background: var(--card); }
+  .evento-record { font-size: 12px; flex-shrink: 0; text-align: right; }
+  .evento-record .w { color: var(--green); }
+  .evento-record .l { color: var(--red); }
+
   /* ─── MEMBRESÍA ─── */
   .memb-grid {
     max-width: 1200px; margin: 0 auto; padding: 0 32px;
@@ -651,6 +715,7 @@
   <nav>
     <button id="navRankings" class="active" onclick="showPage('rankings')">🏆 Rankings</button>
     <button id="navCalculator" onclick="showPage('calculator')">⚡ Calcular Rating</button>
+    <button id="navTorneos" onclick="showPage('torneosList')">🏓 Torneos</button>
     <button id="navMembresia" style="display:none" onclick="showPage('membresia')">🪪 Membresía</button>
     <button id="navAdmin" style="display:none" onclick="showPage('admin')">⚙ Admin</button>
   </nav>
@@ -957,6 +1022,49 @@ Maria Lopez,Ana Torres,B</code>
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: TORNEOS LIST
+═══════════════════════════════════════════ -->
+<div id="torneosListPage" class="page">
+  <div class="page-hero">
+    <div class="overline">Historial</div>
+    <h1>TORNEOS</h1>
+    <p>Selecciona un torneo para ver el Rating Summary del evento</p>
+  </div>
+  <div class="torneos-grid" id="torneosGrid">
+    <div style="text-align:center;padding:40px;color:var(--muted)">Cargando torneos...</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: TORNEO EVENTO
+═══════════════════════════════════════════ -->
+<div id="torneoEventoPage" class="page">
+  <div class="page-hero">
+    <div class="overline" id="eventoOverline">Torneo</div>
+    <h1 id="eventoTitle">—</h1>
+    <p id="eventoSubtitle"></p>
+  </div>
+
+  <div class="evento-header">
+    <button class="btn-secondary" style="margin:0;padding:8px 16px;font-size:13px" onclick="showPage('torneosList')">← Volver a Torneos</button>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div id="eventoStatBadge" style="background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.3);border-radius:8px;padding:8px 16px;text-align:center">
+        <div style="font-family:'DM Mono';font-size:22px;font-weight:700;color:var(--accent)" id="eventoParticipantCount">—</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Participantes</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="evento-search-wrap">
+    <input id="eventoSearchInput" type="text" placeholder="🔍 Buscar participante..." oninput="filterEventoRows()">
+  </div>
+
+  <div class="evento-grid" id="eventoGrid">
+    <div style="text-align:center;padding:40px;color:var(--muted)">Cargando resultados...</div>
   </div>
 </div>
 
@@ -1490,12 +1598,14 @@ function updateStats() {
 // NAV
 // ══════════════════════════════════════════
 const pages = {
-  rankings:   'rankingsPage',
-  calculator: 'calculatorPage',
-  subir:      'subirPage',
-  membresia:  'membresia_page',
-  admin:      'adminPage',
-  profile:    'profilePage'
+  rankings:      'rankingsPage',
+  calculator:    'calculatorPage',
+  subir:         'subirPage',
+  torneosList:   'torneosListPage',
+  torneoEvento:  'torneoEventoPage',
+  membresia:     'membresia_page',
+  admin:         'adminPage',
+  profile:       'profilePage'
 };
 
 function showPage(key) {
@@ -1513,8 +1623,8 @@ function showPage(key) {
   if (target) { target.style.display = 'block'; setTimeout(() => target.classList.add('active'), 10); }
 
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  const navMap = { rankings: 0, calculator: 1, membresia: 2, admin: 3 };
-  if (navMap[key] !== undefined) document.querySelectorAll('nav button')[navMap[key]].classList.add('active');
+  const navMap = { rankings: 0, calculator: 1, torneosList: 2, torneoEvento: 2, membresia: 3, admin: 4 };
+  if (navMap[key] !== undefined) document.querySelectorAll('nav button')[navMap[key]]?.classList.add('active');
 
   // Reset subir page to step 1 every time it's opened
   if (key === 'subir') {
@@ -1523,6 +1633,8 @@ function showPage(key) {
     document.getElementById('subirStep1Msg').textContent = '';
     document.getElementById('subirTorneoFecha').value = new Date().toISOString().split('T')[0];
   }
+  // Load torneos list on navigation
+  if (key === 'torneosList') loadTorneosList();
 }
 
 // ══════════════════════════════════════════
@@ -2017,12 +2129,39 @@ async function subirApplyRatings() {
   btn.disabled = true;
   btn.textContent = '⏳ Aplicando...';
 
+  // ── Step 1: Create torneo record ──────────────────────────────────────
   let torneoId = null;
   try {
     const [t] = await sbPost('torneos', { nombre, fecha });
     torneoId = t?.id;
   } catch(e) { console.warn('No se pudo crear torneo:', e.message); }
 
+  // ── Step 2: Snapshot W/L per player ──────────────────────────────────
+  // Build map: playerId → { nombre, club, rating_inicio, rating_fin, ganados, perdidos }
+  const snapshotMap = {};
+  for (const r of subirPending) {
+    const pA = ALL_PLAYERS.find(x => x.id === r.idA);
+    const pB = ALL_PLAYERS.find(x => x.id === r.idB);
+    if (r.idA && !snapshotMap[r.idA]) snapshotMap[r.idA] = {
+      id_jugador: r.idA, nombre: r.pA, club: pA?.club || '',
+      rating_inicio: r.rA, rating_fin: r.rA, ganados: 0, perdidos: 0
+    };
+    if (r.idB && !snapshotMap[r.idB]) snapshotMap[r.idB] = {
+      id_jugador: r.idB, nombre: r.pB, club: pB?.club || '',
+      rating_inicio: r.rB, rating_fin: r.rB, ganados: 0, perdidos: 0
+    };
+    const winnerIsA = r.winner === r.pA;
+    if (r.idA) {
+      snapshotMap[r.idA].rating_fin += r.aGain;
+      if (winnerIsA) snapshotMap[r.idA].ganados++; else snapshotMap[r.idA].perdidos++;
+    }
+    if (r.idB) {
+      snapshotMap[r.idB].rating_fin += r.bGain;
+      if (!winnerIsA) snapshotMap[r.idB].ganados++; else snapshotMap[r.idB].perdidos++;
+    }
+  }
+
+  // ── Step 3: Apply rating updates + save partidos ──────────────────────
   let applied = 0;
   const errors = [];
 
@@ -2046,12 +2185,12 @@ async function subirApplyRatings() {
     if (torneoId && r.idA && r.idB) {
       try {
         await sbPost('partidos', {
-          torneo_id:       torneoId,
-          jugador_a_id:    r.idA,
-          jugador_b_id:    r.idB,
-          ganador:         r.winner === r.pA ? 'A' : 'B',
-          rating_a_antes:  r.rA,
-          rating_b_antes:  r.rB,
+          torneo_id:        torneoId,
+          jugador_a_id:     r.idA,
+          jugador_b_id:     r.idB,
+          ganador:          r.winner === r.pA ? 'A' : 'B',
+          rating_a_antes:   r.rA,
+          rating_b_antes:   r.rB,
           rating_a_despues: r.rA + r.aGain,
           rating_b_despues: r.rB + r.bGain,
           fecha,
@@ -2062,6 +2201,18 @@ async function subirApplyRatings() {
     }
   }
 
+  // ── Step 4: Batch insert resultados_evento ────────────────────────────
+  if (torneoId) {
+    const rows = Object.values(snapshotMap).map(s => ({ ...s, id_torneo: torneoId }));
+    try {
+      // Insert in batches of 50
+      for (let i = 0; i < rows.length; i += 50) {
+        await sbPost('resultados_evento', rows.slice(i, i + 50));
+      }
+    } catch(e) { console.warn('Error guardando resultados_evento:', e.message); }
+  }
+
+  // ── Step 5: Refresh in-memory rankings ───────────────────────────────
   ALL_PLAYERS.sort((a, b) => b.rating - a.rating);
   ALL_PLAYERS.forEach((p, i) => { p.rank = i + 1; RANK_BY_ID[p.id] = p.rank; });
   filterPlayers();
@@ -2069,7 +2220,7 @@ async function subirApplyRatings() {
   if (errors.length) {
     btn.textContent = `⚠ ${applied} aplicados, ${errors.length} errores`;
   } else {
-    btn.textContent = `✅ ${applied} ratings actualizados`;
+    btn.textContent = `✅ ${applied} ratings actualizados · ${Object.keys(snapshotMap).length} participantes guardados`;
     subirPending = [];
     subirCsvRows = [];
   }
@@ -2504,6 +2655,131 @@ function showConfigModal() {
 
 function hideConfigModal() {
   document.getElementById('configModal').classList.remove('open');
+}
+
+// ══════════════════════════════════════════
+// TORNEOS LIST PAGE
+// ══════════════════════════════════════════
+let allTorneos = [];   // cached list of torneos
+
+async function loadTorneosList() {
+  const grid = document.getElementById('torneosGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando torneos...</div>';
+  try {
+    allTorneos = await sbGet('torneos', '?select=id,nombre,fecha&order=fecha.desc&limit=200');
+    // Fetch participant counts from resultados_evento grouped by id_torneo
+    let countMap = {};
+    try {
+      const counts = await sbGet('resultados_evento', '?select=id_torneo,id_jugador&limit=10000');
+      counts.forEach(r => { countMap[r.id_torneo] = (countMap[r.id_torneo] || 0) + 1; });
+    } catch(_) {}
+
+    if (!allTorneos.length) {
+      grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No hay torneos registrados aún.</div>';
+      return;
+    }
+    grid.innerHTML = allTorneos.map(t => {
+      const count = countMap[t.id] || 0;
+      const fechaFmt = t.fecha
+        ? new Date(t.fecha + 'T12:00:00').toLocaleDateString('es-PR', { year:'numeric', month:'long', day:'numeric' })
+        : '—';
+      return `<div class="torneo-card" onclick="openTorneoEvento(${t.id},'${t.nombre.replace(/'/g,"\\'")}','${t.fecha || ''}')">
+        <div class="torneo-card-left">
+          <div class="torneo-card-name">${t.nombre}</div>
+          <div class="torneo-card-date">📅 ${fechaFmt}</div>
+        </div>
+        <div class="torneo-card-right">
+          ${count ? `<div class="torneo-card-count">${count}</div><div class="torneo-card-label">Jugadores</div>` : '<div class="torneo-card-label" style="color:var(--muted)">Sin datos</div>'}
+          <div style="color:var(--muted);font-size:20px;margin-top:4px">›</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    grid.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error: ${e.message}</div>`;
+  }
+}
+
+// ══════════════════════════════════════════
+// TORNEO EVENTO PAGE
+// ══════════════════════════════════════════
+let eventoRows = [];   // full list for current event (for search filter)
+
+async function openTorneoEvento(torneoId, nombre, fecha) {
+  showPage('torneoEvento');
+
+  document.getElementById('eventoOverline').textContent = fecha
+    ? new Date(fecha + 'T12:00:00').toLocaleDateString('es-PR', { year:'numeric', month:'long', day:'numeric' })
+    : 'Torneo';
+  document.getElementById('eventoTitle').textContent      = nombre;
+  document.getElementById('eventoSubtitle').textContent   = 'Cargando participantes...';
+  document.getElementById('eventoParticipantCount').textContent = '…';
+  document.getElementById('eventoSearchInput').value      = '';
+  document.getElementById('eventoGrid').innerHTML         = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando resultados...</div>';
+  eventoRows = [];
+
+  try {
+    const data = await sbGet(
+      'resultados_evento',
+      `?id_torneo=eq.${torneoId}&order=rating_fin.desc&limit=500`
+    );
+
+    eventoRows = data.map((r, i) => ({
+      rank:          i + 1,
+      nombre:        r.nombre || '—',
+      club:          r.club   || '—',
+      ratingInicio:  r.rating_inicio,
+      ratingFin:     r.rating_fin,
+      delta:         r.rating_fin - r.rating_inicio,
+      ganados:       r.ganados  || 0,
+      perdidos:      r.perdidos || 0,
+    }));
+
+    document.getElementById('eventoSubtitle').textContent = `${eventoRows.length} participantes`;
+    document.getElementById('eventoParticipantCount').textContent = eventoRows.length;
+    renderEventoRows(eventoRows);
+  } catch(e) {
+    document.getElementById('eventoGrid').innerHTML =
+      `<div style="text-align:center;padding:40px;color:var(--red)">Error cargando datos: ${e.message}</div>`;
+  }
+}
+
+function renderEventoRows(rows) {
+  const grid = document.getElementById('eventoGrid');
+  if (!rows.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Sin participantes registrados para este torneo.</div>';
+    return;
+  }
+  grid.innerHTML = rows.map((r, i) => {
+    const deltaClass = r.delta > 0 ? 'gain' : r.delta < 0 ? 'loss' : 'tie';
+    const deltaSign  = r.delta > 0 ? '▲ +' : r.delta < 0 ? '▼ ' : '= ';
+    const total      = r.ganados + r.perdidos;
+    return `<div class="evento-row">
+      <div class="evento-rank">${i + 1}</div>
+      <div class="evento-player">
+        <div class="evento-player-name">${r.nombre}</div>
+        <div class="evento-player-meta">${r.club}</div>
+      </div>
+      <div class="evento-rating-flow">
+        <span class="evento-rating-val" style="color:var(--muted)">${r.ratingInicio}</span>
+        <span class="evento-arrow">→</span>
+        <span class="evento-rating-val" style="font-weight:600">${r.ratingFin}</span>
+      </div>
+      <div class="evento-delta ${deltaClass}">${deltaSign}${Math.abs(r.delta)}</div>
+      <div class="evento-record">
+        <span class="w">${r.ganados}W</span> <span class="l">${r.perdidos}L</span>
+        <div style="color:var(--muted);font-size:11px">${total} partidos</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterEventoRows() {
+  const q = document.getElementById('eventoSearchInput').value.trim().toLowerCase();
+  const filtered = q.length >= 2
+    ? eventoRows.filter(r => r.nombre.toLowerCase().includes(q) || (r.club || '').toLowerCase().includes(q))
+    : eventoRows;
+  renderEventoRows(filtered);
 }
 
 // ══════════════════════════════════════════
