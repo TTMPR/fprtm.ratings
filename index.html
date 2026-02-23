@@ -1051,7 +1051,8 @@ function showError(msg) {
 }
 
 async function loadPlayers(filter = {}) {
-  let params = '?order=Rating.desc&limit=600';
+  // Only fetch non-sensitive columns — never request Email, Home Address, or Date of Birth
+  let params = '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22,%22Sex%22,%22Club%22,%22Expiration%20Date%22&order=Rating.desc&limit=600';
   if (filter.sexoAny?.length) {
     const sexoOr = filter.sexoAny
       .map(v => `Sex.eq.${encodeURIComponent(v)}`)
@@ -1062,8 +1063,6 @@ async function loadPlayers(filter = {}) {
   }
 
   const data = await sbGet('Base%20de%20Datos', params);
-  console.log(`loadPlayers: ${data.length} filas recibidas de Supabase`);
-  if (data.length > 0) console.log('Primer jugador (raw):', JSON.stringify(data[0]));
   const now = new Date();
   return data.map((p, i) => ({
     id: p['Member ID'],
@@ -1071,7 +1070,7 @@ async function loadPlayers(filter = {}) {
     name: `${p['First Name'] || ''} ${p['Last Name'] || ''}`.trim(),
     sex: p['Sex'] || '',
     gender: p['Sex'] || '',
-    age: p['Date of Birth'] ? Math.floor((now - new Date(p['Date of Birth'])) / 31557600000) : null,
+    age: null,
     cat: null,
     club: p['Club'],
     member: p['Expiration Date'] ? new Date(p['Expiration Date']) > now : false,
@@ -1081,21 +1080,11 @@ async function loadPlayers(filter = {}) {
 }
 
 async function loadMembers() {
-  // miembros table columns from real data:
-  // nombre_completo, email, telefono, pueblo, ath (Member ID),
-  // fecha_membresia (join date), fecha_vencimiento (expiration date)
-  // Only fetch non-sensitive columns — never expose email, phone, or address publicly
-  const data = await sbGet('miembros', '?select=id,nombre_completo,club,sexo,edad,pueblo,ath,fecha_membresia,fecha_vencimiento&order=nombre_completo.asc&limit=300');
+  // Only fetch non-sensitive columns — never request Home Address or Date of Birth
+  const data = await sbGet('Base%20de%20Datos', '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Club%22,%22Sex%22,%22Email%22,%22Expiration%20Date%22&order=%22Member%20ID%22.asc&limit=300');
   const now = new Date();
   return data.map(m => {
-    const nombre = m.nombre_completo || '—';
-    // Use expiration date to determine status (fecha_vencimiento)
-    // Fall back to fecha_membresia + 365 days if no expiration stored
-    const expDate = m.fecha_vencimiento
-      ? new Date(m.fecha_vencimiento)
-      : m.fecha_membresia
-        ? new Date(new Date(m.fecha_membresia).getTime() + 365 * 86400000)
-        : null;
+    const expDate = m['Expiration Date'] ? new Date(m['Expiration Date']) : null;
 
     let status = 'no';
     let daysUntilExp = null;
@@ -1107,23 +1096,19 @@ async function loadMembers() {
     }
 
     return {
-      id:     m.id,
-      name:   nombre,
-      club:   m.club || '—',
-      sex:    m.sexo || '—',
-      age:    m.edad || '—',
-      date:   m.fecha_membresia
-                ? m.fecha_membresia.split('T')[0]
-                : '—',
-      expDate: expDate
-                ? expDate.toISOString().split('T')[0]
-                : '—',
+      id:          m['Member ID'],
+      name:        `${m['First Name'] || ''} ${m['Last Name'] || ''}`.trim(),
+      club:        m['Club'] || '—',
+      sex:         m['Sex'] || '—',
+      age:         '—',
+      date:        '—',
+      expDate:     expDate ? expDate.toISOString().split('T')[0] : '—',
       daysUntilExp,
       status,
-      email:  m.email   || '',
-      tel:    m.telefono || '',
-      pueblo: m.pueblo   || '',
-      ath:    m.ath ? '***' : '' // ATH shown only to admin — masked here
+      email:       m['Email'] || '',
+      tel:         '',
+      pueblo:      '',
+      ath:         m['Member ID'] ? '***' : ''
     };
   });
 }
@@ -1756,15 +1741,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   showLoading(true);
-  try {
-    [ALL_PLAYERS, MEMBERS] = await Promise.all([loadPlayers(), loadMembers()]);
+  const [playersResult, membersResult] = await Promise.allSettled([loadPlayers(), loadMembers()]);
+  if (playersResult.status === 'fulfilled') {
+    ALL_PLAYERS = playersResult.value;
     ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
     PLAYERS = ALL_PLAYERS;
-  } catch (e) {
-    console.error('Error cargando datos:', e);
+  } else {
+    console.error('Error cargando jugadores:', playersResult.reason);
     showLoading(false);
-    showError(`No se pudo conectar a Supabase.<br><small style="font-family:monospace">${e.message}</small>`);
-    ALL_PLAYERS = []; PLAYERS = []; MEMBERS = [];
+    showError(`No se pudo conectar a Supabase.<br><small style="font-family:monospace">${playersResult.reason.message}</small>`);
+    ALL_PLAYERS = []; PLAYERS = [];
+  }
+  if (membersResult.status === 'fulfilled') {
+    MEMBERS = membersResult.value;
+  } else {
+    console.error('Error cargando miembros:', membersResult.reason);
+    MEMBERS = [];
   }
   showLoading(false);
 
