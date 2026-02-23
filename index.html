@@ -409,6 +409,37 @@
   }
   .btn-secondary:hover { border-color: var(--accent); }
 
+  /* ─── CALC TABS ─── */
+  .calc-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .calc-tab {
+    background: var(--card2); color: var(--muted);
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 22px;
+    font-family: 'DM Sans'; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .calc-tab.active { background: rgba(232,184,75,0.1); color: var(--accent); border-color: rgba(232,184,75,0.4); }
+  .calc-tab:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+
+  /* ─── CSV UPLOAD ─── */
+  .csv-drop-area {
+    border: 2px dashed var(--border); border-radius: 12px; padding: 40px 20px;
+    text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .csv-drop-area:hover, .csv-drop-area.drag-over { border-color: var(--accent); background: rgba(232,184,75,0.04); }
+  .csv-drop-area .upload-icon { font-size: 40px; margin-bottom: 12px; }
+  .csv-drop-area .upload-label { color: var(--text); font-size: 15px; margin-bottom: 6px; font-weight: 500; }
+  .csv-drop-area .upload-hint { color: var(--muted); font-size: 13px; }
+
+  /* ─── MEMB SEARCH ─── */
+  .memb-search-wrap { padding: 0 32px; margin-bottom: 16px; }
+  .memb-search-wrap input {
+    width: 100%; max-width: 360px; box-sizing: border-box;
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 16px; color: var(--text);
+    font-family: 'DM Sans'; font-size: 14px; outline: none;
+  }
+  .memb-search-wrap input:focus { border-color: var(--accent); }
+
   /* ─── MEMBRESÍA ─── */
   .memb-grid {
     max-width: 1200px; margin: 0 auto; padding: 0 32px;
@@ -801,25 +832,62 @@
   </div>
 
   <div class="calc-wrap">
-    <div class="manual-entry">
-      <h3>ENTRADA MANUAL DE PARTIDOS</h3>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Nombre del torneo: <input id="tournName" style="background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text);font-family:DM Sans;font-size:13px;outline:none" placeholder="Ej: Clasif. Febrero 2026"></p>
 
+    <!-- Nombre del torneo: compartido entre modos -->
+    <div style="margin-bottom:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 24px">
+      <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:8px">Nombre del Torneo</label>
+      <input id="tournName" style="background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Sans';font-size:14px;outline:none;width:100%;box-sizing:border-box;transition:border-color 0.2s" placeholder="Ej: Clasificatorio Marzo 2026" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+
+    <!-- Tabs: Manual / CSV -->
+    <div class="calc-tabs">
+      <button class="calc-tab active" id="tabManual" onclick="switchCalcMode('manual')">✏️ Entrada Manual</button>
+      <button class="calc-tab" id="tabCsv" onclick="switchCalcMode('csv')">📂 Cargar CSV</button>
+    </div>
+
+    <!-- Modo manual -->
+    <div class="manual-entry" id="calcManualMode">
+      <h3>PARTIDOS</h3>
       <div id="matchEntries">
-        <!-- Match row template populated by JS -->
+        <!-- Match rows populated by JS -->
       </div>
-
       <button class="btn-secondary" onclick="addMatchRow()" style="margin-top:0">+ Agregar partido</button>
       <br>
       <button class="btn-primary" onclick="calculateRatings()">⚡ Calcular Nuevos Ratings</button>
-
-      <div class="calc-result" id="calcResult">
-        <h4>RESULTADOS DEL CÁLCULO</h4>
-        <div id="calcResultBody"></div>
-        <button class="btn-primary" style="margin-top:16px" onclick="applyRatings()">✓ Aplicar a Base de Datos</button>
-        <button class="btn-secondary" onclick="document.getElementById('calcResult').classList.remove('show')">Descartar</button>
-      </div>
     </div>
+
+    <!-- Modo CSV -->
+    <div class="manual-entry" id="calcCsvMode" style="display:none">
+      <h3>IMPORTAR DESDE CSV</h3>
+      <div class="csv-drop-area" id="csvDropArea"
+           onclick="document.getElementById('csvFileInput').click()"
+           ondragover="event.preventDefault();this.classList.add('drag-over')"
+           ondragleave="this.classList.remove('drag-over')"
+           ondrop="handleCsvDrop(event)">
+        <div class="upload-icon">📂</div>
+        <div class="upload-label">Arrastra tu CSV aquí o haz clic para seleccionar</div>
+        <div class="upload-hint">Formato: Jugador A, Jugador B, Ganador (A o B)</div>
+        <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none" onchange="handleCsvFile(event)">
+      </div>
+      <div id="csvStatus" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:13px"></div>
+      <div style="margin-top:16px;padding:14px;background:var(--navy);border:1px solid var(--border);border-radius:8px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Formato esperado</div>
+        <code style="display:block;font-family:'DM Mono';font-size:12px;background:rgba(0,0,0,0.3);padding:8px 10px;border-radius:6px;color:var(--accent);white-space:pre">Jugador A,Jugador B,Ganador
+Juan García,Pedro Rodríguez,A
+Maria Lopez,Ana Torres,B</code>
+        <button class="btn-secondary" style="padding:7px 14px;font-size:12px;margin-top:10px;margin-left:0" onclick="downloadCsvTemplate()">⬇ Descargar plantilla</button>
+      </div>
+      <button class="btn-primary" id="parseCsvBtn" onclick="parseCsvMatches()" style="display:none;margin-top:16px">⚡ Procesar partidos</button>
+    </div>
+
+    <!-- Resultados: compartido entre modos -->
+    <div class="calc-result" id="calcResult">
+      <h4>RESULTADOS DEL CÁLCULO</h4>
+      <div id="calcResultBody"></div>
+      <button class="btn-primary" style="margin-top:16px" onclick="applyRatings()">✓ Aplicar a Base de Datos</button>
+      <button class="btn-secondary" onclick="document.getElementById('calcResult').classList.remove('show')">Descartar</button>
+    </div>
+
   </div>
 </div>
 
@@ -861,6 +929,10 @@
       <div class="value" style="color:var(--orange)" id="membWarn">—</div>
       <div class="sub">Próximos 30 días</div>
     </div>
+  </div>
+
+  <div class="memb-search-wrap">
+    <input id="membSearchInput" type="text" placeholder="🔍 Buscar jugador por nombre..." oninput="renderMembers()">
   </div>
 
   <div class="filters" style="margin-bottom:16px">
@@ -1672,23 +1744,7 @@ function buildDatalist() {
   });
 }
 
-function calculateRatings() {
-  pendingResults = [];
-  for (let i = 1; i <= matchRows; i++) {
-    const pA  = document.getElementById('pA' + i)?.value.trim();
-    const pB  = document.getElementById('pB' + i)?.value.trim();
-    const rA  = parseInt(document.getElementById('rA' + i)?.value);
-    const rB  = parseInt(document.getElementById('rB' + i)?.value);
-    const win = document.getElementById('win' + i)?.value;
-    if (!pA || !pB || isNaN(rA) || isNaN(rB)) continue;
-    const { aGain, bGain } = getPoints(rA, rB, win === 'A');
-    const playerA = PLAYERS.find(p => p.name.toLowerCase() === pA.toLowerCase());
-    const playerB = PLAYERS.find(p => p.name.toLowerCase() === pB.toLowerCase());
-    pendingResults.push({ pA, pB, rA, rB, aGain, bGain, winner: win === 'A' ? pA : pB, idA: playerA?.id, idB: playerB?.id });
-  }
-
-  if (!pendingResults.length) { alert('Ingresa al menos un partido completo.'); return; }
-
+function renderPendingResults() {
   const body = document.getElementById('calcResultBody');
   body.innerHTML = pendingResults.map(r => `
     <div class="result-row">
@@ -1707,8 +1763,146 @@ function calculateRatings() {
       </div>
       <div class="result-pts ${r.bGain >= 0 ? 'gain' : 'loss'}">${r.bGain >= 0 ? '+' : ''}${r.bGain}</div>
     </div>`).join('<hr style="border-color:var(--border);margin:4px 0">');
-
   document.getElementById('calcResult').classList.add('show');
+}
+
+function calculateRatings() {
+  pendingResults = [];
+  for (let i = 1; i <= matchRows; i++) {
+    const pA  = document.getElementById('pA' + i)?.value.trim();
+    const pB  = document.getElementById('pB' + i)?.value.trim();
+    const rA  = parseInt(document.getElementById('rA' + i)?.value);
+    const rB  = parseInt(document.getElementById('rB' + i)?.value);
+    const win = document.getElementById('win' + i)?.value;
+    if (!pA || !pB || isNaN(rA) || isNaN(rB)) continue;
+    const { aGain, bGain } = getPoints(rA, rB, win === 'A');
+    const playerA = PLAYERS.find(p => p.name.toLowerCase() === pA.toLowerCase());
+    const playerB = PLAYERS.find(p => p.name.toLowerCase() === pB.toLowerCase());
+    pendingResults.push({ pA, pB, rA, rB, aGain, bGain, winner: win === 'A' ? pA : pB, idA: playerA?.id, idB: playerB?.id });
+  }
+
+  if (!pendingResults.length) { alert('Ingresa al menos un partido completo.'); return; }
+  renderPendingResults();
+}
+
+// ══════════════════════════════════════════
+// CALC TABS & CSV IMPORT
+// ══════════════════════════════════════════
+function switchCalcMode(mode) {
+  document.getElementById('calcManualMode').style.display = mode === 'manual' ? '' : 'none';
+  document.getElementById('calcCsvMode').style.display    = mode === 'csv'    ? '' : 'none';
+  document.getElementById('tabManual').classList.toggle('active', mode === 'manual');
+  document.getElementById('tabCsv').classList.toggle('active', mode === 'csv');
+  document.getElementById('calcResult').classList.remove('show');
+}
+
+let csvParsedRows = [];
+
+function handleCsvFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  loadCsvFile(file);
+}
+
+function handleCsvDrop(event) {
+  event.preventDefault();
+  document.getElementById('csvDropArea').classList.remove('drag-over');
+  const file = event.dataTransfer.files[0];
+  if (file) loadCsvFile(file);
+}
+
+function loadCsvFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    const lines = text.trim().split(/\r?\n/);
+    // Skip header row if present (contains 'jugador' or 'player' case-insensitive)
+    const dataLines = lines.filter((l, i) => {
+      if (i === 0 && /jugador|player|ganador|winner/i.test(l)) return false;
+      return l.trim().length > 0;
+    });
+
+    csvParsedRows = dataLines.map(l => {
+      const parts = l.split(',').map(s => s.trim());
+      return { pA: parts[0] || '', pB: parts[1] || '', win: (parts[2] || 'A').toUpperCase() };
+    }).filter(r => r.pA && r.pB);
+
+    const statusEl = document.getElementById('csvStatus');
+    if (csvParsedRows.length === 0) {
+      statusEl.style.background = 'rgba(239,68,68,0.1)';
+      statusEl.style.border = '1px solid rgba(239,68,68,0.3)';
+      statusEl.style.color = 'var(--red)';
+      statusEl.textContent = 'No se encontraron partidos válidos en el archivo.';
+    } else {
+      statusEl.style.background = 'rgba(34,197,94,0.1)';
+      statusEl.style.border = '1px solid rgba(34,197,94,0.3)';
+      statusEl.style.color = 'var(--green)';
+      statusEl.textContent = `✓ ${csvParsedRows.length} partido${csvParsedRows.length !== 1 ? 's' : ''} detectado${csvParsedRows.length !== 1 ? 's' : ''} en "${file.name}"`;
+      document.getElementById('parseCsvBtn').style.display = '';
+    }
+    statusEl.style.display = 'block';
+
+    // Update drop area label
+    const dropArea = document.getElementById('csvDropArea');
+    dropArea.querySelector('.upload-label').textContent = file.name;
+    dropArea.querySelector('.upload-hint').textContent  = `${csvParsedRows.length} partidos · Haz clic para cambiar`;
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseCsvMatches() {
+  if (!csvParsedRows.length) { alert('Primero carga un archivo CSV.'); return; }
+  pendingResults = [];
+  const unknown = [];
+
+  for (const row of csvParsedRows) {
+    const playerA = ALL_PLAYERS.find(p => p.name.toLowerCase() === row.pA.toLowerCase());
+    const playerB = ALL_PLAYERS.find(p => p.name.toLowerCase() === row.pB.toLowerCase());
+    const rA = playerA?.rating ?? null;
+    const rB = playerB?.rating ?? null;
+
+    if (rA === null || rB === null) {
+      if (!playerA) unknown.push(row.pA);
+      if (!playerB) unknown.push(row.pB);
+      continue;
+    }
+
+    const { aGain, bGain } = getPoints(rA, rB, row.win === 'A');
+    pendingResults.push({
+      pA: row.pA, pB: row.pB, rA, rB, aGain, bGain,
+      winner: row.win === 'A' ? row.pA : row.pB,
+      idA: playerA?.id, idB: playerB?.id
+    });
+  }
+
+  if (!pendingResults.length) {
+    const msg = unknown.length
+      ? `No se encontraron jugadores: ${[...new Set(unknown)].join(', ')}`
+      : 'No hay partidos válidos para procesar.';
+    alert(msg);
+    return;
+  }
+
+  if (unknown.length) {
+    const statusEl = document.getElementById('csvStatus');
+    statusEl.style.background = 'rgba(249,115,22,0.1)';
+    statusEl.style.border     = '1px solid rgba(249,115,22,0.3)';
+    statusEl.style.color      = 'var(--orange)';
+    statusEl.textContent      = `⚠ ${pendingResults.length} partidos procesados. No encontrados: ${[...new Set(unknown)].join(', ')}`;
+  }
+
+  renderPendingResults();
+  document.getElementById('calcResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function downloadCsvTemplate() {
+  const content = 'Jugador A,Jugador B,Ganador\nJuan García,Pedro Rodríguez,A\nMaria Lopez,Ana Torres,B\n';
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'plantilla_partidos.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
 async function applyRatings() {
@@ -1793,7 +1987,10 @@ async function applyRatings() {
 let membFilter = 'all';
 
 function renderMembers() {
+  const q = (document.getElementById('membSearchInput')?.value || '').trim().toLowerCase();
+
   const filtered = MEMBERS.filter(m => {
+    if (q && !String(m.name || '').toLowerCase().includes(q)) return false;
     if (membFilter === 'active')  return m.status === 'active';
     if (membFilter === 'warning') return m.status === 'warning';
     if (membFilter === 'no')      return false; // non-members come from PLAYERS
@@ -1828,7 +2025,7 @@ function renderMembers() {
 
   // Non-members from player list
   if (membFilter === 'all' || membFilter === 'no') {
-    const noMembers = PLAYERS.filter(p => !p.member);
+    const noMembers = PLAYERS.filter(p => !p.member && (!q || String(p.name || '').toLowerCase().includes(q)));
     const toShow = membFilter === 'no' ? noMembers : noMembers.slice(0, 12);
     toShow.forEach(p => {
       const div = document.createElement('div');
