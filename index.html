@@ -1741,15 +1741,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   showLoading(true);
-  try {
-    [ALL_PLAYERS, MEMBERS] = await Promise.all([loadPlayers(), loadMembers()]);
+  const [playersResult, membersResult] = await Promise.allSettled([loadPlayers(), loadMembers()]);
+  if (playersResult.status === 'fulfilled') {
+    ALL_PLAYERS = playersResult.value;
     ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
     PLAYERS = ALL_PLAYERS;
-  } catch (e) {
-    console.error('Error cargando datos:', e);
+  } else {
+    console.error('Error cargando jugadores:', playersResult.reason);
     showLoading(false);
-    showError(`No se pudo conectar a Supabase.<br><small style="font-family:monospace">${e.message}</small>`);
-    ALL_PLAYERS = []; PLAYERS = []; MEMBERS = [];
+    showError(`No se pudo conectar a Supabase.<br><small style="font-family:monospace">${playersResult.reason.message}</small>`);
+    ALL_PLAYERS = []; PLAYERS = [];
+  }
+  if (membersResult.status === 'fulfilled') {
+    MEMBERS = membersResult.value;
+  } else {
+    console.error('Error cargando miembros:', membersResult.reason);
+    MEMBERS = [];
   }
   showLoading(false);
 
