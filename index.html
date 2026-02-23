@@ -409,6 +409,101 @@
   }
   .btn-secondary:hover { border-color: var(--accent); }
 
+  /* ─── CALC TABS ─── */
+  .calc-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .calc-tab {
+    background: var(--card2); color: var(--muted);
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 22px;
+    font-family: 'DM Sans'; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .calc-tab.active { background: rgba(232,184,75,0.1); color: var(--accent); border-color: rgba(232,184,75,0.4); }
+  .calc-tab:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+
+  /* ─── CSV UPLOAD ─── */
+  .csv-drop-area {
+    border: 2px dashed var(--border); border-radius: 12px; padding: 40px 20px;
+    text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .csv-drop-area:hover, .csv-drop-area.drag-over { border-color: var(--accent); background: rgba(232,184,75,0.04); }
+  .csv-drop-area .upload-icon { font-size: 40px; margin-bottom: 12px; }
+  .csv-drop-area .upload-label { color: var(--text); font-size: 15px; margin-bottom: 6px; font-weight: 500; }
+  .csv-drop-area .upload-hint { color: var(--muted); font-size: 13px; }
+
+  /* ─── MEMB SEARCH ─── */
+  .memb-search-wrap { padding: 0 32px; margin-bottom: 16px; }
+  .memb-search-wrap input {
+    width: 100%; max-width: 360px; box-sizing: border-box;
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 16px; color: var(--text);
+    font-family: 'DM Sans'; font-size: 14px; outline: none;
+  }
+  .memb-search-wrap input:focus { border-color: var(--accent); }
+
+  /* ─── TORNEOS LIST PAGE ─── */
+  .torneos-grid {
+    max-width: 900px; margin: 0 auto; padding: 0 32px 40px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .torneo-card {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    gap: 16px;
+  }
+  .torneo-card:hover { border-color: var(--accent); background: rgba(232,184,75,0.04); }
+  .torneo-card-left { flex: 1; min-width: 0; }
+  .torneo-card-name { font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 2px; }
+  .torneo-card-date { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .torneo-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+  .torneo-card-count { font-family: 'DM Mono'; font-size: 22px; font-weight: 700; color: var(--accent); }
+  .torneo-card-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ─── TORNEO EVENTO PAGE ─── */
+  .evento-header {
+    max-width: 900px; margin: 0 auto 24px; padding: 0 32px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  }
+  .evento-meta { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .evento-search-wrap { padding: 0 32px; max-width: 900px; margin: 0 auto 16px; }
+  .evento-search-wrap input {
+    width: 100%; box-sizing: border-box;
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 16px; color: var(--text);
+    font-family: 'DM Sans'; font-size: 14px; outline: none;
+  }
+  .evento-search-wrap input:focus { border-color: var(--accent); }
+  .evento-grid {
+    max-width: 900px; margin: 0 auto; padding: 0 32px 40px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .evento-row {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .evento-rank {
+    font-family: 'DM Mono'; font-size: 13px; color: var(--muted);
+    width: 28px; text-align: center; flex-shrink: 0;
+  }
+  .evento-player { flex: 1; min-width: 0; }
+  .evento-player-name { font-weight: 600; font-size: 15px; }
+  .evento-player-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .evento-rating-flow { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .evento-rating-val { font-family: 'DM Mono'; font-size: 14px; }
+  .evento-arrow { color: var(--muted); font-size: 14px; }
+  .evento-delta {
+    font-family: 'DM Mono'; font-size: 14px; font-weight: 700;
+    padding: 3px 8px; border-radius: 6px; flex-shrink: 0;
+  }
+  .evento-delta.gain { color: var(--green); background: rgba(34,197,94,0.12); }
+  .evento-delta.loss { color: var(--red);   background: rgba(239,68,68,0.12); }
+  .evento-delta.tie  { color: var(--muted); background: var(--card); }
+  .evento-record { font-size: 12px; flex-shrink: 0; text-align: right; }
+  .evento-record .w { color: var(--green); }
+  .evento-record .l { color: var(--red); }
+
   /* ─── MEMBRESÍA ─── */
   .memb-grid {
     max-width: 1200px; margin: 0 auto; padding: 0 32px;
@@ -620,6 +715,7 @@
   <nav>
     <button id="navRankings" class="active" onclick="showPage('rankings')">🏆 Rankings</button>
     <button id="navCalculator" onclick="showPage('calculator')">⚡ Calcular Rating</button>
+    <button id="navTorneos" onclick="showPage('torneosList')">🏓 Torneos</button>
     <button id="navMembresia" style="display:none" onclick="showPage('membresia')">🪪 Membresía</button>
     <button id="navAdmin" style="display:none" onclick="showPage('admin')">⚙ Admin</button>
   </nav>
@@ -803,10 +899,10 @@
   <div class="calc-wrap">
     <div class="manual-entry">
       <h3>ENTRADA MANUAL DE PARTIDOS</h3>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Nombre del torneo: <input id="tournName" style="background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text);font-family:DM Sans;font-size:13px;outline:none" placeholder="Ej: Clasif. Febrero 2026"></p>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Torneo (opcional): <input id="tournName" style="background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text);font-family:'DM Sans';font-size:13px;outline:none" placeholder="Ej: Clasif. Febrero 2026"></p>
 
       <div id="matchEntries">
-        <!-- Match row template populated by JS -->
+        <!-- Match rows populated by JS -->
       </div>
 
       <button class="btn-secondary" onclick="addMatchRow()" style="margin-top:0">+ Agregar partido</button>
@@ -820,6 +916,155 @@
         <button class="btn-secondary" onclick="document.getElementById('calcResult').classList.remove('show')">Descartar</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: SUBIR RESULTADOS
+═══════════════════════════════════════════ -->
+<div id="subirPage" class="page">
+  <div class="page-hero">
+    <div class="overline">Admin · Torneos</div>
+    <h1>SUBIR RESULTADOS</h1>
+    <p>Registra el torneo y sube los partidos para actualizar los ratings oficiales</p>
+  </div>
+
+  <div class="calc-wrap">
+
+    <!-- Paso 1: Torneo -->
+    <div id="subirStep1">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <div style="background:var(--accent);color:var(--navy);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">1</div>
+        <div>
+          <div style="font-family:'Bebas Neue';font-size:18px;letter-spacing:2px">Datos del Torneo</div>
+          <div style="font-size:12px;color:var(--muted)">Paso 1 de 2</div>
+        </div>
+        <div style="flex:1;height:2px;background:var(--border);margin-left:8px"></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="background:var(--card2);color:var(--muted);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">2</div>
+          <div style="font-size:12px;color:var(--muted)">Partidos</div>
+        </div>
+      </div>
+
+      <div class="manual-entry">
+        <h3>TORNEO</h3>
+        <div class="edit-field">
+          <label>Nombre del torneo *</label>
+          <input type="text" id="subirTorneoNombre" placeholder="Ej: Clasificatorio Marzo 2026">
+        </div>
+        <div class="edit-field">
+          <label>Fecha del torneo *</label>
+          <input type="date" id="subirTorneoFecha">
+        </div>
+        <div id="subirStep1Msg" style="font-size:13px;margin-top:8px"></div>
+        <button class="btn-primary" onclick="subirPaso2()" style="margin-top:20px">Continuar → Subir Partidos</button>
+      </div>
+    </div>
+
+    <!-- Paso 2: CSV + Resultados -->
+    <div id="subirStep2" style="display:none">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <div style="background:var(--card2);color:var(--muted);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">1</div>
+        <div style="font-size:12px;color:var(--muted)">Torneo</div>
+        <div style="flex:1;height:2px;background:var(--accent);margin:0 8px"></div>
+        <div style="background:var(--accent);color:var(--navy);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">2</div>
+        <div>
+          <div style="font-family:'Bebas Neue';font-size:18px;letter-spacing:2px">Partidos</div>
+          <div style="font-size:12px;color:var(--muted)">Paso 2 de 2</div>
+        </div>
+      </div>
+
+      <!-- Torneo info badge -->
+      <div id="subirTorneoInfo" style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:14px">
+      </div>
+
+      <div class="manual-entry">
+        <h3>PARTIDOS DEL TORNEO</h3>
+
+        <!-- CSV drop area -->
+        <div class="csv-drop-area" id="subirDropArea"
+             onclick="document.getElementById('subirFileInput').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="subirHandleDrop(event)">
+          <div class="upload-icon">📂</div>
+          <div class="upload-label" id="subirDropLabel">Arrastra tu CSV aquí o haz clic para seleccionar</div>
+          <div class="upload-hint">Formato: Jugador A, Jugador B, Ganador (A o B)</div>
+          <input type="file" id="subirFileInput" accept=".csv,.txt" style="display:none" onchange="subirHandleFile(event)">
+        </div>
+
+        <div id="subirCsvStatus" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:13px"></div>
+
+        <!-- Format reference -->
+        <div style="margin-top:16px;padding:14px;background:var(--navy);border:1px solid var(--border);border-radius:8px">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Formato del CSV</div>
+          <code style="display:block;font-family:'DM Mono';font-size:12px;background:rgba(0,0,0,0.3);padding:8px 10px;border-radius:6px;color:var(--accent);white-space:pre">Jugador A,Jugador B,Ganador
+Juan García,Pedro Rodríguez,A
+Maria Lopez,Ana Torres,B</code>
+          <button class="btn-secondary" style="padding:7px 14px;font-size:12px;margin-top:10px;margin-left:0" onclick="downloadCsvTemplate()">⬇ Descargar plantilla</button>
+        </div>
+
+        <button class="btn-primary" id="subirProcesarBtn" onclick="subirProcesarCsv()" style="display:none;margin-top:20px">⚡ Calcular cambios de rating</button>
+      </div>
+
+      <!-- Results preview -->
+      <div class="calc-result" id="subirResult">
+        <h4>RESULTADOS A APLICAR</h4>
+        <div id="subirResultBody"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn-primary" id="subirApplyBtn" onclick="subirApplyRatings()">✓ Confirmar y Aplicar a Base de Datos</button>
+          <button class="btn-secondary" onclick="document.getElementById('subirResult').classList.remove('show')">Recalcular</button>
+        </div>
+      </div>
+
+      <div style="margin-top:16px">
+        <button class="btn-secondary" style="margin-left:0" onclick="subirBack()">← Volver al Torneo</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: TORNEOS LIST
+═══════════════════════════════════════════ -->
+<div id="torneosListPage" class="page">
+  <div class="page-hero">
+    <div class="overline">Historial</div>
+    <h1>TORNEOS</h1>
+    <p>Selecciona un torneo para ver el Rating Summary del evento</p>
+  </div>
+  <div class="torneos-grid" id="torneosGrid">
+    <div style="text-align:center;padding:40px;color:var(--muted)">Cargando torneos...</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: TORNEO EVENTO
+═══════════════════════════════════════════ -->
+<div id="torneoEventoPage" class="page">
+  <div class="page-hero">
+    <div class="overline" id="eventoOverline">Torneo</div>
+    <h1 id="eventoTitle">—</h1>
+    <p id="eventoSubtitle"></p>
+  </div>
+
+  <div class="evento-header">
+    <button class="btn-secondary" style="margin:0;padding:8px 16px;font-size:13px" onclick="showPage('torneosList')">← Volver a Torneos</button>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div id="eventoStatBadge" style="background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.3);border-radius:8px;padding:8px 16px;text-align:center">
+        <div style="font-family:'DM Mono';font-size:22px;font-weight:700;color:var(--accent)" id="eventoParticipantCount">—</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Participantes</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="evento-search-wrap">
+    <input id="eventoSearchInput" type="text" placeholder="🔍 Buscar participante..." oninput="filterEventoRows()">
+  </div>
+
+  <div class="evento-grid" id="eventoGrid">
+    <div style="text-align:center;padding:40px;color:var(--muted)">Cargando resultados...</div>
   </div>
 </div>
 
@@ -863,6 +1108,10 @@
     </div>
   </div>
 
+  <div class="memb-search-wrap">
+    <input id="membSearchInput" type="text" placeholder="🔍 Buscar jugador por nombre..." oninput="renderMembers()">
+  </div>
+
   <div class="filters" style="margin-bottom:16px">
     <div class="filter-chip on" onclick="setMembFilter(this,'all')">Todos</div>
     <div class="filter-chip" onclick="setMembFilter(this,'active')">✅ Activos</div>
@@ -884,10 +1133,10 @@
   </div>
   <div class="container">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPage('calculator')">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPage('subir')">
         <div style="font-size:32px;margin-bottom:12px">📸</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Subir Resultados</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Foto de torneo → calcular y aplicar ratings</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV de partidos → actualizar ratings oficiales</div>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportRankings()">
         <div style="font-size:32px;margin-bottom:12px">📊</div>
@@ -1349,15 +1598,18 @@ function updateStats() {
 // NAV
 // ══════════════════════════════════════════
 const pages = {
-  rankings: 'rankingsPage',
-  calculator: 'calculatorPage',
-  membresia: 'membresia_page',
-  admin: 'adminPage',
-  profile: 'profilePage'
+  rankings:      'rankingsPage',
+  calculator:    'calculatorPage',
+  subir:         'subirPage',
+  torneosList:   'torneosListPage',
+  torneoEvento:  'torneoEventoPage',
+  membresia:     'membresia_page',
+  admin:         'adminPage',
+  profile:       'profilePage'
 };
 
 function showPage(key) {
-  const PROTECTED = ['membresia', 'admin'];
+  const PROTECTED = ['membresia', 'admin', 'subir'];
   if (PROTECTED.includes(key) && !currentUser) {
     showLogin();
     return;
@@ -1371,8 +1623,18 @@ function showPage(key) {
   if (target) { target.style.display = 'block'; setTimeout(() => target.classList.add('active'), 10); }
 
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  const navMap = { rankings: 0, calculator: 1, membresia: 2, admin: 3 };
-  if (navMap[key] !== undefined) document.querySelectorAll('nav button')[navMap[key]].classList.add('active');
+  const navMap = { rankings: 0, calculator: 1, torneosList: 2, torneoEvento: 2, membresia: 3, admin: 4 };
+  if (navMap[key] !== undefined) document.querySelectorAll('nav button')[navMap[key]]?.classList.add('active');
+
+  // Reset subir page to step 1 every time it's opened
+  if (key === 'subir') {
+    document.getElementById('subirStep1').style.display = '';
+    document.getElementById('subirStep2').style.display = 'none';
+    document.getElementById('subirStep1Msg').textContent = '';
+    document.getElementById('subirTorneoFecha').value = new Date().toISOString().split('T')[0];
+  }
+  // Load torneos list on navigation
+  if (key === 'torneosList') loadTorneosList();
 }
 
 // ══════════════════════════════════════════
@@ -1672,23 +1934,7 @@ function buildDatalist() {
   });
 }
 
-function calculateRatings() {
-  pendingResults = [];
-  for (let i = 1; i <= matchRows; i++) {
-    const pA  = document.getElementById('pA' + i)?.value.trim();
-    const pB  = document.getElementById('pB' + i)?.value.trim();
-    const rA  = parseInt(document.getElementById('rA' + i)?.value);
-    const rB  = parseInt(document.getElementById('rB' + i)?.value);
-    const win = document.getElementById('win' + i)?.value;
-    if (!pA || !pB || isNaN(rA) || isNaN(rB)) continue;
-    const { aGain, bGain } = getPoints(rA, rB, win === 'A');
-    const playerA = PLAYERS.find(p => p.name.toLowerCase() === pA.toLowerCase());
-    const playerB = PLAYERS.find(p => p.name.toLowerCase() === pB.toLowerCase());
-    pendingResults.push({ pA, pB, rA, rB, aGain, bGain, winner: win === 'A' ? pA : pB, idA: playerA?.id, idB: playerB?.id });
-  }
-
-  if (!pendingResults.length) { alert('Ingresa al menos un partido completo.'); return; }
-
+function renderPendingResults() {
   const body = document.getElementById('calcResultBody');
   body.innerHTML = pendingResults.map(r => `
     <div class="result-row">
@@ -1707,8 +1953,287 @@ function calculateRatings() {
       </div>
       <div class="result-pts ${r.bGain >= 0 ? 'gain' : 'loss'}">${r.bGain >= 0 ? '+' : ''}${r.bGain}</div>
     </div>`).join('<hr style="border-color:var(--border);margin:4px 0">');
-
   document.getElementById('calcResult').classList.add('show');
+}
+
+function calculateRatings() {
+  pendingResults = [];
+  for (let i = 1; i <= matchRows; i++) {
+    const pA  = document.getElementById('pA' + i)?.value.trim();
+    const pB  = document.getElementById('pB' + i)?.value.trim();
+    const rA  = parseInt(document.getElementById('rA' + i)?.value);
+    const rB  = parseInt(document.getElementById('rB' + i)?.value);
+    const win = document.getElementById('win' + i)?.value;
+    if (!pA || !pB || isNaN(rA) || isNaN(rB)) continue;
+    const { aGain, bGain } = getPoints(rA, rB, win === 'A');
+    const playerA = PLAYERS.find(p => p.name.toLowerCase() === pA.toLowerCase());
+    const playerB = PLAYERS.find(p => p.name.toLowerCase() === pB.toLowerCase());
+    pendingResults.push({ pA, pB, rA, rB, aGain, bGain, winner: win === 'A' ? pA : pB, idA: playerA?.id, idB: playerB?.id });
+  }
+
+  if (!pendingResults.length) { alert('Ingresa al menos un partido completo.'); return; }
+  renderPendingResults();
+}
+
+// ══════════════════════════════════════════
+// SUBIR RESULTADOS — flujo 2 pasos
+// ══════════════════════════════════════════
+let subirCsvRows = [];   // parsed rows from the uploaded CSV
+let subirPending = [];   // computed pendingResults for subirPage
+
+function subirPaso2() {
+  const nombre = document.getElementById('subirTorneoNombre').value.trim();
+  const fecha  = document.getElementById('subirTorneoFecha').value;
+  const msgEl  = document.getElementById('subirStep1Msg');
+
+  if (!nombre) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'El nombre del torneo es requerido.';
+    return;
+  }
+  if (!fecha) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'La fecha del torneo es requerida.';
+    return;
+  }
+
+  msgEl.textContent = '';
+  document.getElementById('subirStep1').style.display = 'none';
+  document.getElementById('subirStep2').style.display = '';
+
+  const fechaFmt = new Date(fecha + 'T12:00:00').toLocaleDateString('es-PR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('subirTorneoInfo').innerHTML =
+    `<strong style="color:var(--accent)">🏓 ${nombre}</strong> <span style="color:var(--muted);margin-left:8px">${fechaFmt}</span>`;
+
+  // Reset CSV state
+  subirCsvRows = [];
+  subirPending = [];
+  document.getElementById('subirCsvStatus').style.display = 'none';
+  document.getElementById('subirProcesarBtn').style.display = 'none';
+  document.getElementById('subirResult').classList.remove('show');
+  document.getElementById('subirDropLabel').textContent = 'Arrastra tu CSV aquí o haz clic para seleccionar';
+  document.getElementById('subirFileInput').value = '';
+}
+
+function subirBack() {
+  document.getElementById('subirStep2').style.display = 'none';
+  document.getElementById('subirStep1').style.display = '';
+}
+
+function subirHandleFile(event) {
+  const file = event.target.files[0];
+  if (file) subirLoadFile(file);
+}
+
+function subirHandleDrop(event) {
+  event.preventDefault();
+  document.getElementById('subirDropArea').classList.remove('drag-over');
+  const file = event.dataTransfer.files[0];
+  if (file) subirLoadFile(file);
+}
+
+function subirLoadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.trim().split(/\r?\n/);
+    const dataLines = lines.filter((l, i) => {
+      if (i === 0 && /jugador|player|ganador|winner/i.test(l)) return false;
+      return l.trim().length > 0;
+    });
+
+    subirCsvRows = dataLines.map(l => {
+      const parts = l.split(',').map(s => s.trim());
+      return { pA: parts[0] || '', pB: parts[1] || '', win: (parts[2] || 'A').toUpperCase() };
+    }).filter(r => r.pA && r.pB);
+
+    const st = document.getElementById('subirCsvStatus');
+    st.style.display = 'block';
+    if (subirCsvRows.length === 0) {
+      st.style.cssText += ';background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red)';
+      st.textContent = 'No se encontraron partidos válidos en el archivo.';
+      document.getElementById('subirProcesarBtn').style.display = 'none';
+    } else {
+      st.style.cssText += ';background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:var(--green)';
+      st.textContent = `✓ ${subirCsvRows.length} partido${subirCsvRows.length !== 1 ? 's' : ''} detectado${subirCsvRows.length !== 1 ? 's' : ''} en "${file.name}"`;
+      document.getElementById('subirProcesarBtn').style.display = '';
+    }
+    document.getElementById('subirDropLabel').textContent = file.name;
+    document.getElementById('subirResult').classList.remove('show');
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function subirProcesarCsv() {
+  if (!subirCsvRows.length) { alert('Primero carga un archivo CSV.'); return; }
+  subirPending = [];
+  const unknown = [];
+
+  for (const row of subirCsvRows) {
+    const pA = ALL_PLAYERS.find(p => p.name.toLowerCase() === row.pA.toLowerCase());
+    const pB = ALL_PLAYERS.find(p => p.name.toLowerCase() === row.pB.toLowerCase());
+    if (!pA) { unknown.push(row.pA); continue; }
+    if (!pB) { unknown.push(row.pB); continue; }
+    const { aGain, bGain } = getPoints(pA.rating, pB.rating, row.win === 'A');
+    subirPending.push({
+      pA: pA.name, pB: pB.name, rA: pA.rating, rB: pB.rating,
+      aGain, bGain, winner: row.win === 'A' ? pA.name : pB.name,
+      idA: pA.id, idB: pB.id
+    });
+  }
+
+  if (!subirPending.length) {
+    const msg = unknown.length
+      ? `No se encontraron en la BD: ${[...new Set(unknown)].join(', ')}`
+      : 'No hay partidos válidos para procesar.';
+    alert(msg);
+    return;
+  }
+
+  if (unknown.length) {
+    const st = document.getElementById('subirCsvStatus');
+    st.style.cssText += ';background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);color:var(--orange)';
+    st.textContent = `⚠ ${subirPending.length} partidos procesados. Jugadores no encontrados: ${[...new Set(unknown)].join(', ')}`;
+  }
+
+  // Render preview
+  const body = document.getElementById('subirResultBody');
+  body.innerHTML = subirPending.map(r => `
+    <div class="result-row">
+      <div class="result-player">
+        ${r.winner === r.pA ? '👑 ' : ''}<strong>${r.pA}</strong>
+        <span style="color:var(--muted);font-size:12px">${r.rA} → ${r.rA + r.aGain}</span>
+      </div>
+      <div class="result-pts ${r.aGain >= 0 ? 'gain' : 'loss'}">${r.aGain >= 0 ? '+' : ''}${r.aGain}</div>
+    </div>
+    <div class="result-row">
+      <div class="result-player">
+        ${r.winner === r.pB ? '👑 ' : ''}<strong>${r.pB}</strong>
+        <span style="color:var(--muted);font-size:12px">${r.rB} → ${r.rB + r.bGain}</span>
+      </div>
+      <div class="result-pts ${r.bGain >= 0 ? 'gain' : 'loss'}">${r.bGain >= 0 ? '+' : ''}${r.bGain}</div>
+    </div>`).join('<hr style="border-color:var(--border);margin:4px 0">');
+
+  document.getElementById('subirResult').classList.add('show');
+  document.getElementById('subirApplyBtn').disabled = false;
+  document.getElementById('subirApplyBtn').textContent = '✓ Confirmar y Aplicar a Base de Datos';
+  document.getElementById('subirResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function subirApplyRatings() {
+  if (!currentUser) { showLogin(); return; }
+  if (!subirPending.length) return;
+
+  const nombre = document.getElementById('subirTorneoNombre').value.trim();
+  const fecha  = document.getElementById('subirTorneoFecha').value;
+  const btn    = document.getElementById('subirApplyBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Aplicando...';
+
+  // ── Step 1: Create torneo record ──────────────────────────────────────
+  let torneoId = null;
+  try {
+    const [t] = await sbPost('torneos', { nombre, fecha });
+    torneoId = t?.id;
+  } catch(e) { console.warn('No se pudo crear torneo:', e.message); }
+
+  // ── Step 2: Snapshot W/L per player ──────────────────────────────────
+  // Build map: playerId → { nombre, club, rating_inicio, rating_fin, ganados, perdidos }
+  const snapshotMap = {};
+  for (const r of subirPending) {
+    const pA = ALL_PLAYERS.find(x => x.id === r.idA);
+    const pB = ALL_PLAYERS.find(x => x.id === r.idB);
+    if (r.idA && !snapshotMap[r.idA]) snapshotMap[r.idA] = {
+      id_jugador: r.idA, nombre: r.pA, club: pA?.club || '',
+      rating_inicio: r.rA, rating_fin: r.rA, ganados: 0, perdidos: 0
+    };
+    if (r.idB && !snapshotMap[r.idB]) snapshotMap[r.idB] = {
+      id_jugador: r.idB, nombre: r.pB, club: pB?.club || '',
+      rating_inicio: r.rB, rating_fin: r.rB, ganados: 0, perdidos: 0
+    };
+    const winnerIsA = r.winner === r.pA;
+    if (r.idA) {
+      snapshotMap[r.idA].rating_fin += r.aGain;
+      if (winnerIsA) snapshotMap[r.idA].ganados++; else snapshotMap[r.idA].perdidos++;
+    }
+    if (r.idB) {
+      snapshotMap[r.idB].rating_fin += r.bGain;
+      if (!winnerIsA) snapshotMap[r.idB].ganados++; else snapshotMap[r.idB].perdidos++;
+    }
+  }
+
+  // ── Step 3: Apply rating updates + save partidos ──────────────────────
+  let applied = 0;
+  const errors = [];
+
+  for (const r of subirPending) {
+    if (r.idA) {
+      try {
+        await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${r.idA}`, { Rating: r.rA + r.aGain });
+        const p = ALL_PLAYERS.find(x => x.id === r.idA);
+        if (p) p.rating = r.rA + r.aGain;
+        applied++;
+      } catch(e) { errors.push(`${r.pA}: ${e.message}`); }
+    }
+    if (r.idB) {
+      try {
+        await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${r.idB}`, { Rating: r.rB + r.bGain });
+        const p = ALL_PLAYERS.find(x => x.id === r.idB);
+        if (p) p.rating = r.rB + r.bGain;
+        applied++;
+      } catch(e) { errors.push(`${r.pB}: ${e.message}`); }
+    }
+    if (torneoId && r.idA && r.idB) {
+      try {
+        await sbPost('partidos', {
+          torneo_id:        torneoId,
+          jugador_a_id:     r.idA,
+          jugador_b_id:     r.idB,
+          ganador:          r.winner === r.pA ? 'A' : 'B',
+          rating_a_antes:   r.rA,
+          rating_b_antes:   r.rB,
+          rating_a_despues: r.rA + r.aGain,
+          rating_b_despues: r.rB + r.bGain,
+          fecha,
+          nombre_a: r.pA,
+          nombre_b: r.pB
+        });
+      } catch(e) { console.warn('Error guardando partido:', e.message); }
+    }
+  }
+
+  // ── Step 4: Batch insert resultados_evento ────────────────────────────
+  if (torneoId) {
+    const rows = Object.values(snapshotMap).map(s => ({ ...s, id_torneo: torneoId }));
+    try {
+      // Insert in batches of 50
+      for (let i = 0; i < rows.length; i += 50) {
+        await sbPost('resultados_evento', rows.slice(i, i + 50));
+      }
+    } catch(e) { console.warn('Error guardando resultados_evento:', e.message); }
+  }
+
+  // ── Step 5: Refresh in-memory rankings ───────────────────────────────
+  ALL_PLAYERS.sort((a, b) => b.rating - a.rating);
+  ALL_PLAYERS.forEach((p, i) => { p.rank = i + 1; RANK_BY_ID[p.id] = p.rank; });
+  filterPlayers();
+
+  if (errors.length) {
+    btn.textContent = `⚠ ${applied} aplicados, ${errors.length} errores`;
+  } else {
+    btn.textContent = `✅ ${applied} ratings actualizados · ${Object.keys(snapshotMap).length} participantes guardados`;
+    subirPending = [];
+    subirCsvRows = [];
+  }
+}
+
+function downloadCsvTemplate() {
+  const content = 'Jugador A,Jugador B,Ganador\nJuan García,Pedro Rodríguez,A\nMaria Lopez,Ana Torres,B\n';
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'plantilla_partidos.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
 async function applyRatings() {
@@ -1793,7 +2318,10 @@ async function applyRatings() {
 let membFilter = 'all';
 
 function renderMembers() {
+  const q = (document.getElementById('membSearchInput')?.value || '').trim().toLowerCase();
+
   const filtered = MEMBERS.filter(m => {
+    if (q && !String(m.name || '').toLowerCase().includes(q)) return false;
     if (membFilter === 'active')  return m.status === 'active';
     if (membFilter === 'warning') return m.status === 'warning';
     if (membFilter === 'no')      return false; // non-members come from PLAYERS
@@ -1828,7 +2356,7 @@ function renderMembers() {
 
   // Non-members from player list
   if (membFilter === 'all' || membFilter === 'no') {
-    const noMembers = PLAYERS.filter(p => !p.member);
+    const noMembers = PLAYERS.filter(p => !p.member && (!q || String(p.name || '').toLowerCase().includes(q)));
     const toShow = membFilter === 'no' ? noMembers : noMembers.slice(0, 12);
     toShow.forEach(p => {
       const div = document.createElement('div');
@@ -2127,6 +2655,131 @@ function showConfigModal() {
 
 function hideConfigModal() {
   document.getElementById('configModal').classList.remove('open');
+}
+
+// ══════════════════════════════════════════
+// TORNEOS LIST PAGE
+// ══════════════════════════════════════════
+let allTorneos = [];   // cached list of torneos
+
+async function loadTorneosList() {
+  const grid = document.getElementById('torneosGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando torneos...</div>';
+  try {
+    allTorneos = await sbGet('torneos', '?select=id,nombre,fecha&order=fecha.desc&limit=200');
+    // Fetch participant counts from resultados_evento grouped by id_torneo
+    let countMap = {};
+    try {
+      const counts = await sbGet('resultados_evento', '?select=id_torneo,id_jugador&limit=10000');
+      counts.forEach(r => { countMap[r.id_torneo] = (countMap[r.id_torneo] || 0) + 1; });
+    } catch(_) {}
+
+    if (!allTorneos.length) {
+      grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No hay torneos registrados aún.</div>';
+      return;
+    }
+    grid.innerHTML = allTorneos.map(t => {
+      const count = countMap[t.id] || 0;
+      const fechaFmt = t.fecha
+        ? new Date(t.fecha + 'T12:00:00').toLocaleDateString('es-PR', { year:'numeric', month:'long', day:'numeric' })
+        : '—';
+      return `<div class="torneo-card" onclick="openTorneoEvento(${t.id},'${t.nombre.replace(/'/g,"\\'")}','${t.fecha || ''}')">
+        <div class="torneo-card-left">
+          <div class="torneo-card-name">${t.nombre}</div>
+          <div class="torneo-card-date">📅 ${fechaFmt}</div>
+        </div>
+        <div class="torneo-card-right">
+          ${count ? `<div class="torneo-card-count">${count}</div><div class="torneo-card-label">Jugadores</div>` : '<div class="torneo-card-label" style="color:var(--muted)">Sin datos</div>'}
+          <div style="color:var(--muted);font-size:20px;margin-top:4px">›</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    grid.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error: ${e.message}</div>`;
+  }
+}
+
+// ══════════════════════════════════════════
+// TORNEO EVENTO PAGE
+// ══════════════════════════════════════════
+let eventoRows = [];   // full list for current event (for search filter)
+
+async function openTorneoEvento(torneoId, nombre, fecha) {
+  showPage('torneoEvento');
+
+  document.getElementById('eventoOverline').textContent = fecha
+    ? new Date(fecha + 'T12:00:00').toLocaleDateString('es-PR', { year:'numeric', month:'long', day:'numeric' })
+    : 'Torneo';
+  document.getElementById('eventoTitle').textContent      = nombre;
+  document.getElementById('eventoSubtitle').textContent   = 'Cargando participantes...';
+  document.getElementById('eventoParticipantCount').textContent = '…';
+  document.getElementById('eventoSearchInput').value      = '';
+  document.getElementById('eventoGrid').innerHTML         = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando resultados...</div>';
+  eventoRows = [];
+
+  try {
+    const data = await sbGet(
+      'resultados_evento',
+      `?id_torneo=eq.${torneoId}&order=rating_fin.desc&limit=500`
+    );
+
+    eventoRows = data.map((r, i) => ({
+      rank:          i + 1,
+      nombre:        r.nombre || '—',
+      club:          r.club   || '—',
+      ratingInicio:  r.rating_inicio,
+      ratingFin:     r.rating_fin,
+      delta:         r.rating_fin - r.rating_inicio,
+      ganados:       r.ganados  || 0,
+      perdidos:      r.perdidos || 0,
+    }));
+
+    document.getElementById('eventoSubtitle').textContent = `${eventoRows.length} participantes`;
+    document.getElementById('eventoParticipantCount').textContent = eventoRows.length;
+    renderEventoRows(eventoRows);
+  } catch(e) {
+    document.getElementById('eventoGrid').innerHTML =
+      `<div style="text-align:center;padding:40px;color:var(--red)">Error cargando datos: ${e.message}</div>`;
+  }
+}
+
+function renderEventoRows(rows) {
+  const grid = document.getElementById('eventoGrid');
+  if (!rows.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Sin participantes registrados para este torneo.</div>';
+    return;
+  }
+  grid.innerHTML = rows.map((r, i) => {
+    const deltaClass = r.delta > 0 ? 'gain' : r.delta < 0 ? 'loss' : 'tie';
+    const deltaSign  = r.delta > 0 ? '▲ +' : r.delta < 0 ? '▼ ' : '= ';
+    const total      = r.ganados + r.perdidos;
+    return `<div class="evento-row">
+      <div class="evento-rank">${i + 1}</div>
+      <div class="evento-player">
+        <div class="evento-player-name">${r.nombre}</div>
+        <div class="evento-player-meta">${r.club}</div>
+      </div>
+      <div class="evento-rating-flow">
+        <span class="evento-rating-val" style="color:var(--muted)">${r.ratingInicio}</span>
+        <span class="evento-arrow">→</span>
+        <span class="evento-rating-val" style="font-weight:600">${r.ratingFin}</span>
+      </div>
+      <div class="evento-delta ${deltaClass}">${deltaSign}${Math.abs(r.delta)}</div>
+      <div class="evento-record">
+        <span class="w">${r.ganados}W</span> <span class="l">${r.perdidos}L</span>
+        <div style="color:var(--muted);font-size:11px">${total} partidos</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterEventoRows() {
+  const q = document.getElementById('eventoSearchInput').value.trim().toLowerCase();
+  const filtered = q.length >= 2
+    ? eventoRows.filter(r => r.nombre.toLowerCase().includes(q) || (r.club || '').toLowerCase().includes(q))
+    : eventoRows;
+  renderEventoRows(filtered);
 }
 
 // ══════════════════════════════════════════
