@@ -605,13 +605,13 @@
   }
   .edit-btn:hover { border-color: var(--accent); color: var(--accent); }
   #editMembModal, #newPlayerModal, #newTournamentModal, #configModal,
-  #editTorneoModal, #deleteTorneoModal {
+  #editTorneoModal {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.75); z-index: 1100;
     align-items: center; justify-content: center;
   }
   #editMembModal.open, #newPlayerModal.open, #newTournamentModal.open, #configModal.open,
-  #editTorneoModal.open, #deleteTorneoModal.open { display: flex; }
+  #editTorneoModal.open { display: flex; }
   .edit-field select {
     width: 100%; box-sizing: border-box;
     background: var(--blue); border: 1px solid var(--border);
@@ -1356,29 +1356,6 @@ Maria Lopez,Ana Torres,B</code>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     CONFIRMAR BORRADO TORNEO MODAL
-═══════════════════════════════════════════ -->
-<div id="deleteTorneoModal">
-  <div class="edit-memb-box" style="text-align:center;max-width:420px">
-    <div style="font-size:40px;margin-bottom:8px">⚠️</div>
-    <div class="edit-memb-title" style="color:var(--red)">Borrar Torneo</div>
-    <div class="edit-memb-sub" id="deleteTorneoNameLabel" style="font-size:15px;font-weight:600;color:var(--text)"></div>
-    <div style="color:var(--muted);font-size:13px;line-height:1.6;margin:14px 0">
-      Esta acción <strong style="color:var(--text)">revertirá los ratings</strong> de todos los jugadores
-      que participaron y eliminará todos los partidos y resultados asociados.<br>
-      <strong style="color:var(--red)">No se puede deshacer.</strong>
-    </div>
-    <input type="hidden" id="deleteTorneoId">
-    <div id="deleteTorneoMsg" class="edit-memb-msg"></div>
-    <div class="edit-actions" style="justify-content:center;gap:12px">
-      <button class="btn-cancel" id="deleteTorneoCancelBtn" onclick="hideDeleteTorneoModal()">Cancelar</button>
-      <button class="btn-primary" id="deleteTorneoConfirmBtn"
-        style="background:var(--red);border-color:var(--red);color:#fff"
-        onclick="eliminarTorneo()">Sí, Borrar y Revertir</button>
-    </div>
-  </div>
-</div>
 
 <!-- ══════════════════════════════════════════
      CONFIGURACIÓN MODAL
@@ -2919,66 +2896,25 @@ async function saveEditTorneo() {
 // ══════════════════════════════════════════
 // BORRAR TORNEO (con reversión atómica)
 // ══════════════════════════════════════════
-function showDeleteTorneoModal(id, nombre) {
-  if (!isAdmin()) { showLogin(); return; }
-  document.getElementById('deleteTorneoId').value              = id;
-  document.getElementById('deleteTorneoNameLabel').textContent = nombre;
-  document.getElementById('deleteTorneoMsg').textContent       = '';
-  document.getElementById('deleteTorneoMsg').style.color       = 'var(--muted)';
-  document.getElementById('deleteTorneoConfirmBtn').disabled   = false;
-  document.getElementById('deleteTorneoConfirmBtn').textContent = 'Sí, Borrar y Revertir';
-  document.getElementById('deleteTorneoCancelBtn').disabled    = false;
-  document.getElementById('deleteTorneoModal').classList.add('open');
-}
-
-function hideDeleteTorneoModal() {
-  document.getElementById('deleteTorneoModal').classList.remove('open');
-}
-
-async function eliminarTorneo() {
-  if (!isAdmin()) { hideDeleteTorneoModal(); return; }
-  const torneoId = document.getElementById('deleteTorneoId').value;
-  const msg      = document.getElementById('deleteTorneoMsg');
-  const btnOk    = document.getElementById('deleteTorneoConfirmBtn');
-  const btnCx    = document.getElementById('deleteTorneoCancelBtn');
-
-  btnOk.disabled = true;
-  btnCx.disabled = true;
-  btnOk.textContent = 'Procesando...';
-  msg.style.color = 'var(--muted)';
+async function eliminarTorneo(torneoId, nombre) {
+  if (!isAdmin()) return;
+  if (!window.confirm(`¿Borrar "${nombre}"?\n\nEsto revertirá los ratings de todos los jugadores que participaron. No se puede deshacer.`)) return;
 
   try {
-    // 1. Get participant snapshots for rating reversion
-    msg.textContent = 'Consultando participantes...';
     const participaciones = await sbGet(
       'resultados_evento',
       `?id_torneo=eq.${torneoId}&select=id_jugador,rating_inicio`
     );
-
-    // 2. Revert each player's rating to pre-tournament value
-    msg.textContent = `Revirtiendo ratings de ${participaciones.length} jugador(es)...`;
     for (const p of participaciones) {
       await sbPatch('jugadores', `id=eq.${p.id_jugador}`, { rating_actual: p.rating_inicio });
     }
-
-    // 3. Cascade deletes
-    msg.textContent = 'Eliminando registros asociados...';
     await sbDelete('partidos',          `torneo_id=eq.${torneoId}`);
     await sbDelete('resultados_evento', `id_torneo=eq.${torneoId}`);
     await sbDelete('torneos',           `id=eq.${torneoId}`);
-
-    // 4. Refresh both player list and torneos list
     await loadPlayers();
-    msg.style.color = 'var(--green)';
-    msg.textContent = `✓ Torneo eliminado · ${participaciones.length} rating(s) revertido(s).`;
-    setTimeout(() => { hideDeleteTorneoModal(); loadTorneosList(); }, 1400);
-
+    loadTorneosList();
   } catch(e) {
-    msg.style.color = 'var(--red)';
-    msg.textContent = 'Error: ' + e.message;
-    btnOk.disabled = false;
-    btnCx.disabled = false;
-    btnOk.textContent = 'Sí, Borrar y Revertir';
+    alert('Error al borrar el torneo: ' + e.message);
   }
 }
 
@@ -3026,7 +2962,7 @@ async function loadTorneosList() {
           <button class="torneo-admin-btn edit" title="Editar torneo"
             onclick="showEditTorneoModal(${t.id},'${safeNombre}','${t.fecha || ''}')">✏️</button>
           <button class="torneo-admin-btn del" title="Borrar torneo"
-            onclick="showDeleteTorneoModal(${t.id},'${safeNombre}')">🗑️</button>
+            onclick="eliminarTorneo(${t.id},'${safeNombre}')">🗑️</button>
         </div>` : `<div style="color:var(--muted);font-size:20px;margin-top:4px">›</div>`;
       return `<div class="torneo-card" onclick="openTorneoEvento(${t.id},'${safeNombre}','${t.fecha || ''}')">
         <div class="torneo-card-left">
