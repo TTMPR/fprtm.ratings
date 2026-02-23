@@ -458,12 +458,26 @@
     cursor: pointer; transition: border-color 0.2s, color 0.2s; white-space: nowrap;
   }
   .edit-btn:hover { border-color: var(--accent); color: var(--accent); }
-  #editMembModal {
+  #editMembModal, #newPlayerModal, #newTournamentModal, #configModal {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.75); z-index: 1100;
     align-items: center; justify-content: center;
   }
-  #editMembModal.open { display: flex; }
+  #editMembModal.open, #newPlayerModal.open, #newTournamentModal.open, #configModal.open { display: flex; }
+  .edit-field select {
+    width: 100%; box-sizing: border-box;
+    background: var(--blue); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    color: var(--text); font-family: 'DM Sans'; font-size: 14px;
+  }
+  .edit-field select:focus { outline: none; border-color: var(--accent); }
+  .config-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .config-table th, .config-table td {
+    padding: 8px 12px; text-align: center; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .config-table th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .config-table td:first-child { text-align: left; color: var(--muted); }
   .edit-memb-box {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 16px; padding: 32px; width: 400px; max-width: 92vw;
@@ -875,7 +889,7 @@
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Subir Resultados</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Foto de torneo → calcular y aplicar ratings</div>
       </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportRankings()">
         <div style="font-size:32px;margin-bottom:12px">📊</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Exportar Rankings</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Descargar Excel actualizado</div>
@@ -885,17 +899,17 @@
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Gestionar Membresías</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Activar, vencer, alertas</div>
       </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showNewPlayerModal()">
         <div style="font-size:32px;margin-bottom:12px">➕</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Nuevo Jugador</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Registrar jugador en el sistema</div>
       </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showNewTournamentModal()">
         <div style="font-size:32px;margin-bottom:12px">🏓</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Crear Torneo</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Nuevo evento en calendario</div>
       </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showConfigModal()">
         <div style="font-size:32px;margin-bottom:12px">⚙</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Configuración</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Tabla de puntos, categorías</div>
@@ -936,6 +950,108 @@
     <div class="edit-actions">
       <button class="btn-cancel" onclick="closeEditMember()">Cancelar</button>
       <button class="btn-primary" id="editMembSaveBtn" onclick="saveEditMember()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     NUEVO JUGADOR MODAL
+═══════════════════════════════════════════ -->
+<div id="newPlayerModal">
+  <div class="edit-memb-box">
+    <div class="edit-memb-title">Nuevo Jugador</div>
+    <div class="edit-memb-sub">Registrar jugador en la base de datos</div>
+    <div class="edit-field">
+      <label>Nombre</label>
+      <input type="text" id="newPlayerFirstName" placeholder="Ej: Juan">
+    </div>
+    <div class="edit-field">
+      <label>Apellido</label>
+      <input type="text" id="newPlayerLastName" placeholder="Ej: García">
+    </div>
+    <div class="edit-field">
+      <label>Sexo</label>
+      <select id="newPlayerSex">
+        <option value="">— Sin especificar —</option>
+        <option value="M">Masculino</option>
+        <option value="F">Femenino</option>
+      </select>
+    </div>
+    <div class="edit-field">
+      <label>Club</label>
+      <input type="text" id="newPlayerClub" placeholder="Nombre del club">
+    </div>
+    <div class="edit-field">
+      <label>Rating Inicial</label>
+      <input type="number" id="newPlayerRating" min="100" max="3000" step="1" placeholder="1500" value="1500">
+    </div>
+    <div class="edit-field">
+      <label>Email</label>
+      <input type="email" id="newPlayerEmail" placeholder="correo@ejemplo.com">
+    </div>
+    <div class="edit-field">
+      <label>Fecha de Vencimiento de Membresía</label>
+      <input type="date" id="newPlayerExpDate">
+    </div>
+    <div id="newPlayerMsg" class="edit-memb-msg"></div>
+    <div class="edit-actions">
+      <button class="btn-cancel" onclick="hideNewPlayerModal()">Cancelar</button>
+      <button class="btn-primary" id="newPlayerSaveBtn" onclick="saveNewPlayer()">Crear Jugador</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CREAR TORNEO MODAL
+═══════════════════════════════════════════ -->
+<div id="newTournamentModal">
+  <div class="edit-memb-box">
+    <div class="edit-memb-title">Crear Torneo</div>
+    <div class="edit-memb-sub">Registrar nuevo evento en el calendario</div>
+    <div class="edit-field">
+      <label>Nombre del Torneo</label>
+      <input type="text" id="newTournamentName" placeholder="Ej: Clasificatorio Marzo 2026">
+    </div>
+    <div class="edit-field">
+      <label>Fecha</label>
+      <input type="date" id="newTournamentDate">
+    </div>
+    <div id="newTournamentMsg" class="edit-memb-msg"></div>
+    <div class="edit-actions">
+      <button class="btn-cancel" onclick="hideNewTournamentModal()">Cancelar</button>
+      <button class="btn-primary" id="newTournamentSaveBtn" onclick="saveNewTournament()">Crear Torneo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CONFIGURACIÓN MODAL
+═══════════════════════════════════════════ -->
+<div id="configModal">
+  <div class="edit-memb-box" style="width:480px">
+    <div class="edit-memb-title">Configuración</div>
+    <div class="edit-memb-sub">Tabla de puntos del sistema de ratings FPRTM</div>
+    <table class="config-table">
+      <thead>
+        <tr>
+          <th>Diferencia de Rating</th>
+          <th>Favorito gana</th>
+          <th>Underdog gana</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>0 – 24 pts</td><td style="color:var(--accent)">+8</td><td style="color:var(--accent)">+8</td></tr>
+        <tr><td>25 – 49 pts</td><td style="color:var(--green)">+7</td><td style="color:var(--accent)">+10</td></tr>
+        <tr><td>50 – 99 pts</td><td style="color:var(--green)">+5</td><td style="color:var(--accent)">+12</td></tr>
+        <tr><td>100 – 149 pts</td><td style="color:var(--green)">+3</td><td style="color:var(--accent)">+15</td></tr>
+        <tr><td>150 – 199 pts</td><td style="color:var(--green)">+2</td><td style="color:var(--accent)">+20</td></tr>
+        <tr><td>200 – 249 pts</td><td style="color:var(--green)">+1</td><td style="color:var(--accent)">+26</td></tr>
+        <tr><td>250+ pts</td><td style="color:var(--muted)">+0</td><td style="color:var(--accent)">+32</td></tr>
+      </tbody>
+    </table>
+    <div style="font-size:12px;color:var(--muted);margin-top:16px">El perdedor pierde la misma cantidad de puntos que gana el ganador.</div>
+    <div class="edit-actions" style="margin-top:24px">
+      <button class="btn-primary" onclick="hideConfigModal()">Cerrar</button>
     </div>
   </div>
 </div>
@@ -1844,6 +1960,173 @@ async function saveEditMember() {
     btn.disabled = false;
     btn.textContent = 'Guardar';
   }
+}
+
+// ══════════════════════════════════════════
+// EXPORTAR RANKINGS
+// ══════════════════════════════════════════
+function exportRankings() {
+  if (!ALL_PLAYERS.length) { alert('No hay datos cargados. Espera a que cargue la página.'); return; }
+  const headers = ['Rank', 'ID', 'Nombre', 'Sexo', 'Club', 'Rating', 'Miembro'];
+  const rows = ALL_PLAYERS.map(p => [
+    p.rank,
+    p.id,
+    p.name,
+    p.sex || '',
+    p.club || '',
+    p.rating,
+    p.member ? 'Sí' : 'No'
+  ]);
+  const csv = [headers, ...rows]
+    .map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `rankings_fprtm_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════
+// NUEVO JUGADOR
+// ══════════════════════════════════════════
+function showNewPlayerModal() {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('newPlayerFirstName').value = '';
+  document.getElementById('newPlayerLastName').value = '';
+  document.getElementById('newPlayerSex').value = '';
+  document.getElementById('newPlayerClub').value = '';
+  document.getElementById('newPlayerRating').value = '1500';
+  document.getElementById('newPlayerEmail').value = '';
+  document.getElementById('newPlayerExpDate').value = '';
+  document.getElementById('newPlayerMsg').textContent = '';
+  document.getElementById('newPlayerSaveBtn').disabled = false;
+  document.getElementById('newPlayerSaveBtn').textContent = 'Crear Jugador';
+  document.getElementById('newPlayerModal').classList.add('open');
+}
+
+function hideNewPlayerModal() {
+  document.getElementById('newPlayerModal').classList.remove('open');
+}
+
+async function saveNewPlayer() {
+  if (!currentUser) { hideNewPlayerModal(); return; }
+  const firstName = document.getElementById('newPlayerFirstName').value.trim();
+  const lastName  = document.getElementById('newPlayerLastName').value.trim();
+  const sex       = document.getElementById('newPlayerSex').value;
+  const club      = document.getElementById('newPlayerClub').value.trim();
+  const ratingVal = document.getElementById('newPlayerRating').value;
+  const rating    = ratingVal ? Number(ratingVal) : 1500;
+  const email     = document.getElementById('newPlayerEmail').value.trim();
+  const expRaw    = document.getElementById('newPlayerExpDate').value;
+  const msg       = document.getElementById('newPlayerMsg');
+  const btn       = document.getElementById('newPlayerSaveBtn');
+
+  msg.textContent = '';
+  if (!firstName || !lastName) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Nombre y apellido son requeridos.';
+    return;
+  }
+  if (rating < 100 || rating > 3000) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Rating debe estar entre 100 y 3000.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Creando...';
+
+  let expFormatted = null;
+  if (expRaw) {
+    const [y, mo, d] = expRaw.split('-');
+    expFormatted = `${mo}/${d}/${y}`;
+  }
+
+  const body = { 'First Name': firstName, 'Last Name': lastName, 'Rating': rating };
+  if (sex)           body['Sex']             = sex;
+  if (club)          body['Club']            = club;
+  if (email)         body['Email']           = email;
+  if (expFormatted)  body['Expiration Date'] = expFormatted;
+
+  try {
+    await sbPost('Base%20de%20Datos', body);
+    msg.style.color = 'var(--green)';
+    msg.textContent = `¡${firstName} ${lastName} registrado exitosamente!`;
+    btn.textContent = '¡Creado!';
+    ALL_PLAYERS = await loadPlayers();
+    ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
+    PLAYERS = ALL_PLAYERS;
+    setTimeout(hideNewPlayerModal, 1500);
+  } catch(e) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = `Error: ${e.message}`;
+    btn.disabled = false;
+    btn.textContent = 'Crear Jugador';
+  }
+}
+
+// ══════════════════════════════════════════
+// CREAR TORNEO
+// ══════════════════════════════════════════
+function showNewTournamentModal() {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('newTournamentName').value = '';
+  document.getElementById('newTournamentDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('newTournamentMsg').textContent = '';
+  document.getElementById('newTournamentSaveBtn').disabled = false;
+  document.getElementById('newTournamentSaveBtn').textContent = 'Crear Torneo';
+  document.getElementById('newTournamentModal').classList.add('open');
+}
+
+function hideNewTournamentModal() {
+  document.getElementById('newTournamentModal').classList.remove('open');
+}
+
+async function saveNewTournament() {
+  if (!currentUser) { hideNewTournamentModal(); return; }
+  const nombre = document.getElementById('newTournamentName').value.trim();
+  const fecha  = document.getElementById('newTournamentDate').value || new Date().toISOString().split('T')[0];
+  const msg    = document.getElementById('newTournamentMsg');
+  const btn    = document.getElementById('newTournamentSaveBtn');
+
+  msg.textContent = '';
+  if (!nombre) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'El nombre del torneo es requerido.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Creando...';
+
+  try {
+    await sbPost('torneos', { nombre, fecha });
+    msg.style.color = 'var(--green)';
+    msg.textContent = '¡Torneo creado! Usa "Subir Resultados" para agregar partidos.';
+    btn.textContent = '¡Creado!';
+    setTimeout(hideNewTournamentModal, 1800);
+  } catch(e) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = `Error: ${e.message}`;
+    btn.disabled = false;
+    btn.textContent = 'Crear Torneo';
+  }
+}
+
+// ══════════════════════════════════════════
+// CONFIGURACIÓN
+// ══════════════════════════════════════════
+function showConfigModal() {
+  document.getElementById('configModal').classList.add('open');
+}
+
+function hideConfigModal() {
+  document.getElementById('configModal').classList.remove('open');
 }
 
 // ══════════════════════════════════════════
