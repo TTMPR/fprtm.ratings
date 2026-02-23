@@ -7,6 +7,7 @@
 <link rel="icon" type="image/png" href="ttm_pr_favicon_32x32.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
   :root {
     --navy: #0a1628;
@@ -439,6 +440,44 @@
     font-family: 'DM Sans'; font-size: 14px; outline: none;
   }
   .memb-search-wrap input:focus { border-color: var(--accent); }
+
+  /* ─── PROFILE TOURNAMENT HISTORY TABLE ─── */
+  .hist-table {
+    width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px;
+  }
+  .hist-table th {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); padding: 8px 10px; text-align: left;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  .hist-table td {
+    padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle;
+  }
+  .hist-table tr:last-child td { border-bottom: none; }
+  .hist-t-name {
+    font-weight: 600; cursor: pointer; color: var(--text);
+    transition: color 0.2s;
+  }
+  .hist-t-name:hover { color: var(--accent); }
+  .hist-wl { display: flex; gap: 5px; align-items: center; }
+  .wl-chip {
+    padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700;
+  }
+  .wl-chip.w { background: rgba(34,197,94,0.15); color: var(--green); }
+  .wl-chip.l { background: rgba(239,68,68,0.15); color: var(--red); }
+  .hist-delta {
+    font-family: 'DM Mono'; font-size: 12px; font-weight: 700;
+    padding: 2px 8px; border-radius: 5px;
+  }
+  .hist-delta.gain { color: var(--green); background: rgba(34,197,94,0.12); }
+  .hist-delta.loss { color: var(--red);   background: rgba(239,68,68,0.12); }
+  .hist-delta.tie  { color: var(--muted); }
+  .hist-rating-post { font-family: 'DM Mono'; font-size: 14px; font-weight: 700; }
+  .progress-chart-wrap {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 16px 12px; margin-bottom: 16px;
+  }
+  .progress-chart-wrap canvas { max-height: 150px; }
 
   /* ─── TORNEOS LIST PAGE ─── */
   .torneos-grid {
@@ -875,7 +914,13 @@
 
       <!-- TORNEOS TAB -->
       <div class="ptab-content" id="tab-torneos">
-        <div class="tourn-list" id="tournList"></div>
+        <!-- Rating progress chart (Chart.js) -->
+        <div class="progress-chart-wrap" id="progressChartWrap" style="display:none">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Progresión de Rating</div>
+          <canvas id="ratingProgressChart"></canvas>
+        </div>
+        <!-- Tournament history table -->
+        <div id="tournList"></div>
       </div>
 
       <!-- PARTIDOS TAB -->
@@ -1719,13 +1764,12 @@ async function showProfile(player) {
   document.getElementById('profileId').textContent     = 'FPRTM #' + String(player.rank).padStart(4, '0');
   document.getElementById('profileClub').textContent   = player.club || 'Sin club';
   const _badge = document.getElementById('profileBadge');
-  _badge.textContent = 'Jugador activo';
   _badge.className = 'badge';
   _badge.style.display = 'none';
   document.getElementById('profileRating').textContent = player.rating;
   document.getElementById('profileCategory').textContent =
     [player.cat, player.sex, player.age ? player.age + ' años' : ''].filter(Boolean).join(' · ');
-  document.getElementById('ovRank').textContent = '#' + player.rank;
+  document.getElementById('ovRank').textContent        = '#' + player.rank;
   document.getElementById('startRating').textContent   = player.ratingStart || player.rating;
   document.getElementById('currentRating').textContent = player.rating;
 
@@ -1734,37 +1778,32 @@ async function showProfile(player) {
 
   showPage('profile');
 
-  // Placeholder stats while loading
-  document.getElementById('pMatches').textContent = '…';
-  document.getElementById('pWins').textContent    = '…';
-  document.getElementById('pLosses').textContent  = '…';
-  document.getElementById('pPct').textContent     = '…';
-  document.getElementById('ovTourneys').textContent = '…';
-  document.getElementById('tournList').innerHTML  = '<div style="color:var(--muted);padding:20px">Cargando torneos...</div>';
-  document.getElementById('matchList').innerHTML  = '<div style="color:var(--muted);padding:20px">Cargando partidos...</div>';
+  // Loading placeholders
+  document.getElementById('pMatches').textContent      = '…';
+  document.getElementById('pWins').textContent         = '…';
+  document.getElementById('pLosses').textContent       = '…';
+  document.getElementById('pPct').textContent          = '…';
+  document.getElementById('ovTourneys').textContent    = '…';
+  document.getElementById('tournList').innerHTML       = '<div style="color:var(--muted);padding:20px">Cargando historial...</div>';
+  document.getElementById('matchList').innerHTML       = '<div style="color:var(--muted);padding:20px">Cargando partidos...</div>';
 
-  // Load real match data
-  try {
-    const matches = await sbGet('partidos',
-      `?or=(jugador_a_id.eq.${player.id},jugador_b_id.eq.${player.id})&order=fecha.desc&limit=50`
-    );
+  // ── Parallel queries ──────────────────────────────────────────────────
+  const [partidosRes, participacionesRes] = await Promise.allSettled([
+    sbGet('partidos', `?or=(jugador_a_id.eq.${player.id},jugador_b_id.eq.${player.id})&order=fecha.desc&limit=50`),
+    sbGet('resultados_evento', `?id_jugador=eq.${player.id}&order=created_at.asc&limit=100`)
+  ]);
 
+  // ── MATCH STATS (from partidos) ───────────────────────────────────────
+  if (partidosRes.status === 'fulfilled') {
+    const matches = partidosRes.value;
     let wins = 0, losses = 0;
-    const tourneyMap = {};
-
     matches.forEach(m => {
-      const isA = m.jugador_a_id === player.id;
-      const won  = m.ganador === (isA ? 'A' : 'B');
+      const won = m.ganador === (m.jugador_a_id === player.id ? 'A' : 'B');
       if (won) wins++; else losses++;
-      if (m.torneo_id) {
-        if (!tourneyMap[m.torneo_id]) tourneyMap[m.torneo_id] = { wins: 0, losses: 0, torneo_id: m.torneo_id, nombre: m.torneo_nombre || `Torneo #${m.torneo_id}`, fecha: m.fecha };
-        if (won) tourneyMap[m.torneo_id].wins++; else tourneyMap[m.torneo_id].losses++;
-      }
     });
 
     const total = wins + losses;
     const pct   = total > 0 ? Math.round(wins / total * 100) : 0;
-
     document.getElementById('pMatches').textContent = total;
     document.getElementById('pWins').textContent    = wins;
     document.getElementById('pLosses').textContent  = losses;
@@ -1772,42 +1811,17 @@ async function showProfile(player) {
     document.getElementById('winPct').textContent   = pct + '%';
     document.getElementById('winCircle').style.strokeDashoffset = 213.6 * (1 - pct / 100);
 
-    const tourneys = Object.values(tourneyMap);
-    document.getElementById('ovTourneys').textContent = tourneys.length;
-
-    // Render tournaments
-    const tl = document.getElementById('tournList');
-    if (tourneys.length) {
-      tl.innerHTML = tourneys.map(t => `
-        <div class="tourn-item">
-          <div>
-            <div class="tourn-name">${t.nombre}</div>
-            <div class="tourn-date">${t.fecha ? new Date(t.fecha).toLocaleDateString('es-PR', {year:'numeric',month:'short',day:'numeric'}) : '—'}</div>
-            <div class="tourn-matches" style="margin-top:6px">
-              <span style="color:var(--green)">✓ ${t.wins} ganados</span> &nbsp;
-              <span style="color:var(--red)">✗ ${t.losses} perdidos</span>
-            </div>
-          </div>
-          <div class="tourn-right">
-            <div class="tourn-matches">${t.wins + t.losses} partidos</div>
-          </div>
-        </div>`).join('');
-    } else {
-      tl.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Sin torneos registrados aún.</div>';
-    }
-
-    // Render matches
+    // Render match list
     const ml = document.getElementById('matchList');
     if (matches.length) {
       ml.innerHTML = matches.slice(0, 20).map(m => {
-        const isA    = m.jugador_a_id === player.id;
-        const myRating = isA ? m.rating_a_antes : m.rating_b_antes;
-        const oppName  = isA ? (m.nombre_b || `Jugador #${m.jugador_b_id}`) : (m.nombre_a || `Jugador #${m.jugador_a_id}`);
-        const oppRating = isA ? m.rating_b_antes : m.rating_a_antes;
-        const myAfter   = isA ? m.rating_a_despues : m.rating_b_despues;
-        const pts = (myAfter || myRating) - (myRating || 0);
-        const won = m.ganador === (isA ? 'A' : 'B');
-        const score = m.resultado || 'VS';
+        const isA       = m.jugador_a_id === player.id;
+        const myRating  = isA ? m.rating_a_antes   : m.rating_b_antes;
+        const myAfter   = isA ? m.rating_a_despues  : m.rating_b_despues;
+        const oppName   = isA ? (m.nombre_b || `#${m.jugador_b_id}`) : (m.nombre_a || `#${m.jugador_a_id}`);
+        const oppRating = isA ? m.rating_b_antes    : m.rating_a_antes;
+        const pts       = (myAfter || myRating) - (myRating || 0);
+        const won       = m.ganador === (isA ? 'A' : 'B');
         return `<div class="match-item">
           <div class="match-player ${won ? 'winner' : 'loser'}">
             <div class="name">${won ? '👑 ' : ''}${player.name.split(' ')[0]}</div>
@@ -1815,7 +1829,7 @@ async function showProfile(player) {
             ${myAfter ? `<div class="pts-change">${pts >= 0 ? '+' : ''}${pts} pts</div>` : ''}
           </div>
           <div class="match-center">
-            <div class="match-score">${score}</div>
+            <div class="match-score">${m.resultado || 'VS'}</div>
             <div class="match-date">${m.fecha ? new Date(m.fecha).toLocaleDateString('es-PR',{month:'short',day:'numeric'}) : ''}</div>
           </div>
           <div class="match-player ${!won ? 'winner' : 'loser'} right">
@@ -1827,18 +1841,144 @@ async function showProfile(player) {
     } else {
       ml.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Sin partidos registrados aún.</div>';
     }
-
-  } catch (e) {
-    console.warn('No se pudo cargar historial de partidos:', e.message);
-    // Graceful fallback — show 0 stats
-    document.getElementById('pMatches').textContent = 0;
-    document.getElementById('pWins').textContent    = 0;
-    document.getElementById('pLosses').textContent  = 0;
-    document.getElementById('pPct').textContent     = '—';
-    document.getElementById('ovTourneys').textContent = 0;
-    document.getElementById('tournList').innerHTML  = '<div style="color:var(--muted);padding:20px;text-align:center">Sin torneos registrados aún.</div>';
-    document.getElementById('matchList').innerHTML  = '<div style="color:var(--muted);padding:20px;text-align:center">Sin partidos registrados aún.</div>';
+  } else {
+    ['pMatches','pWins','pLosses','pPct'].forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('matchList').innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Sin partidos registrados aún.</div>';
   }
+
+  // ── TOURNAMENT HISTORY (from resultados_evento) ───────────────────────
+  if (participacionesRes.status === 'fulfilled' && participacionesRes.value.length) {
+    const parts = participacionesRes.value;
+    document.getElementById('ovTourneys').textContent = parts.length;
+
+    // Fetch torneo metadata (name + date) for each unique torneo
+    let torneoMeta = {};
+    try {
+      const ids = [...new Set(parts.map(p => p.id_torneo))];
+      const torneos = await sbGet('torneos', `?id=in.(${ids.join(',')})&select=id,nombre,fecha`);
+      torneos.forEach(t => { torneoMeta[t.id] = { nombre: t.nombre, fecha: t.fecha }; });
+    } catch(_) {}
+
+    renderTournamentHistory(parts, torneoMeta);
+    updateProgressChart(parts, torneoMeta);
+  } else {
+    document.getElementById('ovTourneys').textContent = 0;
+    document.getElementById('tournList').innerHTML =
+      '<div style="color:var(--muted);padding:20px;text-align:center">Sin torneos registrados aún.</div>';
+    document.getElementById('progressChartWrap').style.display = 'none';
+  }
+}
+
+function renderTournamentHistory(parts, torneoMeta) {
+  const tl = document.getElementById('tournList');
+  if (!parts.length) {
+    tl.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Sin torneos registrados aún.</div>';
+    return;
+  }
+
+  // Sort newest-first for display
+  const sorted = [...parts].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  tl.innerHTML = `
+    <table class="hist-table">
+      <thead>
+        <tr>
+          <th>Torneo</th>
+          <th>Récord</th>
+          <th>Cambio (Δ)</th>
+          <th>Rating Post</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sorted.map(p => {
+          const meta   = torneoMeta[p.id_torneo] || {};
+          const nombre = meta.nombre || `Torneo #${p.id_torneo}`;
+          const fecha  = meta.fecha
+            ? new Date(meta.fecha + 'T12:00:00').toLocaleDateString('es-PR', { month:'short', year:'numeric' })
+            : '';
+          const delta      = p.rating_fin - p.rating_inicio;
+          const deltaClass = delta > 0 ? 'gain' : delta < 0 ? 'loss' : 'tie';
+          const deltaText  = delta > 0 ? `▲ +${delta}` : delta < 0 ? `▼ ${delta}` : `= 0`;
+          const safeNombre = nombre.replace(/'/g, "\\'");
+          return `<tr>
+            <td>
+              <div class="hist-t-name" onclick="openTorneoEvento(${p.id_torneo},'${safeNombre}','${meta.fecha || ''}')">${nombre}</div>
+              <div style="font-size:11px;color:var(--muted)">${fecha}</div>
+            </td>
+            <td>
+              <div class="hist-wl">
+                <span class="wl-chip w">${p.ganados}W</span>
+                <span class="wl-chip l">${p.perdidos}L</span>
+              </div>
+            </td>
+            <td><span class="hist-delta ${deltaClass}">${deltaText}</span></td>
+            <td><span class="hist-rating-post">${p.rating_fin}</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+let _profileChart = null;
+
+function updateProgressChart(parts, torneoMeta) {
+  const wrap = document.getElementById('progressChartWrap');
+  const canvas = document.getElementById('ratingProgressChart');
+  if (!wrap || !canvas) return;
+
+  // Sort chronologically for the chart
+  const sorted = [...parts].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  if (sorted.length < 2) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+
+  const labels = sorted.map(p => torneoMeta[p.id_torneo]?.nombre || `T#${p.id_torneo}`);
+  const data   = sorted.map(p => p.rating_fin);
+
+  if (_profileChart) { _profileChart.destroy(); _profileChart = null; }
+
+  _profileChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: '#e8b84b',
+        backgroundColor: 'rgba(232,184,75,0.08)',
+        fill: true,
+        tension: 0.35,
+        pointBackgroundColor: '#e8b84b',
+        pointBorderColor: '#0a1628',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f2040',
+          borderColor: 'rgba(232,184,75,0.3)',
+          borderWidth: 1,
+          callbacks: {
+            label: ctx => `Rating: ${ctx.raw}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#8899bb', font: { size: 10 }, maxRotation: 25, maxTicksLimit: 8 },
+          grid:  { color: 'rgba(255,255,255,0.05)' }
+        },
+        y: {
+          ticks: { color: '#8899bb', font: { size: 11 } },
+          grid:  { color: 'rgba(255,255,255,0.05)' }
+        }
+      }
+    }
+  });
 }
 
 function backToRankings() { showPage('rankings'); }
