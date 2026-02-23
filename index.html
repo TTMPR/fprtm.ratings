@@ -2963,7 +2963,7 @@ async function eliminarTorneo() {
 
     // 3. Cascade deletes
     msg.textContent = 'Eliminando registros asociados...';
-    await sbDelete('partidos',          `id_torneo=eq.${torneoId}`);
+    await sbDelete('partidos',          `torneo_id=eq.${torneoId}`);
     await sbDelete('resultados_evento', `id_torneo=eq.${torneoId}`);
     await sbDelete('torneos',           `id=eq.${torneoId}`);
 
