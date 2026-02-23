@@ -417,7 +417,7 @@
   .memb-item {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 10px; padding: 16px 20px;
-    display: grid; grid-template-columns: auto 1fr auto auto; gap: 20px; align-items: center;
+    display: grid; grid-template-columns: auto 1fr auto auto auto; gap: 16px; align-items: center;
   }
   .memb-avatar {
     width: 40px; height: 40px; border-radius: 50%;
@@ -449,6 +449,43 @@
   }
   .alert-box .icon { font-size: 20px; }
   .alert-box strong { color: var(--orange); }
+
+  /* ─── EDIT MEMBER BUTTON & MODAL ─── */
+  .edit-btn {
+    background: none; border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 12px;
+    color: var(--muted); font-family: 'DM Sans'; font-size: 12px;
+    cursor: pointer; transition: border-color 0.2s, color 0.2s; white-space: nowrap;
+  }
+  .edit-btn:hover { border-color: var(--accent); color: var(--accent); }
+  #editMembModal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 1100;
+    align-items: center; justify-content: center;
+  }
+  #editMembModal.open { display: flex; }
+  .edit-memb-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px; width: 400px; max-width: 92vw;
+  }
+  .edit-memb-title { font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 2px; margin-bottom: 4px; }
+  .edit-memb-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+  .edit-field { margin-bottom: 16px; }
+  .edit-field label {
+    display: block; font-size: 11px; color: var(--muted);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .edit-field input {
+    width: 100%; box-sizing: border-box;
+    background: var(--blue); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    color: var(--text); font-family: 'DM Sans'; font-size: 14px;
+  }
+  .edit-field input:focus { outline: none; border-color: var(--accent); }
+  .edit-field input[readonly] { opacity: 0.5; cursor: default; }
+  .edit-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .edit-actions .btn-primary { flex: 1; }
+  .edit-memb-msg { font-size: 13px; margin-top: 14px; text-align: center; min-height: 20px; }
 
   /* ─── BACK BUTTON ─── */
   .back-btn {
@@ -863,6 +900,42 @@
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Configuración</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Tabla de puntos, categorías</div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     EDIT MEMBER MODAL
+═══════════════════════════════════════════ -->
+<div id="editMembModal">
+  <div class="edit-memb-box">
+    <div class="edit-memb-title">Editar Miembro</div>
+    <div class="edit-memb-sub" id="editMembSub">FPRTM #—</div>
+    <input type="hidden" id="editMembId">
+    <div class="edit-field">
+      <label>Nombre</label>
+      <input type="text" id="editMembName" readonly>
+    </div>
+    <div class="edit-field">
+      <label>Email</label>
+      <input type="email" id="editMembEmail" placeholder="correo@ejemplo.com">
+    </div>
+    <div class="edit-field">
+      <label>Club</label>
+      <input type="text" id="editMembClub" placeholder="Nombre del club">
+    </div>
+    <div class="edit-field">
+      <label>Fecha de Vencimiento</label>
+      <input type="date" id="editMembExpDate">
+    </div>
+    <div class="edit-field">
+      <label>Rating</label>
+      <input type="number" id="editMembRating" min="100" max="3000" step="1" placeholder="1500">
+    </div>
+    <div id="editMembMsg" class="edit-memb-msg"></div>
+    <div class="edit-actions">
+      <button class="btn-cancel" onclick="closeEditMember()">Cancelar</button>
+      <button class="btn-primary" id="editMembSaveBtn" onclick="saveEditMember()">Guardar</button>
     </div>
   </div>
 </div>
@@ -1620,6 +1693,9 @@ function renderMembers() {
           ? `Vence: ${m.expDate} (${m.daysUntilExp}d)`
           : `Venció: ${m.expDate}`)
       : '—';
+    const editCell = currentUser
+      ? `<button class="edit-btn" onclick="openEditMember(${m.id})">✏ Editar</button>`
+      : '<span></span>';
     return `<div class="memb-item">
       <div class="memb-avatar">${initials(m.name)}</div>
       <div>
@@ -1629,6 +1705,7 @@ function renderMembers() {
       <div class="memb-date">
         <div style="font-size:11px;color:var(--muted)">${expInfo}</div>
       </div>
+      ${editCell}
       <div class="status-pill ${m.status}">${labels[m.status]}</div>
     </div>`;
   }).join('');
@@ -1641,6 +1718,9 @@ function renderMembers() {
       const div = document.createElement('div');
       div.className = 'memb-item';
       div.style.opacity = '0.65';
+      const editCell = currentUser
+        ? `<button class="edit-btn" onclick="openEditMember(${p.id})">✏ Editar</button>`
+        : '<span></span>';
       div.innerHTML = `
         <div class="memb-avatar" style="background:rgba(239,68,68,0.15);color:var(--red)">${initials(p.name)}</div>
         <div>
@@ -1648,6 +1728,7 @@ function renderMembers() {
           <div class="memb-meta">${p.club || 'Sin club'} · ★ ${p.rating}</div>
         </div>
         <div class="memb-date"><div style="font-size:11px;color:var(--muted)">Sin registro</div></div>
+        ${editCell}
         <div class="status-pill expired">❌ No Miembro</div>`;
       grid.appendChild(div);
     });
@@ -1663,6 +1744,106 @@ function setMembFilter(el, val) {
   el.classList.add('on');
   membFilter = val;
   renderMembers();
+}
+
+function openEditMember(memberId) {
+  if (!currentUser) return;
+
+  // Try MEMBERS first; fall back to ALL_PLAYERS for non-members
+  const m = MEMBERS.find(x => x.id === memberId);
+  const p = ALL_PLAYERS.find(x => x.id === memberId);
+
+  document.getElementById('editMembId').value    = memberId;
+  document.getElementById('editMembSub').textContent = `FPRTM #${memberId}`;
+  document.getElementById('editMembName').value  = m ? m.name : (p ? p.name : '');
+  document.getElementById('editMembEmail').value = m ? (m.email || '') : '';
+  document.getElementById('editMembClub').value  = m ? (m.club !== '—' ? m.club : '') : (p ? (p.club || '') : '');
+
+  // expDate in MEMBERS is already YYYY-MM-DD (from toISOString)
+  document.getElementById('editMembExpDate').value = m && m.expDate && m.expDate !== '—' ? m.expDate : '';
+
+  document.getElementById('editMembRating').value = p ? p.rating : (m ? '' : '');
+  document.getElementById('editMembMsg').textContent = '';
+  document.getElementById('editMembMsg').style.color = '';
+  document.getElementById('editMembSaveBtn').disabled = false;
+  document.getElementById('editMembSaveBtn').textContent = 'Guardar';
+  document.getElementById('editMembModal').classList.add('open');
+}
+
+function closeEditMember() {
+  document.getElementById('editMembModal').classList.remove('open');
+}
+
+async function saveEditMember() {
+  if (!currentUser) { closeEditMember(); return; }
+
+  const id      = Number(document.getElementById('editMembId').value);
+  const email   = document.getElementById('editMembEmail').value.trim();
+  const club    = document.getElementById('editMembClub').value.trim();
+  const expRaw  = document.getElementById('editMembExpDate').value; // YYYY-MM-DD
+  const ratingV = document.getElementById('editMembRating').value;
+  const rating  = ratingV ? Number(ratingV) : null;
+
+  const msg = document.getElementById('editMembMsg');
+  const btn = document.getElementById('editMembSaveBtn');
+
+  if (rating !== null && (rating < 100 || rating > 3000)) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Rating debe estar entre 100 y 3000.';
+    return;
+  }
+
+  // Convert YYYY-MM-DD → MM/DD/YYYY to match the DB format
+  let expFormatted = null;
+  if (expRaw) {
+    const [y, mo, d] = expRaw.split('-');
+    expFormatted = `${mo}/${d}/${y}`;
+  }
+
+  const body = {};
+  body['Email'] = email;
+  body['Club']  = club;
+  if (expFormatted) body['Expiration Date'] = expFormatted;
+  if (rating !== null) body['Rating'] = rating;
+
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+  msg.textContent = '';
+
+  try {
+    await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${id}`, body);
+
+    // Update local MEMBERS cache
+    const mi = MEMBERS.findIndex(x => x.id === id);
+    if (mi !== -1) {
+      if (email !== undefined) MEMBERS[mi].email = email;
+      if (club)  MEMBERS[mi].club  = club;
+      if (expFormatted) {
+        const now = new Date();
+        const newExp = new Date(expRaw);
+        const days   = Math.floor((newExp - now) / 86400000);
+        MEMBERS[mi].expDate      = expRaw;
+        MEMBERS[mi].daysUntilExp = days;
+        MEMBERS[mi].status       = days < 0 ? 'expired' : days <= 30 ? 'warning' : 'active';
+      }
+    }
+    // Update local ALL_PLAYERS cache
+    if (rating !== null) {
+      const pi = ALL_PLAYERS.findIndex(p => p.id === id);
+      if (pi !== -1) ALL_PLAYERS[pi].rating = rating;
+    }
+
+    renderMembers();
+    updateStats();
+    msg.style.color = 'var(--green)';
+    msg.textContent = '¡Guardado exitosamente!';
+    setTimeout(closeEditMember, 1400);
+  } catch(e) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = `Error: ${e.message}`;
+    btn.disabled = false;
+    btn.textContent = 'Guardar';
+  }
 }
 
 // ══════════════════════════════════════════
