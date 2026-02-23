@@ -1446,10 +1446,9 @@ const SUPABASE_KEY = 'sb_publishable_mM59efPqpcgrR3g3_6F_Ww_h1jg4PyV';
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 
-// Returns true only for users with app_metadata.is_admin = true
-// (set in Supabase Dashboard → Authentication → Users → Edit → app_metadata)
+// Single admin account (Joel). Any authenticated session = admin.
 function isAdmin() {
-  return currentUser?.app_metadata?.is_admin === true;
+  return currentUser !== null;
 }
 
 const SB_HEADERS = {
