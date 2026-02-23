@@ -1202,8 +1202,9 @@ function initials(name) {
 function sexGroup(value) {
   const v = String(value || '').trim().toLowerCase();
   if (!v) return '';
+  // femenino checked first to prevent 'female'.includes('male') false positive
   if (v === 'f' || v === 'femenino' || v === 'female' || v.includes('femenino') || v.includes('female')) return 'fem';
-  if (v === 'm' || v === 'masculino' || v === 'male' || v.includes('masculino') || v.includes('male')) return 'masc';
+  if (v === 'm' || v === 'masculino' || v === 'male' || v.includes('masculino')) return 'masc';
   return '';
 }
 
@@ -1683,14 +1684,12 @@ function filterPlayers() {
   // Always start from the complete master list — never from a pre-filtered subset.
   let results = [...ALL_PLAYERS];
 
-  // Gender chip: apply playerSexGroup which checks sexo → genero → rama → categoria.
-  // Players with no recognizable gender (sexGroup = '') are always included so they
-  // never disappear from the list regardless of the active chip.
-  // 'female' is evaluated before 'male' in sexGroup() to avoid false positives.
+  // Gender chip: strict match — only 'masc' in Masculino, only 'fem' in Femenino.
+  // Players with no recognizable sex (sexGroup = '') appear only in Todos.
   if (currentFilter === 'masc') {
-    results = results.filter(p => { const g = playerSexGroup(p); return g === 'masc' || g === ''; });
+    results = results.filter(p => playerSexGroup(p) === 'masc');
   } else if (currentFilter === 'fem') {
-    results = results.filter(p => { const g = playerSexGroup(p); return g === 'fem'  || g === ''; });
+    results = results.filter(p => playerSexGroup(p) === 'fem');
   }
 
   console.log(`Filtro '${currentFilter}' → ${results.length} jugadores`);
