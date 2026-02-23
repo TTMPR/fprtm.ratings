@@ -604,12 +604,14 @@
     cursor: pointer; transition: border-color 0.2s, color 0.2s; white-space: nowrap;
   }
   .edit-btn:hover { border-color: var(--accent); color: var(--accent); }
-  #editMembModal, #newPlayerModal, #newTournamentModal, #configModal {
+  #editMembModal, #newPlayerModal, #newTournamentModal, #configModal,
+  #editTorneoModal, #deleteTorneoModal {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.75); z-index: 1100;
     align-items: center; justify-content: center;
   }
-  #editMembModal.open, #newPlayerModal.open, #newTournamentModal.open, #configModal.open { display: flex; }
+  #editMembModal.open, #newPlayerModal.open, #newTournamentModal.open, #configModal.open,
+  #editTorneoModal.open, #deleteTorneoModal.open { display: flex; }
   .edit-field select {
     width: 100%; box-sizing: border-box;
     background: var(--blue); border: 1px solid var(--border);
