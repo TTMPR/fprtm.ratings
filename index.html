@@ -1446,6 +1446,12 @@ const SUPABASE_KEY = 'sb_publishable_mM59efPqpcgrR3g3_6F_Ww_h1jg4PyV';
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 
+// Returns true only for users with app_metadata.is_admin = true
+// (set in Supabase Dashboard → Authentication → Users → Edit → app_metadata)
+function isAdmin() {
+  return currentUser?.app_metadata?.is_admin === true;
+}
+
 const SB_HEADERS = {
   'apikey': SUPABASE_KEY,
   'Authorization': `Bearer ${SUPABASE_KEY}`,
@@ -1502,10 +1508,10 @@ async function sbPost(table, body) {
 // ══════════════════════════════════════════
 function updateAuthUI() {
   const isLoggedIn = !!currentUser;
-  ['navMembresia', 'navAdmin'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = isLoggedIn ? '' : 'none';
-  });
+  const el_memb  = document.getElementById('navMembresia');
+  const el_admin = document.getElementById('navAdmin');
+  if (el_memb)  el_memb.style.display  = isLoggedIn ? '' : 'none';
+  if (el_admin) el_admin.style.display = isAdmin()   ? '' : 'none';
   const btn = document.getElementById('loginBtn');
   if (!btn) return;
   if (isLoggedIn) {
@@ -2861,7 +2867,7 @@ async function saveNewTournament() {
 // EDITAR TORNEO
 // ══════════════════════════════════════════
 function showEditTorneoModal(id, nombre, fecha) {
-  if (!currentUser) { showLogin(); return; }
+  if (!isAdmin()) { showLogin(); return; }
   document.getElementById('editTorneoId').value           = id;
   document.getElementById('editTorneoName').value         = nombre;
   document.getElementById('editTorneoDate').value         = fecha || '';
@@ -2877,7 +2883,7 @@ function hideEditTorneoModal() {
 }
 
 async function saveEditTorneo() {
-  if (!currentUser) { hideEditTorneoModal(); return; }
+  if (!isAdmin()) { hideEditTorneoModal(); return; }
   const id     = document.getElementById('editTorneoId').value;
   const nombre = document.getElementById('editTorneoName').value.trim();
   const fecha  = document.getElementById('editTorneoDate').value || null;
@@ -2913,7 +2919,7 @@ async function saveEditTorneo() {
 // BORRAR TORNEO (con reversión atómica)
 // ══════════════════════════════════════════
 function showDeleteTorneoModal(id, nombre) {
-  if (!currentUser) { showLogin(); return; }
+  if (!isAdmin()) { showLogin(); return; }
   document.getElementById('deleteTorneoId').value              = id;
   document.getElementById('deleteTorneoNameLabel').textContent = nombre;
   document.getElementById('deleteTorneoMsg').textContent       = '';
@@ -2929,7 +2935,7 @@ function hideDeleteTorneoModal() {
 }
 
 async function eliminarTorneo() {
-  if (!currentUser) { hideDeleteTorneoModal(); return; }
+  if (!isAdmin()) { hideDeleteTorneoModal(); return; }
   const torneoId = document.getElementById('deleteTorneoId').value;
   const msg      = document.getElementById('deleteTorneoMsg');
   const btnOk    = document.getElementById('deleteTorneoConfirmBtn');
@@ -3014,7 +3020,7 @@ async function loadTorneosList() {
       const fechaFmt   = t.fecha
         ? new Date(t.fecha + 'T12:00:00').toLocaleDateString('es-PR', { year:'numeric', month:'long', day:'numeric' })
         : '—';
-      const adminBtns = currentUser ? `
+      const adminBtns = isAdmin() ? `
         <div class="torneo-admin-actions" onclick="event.stopPropagation()">
           <button class="torneo-admin-btn edit" title="Editar torneo"
             onclick="showEditTorneoModal(${t.id},'${safeNombre}','${t.fecha || ''}')">✏️</button>
