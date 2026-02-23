@@ -479,6 +479,18 @@
   }
   .progress-chart-wrap canvas { max-height: 150px; }
 
+  /* ─── TORNEO ADMIN ACTIONS ─── */
+  .torneo-admin-actions {
+    display: flex; gap: 5px; margin-top: 8px; justify-content: flex-end;
+  }
+  .torneo-admin-btn {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    padding: 4px 9px; cursor: pointer; font-size: 14px; line-height: 1;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .torneo-admin-btn.edit:hover { background: rgba(232,184,75,0.15); border-color: var(--accent); }
+  .torneo-admin-btn.del:hover  { background: rgba(239,68,68,0.15);  border-color: var(--red); }
+
   /* ─── TORNEOS LIST PAGE ─── */
   .torneos-grid {
     max-width: 900px; margin: 0 auto; padding: 0 32px 40px;
@@ -1319,6 +1331,54 @@ Maria Lopez,Ana Torres,B</code>
 </div>
 
 <!-- ══════════════════════════════════════════
+     EDITAR TORNEO MODAL
+═══════════════════════════════════════════ -->
+<div id="editTorneoModal">
+  <div class="edit-memb-box">
+    <div class="edit-memb-title">Editar Torneo</div>
+    <div class="edit-memb-sub" id="editTorneoSub">Actualizar nombre y fecha</div>
+    <input type="hidden" id="editTorneoId">
+    <div class="edit-field">
+      <label>Nombre del Torneo</label>
+      <input type="text" id="editTorneoName" placeholder="Nombre del torneo">
+    </div>
+    <div class="edit-field">
+      <label>Fecha</label>
+      <input type="date" id="editTorneoDate">
+    </div>
+    <div id="editTorneoMsg" class="edit-memb-msg"></div>
+    <div class="edit-actions">
+      <button class="btn-cancel" onclick="hideEditTorneoModal()">Cancelar</button>
+      <button class="btn-primary" id="editTorneoSaveBtn" onclick="saveEditTorneo()">Guardar Cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CONFIRMAR BORRADO TORNEO MODAL
+═══════════════════════════════════════════ -->
+<div id="deleteTorneoModal">
+  <div class="edit-memb-box" style="text-align:center;max-width:420px">
+    <div style="font-size:40px;margin-bottom:8px">⚠️</div>
+    <div class="edit-memb-title" style="color:var(--red)">Borrar Torneo</div>
+    <div class="edit-memb-sub" id="deleteTorneoNameLabel" style="font-size:15px;font-weight:600;color:var(--text)"></div>
+    <div style="color:var(--muted);font-size:13px;line-height:1.6;margin:14px 0">
+      Esta acción <strong style="color:var(--text)">revertirá los ratings</strong> de todos los jugadores
+      que participaron y eliminará todos los partidos y resultados asociados.<br>
+      <strong style="color:var(--red)">No se puede deshacer.</strong>
+    </div>
+    <input type="hidden" id="deleteTorneoId">
+    <div id="deleteTorneoMsg" class="edit-memb-msg"></div>
+    <div class="edit-actions" style="justify-content:center;gap:12px">
+      <button class="btn-cancel" id="deleteTorneoCancelBtn" onclick="hideDeleteTorneoModal()">Cancelar</button>
+      <button class="btn-primary" id="deleteTorneoConfirmBtn"
+        style="background:var(--red);border-color:var(--red);color:#fff"
+        onclick="eliminarTorneo()">Sí, Borrar y Revertir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      CONFIGURACIÓN MODAL
 ═══════════════════════════════════════════ -->
 <div id="configModal">
@@ -1410,6 +1470,17 @@ async function sbPatch(table, query, body) {
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Supabase PATCH ${table} (${res.status}): ${err}`);
+  }
+}
+
+async function sbDelete(table, query) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+    method: 'DELETE',
+    headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' }
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Supabase DELETE ${table} (${res.status}): ${err}`);
   }
 }
 
@@ -2787,6 +2858,124 @@ async function saveNewTournament() {
 }
 
 // ══════════════════════════════════════════
+// EDITAR TORNEO
+// ══════════════════════════════════════════
+function showEditTorneoModal(id, nombre, fecha) {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('editTorneoId').value           = id;
+  document.getElementById('editTorneoName').value         = nombre;
+  document.getElementById('editTorneoDate').value         = fecha || '';
+  document.getElementById('editTorneoMsg').textContent    = '';
+  document.getElementById('editTorneoSaveBtn').disabled   = false;
+  document.getElementById('editTorneoSaveBtn').textContent = 'Guardar Cambios';
+  document.getElementById('editTorneoSub').textContent    = nombre;
+  document.getElementById('editTorneoModal').classList.add('open');
+}
+
+function hideEditTorneoModal() {
+  document.getElementById('editTorneoModal').classList.remove('open');
+}
+
+async function saveEditTorneo() {
+  if (!currentUser) { hideEditTorneoModal(); return; }
+  const id     = document.getElementById('editTorneoId').value;
+  const nombre = document.getElementById('editTorneoName').value.trim();
+  const fecha  = document.getElementById('editTorneoDate').value || null;
+  const msg    = document.getElementById('editTorneoMsg');
+  const btn    = document.getElementById('editTorneoSaveBtn');
+
+  if (!nombre) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'El nombre es requerido.';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+  msg.textContent = '';
+
+  try {
+    await sbPatch('torneos', `id=eq.${id}`, { nombre, fecha });
+    // Update local cache
+    const cached = allTorneos.find(t => t.id == id);
+    if (cached) { cached.nombre = nombre; cached.fecha = fecha; }
+    msg.style.color = 'var(--green)';
+    msg.textContent = '✓ Torneo actualizado.';
+    setTimeout(() => { hideEditTorneoModal(); loadTorneosList(); }, 900);
+  } catch(e) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Error: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Guardar Cambios';
+  }
+}
+
+// ══════════════════════════════════════════
+// BORRAR TORNEO (con reversión atómica)
+// ══════════════════════════════════════════
+function showDeleteTorneoModal(id, nombre) {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('deleteTorneoId').value              = id;
+  document.getElementById('deleteTorneoNameLabel').textContent = nombre;
+  document.getElementById('deleteTorneoMsg').textContent       = '';
+  document.getElementById('deleteTorneoMsg').style.color       = 'var(--muted)';
+  document.getElementById('deleteTorneoConfirmBtn').disabled   = false;
+  document.getElementById('deleteTorneoConfirmBtn').textContent = 'Sí, Borrar y Revertir';
+  document.getElementById('deleteTorneoCancelBtn').disabled    = false;
+  document.getElementById('deleteTorneoModal').classList.add('open');
+}
+
+function hideDeleteTorneoModal() {
+  document.getElementById('deleteTorneoModal').classList.remove('open');
+}
+
+async function eliminarTorneo() {
+  if (!currentUser) { hideDeleteTorneoModal(); return; }
+  const torneoId = document.getElementById('deleteTorneoId').value;
+  const msg      = document.getElementById('deleteTorneoMsg');
+  const btnOk    = document.getElementById('deleteTorneoConfirmBtn');
+  const btnCx    = document.getElementById('deleteTorneoCancelBtn');
+
+  btnOk.disabled = true;
+  btnCx.disabled = true;
+  btnOk.textContent = 'Procesando...';
+  msg.style.color = 'var(--muted)';
+
+  try {
+    // 1. Get participant snapshots for rating reversion
+    msg.textContent = 'Consultando participantes...';
+    const participaciones = await sbGet(
+      'resultados_evento',
+      `?id_torneo=eq.${torneoId}&select=id_jugador,rating_inicio`
+    );
+
+    // 2. Revert each player's rating to pre-tournament value
+    msg.textContent = `Revirtiendo ratings de ${participaciones.length} jugador(es)...`;
+    for (const p of participaciones) {
+      await sbPatch('jugadores', `id=eq.${p.id_jugador}`, { rating_actual: p.rating_inicio });
+    }
+
+    // 3. Cascade deletes
+    msg.textContent = 'Eliminando registros asociados...';
+    await sbDelete('partidos',          `id_torneo=eq.${torneoId}`);
+    await sbDelete('resultados_evento', `id_torneo=eq.${torneoId}`);
+    await sbDelete('torneos',           `id=eq.${torneoId}`);
+
+    // 4. Refresh both player list and torneos list
+    await loadPlayers();
+    msg.style.color = 'var(--green)';
+    msg.textContent = `✓ Torneo eliminado · ${participaciones.length} rating(s) revertido(s).`;
+    setTimeout(() => { hideDeleteTorneoModal(); loadTorneosList(); }, 1400);
+
+  } catch(e) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Error: ' + e.message;
+    btnOk.disabled = false;
+    btnCx.disabled = false;
+    btnOk.textContent = 'Sí, Borrar y Revertir';
+  }
+}
+
+// ══════════════════════════════════════════
 // CONFIGURACIÓN
 // ══════════════════════════════════════════
 function showConfigModal() {
@@ -2820,18 +3009,26 @@ async function loadTorneosList() {
       return;
     }
     grid.innerHTML = allTorneos.map(t => {
-      const count = countMap[t.id] || 0;
-      const fechaFmt = t.fecha
+      const count      = countMap[t.id] || 0;
+      const safeNombre = t.nombre.replace(/'/g, "\\'");
+      const fechaFmt   = t.fecha
         ? new Date(t.fecha + 'T12:00:00').toLocaleDateString('es-PR', { year:'numeric', month:'long', day:'numeric' })
         : '—';
-      return `<div class="torneo-card" onclick="openTorneoEvento(${t.id},'${t.nombre.replace(/'/g,"\\'")}','${t.fecha || ''}')">
+      const adminBtns = currentUser ? `
+        <div class="torneo-admin-actions" onclick="event.stopPropagation()">
+          <button class="torneo-admin-btn edit" title="Editar torneo"
+            onclick="showEditTorneoModal(${t.id},'${safeNombre}','${t.fecha || ''}')">✏️</button>
+          <button class="torneo-admin-btn del" title="Borrar torneo"
+            onclick="showDeleteTorneoModal(${t.id},'${safeNombre}')">🗑️</button>
+        </div>` : `<div style="color:var(--muted);font-size:20px;margin-top:4px">›</div>`;
+      return `<div class="torneo-card" onclick="openTorneoEvento(${t.id},'${safeNombre}','${t.fecha || ''}')">
         <div class="torneo-card-left">
           <div class="torneo-card-name">${t.nombre}</div>
           <div class="torneo-card-date">📅 ${fechaFmt}</div>
         </div>
         <div class="torneo-card-right">
           ${count ? `<div class="torneo-card-count">${count}</div><div class="torneo-card-label">Jugadores</div>` : '<div class="torneo-card-label" style="color:var(--muted)">Sin datos</div>'}
-          <div style="color:var(--muted);font-size:20px;margin-top:4px">›</div>
+          ${adminBtns}
         </div>
       </div>`;
     }).join('');
