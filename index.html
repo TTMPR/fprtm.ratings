@@ -1081,21 +1081,10 @@ async function loadPlayers(filter = {}) {
 }
 
 async function loadMembers() {
-  // miembros table columns from real data:
-  // nombre_completo, email, telefono, pueblo, ath (Member ID),
-  // fecha_membresia (join date), fecha_vencimiento (expiration date)
-  // Only fetch non-sensitive columns — never expose email, phone, or address publicly
-  const data = await sbGet('miembros', '?select=id,nombre_completo,club,sexo,edad,pueblo,ath,fecha_membresia,fecha_vencimiento&order=nombre_completo.asc&limit=300');
+  const data = await sbGet('Base%20de%20Datos', '?order=%22Member%20ID%22.asc&limit=300');
   const now = new Date();
   return data.map(m => {
-    const nombre = m.nombre_completo || '—';
-    // Use expiration date to determine status (fecha_vencimiento)
-    // Fall back to fecha_membresia + 365 days if no expiration stored
-    const expDate = m.fecha_vencimiento
-      ? new Date(m.fecha_vencimiento)
-      : m.fecha_membresia
-        ? new Date(new Date(m.fecha_membresia).getTime() + 365 * 86400000)
-        : null;
+    const expDate = m['Expiration Date'] ? new Date(m['Expiration Date']) : null;
 
     let status = 'no';
     let daysUntilExp = null;
@@ -1107,23 +1096,19 @@ async function loadMembers() {
     }
 
     return {
-      id:     m.id,
-      name:   nombre,
-      club:   m.club || '—',
-      sex:    m.sexo || '—',
-      age:    m.edad || '—',
-      date:   m.fecha_membresia
-                ? m.fecha_membresia.split('T')[0]
-                : '—',
-      expDate: expDate
-                ? expDate.toISOString().split('T')[0]
-                : '—',
+      id:          m['Member ID'],
+      name:        `${m['First Name'] || ''} ${m['Last Name'] || ''}`.trim(),
+      club:        m['Club'] || '—',
+      sex:         m['Sex'] || '—',
+      age:         m['Date of Birth'] ? Math.floor((now - new Date(m['Date of Birth'])) / 31557600000) : '—',
+      date:        '—',
+      expDate:     expDate ? expDate.toISOString().split('T')[0] : '—',
       daysUntilExp,
       status,
-      email:  m.email   || '',
-      tel:    m.telefono || '',
-      pueblo: m.pueblo   || '',
-      ath:    m.ath ? '***' : '' // ATH shown only to admin — masked here
+      email:       m['Email'] || '',
+      tel:         '',
+      pueblo:      '',
+      ath:         m['Member ID'] ? '***' : ''
     };
   });
 }
