@@ -2953,20 +2953,43 @@ async function confirmarBorrarTorneo() {
   msg.textContent = '';
 
   try {
+    // 1. Obtener snapshots de ratings
+    console.log(`[borrarTorneo] Obteniendo participaciones del torneo ${torneoId}...`);
     const participaciones = await sbGet(
       'resultados_evento',
       `?id_torneo=eq.${torneoId}&select=id_jugador,rating_inicio`
     );
-    for (const p of participaciones) {
-      await sbPatch('jugadores', `id=eq.${p.id_jugador}`, { rating_actual: p.rating_inicio });
+    console.log(`[borrarTorneo] ${participaciones.length} participantes a revertir.`);
+
+    // 2. Revertir ratings en paralelo (Promise.all)
+    if (participaciones.length > 0) {
+      await Promise.all(
+        participaciones.map(p =>
+          sbPatch('jugadores', `id=eq.${p.id_jugador}`, { rating_actual: p.rating_inicio })
+        )
+      );
+      console.log('[borrarTorneo] Ratings revertidos correctamente.');
     }
-    try { await sbDelete('partidos', `torneo_id=eq.${torneoId}`); } catch(_) {}
+
+    // 3. Borrado en cascada
+    console.log('[borrarTorneo] Borrando partidos...');
+    try { await sbDelete('partidos', `torneo_id=eq.${torneoId}`); } catch(_) {
+      console.warn('[borrarTorneo] No se pudo borrar partidos (posiblemente columna no existe), continuando...');
+    }
+
+    console.log('[borrarTorneo] Borrando resultados_evento...');
     await sbDelete('resultados_evento', `id_torneo=eq.${torneoId}`);
-    await sbDelete('torneos',           `id=eq.${torneoId}`);
+
+    console.log('[borrarTorneo] Borrando torneo...');
+    await sbDelete('torneos', `id=eq.${torneoId}`);
+    console.log('[borrarTorneo] Torneo eliminado exitosamente.');
+
+    // 4. Actualizar UI
     await loadPlayers();
     hideDeleteTorneoModal();
     await loadTorneosList();
   } catch(e) {
+    console.error('[borrarTorneo] Error crítico:', e);
     msg.style.color = 'var(--red)';
     msg.textContent = 'Error: ' + e.message;
     btn.disabled = false; btn.textContent = 'Sí, Borrar y Revertir';
