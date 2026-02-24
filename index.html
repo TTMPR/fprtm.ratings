@@ -355,11 +355,51 @@
   }
   .manual-entry h3 { font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 2px; margin-bottom: 20px; }
 
-  .match-entry {
-    display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 12px; align-items: end;
-    margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  /* Simulator anchor (top "Tu Perfil" row) */
+  .sim-anchor {
+    display: flex; gap: 12px; align-items: end;
+    margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid var(--border);
   }
-  .match-entry:last-of-type { border-bottom: none; }
+  .sim-anchor .field-group:first-child { flex: 1; }
+
+  /* Opponents table */
+  .sim-opp-header {
+    display: grid; grid-template-columns: 1fr 90px 78px 50px 24px;
+    gap: 10px; padding: 0 0 6px;
+    font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .sim-opp-row {
+    display: grid; grid-template-columns: 1fr 90px 78px 50px 24px;
+    gap: 10px; align-items: center; margin-bottom: 8px;
+  }
+
+  /* G / P toggle buttons */
+  .sim-gp-wrap { display: flex; gap: 4px; }
+  .sim-gp-btn {
+    flex: 1; padding: 9px 0; border-radius: 6px;
+    border: 1px solid var(--border); background: none;
+    color: var(--muted); font-family: 'DM Mono'; font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .sim-gp-btn.won.active  { background: rgba(34,197,94,0.18); border-color: var(--green); color: var(--green); }
+  .sim-gp-btn.lost.active { background: rgba(239,68,68,0.18); border-color: var(--red);   color: var(--red); }
+
+  /* Per-row points column */
+  .sim-pts { font-family: 'DM Mono'; font-size: 14px; font-weight: 700; text-align: right; color: var(--muted); }
+
+  /* Delete row button */
+  .sim-del-btn {
+    background: none; border: none; color: var(--muted); font-size: 15px;
+    cursor: pointer; padding: 0; line-height: 1; transition: color 0.15s;
+  }
+  .sim-del-btn:hover { color: var(--red); }
+
+  /* Disclaimer note */
+  .disclaimer-note {
+    margin-top: 16px; padding: 12px 16px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 8px; font-size: 12px; color: var(--muted); line-height: 1.6;
+  }
 
   .field-group label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 6px; }
   .field-group input, .field-group select {
@@ -370,13 +410,6 @@
   }
   .field-group input:focus, .field-group select:focus { border-color: var(--accent); }
   .field-group select option { background: var(--navy); }
-
-  .vs-badge {
-    font-family: 'Bebas Neue'; font-size: 18px; color: var(--muted);
-    padding-bottom: 10px; letter-spacing: 2px;
-  }
-  .winner-select { align-self: end; }
-  .winner-select select { background: var(--navy); }
 
   .calc-result {
     margin-top: 20px; padding: 20px 24px;
@@ -951,28 +984,51 @@
 <div id="calculatorPage" class="page">
   <div class="page-hero">
     <div class="overline">Herramienta</div>
-    <h1>CALCULAR RATING</h1>
-    <p>Ingresa ratings y resultados de partidos para estimar nuevos resultados</p>
+    <h1>SIMULADOR DE RATING</h1>
+    <p>Estima tu nuevo rating basado en tus resultados de un torneo</p>
   </div>
 
   <div class="calc-wrap">
     <div class="manual-entry">
-      <h3>ENTRADA MANUAL DE PARTIDOS</h3>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:20px">Torneo (opcional): <input id="tournName" style="background:var(--navy);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text);font-family:'DM Sans';font-size:13px;outline:none" placeholder="Ej: Clasif. Febrero 2026"></p>
+      <h3>TU PERFIL</h3>
 
-      <div id="matchEntries">
-        <!-- Match rows populated by JS -->
+      <!-- Anchor: player's own info -->
+      <div class="sim-anchor">
+        <div class="field-group">
+          <label>Tu Nombre</label>
+          <input type="text" id="simMyName" list="playerList"
+            oninput="simAutoFill()" placeholder="Busca tu nombre...">
+        </div>
+        <div class="field-group" style="min-width:110px">
+          <label>Tu Rating Actual</label>
+          <input type="number" id="simMyRating" placeholder="1800" oninput="simCalc()">
+        </div>
       </div>
 
-      <button class="btn-secondary" onclick="addMatchRow()" style="margin-top:0">+ Agregar partido</button>
-      <br>
-      <button class="btn-primary" onclick="calculateRatings()">⚡ Calcular Nuevos Ratings</button>
+      <!-- Opponents -->
+      <h3 style="margin-bottom:12px">TUS PARTIDOS</h3>
+      <div class="sim-opp-header">
+        <span>Oponente</span>
+        <span>Rating</span>
+        <span style="text-align:center">Resultado</span>
+        <span style="text-align:right">Puntos</span>
+        <span></span>
+      </div>
+      <div id="simRows"></div>
 
-      <div class="calc-result" id="calcResult">
-        <h4>RESULTADOS DEL CÁLCULO</h4>
-        <div id="calcResultBody"></div>
-        <button class="btn-primary" id="calcApplyBtn" style="margin-top:16px" onclick="applyRatings()">✓ Aplicar a Base de Datos</button>
-        <button class="btn-secondary" onclick="document.getElementById('calcResult').classList.remove('show')">Descartar</button>
+      <button class="btn-secondary" onclick="simAddOpponent()" style="margin-top:8px">
+        + Agregar oponente
+      </button>
+
+      <!-- Result summary -->
+      <div class="calc-result" id="simResult">
+        <h4>RESULTADO PROYECTADO</h4>
+        <div id="simResultBody"></div>
+        <div class="disclaimer-note">
+          <strong>⚠️ Nota Informativa:</strong> Este simulador es para uso personal.
+          Los ratings oficiales solo se actualizan tras la validación de la Federación
+          y la subida de resultados por parte del administrador.
+        </div>
       </div>
     </div>
   </div>
@@ -2099,50 +2155,115 @@ function getPoints(rA, rB, winnerIsA) {
   }
 }
 
-let matchRows = 0;
-// Accumulate calculated results for applying to DB
-let pendingResults = [];
+// ══════════════════════════════════════════
+// SIMULADOR PERSONAL
+// ══════════════════════════════════════════
+let simRowCount = 0;
+let simOpRows   = [];   // [{ id, won }]
 
-function addMatchRow() {
-  matchRows++;
-  const id = matchRows;
-  const div = document.createElement('div');
-  div.className = 'match-entry';
-  div.id = 'mrow' + id;
-  div.innerHTML = `
-    <div class="field-group">
-      <label>Jugador A</label>
-      <input type="text" id="pA${id}" placeholder="Nombre" list="playerList" oninput="autoFillRating(${id},'A')">
-    </div>
-    <div class="field-group" style="min-width:80px">
-      <label>Rating A</label>
-      <input type="number" id="rA${id}" placeholder="1800">
-    </div>
-    <div class="vs-badge">VS</div>
-    <div class="field-group">
-      <label>Jugador B</label>
-      <input type="text" id="pB${id}" placeholder="Nombre" list="playerList" oninput="autoFillRating(${id},'B')">
-    </div>
-    <div class="field-group" style="min-width:80px">
-      <label>Rating B</label>
-      <input type="number" id="rB${id}" placeholder="1750">
-    </div>
-    <div class="field-group winner-select" style="min-width:120px">
-      <label>Ganador</label>
-      <select id="win${id}">
-        <option value="A">A ganó</option>
-        <option value="B">B ganó</option>
-      </select>
-    </div>`;
-  document.getElementById('matchEntries').appendChild(div);
+function simAutoFill() {
+  const name   = document.getElementById('simMyName')?.value.trim();
+  const player = PLAYER_BY_NAME[name?.toLowerCase()];
+  if (player) {
+    document.getElementById('simMyRating').value = player.rating;
+    simCalc();
+  }
 }
 
-function autoFillRating(rowId, side) {
-  const nameEl   = document.getElementById(`p${side}${rowId}`);
-  const ratingEl = document.getElementById(`r${side}${rowId}`);
-  if (!nameEl || !ratingEl) return;
-  const player = PLAYER_BY_NAME[nameEl.value.trim().toLowerCase()];
-  if (player) ratingEl.value = player.rating;
+function simAddOpponent() {
+  simRowCount++;
+  const id = simRowCount;
+  simOpRows.push({ id, won: true });
+
+  const div = document.createElement('div');
+  div.className = 'sim-opp-row';
+  div.id = 'simrow' + id;
+  div.innerHTML = `
+    <input type="text" class="field-group" id="simOppName${id}" list="playerList"
+      style="background:var(--navy);border:1px solid var(--border);border-radius:8px;
+             padding:9px 12px;color:var(--text);font-family:'DM Sans';font-size:14px;
+             outline:none;width:100%;box-sizing:border-box"
+      placeholder="Nombre del oponente" oninput="simAutoFillOpp(${id})">
+    <input type="number" id="simOppRating${id}"
+      style="background:var(--navy);border:1px solid var(--border);border-radius:8px;
+             padding:9px 12px;color:var(--text);font-family:'DM Sans';font-size:14px;
+             outline:none;width:100%;box-sizing:border-box"
+      placeholder="Rating" oninput="simCalc()">
+    <div class="sim-gp-wrap">
+      <button class="sim-gp-btn won active" id="simGBtn${id}" onclick="simSetResult(${id},true)">G</button>
+      <button class="sim-gp-btn lost"        id="simPBtn${id}" onclick="simSetResult(${id},false)">P</button>
+    </div>
+    <div class="sim-pts" id="simPts${id}">—</div>
+    <button class="sim-del-btn" title="Quitar" onclick="simRemoveRow(${id})">✕</button>`;
+  document.getElementById('simRows').appendChild(div);
+  simCalc();
+}
+
+function simAutoFillOpp(id) {
+  const name   = document.getElementById('simOppName' + id)?.value.trim();
+  const rEl    = document.getElementById('simOppRating' + id);
+  if (!rEl) return;
+  const player = PLAYER_BY_NAME[name?.toLowerCase()];
+  if (player) { rEl.value = player.rating; simCalc(); }
+}
+
+function simSetResult(id, won) {
+  const row = simOpRows.find(r => r.id === id);
+  if (row) row.won = won;
+  document.getElementById('simGBtn' + id)?.classList.toggle('active', won);
+  document.getElementById('simPBtn' + id)?.classList.toggle('active', !won);
+  simCalc();
+}
+
+function simRemoveRow(id) {
+  simOpRows = simOpRows.filter(r => r.id !== id);
+  document.getElementById('simrow' + id)?.remove();
+  simCalc();
+}
+
+function simCalc() {
+  const myRating = parseInt(document.getElementById('simMyRating')?.value);
+  const result   = document.getElementById('simResult');
+  if (!myRating || isNaN(myRating)) { result.classList.remove('show'); return; }
+
+  let totalGain = 0, wins = 0, losses = 0, validRows = 0;
+
+  for (const row of simOpRows) {
+    const rOpp  = parseInt(document.getElementById('simOppRating' + row.id)?.value);
+    const ptsEl = document.getElementById('simPts' + row.id);
+    if (!ptsEl) continue;
+    if (!rOpp || isNaN(rOpp)) { ptsEl.textContent = '—'; ptsEl.className = 'sim-pts'; continue; }
+
+    validRows++;
+    const { aGain } = getPoints(myRating, rOpp, row.won);
+    totalGain += aGain;
+    row.won ? wins++ : losses++;
+
+    ptsEl.textContent = (aGain >= 0 ? '+' : '') + aGain;
+    ptsEl.className   = 'sim-pts result-pts ' + (aGain >= 0 ? 'gain' : 'loss');
+  }
+
+  if (!validRows) { result.classList.remove('show'); return; }
+
+  const newRating = myRating + totalGain;
+  result.classList.add('show');
+  document.getElementById('simResultBody').innerHTML = `
+    <div class="result-row">
+      <span>Partidos jugados</span>
+      <span>
+        <span style="color:var(--green);font-family:'DM Mono';font-weight:700">${wins}G</span>
+        &nbsp;/&nbsp;
+        <span style="color:var(--red);font-family:'DM Mono';font-weight:700">${losses}P</span>
+      </span>
+    </div>
+    <div class="result-row">
+      <span>Puntos netos</span>
+      <span class="result-pts ${totalGain >= 0 ? 'gain' : 'loss'}">${totalGain >= 0 ? '+' : ''}${totalGain}</span>
+    </div>
+    <div class="result-row" style="font-size:17px;padding:12px 0">
+      <strong>Nuevo Rating Proyectado</strong>
+      <strong style="color:var(--accent);font-family:'DM Mono'">${newRating}</strong>
+    </div>`;
 }
 
 function buildDatalist() {
@@ -2155,47 +2276,6 @@ function buildDatalist() {
     dl.appendChild(opt);
     PLAYER_BY_NAME[p.name.toLowerCase()] = p;
   });
-}
-
-function renderPendingResults() {
-  const body = document.getElementById('calcResultBody');
-  body.innerHTML = pendingResults.map(r => `
-    <div class="result-row">
-      <div class="result-player">
-        ${r.winner === r.pA ? '👑 ' : ''}<strong>${r.pA}</strong>
-        <span style="color:var(--muted);font-size:12px">${r.rA} → ${r.rA + r.aGain}</span>
-        ${!r.idA ? '<span style="color:var(--orange);font-size:11px"> ⚠ no en BD</span>' : ''}
-      </div>
-      <div class="result-pts ${r.aGain >= 0 ? 'gain' : 'loss'}">${r.aGain >= 0 ? '+' : ''}${r.aGain}</div>
-    </div>
-    <div class="result-row">
-      <div class="result-player">
-        ${r.winner === r.pB ? '👑 ' : ''}<strong>${r.pB}</strong>
-        <span style="color:var(--muted);font-size:12px">${r.rB} → ${r.rB + r.bGain}</span>
-        ${!r.idB ? '<span style="color:var(--orange);font-size:11px"> ⚠ no en BD</span>' : ''}
-      </div>
-      <div class="result-pts ${r.bGain >= 0 ? 'gain' : 'loss'}">${r.bGain >= 0 ? '+' : ''}${r.bGain}</div>
-    </div>`).join('<hr style="border-color:var(--border);margin:4px 0">');
-  document.getElementById('calcResult').classList.add('show');
-}
-
-function calculateRatings() {
-  pendingResults = [];
-  for (let i = 1; i <= matchRows; i++) {
-    const pA  = document.getElementById('pA' + i)?.value.trim();
-    const pB  = document.getElementById('pB' + i)?.value.trim();
-    const rA  = parseInt(document.getElementById('rA' + i)?.value);
-    const rB  = parseInt(document.getElementById('rB' + i)?.value);
-    const win = document.getElementById('win' + i)?.value;
-    if (!pA || !pB || isNaN(rA) || isNaN(rB)) continue;
-    const { aGain, bGain } = getPoints(rA, rB, win === 'A');
-    const playerA = PLAYERS.find(p => p.name.toLowerCase() === pA.toLowerCase());
-    const playerB = PLAYERS.find(p => p.name.toLowerCase() === pB.toLowerCase());
-    pendingResults.push({ pA, pB, rA, rB, aGain, bGain, winner: win === 'A' ? pA : pB, idA: playerA?.id, idB: playerB?.id });
-  }
-
-  if (!pendingResults.length) { alert('Ingresa al menos un partido completo.'); return; }
-  renderPendingResults();
 }
 
 // ══════════════════════════════════════════
@@ -2457,82 +2537,6 @@ function downloadCsvTemplate() {
   a.href = url; a.download = 'plantilla_partidos.csv';
   document.body.appendChild(a); a.click();
   document.body.removeChild(a); URL.revokeObjectURL(url);
-}
-
-async function applyRatings() {
-  const btn = document.querySelector('#calcResult .btn-primary');
-  btn.disabled = true;
-  btn.textContent = '⏳ Aplicando...';
-
-  const tournName = document.getElementById('tournName')?.value.trim() || 'Torneo sin nombre';
-  let errors = [];
-  let applied = 0;
-
-  // Create torneo record if we have one
-  let torneoId = null;
-  try {
-    const [torneo] = await sbPost('torneos', { nombre: tournName, fecha: new Date().toISOString().split('T')[0] });
-    torneoId = torneo?.id;
-  } catch (e) {
-    console.warn('No se pudo crear torneo:', e.message);
-  }
-
-  for (const r of pendingResults) {
-    const newRA = r.rA + r.aGain;
-    const newRB = r.rB + r.bGain;
-
-    // Update player A rating
-    if (r.idA) {
-      try {
-        await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${r.idA}`, { Rating: newRA });
-        // Update local cache
-        const p = PLAYERS.find(x => x.id === r.idA);
-        if (p) p.rating = newRA;
-        applied++;
-      } catch (e) { errors.push(`${r.pA}: ${e.message}`); }
-    }
-
-    // Update player B rating
-    if (r.idB) {
-      try {
-        await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${r.idB}`, { Rating: newRB });
-        const p = PLAYERS.find(x => x.id === r.idB);
-        if (p) p.rating = newRB;
-        applied++;
-      } catch (e) { errors.push(`${r.pB}: ${e.message}`); }
-    }
-
-    // Record the match
-    if (torneoId && r.idA && r.idB) {
-      try {
-        await sbPost('partidos', {
-          torneo_id: torneoId,
-          jugador_a_id: r.idA,
-          jugador_b_id: r.idB,
-          ganador: r.winner === r.pA ? 'A' : 'B',
-          rating_a_antes: r.rA,
-          rating_a_despues: newRA,
-          rating_b_antes: r.rB,
-          rating_b_despues: newRB,
-          fecha: new Date().toISOString().split('T')[0]
-        });
-      } catch (e) { console.warn('No se guardó partido:', e.message); }
-    }
-  }
-
-  btn.disabled = false;
-  btn.textContent = '✓ Aplicar a Base de Datos';
-
-  if (errors.length) {
-    alert(`⚠️ Se aplicaron ${applied} cambios.\n\nErrores:\n${errors.join('\n')}\n\nVerifica los permisos de escritura en Supabase.`);
-  } else {
-    alert(`✅ ${applied} ratings actualizados en Supabase.\n\nLos cambios son visibles en tiempo real.`);
-    document.getElementById('calcResult').classList.remove('show');
-    // Re-sort master list and rebuild rank lookup
-    ALL_PLAYERS.sort((a, b) => b.rating - a.rating);
-    ALL_PLAYERS.forEach((p, i) => { p.rank = i + 1; RANK_BY_ID[p.id] = p.rank; });
-    filterPlayers();
-  }
 }
 
 // ══════════════════════════════════════════
@@ -3236,7 +3240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (lm) lm.style.display = PLAYERS.length > PAGE_SIZE ? '' : 'none';
 
   buildDatalist();
-  addMatchRow();
+  simAddOpponent();
   renderMembers();
   updateStats();
 });
