@@ -1458,7 +1458,9 @@ const SB_HEADERS = {
 };
 
 async function sbGet(table, params = '') {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, { headers: SB_HEADERS });
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+    headers: { ...SB_HEADERS, 'Cache-Control': 'no-cache' }
+  });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Supabase GET ${table} (${res.status}): ${err}`);
@@ -2910,7 +2912,7 @@ async function saveEditTorneo() {
     if (cached) { cached.nombre = nombre; cached.fecha = fecha; }
     msg.style.color = 'var(--green)';
     msg.textContent = '✓ Torneo actualizado.';
-    setTimeout(() => { hideEditTorneoModal(); loadTorneosList(); }, 900);
+    setTimeout(async () => { hideEditTorneoModal(); await loadTorneosList(); }, 900);
   } catch(e) {
     msg.style.color = 'var(--red)';
     msg.textContent = 'Error: ' + e.message;
@@ -2963,7 +2965,7 @@ async function confirmarBorrarTorneo() {
     await sbDelete('torneos',           `id=eq.${torneoId}`);
     await loadPlayers();
     hideDeleteTorneoModal();
-    loadTorneosList();
+    await loadTorneosList();
   } catch(e) {
     msg.style.color = 'var(--red)';
     msg.textContent = 'Error: ' + e.message;
