@@ -971,7 +971,7 @@
       <div class="calc-result" id="calcResult">
         <h4>RESULTADOS DEL CÁLCULO</h4>
         <div id="calcResultBody"></div>
-        <button class="btn-primary" style="margin-top:16px" onclick="applyRatings()">✓ Aplicar a Base de Datos</button>
+        <button class="btn-primary" id="calcApplyBtn" style="margin-top:16px" onclick="applyRatings()">✓ Aplicar a Base de Datos</button>
         <button class="btn-secondary" onclick="document.getElementById('calcResult').classList.remove('show')">Descartar</button>
       </div>
     </div>
@@ -1513,6 +1513,11 @@ function updateAuthUI() {
   const el_admin = document.getElementById('navAdmin');
   if (el_memb)  el_memb.style.display  = isLoggedIn ? '' : 'none';
   if (el_admin) el_admin.style.display = isAdmin()   ? '' : 'none';
+  // Apply-to-DB buttons only visible for admins
+  const el_calcApply  = document.getElementById('calcApplyBtn');
+  const el_subirApply = document.getElementById('subirApplyBtn');
+  if (el_calcApply)  el_calcApply.style.display  = isAdmin() ? '' : 'none';
+  if (el_subirApply) el_subirApply.style.display = isAdmin() ? '' : 'none';
   const btn = document.getElementById('loginBtn');
   if (!btn) return;
   if (isLoggedIn) {
