@@ -605,13 +605,13 @@
   }
   .edit-btn:hover { border-color: var(--accent); color: var(--accent); }
   #editMembModal, #newPlayerModal, #newTournamentModal, #configModal,
-  #editTorneoModal {
+  #editTorneoModal, #deleteTorneoModal {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.75); z-index: 1100;
     align-items: center; justify-content: center;
   }
   #editMembModal.open, #newPlayerModal.open, #newTournamentModal.open, #configModal.open,
-  #editTorneoModal.open { display: flex; }
+  #editTorneoModal.open, #deleteTorneoModal.open { display: flex; }
   .edit-field select {
     width: 100%; box-sizing: border-box;
     background: var(--blue); border: 1px solid var(--border);
@@ -1332,6 +1332,7 @@ Maria Lopez,Ana Torres,B</code>
   </div>
 </div>
 
+
 <!-- ══════════════════════════════════════════
      EDITAR TORNEO MODAL
 ═══════════════════════════════════════════ -->
@@ -1356,6 +1357,26 @@ Maria Lopez,Ana Torres,B</code>
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════
+     CONFIRMAR BORRAR TORNEO MODAL
+═══════════════════════════════════════════ -->
+<div id="deleteTorneoModal">
+  <div class="edit-memb-box">
+    <div class="edit-memb-title" style="color:var(--red)">Borrar Torneo</div>
+    <div class="edit-memb-sub" id="deleteTorneoSub" style="margin-bottom:16px"></div>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 24px">
+      Esto revertirá los ratings de todos los jugadores que participaron.<br>
+      <strong style="color:var(--red)">No se puede deshacer.</strong>
+    </p>
+    <div id="deleteTorneoMsg" class="edit-memb-msg"></div>
+    <div class="edit-actions">
+      <button class="btn-cancel" id="deleteTorneoCancelBtn" onclick="hideDeleteTorneoModal()">Cancelar</button>
+      <button class="btn-primary" id="deleteTorneoConfirmBtn"
+        style="background:var(--red)"
+        onclick="confirmarBorrarTorneo()">Sí, Borrar y Revertir</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════════
      CONFIGURACIÓN MODAL
@@ -2841,18 +2862,30 @@ async function saveNewTournament() {
   }
 }
 
+
+// ══════════════════════════════════════════
+// CONFIGURACIÓN
+// ══════════════════════════════════════════
+function showConfigModal() {
+  document.getElementById('configModal').classList.add('open');
+}
+
+function hideConfigModal() {
+  document.getElementById('configModal').classList.remove('open');
+}
+
 // ══════════════════════════════════════════
 // EDITAR TORNEO
 // ══════════════════════════════════════════
 function showEditTorneoModal(id, nombre, fecha) {
   if (!isAdmin()) { showLogin(); return; }
-  document.getElementById('editTorneoId').value           = id;
-  document.getElementById('editTorneoName').value         = nombre;
-  document.getElementById('editTorneoDate').value         = fecha || '';
-  document.getElementById('editTorneoMsg').textContent    = '';
-  document.getElementById('editTorneoSaveBtn').disabled   = false;
+  document.getElementById('editTorneoId').value            = id;
+  document.getElementById('editTorneoName').value          = nombre;
+  document.getElementById('editTorneoDate').value          = fecha || '';
+  document.getElementById('editTorneoMsg').textContent     = '';
+  document.getElementById('editTorneoSaveBtn').disabled    = false;
   document.getElementById('editTorneoSaveBtn').textContent = 'Guardar Cambios';
-  document.getElementById('editTorneoSub').textContent    = nombre;
+  document.getElementById('editTorneoSub').textContent     = nombre;
   document.getElementById('editTorneoModal').classList.add('open');
 }
 
@@ -2868,18 +2901,11 @@ async function saveEditTorneo() {
   const msg    = document.getElementById('editTorneoMsg');
   const btn    = document.getElementById('editTorneoSaveBtn');
 
-  if (!nombre) {
-    msg.style.color = 'var(--red)';
-    msg.textContent = 'El nombre es requerido.';
-    return;
-  }
-  btn.disabled = true;
-  btn.textContent = 'Guardando...';
-  msg.textContent = '';
+  if (!nombre) { msg.style.color = 'var(--red)'; msg.textContent = 'El nombre es requerido.'; return; }
+  btn.disabled = true; btn.textContent = 'Guardando...'; msg.textContent = '';
 
   try {
     await sbPatch('torneos', `id=eq.${id}`, { nombre, fecha });
-    // Update local cache
     const cached = allTorneos.find(t => t.id == id);
     if (cached) { cached.nombre = nombre; cached.fecha = fecha; }
     msg.style.color = 'var(--green)';
@@ -2888,17 +2914,41 @@ async function saveEditTorneo() {
   } catch(e) {
     msg.style.color = 'var(--red)';
     msg.textContent = 'Error: ' + e.message;
-    btn.disabled = false;
-    btn.textContent = 'Guardar Cambios';
+    btn.disabled = false; btn.textContent = 'Guardar Cambios';
   }
 }
 
 // ══════════════════════════════════════════
-// BORRAR TORNEO (con reversión atómica)
+// BORRAR TORNEO
 // ══════════════════════════════════════════
-async function eliminarTorneo(torneoId, nombre) {
-  if (!isAdmin()) return;
-  if (!window.confirm(`¿Borrar "${nombre}"?\n\nEsto revertirá los ratings de todos los jugadores que participaron. No se puede deshacer.`)) return;
+let _deleteTorneoId = null;
+
+function showDeleteTorneoModal(torneoId, nombre) {
+  if (!isAdmin()) { showLogin(); return; }
+  _deleteTorneoId = torneoId;
+  document.getElementById('deleteTorneoSub').textContent       = `"${nombre}"`;
+  document.getElementById('deleteTorneoMsg').textContent       = '';
+  document.getElementById('deleteTorneoConfirmBtn').disabled   = false;
+  document.getElementById('deleteTorneoConfirmBtn').textContent = 'Sí, Borrar y Revertir';
+  document.getElementById('deleteTorneoCancelBtn').disabled    = false;
+  document.getElementById('deleteTorneoModal').classList.add('open');
+}
+
+function hideDeleteTorneoModal() {
+  document.getElementById('deleteTorneoModal').classList.remove('open');
+  _deleteTorneoId = null;
+}
+
+async function confirmarBorrarTorneo() {
+  if (!isAdmin() || !_deleteTorneoId) return;
+  const torneoId = _deleteTorneoId;
+  const msg = document.getElementById('deleteTorneoMsg');
+  const btn = document.getElementById('deleteTorneoConfirmBtn');
+  const cancelBtn = document.getElementById('deleteTorneoCancelBtn');
+
+  btn.disabled = true; btn.textContent = 'Borrando...';
+  cancelBtn.disabled = true;
+  msg.textContent = '';
 
   try {
     const participaciones = await sbGet(
@@ -2908,25 +2958,18 @@ async function eliminarTorneo(torneoId, nombre) {
     for (const p of participaciones) {
       await sbPatch('jugadores', `id=eq.${p.id_jugador}`, { rating_actual: p.rating_inicio });
     }
-    await sbDelete('partidos',          `torneo_id=eq.${torneoId}`);
+    try { await sbDelete('partidos', `torneo_id=eq.${torneoId}`); } catch(_) {}
     await sbDelete('resultados_evento', `id_torneo=eq.${torneoId}`);
     await sbDelete('torneos',           `id=eq.${torneoId}`);
     await loadPlayers();
+    hideDeleteTorneoModal();
     loadTorneosList();
   } catch(e) {
-    alert('Error al borrar el torneo: ' + e.message);
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Error: ' + e.message;
+    btn.disabled = false; btn.textContent = 'Sí, Borrar y Revertir';
+    cancelBtn.disabled = false;
   }
-}
-
-// ══════════════════════════════════════════
-// CONFIGURACIÓN
-// ══════════════════════════════════════════
-function showConfigModal() {
-  document.getElementById('configModal').classList.add('open');
-}
-
-function hideConfigModal() {
-  document.getElementById('configModal').classList.remove('open');
 }
 
 // ══════════════════════════════════════════
@@ -2962,7 +3005,7 @@ async function loadTorneosList() {
           <button class="torneo-admin-btn edit" title="Editar torneo"
             onclick="showEditTorneoModal(${t.id},'${safeNombre}','${t.fecha || ''}')">✏️</button>
           <button class="torneo-admin-btn del" title="Borrar torneo"
-            onclick="eliminarTorneo(${t.id},'${safeNombre}')">🗑️</button>
+            onclick="showDeleteTorneoModal(${t.id},'${safeNombre}')">🗑️</button>
         </div>` : `<div style="color:var(--muted);font-size:20px;margin-top:4px">›</div>`;
       return `<div class="torneo-card" onclick="openTorneoEvento(${t.id},'${safeNombre}','${t.fecha || ''}')">
         <div class="torneo-card-left">
