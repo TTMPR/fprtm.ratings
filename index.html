@@ -1985,9 +1985,13 @@ async function showProfile(player) {
   // Merge both queries and deduplicate by match id
   const byId   = partidosRes.status === 'fulfilled' ? partidosRes.value : [];
   const byName = partidosNombreRes.status === 'fulfilled' ? partidosNombreRes.value : [];
+  console.log(`[DEBUG] player.id=${player.id} (${typeof player.id}), player.name="${player.name}"`);
+  console.log(`[DEBUG] byId count: ${byId.length}`, byId.map(m => ({id:m.id, jA:m.jugador_a_id, jB:m.jugador_b_id, nA:m.nombre_a, nB:m.nombre_b})));
+  console.log(`[DEBUG] byName count: ${byName.length}`, byName.map(m => ({id:m.id, jA:m.jugador_a_id, jB:m.jugador_b_id, nA:m.nombre_a, nB:m.nombre_b})));
   const seenIds = new Set(byId.map(m => m.id));
   const merged  = [...byId, ...byName.filter(m => !seenIds.has(m.id))];
   merged.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+  console.log(`[DEBUG] merged total: ${merged.length}`);
 
   if (merged.length > 0) {
     const matches = merged;
