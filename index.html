@@ -1977,7 +1977,9 @@ async function showProfile(player) {
     const matches = partidosRes.value;
     let wins = 0, losses = 0;
     matches.forEach(m => {
-      const won = m.ganador === (m.jugador_a_id === player.id ? 'A' : 'B');
+      const won = m.ganador_id != null
+        ? m.ganador_id === player.id
+        : m.ganador === (m.jugador_a_id === player.id ? 'A' : 'B');
       if (won) wins++; else losses++;
     });
 
@@ -2000,7 +2002,9 @@ async function showProfile(player) {
         const oppName   = isA ? (m.nombre_b || `#${m.jugador_b_id}`) : (m.nombre_a || `#${m.jugador_a_id}`);
         const oppRating = isA ? m.rating_b_antes    : m.rating_a_antes;
         const pts       = (myAfter || myRating) - (myRating || 0);
-        const won       = m.ganador === (isA ? 'A' : 'B');
+        const won       = m.ganador_id != null
+          ? m.ganador_id === player.id
+          : m.ganador === (isA ? 'A' : 'B');
         return `<div class="match-item">
           <div class="match-player ${won ? 'winner' : 'loser'}">
             <div class="name">${won ? '👑 ' : ''}${player.name.split(' ')[0]}</div>
