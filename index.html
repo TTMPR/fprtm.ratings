@@ -1946,7 +1946,7 @@ async function showProfile(player) {
   // Basic info
   document.getElementById('profileAvatar').textContent = initials(player.name);
   document.getElementById('profileName').textContent   = player.name;
-  document.getElementById('profileId').textContent     = 'FPRTM #' + String(player.rank).padStart(4, '0');
+  document.getElementById('profileId').textContent     = 'ID: ' + player.id;
   document.getElementById('profileClub').textContent   = player.club || 'Sin club';
   const _badge = document.getElementById('profileBadge');
   _badge.className = 'badge';
