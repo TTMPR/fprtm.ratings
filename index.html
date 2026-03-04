@@ -1975,7 +1975,7 @@ async function showProfile(player) {
 
   // ── Parallel queries ──────────────────────────────────────────────────
   const [partidosRes, participacionesRes] = await Promise.allSettled([
-    sbGet('partidos', `?or=(jugador_a_id.eq.${player.id},jugador_b_id.eq.${player.id})&order=fecha.desc&limit=50`),
+    sbGet('partidos', `?or=(jugador_a_id.eq.${player.id},jugador_b_id.eq.${player.id})&order=fecha.desc&limit=500`),
     sbGet('resultados_evento', `?id_jugador=eq.${player.id}&order=created_at.asc&limit=100`)
   ]);
 
@@ -2017,7 +2017,7 @@ async function showProfile(player) {
     // Render match list
     const ml = document.getElementById('matchList');
     if (matches.length) {
-      ml.innerHTML = matches.slice(0, 20).map(m => {
+      ml.innerHTML = matches.map(m => {
         const isA       = m.jugador_a_id === player.id;
         const myRating  = isA ? m.rating_a_antes   : m.rating_b_antes;
         const myAfter   = isA ? m.rating_a_despues  : m.rating_b_despues;
