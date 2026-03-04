@@ -1952,8 +1952,7 @@ async function showProfile(player) {
   document.getElementById('startRating').textContent   = player.ratingStart || player.rating;
   document.getElementById('currentRating').textContent = player.rating;
 
-  const ytd = player.rating - (player.ratingStart || player.rating);
-  document.getElementById('ovPtsYTD').textContent = (ytd >= 0 ? '+' : '') + ytd;
+  document.getElementById('ovPtsYTD').textContent = '+0';
 
   showPage('profile');
 
@@ -1982,6 +1981,19 @@ async function showProfile(player) {
         : m.ganador === (m.jugador_a_id === player.id ? 'A' : 'B');
       if (won) wins++; else losses++;
     });
+
+    // YTD: find earliest match this year → rating before it = start rating
+    const thisYear = new Date().getFullYear().toString();
+    const ytdMatches = matches.filter(m => m.fecha && m.fecha.startsWith(thisYear));
+    if (ytdMatches.length > 0) {
+      const earliest = ytdMatches[ytdMatches.length - 1]; // array is desc by fecha
+      const isA = earliest.jugador_a_id === player.id;
+      const ratingBefore = isA ? earliest.rating_a_antes : earliest.rating_b_antes;
+      if (ratingBefore != null) {
+        const ytd = player.rating - ratingBefore;
+        document.getElementById('ovPtsYTD').textContent = (ytd >= 0 ? '+' : '') + ytd;
+      }
+    }
 
     const total = wins + losses;
     const pct   = total > 0 ? Math.round(wins / total * 100) : 0;
