@@ -2025,14 +2025,15 @@ async function showProfile(player) {
         const oppPlayer = ALL_PLAYERS.find(x => x.id === oppId);
         const oppName   = isA ? (m.nombre_b || oppPlayer?.name || `#${oppId}`) : (m.nombre_a || oppPlayer?.name || `#${oppId}`);
         const oppRating = isA ? m.rating_b_antes    : m.rating_a_antes;
-        const pts       = (myAfter || myRating) - (myRating || 0);
+        const pts       = (myAfter != null ? myAfter : myRating) - (myRating || 0);
+        const displayRating = myAfter != null ? myAfter : myRating;
         const won       = m.ganador_id != null
           ? m.ganador_id === player.id
           : m.ganador === (isA ? 'A' : 'B');
         return `<div class="match-item">
           <div class="match-player ${won ? 'winner' : 'loser'}">
             <div class="name">${won ? '👑 ' : ''}${player.name.split(' ')[0]}</div>
-            <div class="rating-tag">★ ${myRating || '—'}</div>
+            <div class="rating-tag">★ ${displayRating || '—'}</div>
             ${myAfter ? `<div class="pts-change">${pts >= 0 ? '+' : ''}${pts} pts</div>` : ''}
           </div>
           <div class="match-center">
