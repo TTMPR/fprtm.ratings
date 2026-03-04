@@ -638,13 +638,37 @@
   }
   .edit-btn:hover { border-color: var(--accent); color: var(--accent); }
   #editMembModal, #newPlayerModal, #newTournamentModal, #configModal,
-  #editTorneoModal, #deleteTorneoModal {
+  #editTorneoModal, #deleteTorneoModal, #playerMatchesModal {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.75); z-index: 1100;
     align-items: center; justify-content: center;
   }
   #editMembModal.open, #newPlayerModal.open, #newTournamentModal.open, #configModal.open,
-  #editTorneoModal.open, #deleteTorneoModal.open { display: flex; }
+  #editTorneoModal.open, #deleteTorneoModal.open, #playerMatchesModal.open { display: flex; }
+
+  #playerMatchesModal .edit-memb-box { width: 520px; max-height: 80vh; overflow-y: auto; }
+  .match-detail-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .match-detail-row:last-child { border-bottom: none; }
+  .match-opp { font-size: 14px; font-weight: 500; flex: 1; min-width: 0; }
+  .match-opp-rating { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .match-result-badge {
+    font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px; letter-spacing: 0.5px;
+  }
+  .match-result-badge.win  { background: rgba(34,197,94,0.15);  color: var(--green); }
+  .match-result-badge.loss { background: rgba(239,68,68,0.15);  color: var(--red);   }
+  .match-pts { font-family: 'DM Mono'; font-size: 15px; font-weight: 700; min-width: 48px; text-align: right; }
+  .match-pts.gain { color: var(--green); }
+  .match-pts.loss { color: var(--red); }
+  .evento-player-name.clickable {
+    cursor: pointer; text-decoration: underline dotted;
+    transition: color 0.15s;
+  }
+  .evento-player-name.clickable:hover { color: var(--accent); }
   .edit-field select {
     width: 100%; box-sizing: border-box;
     background: var(--blue); border: 1px solid var(--border);
@@ -1430,6 +1454,22 @@ Maria Lopez,Ana Torres,B</code>
       <button class="btn-primary" id="deleteTorneoConfirmBtn"
         style="background:var(--red)"
         onclick="confirmarBorrarTorneo()">Sí, Borrar y Revertir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PLAYER MATCHES MODAL
+═══════════════════════════════════════════ -->
+<div id="playerMatchesModal">
+  <div class="edit-memb-box">
+    <div class="edit-memb-title" id="pmTitle">—</div>
+    <div class="edit-memb-sub" id="pmSub"></div>
+    <div id="pmBody">
+      <div style="text-align:center;padding:20px;color:var(--muted)">Cargando partidos...</div>
+    </div>
+    <div class="edit-actions" style="margin-top:20px">
+      <button class="btn-cancel" onclick="document.getElementById('playerMatchesModal').classList.remove('open')">Cerrar</button>
     </div>
   </div>
 </div>
@@ -3064,9 +3104,11 @@ async function loadTorneosList() {
 // ══════════════════════════════════════════
 // TORNEO EVENTO PAGE
 // ══════════════════════════════════════════
-let eventoRows = [];   // full list for current event (for search filter)
+let eventoRows = [];        // full list for current event (for search filter)
+let currentEventoTorneoId = null;
 
 async function openTorneoEvento(torneoId, nombre, fecha) {
+  currentEventoTorneoId = torneoId;
   showPage('torneoEvento');
 
   document.getElementById('eventoOverline').textContent = fecha
@@ -3087,6 +3129,7 @@ async function openTorneoEvento(torneoId, nombre, fecha) {
 
     eventoRows = data.map((r, i) => ({
       rank:          i + 1,
+      id_jugador:    r.id_jugador,
       nombre:        r.nombre || '—',
       club:          r.club   || '—',
       ratingInicio:  r.rating_inicio,
@@ -3118,7 +3161,7 @@ function renderEventoRows(rows) {
     return `<div class="evento-row">
       <div class="evento-rank">${i + 1}</div>
       <div class="evento-player">
-        <div class="evento-player-name">${r.nombre}</div>
+        <div class="evento-player-name clickable" onclick="showPlayerMatches(${r.id_jugador},'${r.nombre.replace(/'/g,"\\'")}',${r.ratingInicio})">${r.nombre}</div>
         <div class="evento-player-meta">${r.club}</div>
       </div>
       <div class="evento-rating-flow">
@@ -3133,6 +3176,61 @@ function renderEventoRows(rows) {
       </div>
     </div>`;
   }).join('');
+}
+
+async function showPlayerMatches(playerId, playerName, ratingInicio) {
+  const modal = document.getElementById('playerMatchesModal');
+  document.getElementById('pmTitle').textContent = playerName;
+  document.getElementById('pmSub').textContent   = 'Cargando partidos...';
+  document.getElementById('pmBody').innerHTML    = '<div style="text-align:center;padding:20px;color:var(--muted)">Cargando...</div>';
+  modal.classList.add('open');
+
+  try {
+    const data = await sbGet('partidos',
+      `?or=(jugador_a_id.eq.${playerId},jugador_b_id.eq.${playerId})&torneo_id=eq.${currentEventoTorneoId}&order=id.asc&limit=200`
+    );
+
+    if (!data.length) {
+      document.getElementById('pmSub').textContent  = 'Sin partidos registrados.';
+      document.getElementById('pmBody').innerHTML   = '<div style="color:var(--muted);text-align:center;padding:20px">No se encontraron partidos para este jugador en este torneo.</div>';
+      return;
+    }
+
+    let totalPts = 0, wins = 0, losses = 0;
+    const rows = data.map(m => {
+      const esA      = m.jugador_a_id === playerId;
+      const oppId    = esA ? m.jugador_b_id : m.jugador_a_id;
+      const oppInfo  = ALL_PLAYERS.find(p => p.id === oppId);
+      const oppName  = oppInfo ? oppInfo.name : `#${oppId}`;
+      const oppRat   = esA ? m.rating_b_antes : m.rating_a_antes;
+      const gano     = m.ganador_id === playerId;
+      const pts      = esA ? (m.puntos_a ?? (m.rating_a_despues - m.rating_a_antes)) : (m.puntos_b ?? (m.rating_b_despues - m.rating_b_antes));
+      totalPts += pts;
+      gano ? wins++ : losses++;
+      const ptsSign  = pts >= 0 ? `+${pts}` : `${pts}`;
+      return `<div class="match-detail-row">
+        <div>
+          <div class="match-opp">${oppName}</div>
+          <div class="match-opp-rating">Rating oponente: ${oppRat ?? '—'}</div>
+        </div>
+        <span class="match-result-badge ${gano ? 'win' : 'loss'}">${gano ? 'GANÓ' : 'PERDIÓ'}</span>
+        <div class="match-pts ${pts >= 0 ? 'gain' : 'loss'}">${ptsSign}</div>
+      </div>`;
+    });
+
+    const totalSign = totalPts >= 0 ? `+${totalPts}` : `${totalPts}`;
+    document.getElementById('pmSub').textContent = `${wins}W · ${losses}L · ${data.length} partidos · ${totalSign} pts`;
+    document.getElementById('pmBody').innerHTML  =
+      `<div style="margin-bottom:12px;padding:12px;background:var(--card2);border-radius:10px;display:flex;gap:24px;justify-content:center;text-align:center">
+        <div><div style="font-family:'DM Mono';font-size:22px;color:var(--green)">${wins}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Ganados</div></div>
+        <div><div style="font-family:'DM Mono';font-size:22px;color:var(--red)">${losses}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Perdidos</div></div>
+        <div><div style="font-family:'DM Mono';font-size:22px;color:${totalPts>=0?'var(--green)':'var(--red)'}">${totalSign}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Puntos</div></div>
+      </div>
+      ${rows.join('')}`;
+  } catch(e) {
+    document.getElementById('pmSub').textContent = 'Error cargando partidos.';
+    document.getElementById('pmBody').innerHTML  = `<div style="color:var(--red)">${e.message}</div>`;
+  }
 }
 
 function filterEventoRows() {
