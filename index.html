@@ -1974,19 +1974,29 @@ async function showProfile(player) {
   document.getElementById('matchList').innerHTML       = '<div style="color:var(--muted);padding:20px">Cargando partidos...</div>';
 
   // ── Parallel queries ──────────────────────────────────────────────────
-  const [partidosRes, participacionesRes] = await Promise.allSettled([
+  const encName = encodeURIComponent(player.name);
+  const [partidosRes, partidosNombreRes, participacionesRes] = await Promise.allSettled([
     sbGet('partidos', `?or=(jugador_a_id.eq.${player.id},jugador_b_id.eq.${player.id})&order=fecha.desc&limit=500`),
+    sbGet('partidos', `?or=(nombre_a.eq.${encName},nombre_b.eq.${encName})&order=fecha.desc&limit=500`),
     sbGet('resultados_evento', `?id_jugador=eq.${player.id}&order=created_at.asc&limit=100`)
   ]);
 
   // ── MATCH STATS (from partidos) ───────────────────────────────────────
-  if (partidosRes.status === 'fulfilled') {
-    const matches = partidosRes.value;
+  // Merge both queries and deduplicate by match id
+  const byId   = partidosRes.status === 'fulfilled' ? partidosRes.value : [];
+  const byName = partidosNombreRes.status === 'fulfilled' ? partidosNombreRes.value : [];
+  const seenIds = new Set(byId.map(m => m.id));
+  const merged  = [...byId, ...byName.filter(m => !seenIds.has(m.id))];
+  merged.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+
+  if (merged.length > 0) {
+    const matches = merged;
     let wins = 0, losses = 0;
+    const isPlayerA = m => m.jugador_a_id === player.id || m.nombre_a === player.name;
     matches.forEach(m => {
       const won = m.ganador_id != null
         ? m.ganador_id === player.id
-        : m.ganador === (m.jugador_a_id === player.id ? 'A' : 'B');
+        : m.ganador === (isPlayerA(m) ? 'A' : 'B');
       if (won) wins++; else losses++;
     });
 
@@ -1995,7 +2005,7 @@ async function showProfile(player) {
     const ytdMatches = matches.filter(m => m.fecha && m.fecha.startsWith(thisYear));
     if (ytdMatches.length > 0) {
       const earliest = ytdMatches[ytdMatches.length - 1]; // array is desc by fecha
-      const isA = earliest.jugador_a_id === player.id;
+      const isA = isPlayerA(earliest);
       const ratingBefore = isA ? earliest.rating_a_antes : earliest.rating_b_antes;
       if (ratingBefore != null) {
         const ytd = player.rating - ratingBefore;
@@ -2018,7 +2028,7 @@ async function showProfile(player) {
     const ml = document.getElementById('matchList');
     if (matches.length) {
       ml.innerHTML = matches.map(m => {
-        const isA       = m.jugador_a_id === player.id;
+        const isA       = isPlayerA(m);
         const myRating  = isA ? m.rating_a_antes   : m.rating_b_antes;
         const myAfter   = isA ? m.rating_a_despues  : m.rating_b_despues;
         const oppId     = isA ? m.jugador_b_id : m.jugador_a_id;
@@ -2053,6 +2063,7 @@ async function showProfile(player) {
     ['pMatches','pWins','pLosses','pPct'].forEach(id => document.getElementById(id).textContent = '—');
     document.getElementById('matchList').innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Sin partidos registrados aún.</div>';
   }
+
 
   // ── TOURNAMENT HISTORY (from resultados_evento) ───────────────────────
   if (participacionesRes.status === 'fulfilled' && participacionesRes.value.length) {
