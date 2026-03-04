@@ -2954,15 +2954,17 @@ function hideConfigModal() {
 // ══════════════════════════════════════════
 // EDITAR TORNEO
 // ══════════════════════════════════════════
-function showEditTorneoModal(id, nombre, fecha) {
+function showEditTorneoModal(id) {
   if (!isAdmin()) { showLogin(); return; }
+  const t = allTorneos.find(x => x.id == id);
+  if (!t) return;
   document.getElementById('editTorneoId').value            = id;
-  document.getElementById('editTorneoName').value          = nombre;
-  document.getElementById('editTorneoDate').value          = fecha || '';
+  document.getElementById('editTorneoName').value          = t.nombre;
+  document.getElementById('editTorneoDate').value          = t.fecha || '';
   document.getElementById('editTorneoMsg').textContent     = '';
   document.getElementById('editTorneoSaveBtn').disabled    = false;
   document.getElementById('editTorneoSaveBtn').textContent = 'Guardar Cambios';
-  document.getElementById('editTorneoSub').textContent     = nombre;
+  document.getElementById('editTorneoSub').textContent     = t.nombre;
   document.getElementById('editTorneoModal').classList.add('open');
 }
 
@@ -3000,8 +3002,10 @@ async function saveEditTorneo() {
 // ══════════════════════════════════════════
 let _deleteTorneoId = null;
 
-function showDeleteTorneoModal(torneoId, nombre) {
+function showDeleteTorneoModal(torneoId) {
   if (!isAdmin()) { showLogin(); return; }
+  const t = allTorneos.find(x => x.id == torneoId);
+  const nombre = t ? t.nombre : '';
   _deleteTorneoId = torneoId;
   document.getElementById('deleteTorneoSub').textContent       = `"${nombre}"`;
   document.getElementById('deleteTorneoMsg').textContent       = '';
@@ -3103,9 +3107,9 @@ async function loadTorneosList() {
       const adminBtns = isAdmin() ? `
         <div class="torneo-admin-actions" onclick="event.stopPropagation()">
           <button class="torneo-admin-btn edit" title="Editar torneo"
-            onclick="showEditTorneoModal(${t.id},'${safeNombre}','${t.fecha || ''}')">✏️</button>
+            onclick="showEditTorneoModal(${t.id})">✏️</button>
           <button class="torneo-admin-btn del" title="Borrar torneo"
-            onclick="showDeleteTorneoModal(${t.id},'${safeNombre}')">🗑️</button>
+            onclick="showDeleteTorneoModal(${t.id})">🗑️</button>
         </div>` : `<div style="color:var(--muted);font-size:20px;margin-top:4px">›</div>`;
       return `<div class="torneo-card" onclick="openTorneoEvento(${t.id},'${safeNombre}','${t.fecha || ''}')">
         <div class="torneo-card-left">
