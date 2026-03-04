@@ -1946,7 +1946,7 @@ async function showProfile(player) {
   // Basic info
   document.getElementById('profileAvatar').textContent = initials(player.name);
   document.getElementById('profileName').textContent   = player.name;
-  document.getElementById('profileId').textContent     = 'FPRTM #' + String(player.rank).padStart(4, '0');
+  document.getElementById('profileId').textContent     = 'ID: ' + player.id;
   document.getElementById('profileClub').textContent   = player.club || 'Sin club';
   const _badge = document.getElementById('profileBadge');
   _badge.className = 'badge';
@@ -2021,7 +2021,9 @@ async function showProfile(player) {
         const isA       = m.jugador_a_id === player.id;
         const myRating  = isA ? m.rating_a_antes   : m.rating_b_antes;
         const myAfter   = isA ? m.rating_a_despues  : m.rating_b_despues;
-        const oppName   = isA ? (m.nombre_b || `#${m.jugador_b_id}`) : (m.nombre_a || `#${m.jugador_a_id}`);
+        const oppId     = isA ? m.jugador_b_id : m.jugador_a_id;
+        const oppPlayer = ALL_PLAYERS.find(x => x.id === oppId);
+        const oppName   = isA ? (m.nombre_b || oppPlayer?.name || `#${oppId}`) : (m.nombre_a || oppPlayer?.name || `#${oppId}`);
         const oppRating = isA ? m.rating_b_antes    : m.rating_a_antes;
         const pts       = (myAfter || myRating) - (myRating || 0);
         const won       = m.ganador_id != null
