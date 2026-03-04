@@ -2031,7 +2031,8 @@ async function showProfile(player) {
     // Render match list
     const ml = document.getElementById('matchList');
     if (matches.length) {
-      ml.innerHTML = matches.map(m => {
+      let totalPts = 0;
+      const rows = matches.map(m => {
         const isA       = isPlayerA(m);
         const myRating  = isA ? m.rating_a_antes   : m.rating_b_antes;
         const myAfter   = isA ? m.rating_a_despues  : m.rating_b_despues;
@@ -2040,6 +2041,7 @@ async function showProfile(player) {
         const oppName   = isA ? (m.nombre_b || oppPlayer?.name || `#${oppId}`) : (m.nombre_a || oppPlayer?.name || `#${oppId}`);
         const oppRating = isA ? m.rating_b_antes    : m.rating_a_antes;
         const pts       = myAfter != null ? myAfter - (myRating || 0) : null;
+        if (pts != null) totalPts += pts;
         const won       = m.ganador_id != null
           ? m.ganador_id === player.id
           : m.ganador === (isA ? 'A' : 'B');
@@ -2058,7 +2060,10 @@ async function showProfile(player) {
             <div class="rating-tag">★ ${oppRating || '—'}</div>
           </div>
         </div>`;
-      }).join('');
+      });
+      const totalSign = totalPts >= 0 ? `+${totalPts}` : `${totalPts}`;
+      const totalColor = totalPts >= 0 ? 'var(--green)' : 'var(--red)';
+      ml.innerHTML = rows.join('') + `<div style="text-align:center;padding:16px 0;font-family:'DM Mono';font-size:15px;color:${totalColor};border-top:1px solid var(--border);margin-top:8px">TOTAL: ${totalSign} pts</div>`;
     } else {
       ml.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Sin partidos registrados aún.</div>';
     }
