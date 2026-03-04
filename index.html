@@ -648,22 +648,28 @@
 
   #playerMatchesModal .edit-memb-box { width: 520px; max-height: 80vh; overflow-y: auto; }
   .match-detail-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 0; border-bottom: 1px solid var(--border);
-    gap: 12px;
+    display: flex; align-items: center;
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+    gap: 10px; border-radius: 8px; margin-bottom: 2px;
+    border-left: 3px solid transparent;
   }
+  .match-detail-row.win-row  { border-left-color: var(--green); background: rgba(34,197,94,0.04); }
+  .match-detail-row.loss-row { border-left-color: var(--red);   background: rgba(239,68,68,0.04); }
   .match-detail-row:last-child { border-bottom: none; }
-  .match-opp { font-size: 14px; font-weight: 500; flex: 1; min-width: 0; }
+  .pm-match-num { font-family:'DM Mono'; font-size:11px; color:var(--muted); min-width:18px; }
+  .match-opp { font-size: 14px; font-weight: 500; }
   .match-opp-rating { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .match-result-badge {
     font-size: 11px; font-weight: 700; padding: 3px 10px;
-    border-radius: 20px; letter-spacing: 0.5px;
+    border-radius: 20px; letter-spacing: 0.5px; flex-shrink: 0;
   }
   .match-result-badge.win  { background: rgba(34,197,94,0.15);  color: var(--green); }
   .match-result-badge.loss { background: rgba(239,68,68,0.15);  color: var(--red);   }
-  .match-pts { font-family: 'DM Mono'; font-size: 15px; font-weight: 700; min-width: 48px; text-align: right; }
+  .pm-pts-col { text-align: right; min-width: 56px; flex-shrink: 0; }
+  .match-pts { font-family: 'DM Mono'; font-size: 15px; font-weight: 700; }
   .match-pts.gain { color: var(--green); }
   .match-pts.loss { color: var(--red); }
+  .pm-running-rat { font-family:'DM Mono'; font-size: 11px; color: var(--muted); margin-top: 2px; }
   .evento-player-name.clickable {
     cursor: pointer; text-decoration: underline dotted;
     transition: color 0.15s;
@@ -3212,25 +3218,56 @@ async function showPlayerMatches(playerId, playerName, ratingInicio) {
       return;
     }
 
+    // ── Starting rating: ground truth is the first match's rating_antes ──
+    // All matches in a tournament reference the SAME initial rating as base.
+    // resultados_evento.rating_inicio can be stale; the match record is authoritative.
+    const firstM      = data[0];
+    const firstIsA    = firstM.jugador_a_id === playerId;
+    const startRating = (firstIsA ? firstM.rating_a_antes : firstM.rating_b_antes) ?? ratingInicio;
+
     let totalPts = 0, wins = 0, losses = 0;
-    const rows = data.map(m => {
-      const esA      = m.jugador_a_id === playerId;
-      const oppId    = esA ? m.jugador_b_id : m.jugador_a_id;
-      const oppInfo  = ALL_PLAYERS.find(p => p.id === oppId);
-      const oppName  = oppInfo ? oppInfo.name : `#${oppId}`;
-      const oppRat   = esA ? m.rating_b_antes : m.rating_a_antes;
-      const gano     = m.ganador_id === playerId;
-      const pts      = esA ? (m.puntos_a ?? (m.rating_a_despues - m.rating_a_antes)) : (m.puntos_b ?? (m.rating_b_despues - m.rating_b_antes));
-      totalPts += pts;
+    let runningRating = startRating;
+
+    const rows = data.map((m, idx) => {
+      const esA    = m.jugador_a_id === playerId;
+
+      // Winner detection: support both ganador_id and legacy ganador ('A'/'B')
+      const gano   = m.ganador_id != null
+        ? m.ganador_id === playerId
+        : m.ganador === (esA ? 'A' : 'B');
+
+      // Opponent name: prefer stored nombre_a/b, then ALL_PLAYERS lookup
+      const oppId   = esA ? m.jugador_b_id : m.jugador_a_id;
+      const oppInfo = ALL_PLAYERS.find(p => p.id === oppId);
+      const oppName = (esA ? m.nombre_b : m.nombre_a) || (oppInfo ? oppInfo.name : `#${oppId}`);
+      const oppRat  = esA ? m.rating_b_antes : m.rating_a_antes;
+
+      // pts = ratingDespues - ratingAntes (both anchored to the same startRating base)
+      const ratingAntes   = esA ? m.rating_a_antes   : m.rating_b_antes;
+      const ratingDespues = esA ? m.rating_a_despues  : m.rating_b_despues;
+      const pts = (ratingDespues != null && ratingAntes != null)
+        ? ratingDespues - ratingAntes
+        : 0;
+
+      totalPts      += pts;
+      runningRating  = startRating + totalPts;   // always recalculate from fixed base
       gano ? wins++ : losses++;
-      const ptsSign  = pts >= 0 ? `+${pts}` : `${pts}`;
-      return `<div class="match-detail-row">
-        <div>
+
+      const ptsSign    = pts >= 0 ? `+${pts}` : `${pts}`;
+      const ptsClass   = pts > 0 ? 'gain' : pts < 0 ? 'loss' : '';
+      const rowClass   = gano ? 'win' : 'loss';
+
+      return `<div class="match-detail-row ${rowClass}-row">
+        <div class="pm-match-num">${idx + 1}</div>
+        <div style="flex:1;min-width:0">
           <div class="match-opp">${oppName}</div>
           <div class="match-opp-rating">Rating oponente: ${oppRat ?? '—'}</div>
         </div>
-        <span class="match-result-badge ${gano ? 'win' : 'loss'}">${gano ? 'GANÓ' : 'PERDIÓ'}</span>
-        <div class="match-pts ${pts >= 0 ? 'gain' : 'loss'}">${ptsSign}</div>
+        <span class="match-result-badge ${rowClass}">${gano ? 'GANÓ' : 'PERDIÓ'}</span>
+        <div class="pm-pts-col">
+          <div class="match-pts ${ptsClass}">${ptsSign}</div>
+          <div class="pm-running-rat">${runningRating}</div>
+        </div>
       </div>`;
     });
 
@@ -3238,9 +3275,11 @@ async function showPlayerMatches(playerId, playerName, ratingInicio) {
     document.getElementById('pmSub').textContent = `${wins}W · ${losses}L · ${data.length} partidos · ${totalSign} pts`;
     document.getElementById('pmBody').innerHTML  =
       `<div style="margin-bottom:12px;padding:12px;background:var(--card2);border-radius:10px;display:flex;gap:24px;justify-content:center;text-align:center">
+        <div><div style="font-family:'DM Mono';font-size:16px;color:var(--muted)">${startRating}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Rating Inicio</div></div>
         <div><div style="font-family:'DM Mono';font-size:22px;color:var(--green)">${wins}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Ganados</div></div>
         <div><div style="font-family:'DM Mono';font-size:22px;color:var(--red)">${losses}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Perdidos</div></div>
         <div><div style="font-family:'DM Mono';font-size:22px;color:${totalPts>=0?'var(--green)':'var(--red)'}">${totalSign}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Puntos</div></div>
+        <div><div style="font-family:'DM Mono';font-size:22px;color:var(--accent)">${startRating + totalPts}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Rating Final</div></div>
       </div>
       ${rows.join('')}`;
   } catch(e) {
