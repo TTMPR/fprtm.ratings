@@ -2371,9 +2371,13 @@ function subirProcesarCsv() {
   subirPending = [];
   const unknown = [];
 
+  const findPlayer = q => q.startsWith('#')
+    ? ALL_PLAYERS.find(p => String(p.id) === q.slice(1))
+    : ALL_PLAYERS.find(p => p.name.toLowerCase() === q.toLowerCase());
+
   for (const row of subirCsvRows) {
-    const pA = ALL_PLAYERS.find(p => p.name.toLowerCase() === row.pA.toLowerCase());
-    const pB = ALL_PLAYERS.find(p => p.name.toLowerCase() === row.pB.toLowerCase());
+    const pA = findPlayer(row.pA);
+    const pB = findPlayer(row.pB);
     if (!pA) { unknown.push(row.pA); continue; }
     if (!pB) { unknown.push(row.pB); continue; }
     const { aGain, bGain } = getPoints(pA.rating, pB.rating, row.win === 'A');
