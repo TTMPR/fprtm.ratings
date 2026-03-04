@@ -1958,7 +1958,9 @@ async function showProfile(player) {
   document.getElementById('startRating').textContent   = player.ratingStart || player.rating;
   document.getElementById('currentRating').textContent = player.rating;
 
-  document.getElementById('ovPtsYTD').textContent = '+0';
+  const ytdEl = document.getElementById('ovPtsYTD');
+  ytdEl.textContent = '+0';
+  ytdEl.className = 'val green';
 
   showPage('profile');
 
@@ -1997,7 +1999,9 @@ async function showProfile(player) {
       const ratingBefore = isA ? earliest.rating_a_antes : earliest.rating_b_antes;
       if (ratingBefore != null) {
         const ytd = player.rating - ratingBefore;
-        document.getElementById('ovPtsYTD').textContent = (ytd >= 0 ? '+' : '') + ytd;
+        const el = document.getElementById('ovPtsYTD');
+        el.textContent = (ytd >= 0 ? '+' : '') + ytd;
+        el.className = 'val ' + (ytd >= 0 ? 'green' : 'red');
       }
     }
 
