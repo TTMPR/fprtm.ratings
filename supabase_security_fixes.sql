@@ -44,7 +44,7 @@ ALTER FUNCTION "public"."update_updated_at"()
 --
 --    WITH CHECK (true) for INSERT lets any authenticated user insert any row.
 --    Replaced with a check that the JWT email matches the admin account.
---    Change 'admin@fprtm.com' if the admin email is different.
+--    Restricted to joel@ttmpr.xyz (the single admin account).
 -- ---------------------------------------------------------------------------
 
 -- partidos
@@ -52,14 +52,14 @@ DROP POLICY IF EXISTS "insert_partidos" ON "public"."partidos";
 CREATE POLICY "insert_partidos" ON "public"."partidos"
   FOR INSERT
   TO authenticated
-  WITH CHECK (auth.jwt() ->> 'email' = 'admin@fprtm.com');
+  WITH CHECK (auth.jwt() ->> 'email' = 'joel@ttmpr.xyz');
 
 -- torneos
 DROP POLICY IF EXISTS "insert_torneos" ON "public"."torneos";
 CREATE POLICY "insert_torneos" ON "public"."torneos"
   FOR INSERT
   TO authenticated
-  WITH CHECK (auth.jwt() ->> 'email' = 'admin@fprtm.com');
+  WITH CHECK (auth.jwt() ->> 'email' = 'joel@ttmpr.xyz');
 
 
 -- ---------------------------------------------------------------------------
