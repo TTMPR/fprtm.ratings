@@ -3218,8 +3218,15 @@ async function showPlayerMatches(playerId, playerName, ratingInicio) {
       return;
     }
 
+    // ── Starting rating: ground truth is the first match's rating_antes ──
+    // All matches in a tournament reference the SAME initial rating as base.
+    // resultados_evento.rating_inicio can be stale; the match record is authoritative.
+    const firstM      = data[0];
+    const firstIsA    = firstM.jugador_a_id === playerId;
+    const startRating = (firstIsA ? firstM.rating_a_antes : firstM.rating_b_antes) ?? ratingInicio;
+
     let totalPts = 0, wins = 0, losses = 0;
-    let runningRating = ratingInicio;
+    let runningRating = startRating;
 
     const rows = data.map((m, idx) => {
       const esA    = m.jugador_a_id === playerId;
@@ -3230,21 +3237,20 @@ async function showPlayerMatches(playerId, playerName, ratingInicio) {
         : m.ganador === (esA ? 'A' : 'B');
 
       // Opponent name: prefer stored nombre_a/b, then ALL_PLAYERS lookup
-      const oppRaw = esA ? (m.nombre_b || m.jugador_b_id) : (m.nombre_a || m.jugador_a_id);
-      const oppId  = esA ? m.jugador_b_id : m.jugador_a_id;
+      const oppId   = esA ? m.jugador_b_id : m.jugador_a_id;
       const oppInfo = ALL_PLAYERS.find(p => p.id === oppId);
       const oppName = (esA ? m.nombre_b : m.nombre_a) || (oppInfo ? oppInfo.name : `#${oppId}`);
       const oppRat  = esA ? m.rating_b_antes : m.rating_a_antes;
 
-      // Points: use rating diff stored in the match
+      // pts = ratingDespues - ratingAntes (both anchored to the same startRating base)
       const ratingAntes   = esA ? m.rating_a_antes   : m.rating_b_antes;
       const ratingDespues = esA ? m.rating_a_despues  : m.rating_b_despues;
       const pts = (ratingDespues != null && ratingAntes != null)
         ? ratingDespues - ratingAntes
-        : (gano ? 0 : 0);
+        : 0;
 
       totalPts      += pts;
-      runningRating += pts;
+      runningRating  = startRating + totalPts;   // always recalculate from fixed base
       gano ? wins++ : losses++;
 
       const ptsSign    = pts >= 0 ? `+${pts}` : `${pts}`;
@@ -3269,10 +3275,11 @@ async function showPlayerMatches(playerId, playerName, ratingInicio) {
     document.getElementById('pmSub').textContent = `${wins}W · ${losses}L · ${data.length} partidos · ${totalSign} pts`;
     document.getElementById('pmBody').innerHTML  =
       `<div style="margin-bottom:12px;padding:12px;background:var(--card2);border-radius:10px;display:flex;gap:24px;justify-content:center;text-align:center">
+        <div><div style="font-family:'DM Mono';font-size:16px;color:var(--muted)">${startRating}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Rating Inicio</div></div>
         <div><div style="font-family:'DM Mono';font-size:22px;color:var(--green)">${wins}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Ganados</div></div>
         <div><div style="font-family:'DM Mono';font-size:22px;color:var(--red)">${losses}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Perdidos</div></div>
         <div><div style="font-family:'DM Mono';font-size:22px;color:${totalPts>=0?'var(--green)':'var(--red)'}">${totalSign}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Puntos</div></div>
-        <div><div style="font-family:'DM Mono';font-size:22px;color:var(--accent)">${runningRating}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Rating Final</div></div>
+        <div><div style="font-family:'DM Mono';font-size:22px;color:var(--accent)">${startRating + totalPts}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Rating Final</div></div>
       </div>
       ${rows.join('')}`;
   } catch(e) {
