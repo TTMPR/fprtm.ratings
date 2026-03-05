@@ -2556,27 +2556,11 @@ async function subirApplyRatings() {
     }
   }
 
-  // ── Step 3: Apply rating updates + save partidos ──────────────────────
+  // ── Step 3: Save partidos (rating_a_antes = initial, rating_a_despues = initial + match gain) ──
   let applied = 0;
   const errors = [];
 
   for (const r of subirPending) {
-    if (r.idA) {
-      try {
-        await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${r.idA}`, { Rating: r.rA + r.aGain });
-        const p = ALL_PLAYERS.find(x => x.id === r.idA);
-        if (p) p.rating = r.rA + r.aGain;
-        applied++;
-      } catch(e) { errors.push(`${r.pA}: ${e.message}`); }
-    }
-    if (r.idB) {
-      try {
-        await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${r.idB}`, { Rating: r.rB + r.bGain });
-        const p = ALL_PLAYERS.find(x => x.id === r.idB);
-        if (p) p.rating = r.rB + r.bGain;
-        applied++;
-      } catch(e) { errors.push(`${r.pB}: ${e.message}`); }
-    }
     if (torneoId && r.idA && r.idB) {
       try {
         await sbPost('partidos', {
@@ -2594,6 +2578,16 @@ async function subirApplyRatings() {
         });
       } catch(e) { console.warn('Error guardando partido:', e.message); }
     }
+  }
+
+  // ── Step 3b: Apply rating update ONCE per player using accumulated delta ──
+  for (const snap of Object.values(snapshotMap)) {
+    try {
+      await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${snap.id_jugador}`, { Rating: snap.rating_fin });
+      const p = ALL_PLAYERS.find(x => x.id === snap.id_jugador);
+      if (p) p.rating = snap.rating_fin;
+      applied++;
+    } catch(e) { errors.push(`${snap.nombre}: ${e.message}`); }
   }
 
   // ── Step 4: Batch insert resultados_evento ────────────────────────────

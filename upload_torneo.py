@@ -154,8 +154,9 @@ def create_torneo():
 def process_matches(matches, players, torneo_id):
     print(f'\n⚡ Procesando {len(matches)} partidos...')
 
-    # rating working copy (mutable during tournament)
+    # initial ratings — fixed for the entire tournament (static base)
     ratings = {mid: p['rating'] for mid, p in players.items()}
+    deltas   = {mid: 0          for mid in players}
 
     def find_player(q):
         if q.startswith('#'):
@@ -197,15 +198,18 @@ def process_matches(matches, players, torneo_id):
             'winner': 'A' if winner_is_A else 'B',
         })
 
-        # update working ratings for subsequent matches
-        ratings[id_a] += aGain
-        ratings[id_b] += bGain
+        # accumulate deltas — DO NOT update ratings mid-tournament
+        deltas[id_a] += aGain
+        deltas[id_b] += bGain
+
+    # apply all deltas at the end (single update per player)
+    final_ratings = {mid: ratings[mid] + deltas[mid] for mid in ratings}
 
     print(f'   → {len(pending)} partidos válidos, {skipped} omitidos.')
     if unknown:
         print(f'   ⚠ IDs no encontrados: {", ".join(sorted(unknown))}')
 
-    return pending, ratings
+    return pending, final_ratings
 
 # ─── PASO 6: Guardar en Supabase ──────────────────────────────────────────────
 def save_to_db(pending, players, ratings, torneo_id):
