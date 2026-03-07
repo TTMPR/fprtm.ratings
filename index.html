@@ -923,9 +923,9 @@
 
       <div class="profile-quick-stats">
         <div class="qs"><strong id="pMatches">—</strong>Partidos</div>
-        <div class="qs"><strong id="pWins" style="color:var(--green)">—</strong>Victorias</div>
-        <div class="qs"><strong id="pLosses" style="color:var(--red)">—</strong>Derrotas</div>
-        <div class="qs"><strong id="pPct" style="color:var(--accent)">—</strong>Win %</div>
+        <div class="qs" style="display:none"><strong id="pWins" style="color:var(--green)">—</strong>Victorias</div>
+        <div class="qs" style="display:none"><strong id="pLosses" style="color:var(--red)">—</strong>Derrotas</div>
+        <div class="qs" style="display:none"><strong id="pPct" style="color:var(--accent)">—</strong>Win %</div>
       </div>
     </div>
 
@@ -953,7 +953,7 @@
           </div>
         </div>
 
-        <div class="winpct-row">
+        <div class="winpct-row" style="display:none">
           <div class="circle-wrap">
             <svg width="80" height="80" viewBox="0 0 80 80">
               <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8"/>
@@ -2113,7 +2113,6 @@ function renderTournamentHistory(parts, torneoMeta) {
       <thead>
         <tr>
           <th>Torneo</th>
-          <th>Récord</th>
           <th>Cambio (Δ)</th>
           <th>Rating Post</th>
         </tr>
@@ -2133,12 +2132,6 @@ function renderTournamentHistory(parts, torneoMeta) {
             <td>
               <div class="hist-t-name" onclick="openTorneoEvento(${p.id_torneo},'${safeNombre}','${meta.fecha || ''}')">${nombre}</div>
               <div style="font-size:11px;color:var(--muted)">${fecha}</div>
-            </td>
-            <td>
-              <div class="hist-wl">
-                <span class="wl-chip w">${p.ganados}W</span>
-                <span class="wl-chip l">${p.perdidos}L</span>
-              </div>
             </td>
             <td><span class="hist-delta ${deltaClass}">${deltaText}</span></td>
             <td><span class="hist-rating-post">${p.rating_fin}</span></td>
@@ -3232,10 +3225,6 @@ function renderEventoRows(rows) {
         <span class="evento-rating-val" style="font-weight:600">${r.ratingFin}</span>
       </div>
       <div class="evento-delta ${deltaClass}">${deltaSign}${Math.abs(r.delta)}</div>
-      <div class="evento-record">
-        <span class="w">${r.ganados}W</span> <span class="l">${r.perdidos}L</span>
-        <div style="color:var(--muted);font-size:11px">${total} partidos</div>
-      </div>
     </div>`;
   }).join('');
 }
