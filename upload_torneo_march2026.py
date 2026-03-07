@@ -7,6 +7,12 @@ Lee el CSV con formato: Round,WinnerID,LoserID,Scores
 donde los IDs tienen formato fprtm|XXXXX
 
 Uso: python3 upload_torneo_march2026.py
+
+Diferencias con upload_torneo.py:
+  - Lee el CSV exportado de StadiumCompete (Round/WinnerID/LoserID/Scores)
+  - Omite entradas de dobles (múltiples IDs separados por coma)
+  - Omite partidos sin oponente (forfeit/walkover sin ID)
+  - Omite walkovers puros (todos los scores son 0)
 """
 
 import csv
@@ -41,7 +47,7 @@ POINT_TABLE = [
 
 def get_points(rA, rB, winner_is_A):
     diff = abs(rA - rB)
-    row = next(r for r in POINT_TABLE if diff <= r['maxDiff'])
+    row  = next(r for r in POINT_TABLE if diff <= r['maxDiff'])
     a_is_fav = rA >= rB
     if winner_is_A:
         pts = row['fav'] if a_is_fav else row['underdog']
@@ -52,56 +58,43 @@ def get_points(rA, rB, winner_is_A):
 
 # ─── HELPERS SUPABASE ─────────────────────────────────────────────────────────
 def sb_get(table, params=''):
-    url = f'{SUPABASE_URL}/rest/v1/{table}{params}'
-    r = requests.get(url, headers=HEADERS)
+    r = requests.get(f'{SUPABASE_URL}/rest/v1/{table}{params}', headers=HEADERS)
     r.raise_for_status()
     return r.json()
 
 def sb_post(table, body):
-    url = f'{SUPABASE_URL}/rest/v1/{table}'
-    r = requests.post(url, headers=HEADERS, json=body)
+    r = requests.post(f'{SUPABASE_URL}/rest/v1/{table}', headers=HEADERS, json=body)
     r.raise_for_status()
     return r.json()
 
 def sb_patch(table, query, body):
-    url = f'{SUPABASE_URL}/rest/v1/{table}?{query}'
-    r = requests.patch(url, headers=HEADERS, json=body)
+    r = requests.patch(f'{SUPABASE_URL}/rest/v1/{table}?{query}', headers=HEADERS, json=body)
     r.raise_for_status()
     return r.json()
 
 # ─── PASO 1: Cargar jugadores actuales ────────────────────────────────────────
 def load_all_players():
     print('📥 Cargando jugadores de la base de datos...')
-    data = sb_get('jugadores',
-                  '?select=id,nombre,apellido,rating,nuevo_rating&limit=2000')
+    data = sb_get('Base%20de%20Datos',
+                  '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22'
+                  '&order=%22Member%20ID%22.asc&limit=1000')
     players = {}
     for p in data:
-        mid = p['id']
-        nombre = f"{p.get('nombre') or ''} {p.get('apellido') or ''}".strip()
-        rating = p.get('nuevo_rating') or p.get('rating') or 1500
-        players[mid] = {'id': mid, 'name': nombre, 'rating': rating}
+        mid = p['Member ID']
+        players[mid] = {
+            'id':     mid,
+            'name':   f"{p['First Name'] or ''} {p['Last Name'] or ''}".strip(),
+            'rating': p['Rating'] or 1500,
+        }
     print(f'   → {len(players)} jugadores cargados.')
-
-    # Fallback: intentar tabla "Base de Datos"
-    if not players:
-        print('   ⚠ Intentando tabla "Base de Datos"...')
-        data = sb_get('Base%20de%20Datos',
-                      '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22'
-                      '&order=%22Member%20ID%22.asc&limit=2000')
-        for p in data:
-            mid = p['Member ID']
-            nombre = f"{p.get('First Name') or ''} {p.get('Last Name') or ''}".strip()
-            players[mid] = {'id': mid, 'name': nombre, 'rating': p.get('Rating') or 1500}
-        print(f'   → {len(players)} jugadores cargados (fallback).')
-
     return players
 
 # ─── PASO 2: Leer y filtrar CSV ───────────────────────────────────────────────
 def parse_fprtm_id(raw_id):
-    """Extrae el entero de 'fprtm|12345'. Retorna None si no es válido."""
+    """Extrae entero de 'fprtm|12345'. Retorna None si es dobles o inválido."""
     raw_id = raw_id.strip()
     if not raw_id or ',' in raw_id:
-        return None  # vacío o equipo dobles
+        return None
     if raw_id.startswith('fprtm|'):
         try:
             return int(raw_id.split('|')[1])
@@ -110,33 +103,33 @@ def parse_fprtm_id(raw_id):
     return None
 
 def is_walkover(scores_str):
-    """Devuelve True si todos los scores son 0 (walkover)."""
+    """True si todos los scores son 0 (walkover)."""
     if not scores_str:
         return False
     parts = [s.strip().lstrip('-') for s in scores_str.split(',') if s.strip()]
-    return parts and all(p == '0' for p in parts)
+    return bool(parts) and all(p == '0' for p in parts)
 
 def load_csv():
     print(f'\n📄 Leyendo {CSV_FILE}...')
-    matches = []
-    skipped_doubles = 0
-    skipped_empty   = 0
+    matches          = []
+    skipped_doubles  = 0
+    skipped_empty    = 0
     skipped_walkover = 0
 
     with open(CSV_FILE, newline='', encoding='utf-8') as f:
         reader = csv.reader(f)
         for i, row in enumerate(reader):
             if i == 0:
-                continue  # skip header
+                continue  # header
             if len(row) < 3:
                 continue
 
-            rnd       = row[0].strip()
+            rnd        = row[0].strip()
             winner_raw = row[1].strip()
             loser_raw  = row[2].strip()
             scores     = row[3].strip() if len(row) > 3 else ''
 
-            # Skip doubles entries (multiple IDs in one field)
+            # Skip doubles (multiple IDs in one cell)
             if ',' in winner_raw or ',' in loser_raw:
                 skipped_doubles += 1
                 continue
@@ -144,12 +137,10 @@ def load_csv():
             winner_id = parse_fprtm_id(winner_raw)
             loser_id  = parse_fprtm_id(loser_raw)
 
-            # Skip if either ID is missing/invalid
             if winner_id is None or loser_id is None:
                 skipped_empty += 1
                 continue
 
-            # Skip walkover matches
             if is_walkover(scores):
                 skipped_walkover += 1
                 continue
@@ -162,7 +153,8 @@ def load_csv():
             })
 
     print(f'   → {len(matches)} partidos válidos (singles).')
-    print(f'   → {skipped_doubles} dobles omitidos, {skipped_empty} sin oponente, '
+    print(f'   → {skipped_doubles} dobles omitidos, '
+          f'{skipped_empty} sin oponente, '
           f'{skipped_walkover} walkovers omitidos.')
     return matches
 
@@ -170,31 +162,27 @@ def load_csv():
 def create_torneo():
     print(f'\n🏆 Creando torneo "{TORNEO_NOMBRE}"...')
 
-    # Check if torneo already exists
-    existing = sb_get('torneos', f'?nombre=eq.{requests.utils.quote(TORNEO_NOMBRE)}&select=id,nombre')
+    existing = sb_get('torneos',
+                      f'?nombre=eq.{requests.utils.quote(TORNEO_NOMBRE)}&select=id,nombre')
     if existing:
         torneo_id = existing[0]['id']
-        print(f'   ⚠ Torneo ya existe con ID: {torneo_id}')
+        print(f'   ⚠ Torneo ya existe (ID: {torneo_id}).')
         resp = input('   ¿Continuar y agregar partidos a este torneo? [s/N]: ').strip().lower()
         if resp != 's':
             print('   Abortando.')
             return None
         return torneo_id
 
-    try:
-        result = sb_post('torneos', {'nombre': TORNEO_NOMBRE, 'fecha': TORNEO_FECHA})
-        torneo_id = result[0]['id'] if isinstance(result, list) else result['id']
-        print(f'   ✅ Torneo creado con ID: {torneo_id}')
-        return torneo_id
-    except Exception as e:
-        print(f'   ❌ Error creando torneo: {e}')
-        return None
+    result    = sb_post('torneos', {'nombre': TORNEO_NOMBRE, 'fecha': TORNEO_FECHA})
+    torneo_id = result[0]['id'] if isinstance(result, list) else result['id']
+    print(f'   ✅ Torneo creado con ID: {torneo_id}')
+    return torneo_id
 
 # ─── PASO 4: Procesar partidos ────────────────────────────────────────────────
 def process_matches(matches, players):
     print(f'\n⚡ Procesando {len(matches)} partidos...')
 
-    # Ratings estáticos (base fija para todo el torneo)
+    # Ratings estáticos — base fija para todo el torneo
     ratings = {mid: p['rating'] for mid, p in players.items()}
     deltas  = {mid: 0          for mid in players}
 
@@ -217,31 +205,27 @@ def process_matches(matches, players):
 
         rW = ratings[wid]
         rL = ratings[lid]
-
-        # winner_is_A=True: A=winner, B=loser
-        aGain, bGain = get_points(rW, rL, winner_is_A=True)
+        wGain, lGain = get_points(rW, rL, winner_is_A=True)
 
         pending.append({
-            'winner_id':   wid,
-            'loser_id':    lid,
-            'winner_name': players[wid]['name'],
-            'loser_name':  players[lid]['name'],
-            'rW':          rW,
-            'rL':          rL,
-            'wGain':       aGain,
-            'lGain':       bGain,
-            'round':       m['round'],
-            'scores':      m['scores'],
+            'idA':   wid,
+            'idB':   lid,
+            'nameA': players[wid]['name'],
+            'nameB': players[lid]['name'],
+            'rA':    rW,
+            'rB':    rL,
+            'aGain': wGain,
+            'bGain': lGain,
         })
 
-        deltas[wid] += aGain
-        deltas[lid] += bGain
+        deltas[wid] += wGain
+        deltas[lid] += lGain
 
     final_ratings = {mid: ratings[mid] + deltas[mid] for mid in ratings}
 
     print(f'   → {len(pending)} partidos válidos, {skipped} omitidos (ID desconocido).')
     if unknown:
-        print(f'   ⚠ IDs no encontrados: {", ".join(sorted(unknown)[:20])}')
+        print(f'   ⚠ IDs no encontrados en BD: {", ".join(sorted(unknown))}')
 
     return pending, final_ratings
 
@@ -257,20 +241,20 @@ def save_to_db(pending, players, final_ratings, torneo_id):
         try:
             sb_post('partidos', {
                 'torneo_id':        torneo_id,
-                'jugador_a_id':     r['winner_id'],
-                'jugador_b_id':     r['loser_id'],
+                'jugador_a_id':     r['idA'],
+                'jugador_b_id':     r['idB'],
                 'ganador':          'A',
-                'rating_a_antes':   r['rW'],
-                'rating_b_antes':   r['rL'],
-                'rating_a_despues': r['rW'] + r['wGain'],
-                'rating_b_despues': r['rL'] + r['lGain'],
+                'rating_a_antes':   r['rA'],
+                'rating_b_antes':   r['rB'],
+                'rating_a_despues': r['rA'] + r['aGain'],
+                'rating_b_despues': r['rB'] + r['bGain'],
                 'fecha':            TORNEO_FECHA,
-                'nombre_a':         r['winner_name'],
-                'nombre_b':         r['loser_name'],
+                'nombre_a':         r['nameA'],
+                'nombre_b':         r['nameB'],
             })
             saved += 1
         except Exception as e:
-            errors.append(f'{r["winner_name"]} vs {r["loser_name"]}: {e}')
+            errors.append(f'{r["nameA"]} vs {r["nameB"]}: {e}')
 
     print(f'   ✅ {saved} partidos guardados.')
     if errors:
@@ -278,28 +262,21 @@ def save_to_db(pending, players, final_ratings, torneo_id):
         for e in errors[:5]:
             print(f'      {e}')
 
-    # 5b. Actualizar nuevo_rating en jugadores (o Rating en Base de Datos)
-    participant_ids = set(r['winner_id'] for r in pending) | set(r['loser_id'] for r in pending)
+    # 5b. Actualizar Rating en Base de Datos
+    participant_ids = {r['idA'] for r in pending} | {r['idB'] for r in pending}
     print(f'\n   Actualizando ratings de {len(participant_ids)} jugadores...')
 
     updated = 0
     rating_errors = []
     for mid in participant_ids:
         new_rating = final_ratings[mid]
-        old_rating = players[mid]['rating']
-        if new_rating == old_rating:
+        if new_rating == players[mid]['rating']:
             continue
         try:
-            # Try jugadores table first (nuevo_rating column)
-            try:
-                sb_patch('jugadores', f'id=eq.{mid}', {'nuevo_rating': new_rating})
-                updated += 1
-            except Exception:
-                # Fallback: Base de Datos table
-                sb_patch('Base%20de%20Datos',
-                         f'%22Member%20ID%22=eq.{mid}',
-                         {'Rating': new_rating})
-                updated += 1
+            sb_patch('Base%20de%20Datos',
+                     f'%22Member%20ID%22=eq.{mid}',
+                     {'Rating': new_rating})
+            updated += 1
         except Exception as e:
             rating_errors.append(f'#{mid}: {e}')
 
@@ -313,13 +290,14 @@ def save_to_db(pending, players, final_ratings, torneo_id):
     snapshot = {}
     for r in pending:
         for mid, name, rOrig, gain in [
-            (r['winner_id'], r['winner_name'], r['rW'], r['wGain']),
-            (r['loser_id'],  r['loser_name'],  r['rL'], r['lGain']),
+            (r['idA'], r['nameA'], r['rA'], r['aGain']),
+            (r['idB'], r['nameB'], r['rB'], r['bGain']),
         ]:
             if mid not in snapshot:
                 snapshot[mid] = {
                     'id_jugador':    mid,
                     'nombre':        name,
+                    'club':          players[mid].get('club', ''),
                     'rating_inicio': rOrig,
                     'rating_fin':    rOrig + gain,
                     'ganados':       0,
@@ -329,8 +307,8 @@ def save_to_db(pending, players, final_ratings, torneo_id):
             else:
                 snapshot[mid]['rating_fin'] += gain
 
-        snapshot[r['winner_id']]['ganados'] += 1
-        snapshot[r['loser_id']]['perdidos'] += 1
+        snapshot[r['idA']]['ganados'] += 1
+        snapshot[r['idB']]['perdidos'] += 1
 
     rows = list(snapshot.values())
     try:
@@ -353,7 +331,7 @@ def main():
 
     matches = load_csv()
     if not matches:
-        print('❌ No se encontraron partidos válidos en el CSV. Abortando.')
+        print('❌ No se encontraron partidos válidos. Abortando.')
         sys.exit(1)
 
     torneo_id = create_torneo()
@@ -367,27 +345,27 @@ def main():
 
     save_to_db(pending, players, final_ratings, torneo_id)
 
-    participants = set(r['winner_id'] for r in pending) | set(r['loser_id'] for r in pending)
-    wins_delta  = sum(1 for r in pending if final_ratings[r['winner_id']] > players[r['winner_id']]['rating'])
+    participants = {r['idA'] for r in pending} | {r['idB'] for r in pending}
+    changes = sorted(
+        [(mid, final_ratings[mid] - players[mid]['rating']) for mid in participants],
+        key=lambda x: -x[1]
+    )
 
     print('\n' + '=' * 60)
     print('  ✅ CARGA COMPLETADA')
     print('=' * 60)
     print(f'  Torneo:         {TORNEO_NOMBRE}')
-    print(f'  Fecha:          {TORNEO_FECHA}')
     print(f'  Torneo ID:      {torneo_id}')
     print(f'  Partidos:       {len(pending)}')
     print(f'  Participantes:  {len(participants)}')
-
-    # Show top gainers
-    changes = [(mid, final_ratings[mid] - players[mid]['rating']) for mid in participants]
-    changes.sort(key=lambda x: -x[1])
-    print('\n  Top 5 mayores ganancias:')
+    print('\n  Top 5 ganancias:')
     for mid, delta in changes[:5]:
-        print(f'    #{mid} {players[mid]["name"]}: +{delta}')
-    print('\n  Top 5 mayores pérdidas:')
-    for mid, delta in sorted(changes, key=lambda x: x[1])[:5]:
-        print(f'    #{mid} {players[mid]["name"]}: {delta}')
+        print(f'    #{mid} {players[mid]["name"]}: +{delta}  '
+              f'({players[mid]["rating"]} → {final_ratings[mid]})')
+    print('\n  Top 5 pérdidas:')
+    for mid, delta in changes[-5:][::-1]:
+        print(f'    #{mid} {players[mid]["name"]}: {delta}  '
+              f'({players[mid]["rating"]} → {final_ratings[mid]})')
 
 if __name__ == '__main__':
     main()
