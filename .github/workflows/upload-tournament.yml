@@ -32,13 +32,14 @@ jobs:
       - name: Run upload script
         env:
           CSV_FILE: ${{ github.event.inputs.torneo }}.csv
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           # Override CSV_FILE in the script via env var
           python3 - <<'PYEOF'
           import os, csv, requests, sys
 
           SUPABASE_URL  = 'https://qrvyfdpwtearfpjruwja.supabase.co'
-          SUPABASE_KEY  = 'sb_publishable_mM59efPqpcgrR3g3_6F_Ww_h1jg4PyV'
+          SUPABASE_KEY  = os.environ['SUPABASE_KEY']
           CSV_FILE      = os.environ.get('CSV_FILE', 'albergue_olimpico_march2026.csv')
           TORNEO_NOMBRE = 'Albergue Olímpico 2026'
           TORNEO_FECHA  = '2026-03-01'
