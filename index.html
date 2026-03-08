@@ -1153,6 +1153,12 @@ Maria Lopez,Ana Torres,B</code>
         <button class="btn-primary" id="subirProcesarBtn" onclick="subirProcesarCsv()" style="display:none;margin-top:20px">⚡ Calcular cambios de rating</button>
       </div>
 
+      <!-- Session base banner -->
+      <div id="subirSessionBanner" style="display:none;margin-top:16px;padding:10px 14px;border-radius:8px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);font-size:13px;color:#60a5fa;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <span>Usando ratings pre-evento (sesión activa). Todos los torneos del día se calculan desde la misma base.</span>
+        <button onclick="subirClearSession()" style="background:none;border:1px solid #60a5fa;color:#60a5fa;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;white-space:nowrap">Limpiar sesión</button>
+      </div>
+
       <!-- Results preview -->
       <div class="calc-result" id="subirResult">
         <h4>RESULTADOS A APLICAR</h4>
@@ -2384,8 +2390,10 @@ function buildDatalist() {
 // ══════════════════════════════════════════
 // SUBIR RESULTADOS — flujo 2 pasos
 // ══════════════════════════════════════════
-let subirCsvRows = [];   // parsed rows from the uploaded CSV
-let subirPending = [];   // computed pendingResults for subirPage
+let subirCsvRows = [];      // parsed rows from the uploaded CSV
+let subirPending = [];      // computed pendingResults for subirPage
+let subirSessionBase   = null;  // snapshot of ratings at first upload of the day
+let subirSessionDeltas = {};    // accumulated deltas across all uploads this session
 
 function subirPaso2() {
   const nombre = document.getElementById('subirTorneoNombre').value.trim();
@@ -2419,6 +2427,13 @@ function subirPaso2() {
   document.getElementById('subirResult').classList.remove('show');
   document.getElementById('subirDropLabel').textContent = 'Arrastra tu CSV aquí o haz clic para seleccionar';
   document.getElementById('subirFileInput').value = '';
+}
+
+function subirClearSession() {
+  subirSessionBase   = null;
+  subirSessionDeltas = {};
+  const banner = document.getElementById('subirSessionBanner');
+  if (banner) banner.style.display = 'none';
 }
 
 function subirBack() {
@@ -2478,14 +2493,25 @@ function subirProcesarCsv() {
     ? ALL_PLAYERS.find(p => String(p.id) === q.slice(1))
     : ALL_PLAYERS.find(p => p.name.toLowerCase() === q.toLowerCase());
 
+  // Lock ratings at first upload of the session (pre-event snapshot)
+  if (!subirSessionBase) {
+    subirSessionBase = {};
+    ALL_PLAYERS.forEach(p => { subirSessionBase[p.id] = p.rating; });
+    const banner = document.getElementById('subirSessionBanner');
+    if (banner) banner.style.display = 'flex';
+  }
+
   for (const row of subirCsvRows) {
     const pA = findPlayer(row.pA);
     const pB = findPlayer(row.pB);
     if (!pA) { unknown.push(row.pA); continue; }
     if (!pB) { unknown.push(row.pB); continue; }
-    const { aGain, bGain } = getPoints(pA.rating, pB.rating, row.win === 'A');
+    // Always use the pre-event snapshot, never the mid-day updated rating
+    const baseA = subirSessionBase[pA.id] ?? pA.rating;
+    const baseB = subirSessionBase[pB.id] ?? pB.rating;
+    const { aGain, bGain } = getPoints(baseA, baseB, row.win === 'A');
     subirPending.push({
-      pA: pA.name, pB: pB.name, rA: pA.rating, rB: pB.rating,
+      pA: pA.name, pB: pB.name, rA: baseA, rB: baseB,
       aGain, bGain, winner: row.win === 'A' ? pA.name : pB.name,
       idA: pA.id, idB: pB.id
     });
@@ -2595,12 +2621,18 @@ async function subirApplyRatings() {
     }
   }
 
-  // ── Step 3b: Apply rating update ONCE per player using accumulated delta ──
+  // ── Step 3b: Apply rating update using session base + ALL accumulated deltas ──
   for (const snap of Object.values(snapshotMap)) {
     try {
-      await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${snap.id_jugador}`, { 'New Rating': snap.rating_fin });
+      // Accumulate this tournament's delta into the session running total
+      const thisDelta = snap.rating_fin - snap.rating_inicio;
+      subirSessionDeltas[snap.id_jugador] = (subirSessionDeltas[snap.id_jugador] || 0) + thisDelta;
+      // Final rating = pre-event base + sum of all tournament deltas so far
+      const sessionBase = subirSessionBase?.[snap.id_jugador] ?? snap.rating_inicio;
+      const newRating = sessionBase + subirSessionDeltas[snap.id_jugador];
+      await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${snap.id_jugador}`, { 'New Rating': newRating });
       const p = ALL_PLAYERS.find(x => x.id === snap.id_jugador);
-      if (p) p.rating = snap.rating_fin;
+      if (p) p.rating = newRating;
       applied++;
     } catch(e) { errors.push(`${snap.nombre}: ${e.message}`); }
   }
