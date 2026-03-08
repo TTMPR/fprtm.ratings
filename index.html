@@ -1722,7 +1722,7 @@ function showError(msg) {
 
 async function loadPlayers(filter = {}) {
   // Only fetch non-sensitive columns — never request Email, Home Address, or Date of Birth
-  let params = '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22,%22Sex%22,%22Club%22,%22Expiration%20Date%22&order=Rating.desc&limit=600';
+  let params = '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22,%22New%20Rating%22,%22Sex%22,%22Club%22,%22Expiration%20Date%22&order=%22New%20Rating%22.desc.nullslast,Rating.desc&limit=600';
   if (filter.sexoAny?.length) {
     const sexoOr = filter.sexoAny
       .map(v => `Sex.eq.${encodeURIComponent(v)}`)
@@ -1744,7 +1744,7 @@ async function loadPlayers(filter = {}) {
     cat: null,
     club: p['Club'],
     member: p['Expiration Date'] ? new Date(p['Expiration Date']) > now : false,
-    rating: p['Rating'],
+    rating: p['New Rating'] || p['Rating'],
     ratingStart: p['Rating']
   }));
 }
@@ -2598,7 +2598,7 @@ async function subirApplyRatings() {
   // ── Step 3b: Apply rating update ONCE per player using accumulated delta ──
   for (const snap of Object.values(snapshotMap)) {
     try {
-      await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${snap.id_jugador}`, { Rating: snap.rating_fin });
+      await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${snap.id_jugador}`, { 'New Rating': snap.rating_fin });
       const p = ALL_PLAYERS.find(x => x.id === snap.id_jugador);
       if (p) p.rating = snap.rating_fin;
       applied++;
@@ -3078,9 +3078,10 @@ async function confirmarBorrarTorneo() {
     // 2. Revertir ratings en paralelo (Promise.all)
     if (participaciones.length > 0) {
       await Promise.all(
-        participaciones.map(p =>
-          sbPatch('jugadores', `id=eq.${p.id_jugador}`, { rating_actual: p.rating_inicio })
-        )
+        participaciones.flatMap(p => [
+          sbPatch('jugadores', `id=eq.${p.id_jugador}`, { rating_actual: p.rating_inicio }),
+          sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${p.id_jugador}`, { 'New Rating': p.rating_inicio }),
+        ])
       );
       console.log('[borrarTorneo] Ratings revertidos correctamente.');
     }

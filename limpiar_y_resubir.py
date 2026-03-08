@@ -102,7 +102,7 @@ def limpiar_torneo(torneo_id, torneo_nombre):
     reverted = 0
     for mid, rating_inicial in ratings_iniciales.items():
         try:
-            sb_patch('Base%20de%20Datos', f'%22Member%20ID%22=eq.{mid}', {'Rating': rating_inicial})
+            sb_patch('Base%20de%20Datos', f'%22Member%20ID%22=eq.{mid}', {'New Rating': rating_inicial})
             reverted += 1
         except Exception as e:
             print(f'    ERROR revirtiendo #{mid}: {e}')
@@ -158,14 +158,14 @@ def resubir(matches, ratings_iniciales_revertidos):
 
     # Cargar jugadores frescos de la BD (ya revertidos)
     data = sb_get('Base%20de%20Datos',
-        '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22'
+        '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22,%22New%20Rating%22'
         '&limit=2000')
     players = {}
     for p in data:
         mid = p['Member ID']
         players[mid] = {
             'name':   f"{p['First Name'] or ''} {p['Last Name'] or ''}".strip(),
-            'rating': p['Rating'] or 1500,
+            'rating': p['New Rating'] or p['Rating'] or 1500,
         }
 
     def find_player(q):
@@ -252,7 +252,7 @@ def resubir(matches, ratings_iniciales_revertidos):
         old_r = players[mid]['rating']
         if new_r != old_r:
             try:
-                sb_patch('Base%20de%20Datos', f'%22Member%20ID%22=eq.{mid}', {'Rating': new_r})
+                sb_patch('Base%20de%20Datos', f'%22Member%20ID%22=eq.{mid}', {'New Rating': new_r})
                 delta = new_r - old_r
                 print(f'    #{mid} {players[mid]["name"]}: {old_r} -> {new_r}  ({delta:+d})')
                 updated += 1

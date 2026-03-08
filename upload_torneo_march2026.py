@@ -76,7 +76,7 @@ def sb_patch(table, query, body):
 def load_all_players():
     print('📥 Cargando jugadores de la base de datos...')
     data = sb_get('Base%20de%20Datos',
-                  '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22'
+                  '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22,%22New%20Rating%22'
                   '&order=%22Member%20ID%22.asc&limit=1000')
     players = {}
     for p in data:
@@ -84,7 +84,7 @@ def load_all_players():
         players[mid] = {
             'id':     mid,
             'name':   f"{p['First Name'] or ''} {p['Last Name'] or ''}".strip(),
-            'rating': p['Rating'] or 1500,
+            'rating': p['New Rating'] or p['Rating'] or 1500,
         }
     print(f'   → {len(players)} jugadores cargados.')
     return players
@@ -276,7 +276,7 @@ def save_to_db(pending, players, final_ratings, torneo_id):
         try:
             sb_patch('Base%20de%20Datos',
                      f'%22Member%20ID%22=eq.{mid}',
-                     {'Rating': new_rating})
+                     {'New Rating': new_rating})
             updated += 1
         except Exception as e:
             rating_errors.append(f'#{mid}: {e}')
