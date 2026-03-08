@@ -2080,6 +2080,12 @@ async function showProfile(player) {
     const parts = participacionesRes.value;
     document.getElementById('ovTourneys').textContent = parts.length;
 
+    // Use the earliest tournament's rating_inicio as the start-of-year rating
+    if (parts.length > 0) {
+      const earliest = parts[0]; // query is ordered created_at.asc
+      document.getElementById('startRating').textContent = earliest.rating_inicio;
+    }
+
     // Fetch torneo metadata (name + date) for each unique torneo
     let torneoMeta = {};
     try {
