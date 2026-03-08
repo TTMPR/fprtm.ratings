@@ -91,16 +91,23 @@ def load_all_players():
 
 # ─── PASO 2: Leer y filtrar CSV ───────────────────────────────────────────────
 def parse_fprtm_id(raw_id):
-    """Extrae entero de 'fprtm|12345'. Retorna None si es dobles o inválido."""
+    """Extrae entero de 'fprtm|12345'.
+    Si el campo tiene múltiples IDs (ej. 'fprtm|26683,stadium-tt|38117'),
+    usa el ID fprtm| e ignora el resto.
+    Retorna None si no hay ningún ID fprtm| válido.
+    """
     raw_id = raw_id.strip()
-    if not raw_id or ',' in raw_id:
+    if not raw_id:
         return None
-    if raw_id.startswith('fprtm|'):
-        try:
-            return int(raw_id.split('|')[1])
-        except ValueError:
-            return None
-    return None
+    # Handle multiple IDs: pick the fprtm| one
+    parts = [p.strip() for p in raw_id.split(',')]
+    fprtm_parts = [p for p in parts if p.startswith('fprtm|')]
+    if not fprtm_parts:
+        return None
+    try:
+        return int(fprtm_parts[0].split('|')[1])
+    except ValueError:
+        return None
 
 def is_walkover(scores_str):
     """True si todos los scores son 0 (walkover)."""
@@ -112,7 +119,6 @@ def is_walkover(scores_str):
 def load_csv():
     print(f'\n📄 Leyendo {CSV_FILE}...')
     matches          = []
-    skipped_doubles  = 0
     skipped_empty    = 0
     skipped_walkover = 0
 
@@ -129,14 +135,10 @@ def load_csv():
             loser_raw  = row[2].strip()
             scores     = row[3].strip() if len(row) > 3 else ''
 
-            # Skip doubles (multiple IDs in one cell)
-            if ',' in winner_raw or ',' in loser_raw:
-                skipped_doubles += 1
-                continue
-
             winner_id = parse_fprtm_id(winner_raw)
             loser_id  = parse_fprtm_id(loser_raw)
 
+            # Skip if either ID is missing/invalid (no fprtm| found)
             if winner_id is None or loser_id is None:
                 skipped_empty += 1
                 continue
@@ -152,9 +154,8 @@ def load_csv():
                 'scores':    scores,
             })
 
-    print(f'   → {len(matches)} partidos válidos (singles).')
-    print(f'   → {skipped_doubles} dobles omitidos, '
-          f'{skipped_empty} sin oponente, '
+    print(f'   → {len(matches)} partidos válidos.')
+    print(f'   → {skipped_empty} sin oponente (forfeit), '
           f'{skipped_walkover} walkovers omitidos.')
     return matches
 
