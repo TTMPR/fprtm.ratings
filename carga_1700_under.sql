@@ -77,8 +77,6 @@ BEGIN
             m.loser_id,
             COALESCE(w."New Rating", w."Rating", 1500) AS rW,
             COALESCE(l."New Rating", l."Rating", 1500) AS rL,
-            TRIM(COALESCE(w."First Name",'') || ' ' || COALESCE(w."Last Name",'')) AS nameW,
-            TRIM(COALESCE(l."First Name",'') || ' ' || COALESCE(l."Last Name",'')) AS nameL,
             (w."Member ID" IS NOT NULL) AS w_found,
             (l."Member ID" IS NOT NULL) AS l_found
         FROM _matches m
@@ -111,15 +109,17 @@ BEGIN
 
         -- Insertar partido
         INSERT INTO partidos (
-            torneo_id, jugador_a_id, jugador_b_id, ganador,
+            torneo_id, jugador_a_id, jugador_b_id, ganador_id,
             rating_a_antes, rating_b_antes,
             rating_a_despues, rating_b_despues,
-            fecha, nombre_a, nombre_b
+            puntos_a, puntos_b,
+            categoria_evento, fecha
         ) VALUES (
-            v_torneo_id, r.winner_id, r.loser_id, 'A',
+            v_torneo_id, r.winner_id, r.loser_id, r.winner_id,
             r.rW, r.rL,
             r.rW + v_pts, r.rL - v_pts,
-            v_torneo_fecha, r.nameW, r.nameL
+            v_pts, -v_pts,
+            '1700 Under', v_torneo_fecha
         );
 
         v_saved := v_saved + 1;
