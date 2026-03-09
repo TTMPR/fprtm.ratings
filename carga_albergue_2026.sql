@@ -126,15 +126,17 @@ BEGIN
 
         -- Insertar partido
         INSERT INTO partidos (
-            torneo_id, jugador_a_id, jugador_b_id, ganador,
+            torneo_id, jugador_a_id, jugador_b_id, ganador_id,
             rating_a_antes, rating_b_antes,
             rating_a_despues, rating_b_despues,
-            fecha, nombre_a, nombre_b
+            puntos_a, puntos_b,
+            fecha
         ) VALUES (
-            v_torneo_id, r.winner_id, r.loser_id, 'A',
+            v_torneo_id, r.winner_id, r.loser_id, r.winner_id,
             r.rW, r.rL,
             r.rW + v_pts, r.rL - v_pts,
-            v_torneo_fecha, r.nameW, r.nameL
+            v_pts, -v_pts,
+            v_torneo_fecha
         );
 
         v_saved := v_saved + 1;
