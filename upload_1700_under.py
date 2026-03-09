@@ -23,8 +23,8 @@ SUPABASE_URL  = 'https://qrvyfdpwtearfpjruwja.supabase.co'
 SUPABASE_KEY  = 'sb_publishable_mM59efPqpcgrR3g3_6F_Ww_h1jg4PyV'
 CSV_FILE      = 'torneo_1700_under.csv'
 
-TORNEO_NOMBRE = 'Albergue Olímpico 2026 - 1700 Under'
-TORNEO_FECHA  = '2026-03-08'
+TORNEO_NOMBRE = 'Albergue Olímpico Open 2026'
+TORNEO_FECHA  = '2026-03-01'
 
 HEADERS = {
     'apikey':        SUPABASE_KEY,
