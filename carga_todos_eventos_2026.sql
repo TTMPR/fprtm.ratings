@@ -36,6 +36,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (65610,30866),(39154,26683),(36158,48752),(62743,39831),(19099,91678),(97900,53025),(15817,99065),(86099,78146),(13248,30866),(39154,97806),
@@ -179,6 +181,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (83000,76540),(17331,88172),(40021,30969),(14207,16175),(28726,18675),(51347,37869),(95909,51245),(45382,83000),(17331,31417),(32431,40021),
@@ -322,6 +326,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (57400,37869),(24592,28289),(54597,95181),(28289,57400),(24592,37869),(93810,95181),(28289,37869),(24592,57400),(93810,54597),(28289,24592),
@@ -462,6 +468,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (86503,66985),(69470,98259),(75612,97684),(76542,19287),(33416,69177),(91959,87128),(57576,49117),(79514,72296),(99353,65444),(76540,21226),
@@ -607,6 +615,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (71953,34914),(41850,76768),(34957,19099),(96374,57795),(98259,27154),(41285,17944),(35112,86503),(40982,38534),(41195,97062),(27342,15817),
@@ -753,6 +763,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (90676,42772),(84593,79983),(33583,90854),(92264,81020),(60523,21847),(63279,43130),(36306,27578),(90676,32810),(39007,81020),(69929,21847),
@@ -895,6 +907,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (69929,63264),(97900,84593),(32810,78146),(69929,38016),(80678,97900),(82512,78146),(82512,32810),(38016,63264),(80678,84593),(80678,97900),
@@ -1035,6 +1049,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (27578,42772),(57576,50857),(95180,90676),(48752,15075),(63354,13617),(50857,42772),(57576,27578),(79514,95180),(60432,15075),(92240,13617),
@@ -1176,6 +1192,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (51347,85674),(32431,19358),(30379,85674),(24592,19358),(30379,51347),(24592,32431),(24592,85674),(85674,30379),(24592,19358),(85674,32431),
@@ -1316,6 +1334,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (70637,49363),(49363,69638),(70637,97410),(49363,11025),(97410,50001),(69638,97410),(49363,50001),(69638,11025),(70637,50001),(97410,11025),
@@ -1456,6 +1476,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (57400,99166),(99166,88504),(57400,83000),(88504,86099),(83000,63883),(99166,86099),(88504,63883),(99166,83000),(57400,88504),(83000,86099),
@@ -1596,6 +1618,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (28301,59009),(59009,72296),(28301,34957),(59009,65461),(72296,34957),(72296,59009),(34957,59009),(28301,65461);
@@ -1735,6 +1759,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (56025,26683),(26683,21420),(56025,98777),(21420,36387),(98777,36387),(26683,98777),(26683,36387),(56025,21420);
@@ -1874,6 +1900,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (10074,19305),(19305,25860),(10074,77391),(19305,44795),(25860,53404),(77391,94080),(10074,92264),(92264,65108),(77391,92264),(94080,65108),
@@ -2014,6 +2042,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (14207,84341),(84341,19358),(14207,45382),(19358,49117),(84341,87128),(14207,74686),(45382,71953),(49117,40007),(87128,16175),(84341,86503),
@@ -2155,6 +2185,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los partidos ───────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (84847,38016),(38016,22224),(84847,80468),(22224,85914),(38016,80468),(38016,22224),(80468,22224),(84847,85914);
