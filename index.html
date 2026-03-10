@@ -873,7 +873,7 @@
       <div class="value" id="statTopRating">—</div>
       <div class="sub" id="statTopName">Cargando...</div>
     </div>
-    <div class="stat-card" style="cursor:pointer" onclick="setFilter(document.querySelector('#rankingsPage .filter-chip'),'all')">
+    <div class="stat-card" style="cursor:pointer" onclick="showAllPlayers()">
       <div class="label">Jugadores en Sistema</div>
       <div class="value" id="statTotal">—</div>
       <div class="sub">En el sistema</div>
@@ -881,7 +881,7 @@
     <div class="stat-card">
       <div class="label">Promedio Rating</div>
       <div class="value" id="statMembers">—</div>
-      <div class="sub">General del ranking</div>
+      <div class="sub">General del rating</div>
     </div>
     <div class="stat-card">
       <div class="label">Actualizado</div>
@@ -3426,6 +3426,13 @@ function setFilter(el, val) {
   document.querySelectorAll('#rankingsPage .filter-chip').forEach(c => c.classList.remove('on'));
   el.classList.add('on');
   currentFilter = val;
+  filterPlayers();
+}
+
+function showAllPlayers() {
+  const todosChip = document.querySelector('#rankingsPage .filter-chip');
+  if (todosChip) setFilter(todosChip, 'all');
+  document.getElementById('searchInput').value = '';
   filterPlayers();
 }
 
