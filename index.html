@@ -3134,23 +3134,43 @@ async function loadTorneosList() {
       grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No hay torneos registrados aún.</div>';
       return;
     }
-    grid.innerHTML = allTorneos.map(t => {
-      const count      = countMap[t.id] || 0;
-      const safeNombre = t.nombre.replace(/'/g, "\\'");
-      const fechaFmt   = t.fecha
-        ? new Date(t.fecha + 'T12:00:00').toLocaleDateString('es-PR', { year:'numeric', month:'long', day:'numeric' })
+
+    // Group tournaments that share a base name (prefix before " — ")
+    const groups = [];
+    const groupMap = {};
+    allTorneos.forEach(t => {
+      const sepIdx   = t.nombre.indexOf(' \u2014 ');
+      const baseName = sepIdx !== -1 ? t.nombre.slice(0, sepIdx) : t.nombre;
+      if (!groupMap[baseName]) {
+        const g = { baseName, ids: [], fecha: t.fecha };
+        groups.push(g);
+        groupMap[baseName] = g;
+      }
+      groupMap[baseName].ids.push(t.id);
+      // Keep the earliest fecha as the group date
+      if (t.fecha && (!groupMap[baseName].fecha || t.fecha < groupMap[baseName].fecha))
+        groupMap[baseName].fecha = t.fecha;
+    });
+
+    grid.innerHTML = groups.map(g => {
+      const count      = g.ids.reduce((sum, id) => sum + (countMap[id] || 0), 0);
+      const safeNombre = g.baseName.replace(/'/g, "\\'");
+      const fechaFmt   = g.fecha
+        ? new Date(g.fecha + 'T12:00:00').toLocaleDateString('es-PR', { year:'numeric', month:'long', day:'numeric' })
         : '—';
-      const adminBtns = isAdmin() ? `
+      const catBadge   = g.ids.length > 1
+        ? ` &nbsp;·&nbsp; <span style="font-size:11px;color:var(--muted);font-family:'DM Mono'">${g.ids.length} categorías</span>` : '';
+      const adminBtns = isAdmin() && g.ids.length === 1 ? `
         <div class="torneo-admin-actions" onclick="event.stopPropagation()">
           <button class="torneo-admin-btn edit" title="Editar torneo"
-            onclick="showEditTorneoModal(${t.id})">✏️</button>
+            onclick="showEditTorneoModal(${g.ids[0]})">✏️</button>
           <button class="torneo-admin-btn del" title="Borrar torneo"
-            onclick="showDeleteTorneoModal(${t.id})">🗑️</button>
+            onclick="showDeleteTorneoModal(${g.ids[0]})">🗑️</button>
         </div>` : `<div style="color:var(--muted);font-size:20px;margin-top:4px">›</div>`;
-      return `<div class="torneo-card" onclick="openTorneoEvento(${t.id},'${safeNombre}','${t.fecha || ''}')">
+      return `<div class="torneo-card" onclick="openTorneoEvento(${JSON.stringify(g.ids)},'${safeNombre}','${g.fecha || ''}')">
         <div class="torneo-card-left">
-          <div class="torneo-card-name">${t.nombre}</div>
-          <div class="torneo-card-date">📅 ${fechaFmt}</div>
+          <div class="torneo-card-name">${g.baseName}</div>
+          <div class="torneo-card-date">📅 ${fechaFmt}${catBadge}</div>
         </div>
         <div class="torneo-card-right">
           ${count ? `<div class="torneo-card-count">${count}</div><div class="torneo-card-label">Jugadores</div>` : '<div class="torneo-card-label" style="color:var(--muted)">Sin datos</div>'}
@@ -3167,10 +3187,12 @@ async function loadTorneosList() {
 // TORNEO EVENTO PAGE
 // ══════════════════════════════════════════
 let eventoRows = [];        // full list for current event (for search filter)
-let currentEventoTorneoId = null;
+let currentEventoTorneoId = null;  // array of torneo IDs for current event
 
-async function openTorneoEvento(torneoId, nombre, fecha) {
-  currentEventoTorneoId = torneoId;
+async function openTorneoEvento(torneoIds, nombre, fecha) {
+  // Accept either a single ID (from player history links) or an array
+  const ids = Array.isArray(torneoIds) ? torneoIds : [torneoIds];
+  currentEventoTorneoId = ids;
   showPage('torneoEvento');
 
   document.getElementById('eventoOverline').textContent = fecha
@@ -3184,22 +3206,36 @@ async function openTorneoEvento(torneoId, nombre, fecha) {
   eventoRows = [];
 
   try {
-    const data = await sbGet(
-      'resultados_evento',
-      `?id_torneo=eq.${torneoId}&order=rating_fin.desc&limit=500`
-    );
+    const filter = ids.length === 1
+      ? `id_torneo=eq.${ids[0]}`
+      : `id_torneo=in.(${ids.join(',')})`;
+    const data = await sbGet('resultados_evento', `?${filter}&order=rating_fin.desc&limit=2000`);
 
-    eventoRows = data.map((r, i) => ({
-      rank:          i + 1,
-      id_jugador:    r.id_jugador,
-      nombre:        r.nombre || '—',
-      club:          r.club   || '—',
-      ratingInicio:  r.rating_inicio,
-      ratingFin:     r.rating_fin,
-      delta:         r.rating_fin - r.rating_inicio,
-      ganados:       r.ganados  || 0,
-      perdidos:      r.perdidos || 0,
-    }));
+    // Merge players that appear in multiple categories: sum W/L, use min rating_inicio & max rating_fin
+    const playerMap = new Map();
+    data.forEach(r => {
+      const existing = playerMap.get(r.id_jugador);
+      if (!existing) {
+        playerMap.set(r.id_jugador, {
+          id_jugador:   r.id_jugador,
+          nombre:       r.nombre || '—',
+          club:         r.club   || '—',
+          ratingInicio: r.rating_inicio,
+          ratingFin:    r.rating_fin,
+          ganados:      r.ganados  || 0,
+          perdidos:     r.perdidos || 0,
+        });
+      } else {
+        existing.ratingInicio = Math.min(existing.ratingInicio, r.rating_inicio);
+        existing.ratingFin    = Math.max(existing.ratingFin,    r.rating_fin);
+        existing.ganados  += r.ganados  || 0;
+        existing.perdidos += r.perdidos || 0;
+      }
+    });
+
+    eventoRows = [...playerMap.values()]
+      .sort((a, b) => b.ratingFin - a.ratingFin)
+      .map((r, i) => ({ rank: i + 1, ...r, delta: r.ratingFin - r.ratingInicio }));
 
     document.getElementById('eventoSubtitle').textContent = `${eventoRows.length} participantes`;
     document.getElementById('eventoParticipantCount').textContent = eventoRows.length;
@@ -3245,7 +3281,7 @@ async function showPlayerMatches(playerId, playerName, ratingInicio) {
 
   try {
     const data = await sbGet('partidos',
-      `?or=(jugador_a_id.eq.${playerId},jugador_b_id.eq.${playerId})&torneo_id=eq.${currentEventoTorneoId}&order=id.asc&limit=200`
+      `?or=(jugador_a_id.eq.${playerId},jugador_b_id.eq.${playerId})&${currentEventoTorneoId.length === 1 ? `torneo_id=eq.${currentEventoTorneoId[0]}` : `torneo_id=in.(${currentEventoTorneoId.join(',')})`}&order=id.asc&limit=200`
     );
 
     if (!data.length) {

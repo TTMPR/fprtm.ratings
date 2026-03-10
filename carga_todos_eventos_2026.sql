@@ -13,7 +13,7 @@
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 1600 Under';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -158,7 +158,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 1900 Under';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -303,7 +303,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — Abierto - OPEN';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -445,7 +445,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 1800 Under';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -592,7 +592,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 1700 Under';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -740,7 +740,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 1500 Under';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -884,7 +884,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 13U - Femenino';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -1026,7 +1026,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 13U - Masculino';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -1169,7 +1169,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — Sub21 - Abierto';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -1311,7 +1311,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 9U - Femenino';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -1453,7 +1453,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 15U - Masculino';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -1595,7 +1595,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — Seniors - 40+';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -1736,7 +1736,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 9U - Masculino';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -1877,7 +1877,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 11U - Masculino';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -2019,7 +2019,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 15U - Femenino';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
@@ -2162,7 +2162,7 @@ $$;
 DO $$
 DECLARE
     v_torneo_id     INTEGER;
-    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026 — 11U - Femenino';
+    v_torneo_nombre CONSTANT TEXT := 'Albergue Olímpico 2026';
     v_torneo_fecha  CONSTANT DATE := '2026-03-01';
     r               RECORD;
     v_diff          INTEGER;
