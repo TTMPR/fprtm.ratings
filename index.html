@@ -3123,11 +3123,14 @@ async function loadTorneosList() {
   grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando torneos...</div>';
   try {
     allTorneos = await sbGet('torneos', '?select=id,nombre,fecha&order=fecha.desc&limit=200');
-    // Fetch participant counts from resultados_evento grouped by id_torneo
-    let countMap = {};
+    // Fetch participant IDs to compute unique player counts per torneo
+    let playersByTorneo = {};  // id_torneo -> Set of id_jugador
     try {
       const counts = await sbGet('resultados_evento', '?select=id_torneo,id_jugador&limit=10000');
-      counts.forEach(r => { countMap[r.id_torneo] = (countMap[r.id_torneo] || 0) + 1; });
+      counts.forEach(r => {
+        if (!playersByTorneo[r.id_torneo]) playersByTorneo[r.id_torneo] = new Set();
+        playersByTorneo[r.id_torneo].add(r.id_jugador);
+      });
     } catch(_) {}
 
     if (!allTorneos.length) {
@@ -3153,7 +3156,9 @@ async function loadTorneosList() {
     });
 
     grid.innerHTML = groups.map(g => {
-      const count      = g.ids.reduce((sum, id) => sum + (countMap[id] || 0), 0);
+      // Unique players across all categories in this group
+      const uniquePlayers = new Set(g.ids.flatMap(id => [...(playersByTorneo[id] || [])]));
+      const count = uniquePlayers.size;
       const safeNombre = g.baseName.replace(/'/g, "\\'");
       const fechaFmt   = g.fecha
         ? new Date(g.fecha + 'T12:00:00').toLocaleDateString('es-PR', { year:'numeric', month:'long', day:'numeric' })
@@ -3209,9 +3214,13 @@ async function openTorneoEvento(torneoIds, nombre, fecha) {
     const filter = ids.length === 1
       ? `id_torneo=eq.${ids[0]}`
       : `id_torneo=in.(${ids.join(',')})`;
-    const data = await sbGet('resultados_evento', `?${filter}&order=rating_fin.desc&limit=2000`);
+    // Order by id ascending so we process each player's categories chronologically
+    const data = await sbGet('resultados_evento', `?${filter}&order=id.asc&limit=2000`);
 
-    // Merge players that appear in multiple categories: sum W/L, use min rating_inicio & max rating_fin
+    // Merge players that appear in multiple categories:
+    // - ratingInicio = first record's rating_inicio (before first category played)
+    // - ratingFin    = last record's rating_fin (after last category played) → always overwrite
+    // - ganados/perdidos = sum across all categories
     const playerMap = new Map();
     data.forEach(r => {
       const existing = playerMap.get(r.id_jugador);
@@ -3226,8 +3235,7 @@ async function openTorneoEvento(torneoIds, nombre, fecha) {
           perdidos:     r.perdidos || 0,
         });
       } else {
-        existing.ratingInicio = Math.min(existing.ratingInicio, r.rating_inicio);
-        existing.ratingFin    = Math.max(existing.ratingFin,    r.rating_fin);
+        existing.ratingFin = r.rating_fin;  // overwrite with chronologically later value
         existing.ganados  += r.ganados  || 0;
         existing.perdidos += r.perdidos || 0;
       }
