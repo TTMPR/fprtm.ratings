@@ -3431,9 +3431,19 @@ function setFilter(el, val) {
 
 function showAllPlayers() {
   const todosChip = document.querySelector('#rankingsPage .filter-chip');
-  if (todosChip) setFilter(todosChip, 'all');
+  if (todosChip) {
+    document.querySelectorAll('#rankingsPage .filter-chip').forEach(c => c.classList.remove('on'));
+    todosChip.classList.add('on');
+  }
+  currentFilter = 'all';
   document.getElementById('searchInput').value = '';
-  filterPlayers();
+  PLAYERS = [...ALL_PLAYERS];
+  displayedCount = PLAYERS.length;
+  renderPlayers(PLAYERS);
+  const lm = document.getElementById('loadMore');
+  if (lm) lm.style.display = 'none';
+  updateStats();
+  document.getElementById('playerGrid').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ══════════════════════════════════════════
