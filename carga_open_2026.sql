@@ -31,6 +31,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con los 405 partidos ────────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 (14207,39871),(14207,51347),(39871,32431),(14207,56566),(51347,40021),(32431,89840),(39871,45382),(56566,95909),(14207,83000),(40021,99593),

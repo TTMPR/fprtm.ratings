@@ -29,6 +29,8 @@ BEGIN
     END IF;
 
 -- ── 2. Tabla temporal con todos los partidos ──────────────────
+    DROP TABLE IF EXISTS _matches;
+    DROP TABLE IF EXISTS _deltas;
     CREATE TEMP TABLE _matches (winner_id INT, loser_id INT) ON COMMIT DROP;
     INSERT INTO _matches (winner_id, loser_id) VALUES
 -- Ronda de Grupos — B vs C
