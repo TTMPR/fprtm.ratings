@@ -4400,17 +4400,12 @@ async function submitPhotoRequest() {
   try {
     const ext  = (_photoUploadFile.name.split('.').pop() || 'jpg').toLowerCase();
     const path = `pending/${Date.now()}_${_photoUploadPlayer.id}.${ext}`;
-    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/player-photos/${path}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': _photoUploadFile.type || 'image/jpeg',
-        'x-upsert': 'false'
-      },
-      body: _photoUploadFile
-    });
-    if (!uploadRes.ok) throw new Error(await uploadRes.text());
-    const photoUrl = `${SUPABASE_URL}/storage/v1/object/public/player-photos/${path}`;
+    const { error: upErr } = await _supabase.storage
+      .from('player-photos')
+      .upload(path, _photoUploadFile, { contentType: _photoUploadFile.type || 'image/jpeg', upsert: false });
+    if (upErr) throw new Error(upErr.message);
+    const { data: { publicUrl } } = _supabase.storage.from('player-photos').getPublicUrl(path);
+    const photoUrl = publicUrl;
     await sbPost('photo_requests', { member_id: _photoUploadPlayer.id, photo_url: photoUrl, status: 'pending' });
     msgEl.style.color = 'var(--green)';
     msgEl.textContent = '✓ Foto enviada. Será revisada pronto.';
