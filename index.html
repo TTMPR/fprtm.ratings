@@ -819,6 +819,163 @@
     border-color: rgba(232,184,75,0.3) !important;
     color: var(--accent) !important;
   }
+
+  /* ─── JOIN BANNER ─── */
+  .join-banner {
+    max-width: 1200px; margin: 0 auto; padding: 0 32px 20px;
+  }
+  .join-banner-inner {
+    background: linear-gradient(135deg, rgba(232,184,75,0.08), rgba(26,58,110,0.3));
+    border: 1px solid rgba(232,184,75,0.22);
+    border-radius: 14px; padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .join-banner-text { font-size: 13px; color: var(--muted); }
+  .join-banner-text strong { color: var(--text); display: block; font-size: 14px; margin-bottom: 2px; }
+  .btn-join {
+    background: var(--accent); color: var(--navy);
+    border: none; border-radius: 10px; padding: 10px 22px;
+    font-family: 'DM Sans'; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-join:hover { background: var(--accent2); transform: translateY(-1px); }
+
+  /* ─── MEMBER BADGE (player card) ─── */
+  .memb-pill {
+    font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px;
+    text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
+    display: inline-block;
+  }
+  .memb-pill.active  { background: rgba(34,197,94,0.15);  color: var(--green); }
+  .memb-pill.warning { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .memb-pill.expired { background: rgba(239,68,68,0.12);  color: var(--red); }
+  .memb-pill.none    { background: rgba(255,255,255,0.06); color: var(--muted); }
+
+  /* ─── PROFILE MEMBERSHIP STATUS ─── */
+  .profile-memb-status {
+    margin: 10px 0; padding: 10px 14px;
+    border-radius: 10px; font-size: 13px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .profile-memb-status.active  { background: rgba(34,197,94,0.1);  border: 1px solid rgba(34,197,94,0.25); }
+  .profile-memb-status.warning { background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.25); }
+  .profile-memb-status.expired { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
+  .profile-memb-status.none    { background: rgba(255,255,255,0.04); border: 1px solid var(--border); }
+  .profile-memb-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .profile-memb-status.active  .profile-memb-dot { background: var(--green); }
+  .profile-memb-status.warning .profile-memb-dot { background: var(--orange); }
+  .profile-memb-status.expired .profile-memb-dot { background: var(--red); }
+  .profile-memb-status.none    .profile-memb-dot { background: var(--muted); }
+
+  /* ─── MEMB PAGE TABS ─── */
+  .memb-page-tabs {
+    max-width: 1200px; margin: 0 auto 24px; padding: 0 32px;
+    display: flex; gap: 4px; border-bottom: 1px solid var(--border);
+  }
+  .memb-page-tab {
+    background: none; border: none; color: var(--muted);
+    padding: 10px 20px 14px; cursor: pointer;
+    font-family: 'DM Sans'; font-size: 14px; font-weight: 500;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+  .memb-page-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .memb-tab-badge {
+    background: var(--accent); color: var(--navy);
+    font-size: 10px; font-weight: 700; padding: 1px 6px;
+    border-radius: 99px; margin-left: 6px; display: inline-block; vertical-align: middle;
+  }
+
+  /* ─── REQUEST CARDS (admin queue) ─── */
+  .requests-grid {
+    max-width: 1200px; margin: 0 auto; padding: 0 32px 40px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .request-card {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px 24px;
+  }
+  .request-card-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 16px; margin-bottom: 12px;
+  }
+  .request-card-name  { font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 1px; }
+  .request-card-meta  { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
+  .request-card-type  {
+    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; flex-shrink: 0;
+  }
+  .request-card-type.new     { background: rgba(34,197,94,0.15);  color: var(--green); }
+  .request-card-type.renewal { background: rgba(232,184,75,0.15); color: var(--accent); }
+  .request-card-details {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin-bottom: 16px; font-size: 12px;
+  }
+  .req-field label { display: block; color: var(--muted); margin-bottom: 2px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .req-field span  { color: var(--text); font-weight: 500; }
+  .request-card-actions { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
+  .btn-approve {
+    background: rgba(34,197,94,0.15); color: var(--green);
+    border: 1px solid rgba(34,197,94,0.3); border-radius: 8px;
+    padding: 8px 20px; cursor: pointer; font-family: 'DM Sans'; font-size: 13px; font-weight: 700; transition: all 0.2s;
+  }
+  .btn-approve:hover { background: rgba(34,197,94,0.28); }
+  .btn-reject {
+    background: rgba(239,68,68,0.1); color: var(--red);
+    border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;
+    padding: 8px 20px; cursor: pointer; font-family: 'DM Sans'; font-size: 13px; font-weight: 700; transition: all 0.2s;
+  }
+  .btn-reject:hover { background: rgba(239,68,68,0.22); }
+  .req-ath { font-family: 'DM Mono'; font-size: 14px; font-weight: 700; color: var(--accent); }
+
+  /* ─── MEMBERSHIP FORM PAGE ─── */
+  .memb-form-wrap { max-width: 760px; margin: 0 auto; padding: 0 32px 60px; }
+  .memb-form-section {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px; margin-bottom: 20px;
+  }
+  .mfs-title {
+    font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 2px;
+    color: var(--accent); margin-bottom: 20px;
+  }
+  .mfs-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .mfs-full  { grid-column: 1 / -1; }
+  .memb-type-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .memb-type-btn {
+    padding: 20px 16px; border-radius: 12px; border: 2px solid var(--border);
+    background: var(--card2); color: var(--text); cursor: pointer;
+    font-family: 'DM Sans'; font-size: 15px; font-weight: 600;
+    transition: all 0.2s; text-align: center;
+  }
+  .memb-type-btn:hover  { border-color: var(--accent); color: var(--accent); }
+  .memb-type-btn.selected { border-color: var(--accent); background: rgba(232,184,75,0.1); color: var(--accent); }
+  .memb-type-btn .btn-icon { font-size: 28px; display: block; margin-bottom: 8px; }
+  .memb-search-results {
+    margin-top: 12px; display: flex; flex-direction: column; gap: 8px;
+    max-height: 240px; overflow-y: auto;
+  }
+  .memb-search-result-item {
+    padding: 12px 16px; background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; cursor: pointer; transition: border-color 0.2s;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .memb-search-result-item:hover   { border-color: var(--accent); }
+  .memb-search-result-item.selected { border-color: var(--green); background: rgba(34,197,94,0.08); }
+  .memb-payment-box {
+    background: rgba(232,184,75,0.06); border: 1px solid rgba(232,184,75,0.25);
+    border-radius: 12px; padding: 24px;
+  }
+  .memb-payment-amount { font-family: 'Bebas Neue'; font-size: 52px; color: var(--accent); line-height: 1; margin-bottom: 8px; }
+  .memb-payment-instructions { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+  .memb-payment-ath { font-family: 'DM Mono'; font-size: 20px; color: var(--green); font-weight: 700; letter-spacing: 1px; }
+  .minor-section { display: none; margin-top: 16px; padding: 16px; background: rgba(249,115,22,0.06); border: 1px solid rgba(249,115,22,0.25); border-radius: 10px; }
+  .minor-section.visible { display: block; }
+
+  @media (max-width: 768px) {
+    .mfs-grid { grid-template-columns: 1fr; }
+    .memb-type-btns { grid-template-columns: 1fr; }
+    .join-banner-inner { flex-direction: column; }
+    .request-card-details { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -867,6 +1024,16 @@
     <div class="filter-chip" onclick="setFilter(this,'fem')">Femenino</div>
   </div>
 
+  <div class="join-banner">
+    <div class="join-banner-inner">
+      <div class="join-banner-text">
+        <strong>¿Eres miembro de FPTM?</strong>
+        Únete o renueva tu membresía anual · Cuota $20.00
+      </div>
+      <button class="btn-join" onclick="showMembershipForm()">🏓 Únete / Renueva</button>
+    </div>
+  </div>
+
   <div class="stats-row">
     <div class="stat-card gold">
       <div class="label">Top Rating</div>
@@ -911,6 +1078,10 @@
       <div class="profile-id" id="profileId">ATH# —</div>
       <div class="profile-club" id="profileClub">Naguabo</div>
       <span id="profileBadge" class="badge">Jugador activo</span>
+      <div id="profileMembStatus" class="profile-memb-status none" style="display:none">
+        <div class="profile-memb-dot"></div>
+        <div id="profileMembStatusText">—</div>
+      </div>
 
       <div class="profile-rating-box">
         <div class="rating-label">RATING FPRTM</div>
@@ -1221,51 +1392,70 @@ Maria Lopez,Ana Torres,B</code>
   <div class="page-hero">
     <div class="overline">Gestión</div>
     <h1>MEMBRESÍA 2026</h1>
-    <p>Control de miembros activos, vencidos y alertas</p>
+    <p>Control de miembros activos, vencidos y solicitudes pendientes</p>
   </div>
 
-  <div class="alert-banner">
-    <div class="alert-box">
-      <span class="icon">⚠️</span>
-      <div id="alertText">Cargando estado de membresías...</div>
-    </div>
+  <!-- Page tabs -->
+  <div class="memb-page-tabs">
+    <button class="memb-page-tab active" onclick="setMembPageTab('list')">📋 Miembros</button>
+    <button class="memb-page-tab" id="tabSolicitudes" onclick="setMembPageTab('requests')">
+      📬 Solicitudes Pendientes
+      <span class="memb-tab-badge" id="pendingBadge" style="display:none">0</span>
+    </button>
   </div>
 
-  <div class="stats-row">
-    <div class="stat-card gold">
-      <div class="label">Miembros Activos</div>
-      <div class="value" id="membActive">—</div>
-      <div class="sub">Temporada 2026</div>
+  <!-- ── TAB: LIST ── -->
+  <div id="membListContent">
+    <div class="alert-banner">
+      <div class="alert-box">
+        <span class="icon">⚠️</span>
+        <div id="alertText">Cargando estado de membresías...</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="label">Sin Membresía</div>
-      <div class="value" style="color:var(--red)" id="membNo">—</div>
-      <div class="sub">En ranking pero no miembros</div>
+
+    <div class="stats-row">
+      <div class="stat-card gold">
+        <div class="label">Miembros Activos</div>
+        <div class="value" id="membActive">—</div>
+        <div class="sub">Temporada 2026</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Sin Membresía</div>
+        <div class="value" style="color:var(--red)" id="membNo">—</div>
+        <div class="sub">En ranking pero no miembros</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Nuevos (Feb)</div>
+        <div class="value" style="color:var(--green)" id="membNew">—</div>
+        <div class="sub">Registrados este mes</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Por Vencer</div>
+        <div class="value" style="color:var(--orange)" id="membWarn">—</div>
+        <div class="sub">Próximos 30 días</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="label">Nuevos (Feb)</div>
-      <div class="value" style="color:var(--green)" id="membNew">—</div>
-      <div class="sub">Registrados este mes</div>
+
+    <div class="memb-search-wrap">
+      <input id="membSearchInput" type="text" placeholder="🔍 Buscar jugador por nombre..." oninput="renderMembers()">
     </div>
-    <div class="stat-card">
-      <div class="label">Por Vencer</div>
-      <div class="value" style="color:var(--orange)" id="membWarn">—</div>
-      <div class="sub">Próximos 30 días</div>
+
+    <div class="filters" style="margin-bottom:16px">
+      <div class="filter-chip on" onclick="setMembFilter(this,'all')">Todos</div>
+      <div class="filter-chip" onclick="setMembFilter(this,'active')">✅ Activos</div>
+      <div class="filter-chip" onclick="setMembFilter(this,'warning')">⚠️ Por Vencer</div>
+      <div class="filter-chip" onclick="setMembFilter(this,'no')">❌ Sin Membresía</div>
     </div>
+
+    <div class="memb-grid" id="membGrid"></div>
   </div>
 
-  <div class="memb-search-wrap">
-    <input id="membSearchInput" type="text" placeholder="🔍 Buscar jugador por nombre..." oninput="renderMembers()">
+  <!-- ── TAB: REQUESTS ── -->
+  <div id="membRequestsContent" style="display:none">
+    <div class="requests-grid" id="requestsGrid">
+      <div style="text-align:center;padding:40px;color:var(--muted)">Cargando solicitudes...</div>
+    </div>
   </div>
-
-  <div class="filters" style="margin-bottom:16px">
-    <div class="filter-chip on" onclick="setMembFilter(this,'all')">Todos</div>
-    <div class="filter-chip" onclick="setMembFilter(this,'active')">✅ Activos</div>
-    <div class="filter-chip" onclick="setMembFilter(this,'warning')">⚠️ Por Vencer</div>
-    <div class="filter-chip" onclick="setMembFilter(this,'no')">❌ Sin Membresía</div>
-  </div>
-
-  <div class="memb-grid" id="membGrid"></div>
 </div>
 
 <!-- ══════════════════════════════════════════
@@ -1514,6 +1704,190 @@ Maria Lopez,Ana Torres,B</code>
 </div>
 
 <!-- ══════════════════════════════════════════
+     PAGE: FORMULARIO DE MEMBRESÍA (público)
+═══════════════════════════════════════════ -->
+<div id="membresiaFormPage" class="page">
+  <div class="container" style="padding-bottom:0">
+    <button class="back-btn" onclick="showPage('rankings')">← Volver a Rankings</button>
+  </div>
+  <div class="page-hero">
+    <div class="overline">Federación de Tenis de Mesa de Puerto Rico</div>
+    <h1>MEMBRESÍA FPTM</h1>
+    <p>Registra o renueva tu membresía · Cuota anual $20.00 · Válida por 12 meses</p>
+  </div>
+
+  <div class="memb-form-wrap">
+
+    <!-- Step 0: Tipo de solicitud -->
+    <div id="membFormStep0" class="memb-form-section">
+      <div class="mfs-title">¿Qué deseas hacer?</div>
+      <div class="memb-type-btns">
+        <button class="memb-type-btn" id="btnTypeRenewal" onclick="membSelectType('renewal')">
+          <span class="btn-icon">🔄</span>
+          Renovar mi membresía
+          <br><small style="color:var(--muted);font-size:12px;font-weight:400">Ya estoy registrado en FPTM</small>
+        </button>
+        <button class="memb-type-btn" id="btnTypeNew" onclick="membSelectType('new')">
+          <span class="btn-icon">✨</span>
+          Soy jugador nuevo
+          <br><small style="color:var(--muted);font-size:12px;font-weight:400">Primera vez en el sistema</small>
+        </button>
+      </div>
+    </div>
+
+    <!-- Renovación: buscar jugador existente -->
+    <div id="membRenewalSection" class="memb-form-section" style="display:none">
+      <div class="mfs-title">Buscar tu Perfil</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Escribe tu nombre para encontrar tu perfil en la base de datos de FPTM.</p>
+      <div class="edit-field">
+        <label>Buscar jugador</label>
+        <input type="text" id="membPlayerSearch" placeholder="Nombre o apellido..." oninput="membSearchPlayer()">
+      </div>
+      <div id="membSearchResults" class="memb-search-results"></div>
+      <div id="membSelectedPlayerInfo" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:10px;font-size:13px;color:var(--green)"></div>
+    </div>
+
+    <!-- Formulario principal (se muestra cuando se selecciona tipo) -->
+    <div id="membMainForm" style="display:none">
+      <input type="hidden" id="membFormType" value="">
+      <input type="hidden" id="membFormExistingId" value="">
+
+      <!-- Información personal -->
+      <div class="memb-form-section">
+        <div class="mfs-title">Información Personal</div>
+        <div class="mfs-grid">
+          <div class="edit-field">
+            <label>Nombre *</label>
+            <input type="text" id="membFNombre" placeholder="Sin acentos o ñ" autocomplete="given-name">
+          </div>
+          <div class="edit-field">
+            <label>Apellidos *</label>
+            <input type="text" id="membFApellidos" placeholder="Sin acentos o ñ" autocomplete="family-name">
+          </div>
+          <div class="edit-field">
+            <label>Email *</label>
+            <input type="email" id="membFEmail" placeholder="correo@ejemplo.com" autocomplete="email">
+          </div>
+          <div class="edit-field">
+            <label>Teléfono</label>
+            <input type="tel" id="membFTelefono" placeholder="(787) 000-0000" autocomplete="tel">
+          </div>
+          <div class="edit-field">
+            <label>Fecha de Nacimiento</label>
+            <input type="date" id="membFDob">
+          </div>
+          <div class="edit-field">
+            <label>Sexo *</label>
+            <select id="membFSex">
+              <option value="">— Seleccionar —</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+            </select>
+          </div>
+          <div class="edit-field mfs-full">
+            <label>Club *</label>
+            <select id="membFClub">
+              <option value="">— Seleccionar club —</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Menor de edad -->
+        <div style="margin-top:20px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:var(--text)">
+            <input type="checkbox" id="membFIsMinor" onchange="membFormUpdateMinor()" style="width:16px;height:16px;accent-color:var(--accent)">
+            ¿Eres menor de 18 años?
+          </label>
+          <div class="minor-section" id="membMinorSection">
+            <p style="font-size:12px;color:var(--orange);margin-bottom:14px">Se requiere autorización de un adulto responsable.</p>
+            <div class="mfs-grid">
+              <div class="edit-field">
+                <label>Nombre del representante / guardián *</label>
+                <input type="text" id="membFGuardianName" placeholder="Nombre completo">
+              </div>
+              <div class="edit-field">
+                <label>Relación con el menor *</label>
+                <input type="text" id="membFGuardianRelation" placeholder="Ej: Padre, Madre, Tutor">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dirección -->
+      <div class="memb-form-section">
+        <div class="mfs-title">Dirección</div>
+        <div class="mfs-grid">
+          <div class="edit-field mfs-full">
+            <label>Dirección (Línea 1 y 2)</label>
+            <input type="text" id="membFAddress" placeholder="Calle, Urb., Apto #..." autocomplete="street-address">
+          </div>
+          <div class="edit-field">
+            <label>País</label>
+            <select id="membFCountry" onchange="membFormUpdateCity()">
+              <option value="Puerto Rico">Puerto Rico</option>
+              <option value="United States">United States</option>
+              <option value="Dominican Republic">Dominican Republic</option>
+              <option value="Cuba">Cuba</option>
+              <option value="Venezuela">Venezuela</option>
+              <option value="Colombia">Colombia</option>
+              <option value="Mexico">México</option>
+              <option value="Panama">Panamá</option>
+              <option value="Costa Rica">Costa Rica</option>
+              <option value="Other">Otro</option>
+            </select>
+          </div>
+          <div class="edit-field" id="membCityFieldWrap">
+            <label>Ciudad / Municipio</label>
+            <select id="membFCitySelect"></select>
+            <input type="text" id="membFCityText" placeholder="Ciudad" style="display:none">
+          </div>
+          <div class="edit-field">
+            <label>Estado / Provincia</label>
+            <input type="text" id="membFState" placeholder="Ej: Puerto Rico, Florida...">
+          </div>
+          <div class="edit-field">
+            <label>Código Postal</label>
+            <input type="text" id="membFZip" placeholder="00000" maxlength="10">
+          </div>
+        </div>
+      </div>
+
+      <!-- Pago -->
+      <div class="memb-form-section">
+        <div class="mfs-title">Pago de Cuota</div>
+        <div class="memb-payment-box">
+          <div class="memb-payment-amount">$20.00</div>
+          <div class="memb-payment-instructions">
+            Envía tu pago por <strong style="color:var(--text)">ATH Móvil</strong> al negocio:<br>
+            <span class="memb-payment-ath">/fprtm</span>
+            <br><br>
+            Una vez enviado, copia el <strong style="color:var(--text)">número de confirmación</strong>
+            de la transacción e ingrésalo abajo. Tu solicitud será procesada una vez
+            el administrador confirme el pago.
+          </div>
+          <div class="edit-field" style="margin-bottom:0">
+            <label>Número de Confirmación ATH Móvil *</label>
+            <input type="text" id="membFAth" placeholder="Ej: 20260315123456" style="font-family:'DM Mono';letter-spacing:1px">
+          </div>
+        </div>
+
+        <div id="membFormMsg" style="font-size:13px;margin-top:16px;min-height:20px;text-align:center"></div>
+
+        <div style="margin-top:20px">
+          <button class="btn-primary" id="membFormSubmitBtn" onclick="submitMembershipRequest(event)" style="width:100%;font-size:16px;padding:14px">
+            📬 Enviar Solicitud de Membresía
+          </button>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:12px;text-align:center">
+          Tu solicitud será revisada por el administrador. Recibirás confirmación una vez sea aprobada.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      LOGIN MODAL
 ═══════════════════════════════════════════ -->
 <div id="loginModal">
@@ -1744,6 +2118,7 @@ async function loadPlayers(filter = {}) {
     cat: null,
     club: p['Club'],
     member: p['Expiration Date'] ? new Date(p['Expiration Date']) > now : false,
+    expDate: p['Expiration Date'] || null,
     rating: p['New Rating'] || p['Rating'],
     ratingStart: p['Rating']
   }));
@@ -1829,14 +2204,15 @@ function updateStats() {
 // NAV
 // ══════════════════════════════════════════
 const pages = {
-  rankings:      'rankingsPage',
-  calculator:    'calculatorPage',
-  subir:         'subirPage',
-  torneosList:   'torneosListPage',
-  torneoEvento:  'torneoEventoPage',
-  membresia:     'membresia_page',
-  admin:         'adminPage',
-  profile:       'profilePage'
+  rankings:       'rankingsPage',
+  calculator:     'calculatorPage',
+  subir:          'subirPage',
+  torneosList:    'torneosListPage',
+  torneoEvento:   'torneoEventoPage',
+  membresia:      'membresia_page',
+  admin:          'adminPage',
+  profile:        'profilePage',
+  membresiaForm:  'membresiaFormPage'
 };
 
 function showPage(key) {
@@ -1866,6 +2242,8 @@ function showPage(key) {
   }
   // Load torneos list on navigation
   if (key === 'torneosList') loadTorneosList();
+  // Load pending requests when admin opens membresia tab
+  if (key === 'membresia' && currentUser) loadPendingRequestsCount();
 }
 
 // ══════════════════════════════════════════
@@ -1922,7 +2300,7 @@ function renderPlayers(list, append = false) {
       </div>
       <div class="player-right">
         <div class="rating-num"><span class="star">★</span>${p.rating}</div>
-        <div class="player-stats">${p.age ? p.age + ' años' : '—'}</div>
+        <div style="margin-top:4px">${buildMembPill(p)}</div>
       </div>`;
     grid.appendChild(card);
   });
@@ -1953,6 +2331,16 @@ async function showProfile(player) {
   const _badge = document.getElementById('profileBadge');
   _badge.className = 'badge';
   _badge.style.display = 'none';
+
+  // Membership status
+  const _ms = getMemberInfo(player);
+  const _msEl = document.getElementById('profileMembStatus');
+  const _msTxt = document.getElementById('profileMembStatusText');
+  if (_msEl && _msTxt) {
+    _msEl.style.display = '';
+    _msEl.className = 'profile-memb-status ' + _ms.status;
+    _msTxt.innerHTML = _ms.label;
+  }
   document.getElementById('profileRating').textContent = player.rating;
   document.getElementById('profileCategory').textContent =
     [player.cat, player.sex, player.age ? player.age + ' años' : ''].filter(Boolean).join(' · ');
@@ -2876,7 +3264,7 @@ async function saveNewPlayer() {
   const sex       = document.getElementById('newPlayerSex').value;
   const club      = document.getElementById('newPlayerClub').value.trim();
   const ratingVal = document.getElementById('newPlayerRating').value;
-  const rating    = ratingVal ? Number(ratingVal) : 1500;
+  const rating    = ratingVal ? Number(ratingVal) : 1450;
   const email     = document.getElementById('newPlayerEmail').value.trim();
   const expRaw    = document.getElementById('newPlayerExpDate').value;
   const msg       = document.getElementById('newPlayerMsg');
@@ -3444,6 +3832,454 @@ function showAllPlayers() {
   if (lm) lm.style.display = 'none';
   updateStats();
   document.getElementById('playerGrid').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════
+// MEMBER STATUS HELPERS
+// ══════════════════════════════════════════
+function getMemberInfo(player) {
+  if (!player.expDate) return { status: 'none', label: 'No Miembro', days: null };
+  const now  = new Date();
+  const exp  = new Date(player.expDate);
+  const days = Math.floor((exp - now) / 86400000);
+  if (days < 0)   return { status: 'expired', label: `Expirado · ${player.expDate}`, days };
+  if (days <= 30) return { status: 'warning', label: `Miembro Activo · Vence en ${days}d (${player.expDate})`, days };
+  return { status: 'active', label: `Miembro Activo · Exp. ${player.expDate}`, days };
+}
+
+function buildMembPill(player) {
+  const m = getMemberInfo(player);
+  const labels = { active: 'Miembro', warning: 'Miembro', expired: 'Expirado', none: 'No Miembro' };
+  return `<span class="memb-pill ${m.status}">${labels[m.status]}</span>`;
+}
+
+// ══════════════════════════════════════════
+// MEMB PAGE TABS
+// ══════════════════════════════════════════
+let membPageTab = 'list';
+
+function setMembPageTab(tab) {
+  membPageTab = tab;
+  document.querySelectorAll('.memb-page-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.memb-page-tab')[tab === 'list' ? 0 : 1].classList.add('active');
+  document.getElementById('membListContent').style.display     = tab === 'list'     ? '' : 'none';
+  document.getElementById('membRequestsContent').style.display = tab === 'requests' ? '' : 'none';
+  if (tab === 'requests') loadPendingRequests();
+}
+
+// ══════════════════════════════════════════
+// PENDING REQUESTS — admin queue
+// ══════════════════════════════════════════
+let pendingRequests = [];
+
+async function loadPendingRequestsCount() {
+  if (!currentUser) return;
+  try {
+    const data = await sbGet('membership_requests', '?status=eq.pending&select=id');
+    const count = data.length;
+    const badge = document.getElementById('pendingBadge');
+    if (badge) {
+      badge.textContent = count;
+      badge.style.display = count > 0 ? '' : 'none';
+    }
+  } catch(_) { /* table may not exist yet */ }
+}
+
+async function loadPendingRequests() {
+  if (!currentUser) return;
+  const grid = document.getElementById('requestsGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando solicitudes...</div>';
+  try {
+    pendingRequests = await sbGet('membership_requests', '?status=eq.pending&order=created_at.asc&limit=200');
+    renderPendingRequests(pendingRequests);
+    const badge = document.getElementById('pendingBadge');
+    if (badge) {
+      badge.textContent = pendingRequests.length;
+      badge.style.display = pendingRequests.length > 0 ? '' : 'none';
+    }
+  } catch(e) {
+    grid.innerHTML = `<div style="text-align:center;padding:40px">
+      <div style="color:var(--orange);font-size:14px;margin-bottom:8px">⚠️ Tabla no encontrada</div>
+      <div style="color:var(--muted);font-size:13px">Ejecuta el script <code>create_membership_requests.sql</code> en Supabase.</div>
+    </div>`;
+  }
+}
+
+function renderPendingRequests(reqs) {
+  const grid = document.getElementById('requestsGrid');
+  if (!reqs.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">✅ No hay solicitudes pendientes.</div>';
+    return;
+  }
+  grid.innerHTML = reqs.map(r => {
+    const name  = `${r.first_name} ${r.last_name}`;
+    const date  = new Date(r.created_at).toLocaleDateString('es-PR', { year:'numeric', month:'short', day:'numeric' });
+    const typeLabel = r.type === 'renewal' ? 'Renovación' : 'Nuevo';
+    const existingInfo = r.existing_player_id
+      ? `<div class="req-field"><label>ID Existente</label><span>#${r.existing_player_id}</span></div>` : '';
+    return `<div class="request-card" id="reqcard${r.id}">
+      <div class="request-card-header">
+        <div>
+          <div class="request-card-name">${name}</div>
+          <div class="request-card-meta">
+            ${r.email || '—'} · ${r.phone || '—'} · ${r.sex || '—'}<br>
+            Club: ${r.club || '—'} · Solicitado: ${date}
+          </div>
+        </div>
+        <span class="request-card-type ${r.type}">${typeLabel}</span>
+      </div>
+      <div class="request-card-details">
+        <div class="req-field"><label>Dirección</label><span>${r.city || '—'}${r.state ? ', '+r.state : ''}, ${r.country || '—'}</span></div>
+        <div class="req-field"><label>Confirmación ATH</label><span class="req-ath">${r.ath_confirmation}</span></div>
+        ${existingInfo}
+        ${r.is_minor ? `<div class="req-field"><label>Menor · Guardián</label><span>${r.guardian_name || '—'} (${r.guardian_relation || '—'})</span></div>` : ''}
+      </div>
+      <div class="request-card-actions">
+        <span id="reqmsg${r.id}" style="font-size:13px;color:var(--muted);margin-right:auto"></span>
+        <button class="btn-reject"  onclick="rejectMembershipRequest(${r.id})">✕ Rechazar</button>
+        <button class="btn-approve" onclick="approveMembershipRequest(${r.id})">✓ Aprobar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function approveMembershipRequest(reqId) {
+  if (!currentUser) return;
+  const req = pendingRequests.find(r => r.id === reqId);
+  if (!req) return;
+  const msgEl = document.getElementById('reqmsg' + reqId);
+  if (msgEl) msgEl.textContent = 'Procesando...';
+
+  try {
+    const today  = new Date();
+    const expDate = new Date(today);
+    expDate.setFullYear(expDate.getFullYear() + 1);
+    const expStr = `${String(expDate.getMonth()+1).padStart(2,'0')}/${String(expDate.getDate()).padStart(2,'0')}/${expDate.getFullYear()}`;
+
+    if (req.type === 'renewal' && req.existing_player_id) {
+      // Update existing player
+      const patch = { 'Expiration Date': expStr };
+      if (req.email) patch['Email'] = req.email;
+      if (req.club)  patch['Club']  = req.club;
+      await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${req.existing_player_id}`, patch);
+    } else {
+      // Create new player with auto-generated 5-digit ID
+      const newId  = await generateMemberId();
+      const body = {
+        'Member ID':       newId,
+        'First Name':      req.first_name,
+        'Last Name':       req.last_name,
+        'Rating':          1450,
+        'New Rating':      1450,
+        'Expiration Date': expStr
+      };
+      if (req.sex)   body['Sex']   = req.sex;
+      if (req.club)  body['Club']  = req.club;
+      if (req.email) body['Email'] = req.email;
+      await sbPost('Base%20de%20Datos', body);
+    }
+
+    // Mark request as approved
+    await sbPatch('membership_requests', `id=eq.${reqId}`, {
+      status: 'approved',
+      processed_at: new Date().toISOString()
+    });
+
+    // Remove card from UI
+    document.getElementById('reqcard' + reqId)?.remove();
+    pendingRequests = pendingRequests.filter(r => r.id !== reqId);
+    const badge = document.getElementById('pendingBadge');
+    if (badge) {
+      badge.textContent = pendingRequests.length;
+      badge.style.display = pendingRequests.length > 0 ? '' : 'none';
+    }
+    if (!pendingRequests.length) {
+      document.getElementById('requestsGrid').innerHTML =
+        '<div style="text-align:center;padding:60px;color:var(--muted)">✅ No hay solicitudes pendientes.</div>';
+    }
+    // Refresh player data
+    ALL_PLAYERS = await loadPlayers();
+    ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
+    PLAYERS = ALL_PLAYERS;
+    MEMBERS = await loadMembers();
+    renderMembers(); updateStats();
+  } catch(e) {
+    if (msgEl) { msgEl.style.color = 'var(--red)'; msgEl.textContent = 'Error: ' + e.message; }
+  }
+}
+
+async function rejectMembershipRequest(reqId) {
+  if (!currentUser) return;
+  const msgEl = document.getElementById('reqmsg' + reqId);
+  if (msgEl) msgEl.textContent = 'Rechazando...';
+  try {
+    await sbPatch('membership_requests', `id=eq.${reqId}`, {
+      status: 'rejected',
+      processed_at: new Date().toISOString()
+    });
+    document.getElementById('reqcard' + reqId)?.remove();
+    pendingRequests = pendingRequests.filter(r => r.id !== reqId);
+    const badge = document.getElementById('pendingBadge');
+    if (badge) {
+      badge.textContent = pendingRequests.length;
+      badge.style.display = pendingRequests.length > 0 ? '' : 'none';
+    }
+    if (!pendingRequests.length) {
+      document.getElementById('requestsGrid').innerHTML =
+        '<div style="text-align:center;padding:60px;color:var(--muted)">✅ No hay solicitudes pendientes.</div>';
+    }
+  } catch(e) {
+    if (msgEl) { msgEl.style.color = 'var(--red)'; msgEl.textContent = 'Error: ' + e.message; }
+  }
+}
+
+// ══════════════════════════════════════════
+// ID GENERATOR
+// ══════════════════════════════════════════
+async function generateMemberId() {
+  const existing = new Set(ALL_PLAYERS.map(p => p.id));
+  let id;
+  let attempts = 0;
+  do {
+    id = Math.floor(10000 + Math.random() * 90000); // 5-digit: 10000–99999
+    attempts++;
+    if (attempts > 500) throw new Error('No se pudo generar un ID único. Intenta de nuevo.');
+  } while (existing.has(id));
+  return id;
+}
+
+// ══════════════════════════════════════════
+// MEMBERSHIP FORM (PUBLIC)
+// ══════════════════════════════════════════
+const PR_MUNICIPIOS = [
+  'Adjuntas','Aguada','Aguadilla','Aguas Buenas','Aibonito','Añasco','Arecibo','Arroyo',
+  'Barceloneta','Barranquitas','Bayamón','Cabo Rojo','Caguas','Camuy','Canóvanas','Carolina',
+  'Cataño','Cayey','Ceiba','Ciales','Cidra','Coamo','Comerío','Corozal','Culebra','Dorado',
+  'Fajardo','Florida','Guánica','Guayama','Guayanilla','Guaynabo','Gurabo','Hatillo',
+  'Hormigueros','Humacao','Isabela','Jayuya','Juana Díaz','Juncos','Lajas','Lares',
+  'Las Marías','Las Piedras','Loíza','Luquillo','Manatí','Maricao','Maunabo','Mayagüez',
+  'Moca','Morovis','Naguabo','Naranjito','Orocovis','Patillas','Peñuelas','Ponce',
+  'Quebradillas','Rincón','Río Grande','Sabana Grande','Salinas','San Germán','San Juan',
+  'San Lorenzo','San Sebastián','Santa Isabel','Toa Alta','Toa Baja','Trujillo Alto',
+  'Utuado','Vega Alta','Vega Baja','Vieques','Villalba','Yabucoa','Yauco'
+];
+
+function showMembershipForm(type) {
+  // Reset form state
+  document.getElementById('membFormStep0').style.display    = '';
+  document.getElementById('membRenewalSection').style.display = 'none';
+  document.getElementById('membMainForm').style.display       = 'none';
+  document.getElementById('membFormType').value               = '';
+  document.getElementById('membFormExistingId').value         = '';
+  document.getElementById('membPlayerSearch').value           = '';
+  document.getElementById('membSearchResults').innerHTML      = '';
+  document.getElementById('membSelectedPlayerInfo').style.display = 'none';
+  document.getElementById('membFormMsg').textContent          = '';
+  const btn = document.getElementById('membFormSubmitBtn');
+  if (btn) { btn.disabled = false; btn.textContent = '📬 Enviar Solicitud de Membresía'; }
+  document.querySelectorAll('.memb-type-btn').forEach(b => b.classList.remove('selected'));
+
+  // Clear form fields
+  ['membFNombre','membFApellidos','membFEmail','membFTelefono','membFDob',
+   'membFAddress','membFState','membFZip','membFAth','membFGuardianName','membFGuardianRelation']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const sx = document.getElementById('membFSex'); if (sx) sx.value = '';
+  const mi = document.getElementById('membFIsMinor'); if (mi) mi.checked = false;
+  document.getElementById('membMinorSection')?.classList.remove('visible');
+
+  membFormLoadClubs();
+  membFormUpdateCity();
+  showPage('membresiaForm');
+
+  if (type) setTimeout(() => membSelectType(type), 100);
+}
+
+function membSelectType(type) {
+  document.getElementById('membFormType').value = type;
+  document.querySelectorAll('.memb-type-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById(type === 'renewal' ? 'btnTypeRenewal' : 'btnTypeNew').classList.add('selected');
+
+  if (type === 'renewal') {
+    document.getElementById('membRenewalSection').style.display = '';
+    document.getElementById('membMainForm').style.display = 'none';
+    document.getElementById('membFormExistingId').value = '';
+    document.getElementById('membPlayerSearch').value = '';
+    document.getElementById('membSearchResults').innerHTML = '';
+    document.getElementById('membSelectedPlayerInfo').style.display = 'none';
+    document.getElementById('membRenewalSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else {
+    document.getElementById('membRenewalSection').style.display = 'none';
+    document.getElementById('membFormExistingId').value = '';
+    document.getElementById('membMainForm').style.display = '';
+    document.getElementById('membMainForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function membSearchPlayer() {
+  const q = document.getElementById('membPlayerSearch').value.trim().toLowerCase();
+  const resultsEl = document.getElementById('membSearchResults');
+  if (q.length < 2) { resultsEl.innerHTML = ''; return; }
+  const matches = ALL_PLAYERS.filter(p => p.name.toLowerCase().includes(q)).slice(0, 8);
+  if (!matches.length) {
+    resultsEl.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:13px">No se encontraron jugadores con ese nombre.</div>';
+    return;
+  }
+  resultsEl.innerHTML = matches.map(p => `
+    <div class="memb-search-result-item" onclick="membSelectPlayer(${p.id})">
+      <div>
+        <div style="font-weight:600;font-size:14px">${p.name}</div>
+        <div style="font-size:11px;color:var(--muted)">ID ${p.id} · ${p.club || 'Sin club'} · ★${p.rating}</div>
+      </div>
+      <span style="font-size:11px;color:var(--accent)">Seleccionar →</span>
+    </div>`).join('');
+}
+
+function membSelectPlayer(playerId) {
+  const player = ALL_PLAYERS.find(p => p.id === playerId);
+  if (!player) return;
+
+  document.getElementById('membFormExistingId').value = playerId;
+  document.querySelectorAll('.memb-search-result-item').forEach(el => el.classList.remove('selected'));
+
+  // Pre-fill form fields
+  const nameParts = player.name.split(' ');
+  document.getElementById('membFNombre').value    = nameParts[0] || '';
+  document.getElementById('membFApellidos').value = nameParts.slice(1).join(' ') || '';
+  const sex = document.getElementById('membFSex');
+  if (player.sex && (player.sex === 'M' || player.sex === 'F')) sex.value = player.sex;
+
+  const clubSel = document.getElementById('membFClub');
+  if (player.club) {
+    for (let i = 0; i < clubSel.options.length; i++) {
+      if (clubSel.options[i].value === player.club) { clubSel.value = player.club; break; }
+    }
+  }
+
+  // Fill email from MEMBERS if available
+  const mem = MEMBERS.find(m => m.id === playerId);
+  if (mem && mem.email) document.getElementById('membFEmail').value = mem.email;
+
+  // Show selected player info
+  const infoEl = document.getElementById('membSelectedPlayerInfo');
+  const m = getMemberInfo(player);
+  infoEl.innerHTML = `✓ Jugador seleccionado: <strong>${player.name}</strong> (ID ${player.id}) · ${m.status !== 'none' ? 'Membresía actual: ' + player.expDate : 'Sin membresía activa'}`;
+  infoEl.style.display = '';
+
+  // Show main form
+  document.getElementById('membMainForm').style.display = '';
+  document.getElementById('membMainForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function membFormLoadClubs() {
+  const clubs = [...new Set(ALL_PLAYERS.map(p => p.club).filter(Boolean))].sort();
+  const sel = document.getElementById('membFClub');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Seleccionar club —</option>'
+    + clubs.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function membFormUpdateMinor() {
+  const isMinor = document.getElementById('membFIsMinor').checked;
+  document.getElementById('membMinorSection').classList.toggle('visible', isMinor);
+}
+
+function membFormUpdateCity() {
+  const country = document.getElementById('membFCountry').value;
+  const selEl   = document.getElementById('membFCitySelect');
+  const txtEl   = document.getElementById('membFCityText');
+  const stateEl = document.getElementById('membFState');
+
+  if (country === 'Puerto Rico') {
+    selEl.style.display = '';
+    txtEl.style.display = 'none';
+    selEl.innerHTML = '<option value="">— Seleccionar municipio —</option>'
+      + PR_MUNICIPIOS.map(m => `<option value="${m}">${m}</option>`).join('');
+    if (stateEl) stateEl.value = 'Puerto Rico';
+  } else {
+    selEl.style.display = 'none';
+    txtEl.style.display = '';
+    txtEl.value = '';
+    if (stateEl && country === 'Puerto Rico') stateEl.value = 'Puerto Rico';
+  }
+}
+
+async function submitMembershipRequest(e) {
+  if (e) e.preventDefault();
+  const type = document.getElementById('membFormType').value;
+  if (!type) { alert('Por favor selecciona el tipo de solicitud.'); return; }
+
+  const nombre    = document.getElementById('membFNombre').value.trim();
+  const apellidos = document.getElementById('membFApellidos').value.trim();
+  const email     = document.getElementById('membFEmail').value.trim();
+  const sex       = document.getElementById('membFSex').value;
+  const club      = document.getElementById('membFClub').value;
+  const ath       = document.getElementById('membFAth').value.trim();
+  const isMinor   = document.getElementById('membFIsMinor').checked;
+  const guardName = document.getElementById('membFGuardianName').value.trim();
+  const guardRel  = document.getElementById('membFGuardianRelation').value.trim();
+  const existingId = document.getElementById('membFormExistingId').value;
+  const msgEl     = document.getElementById('membFormMsg');
+  const btn       = document.getElementById('membFormSubmitBtn');
+
+  msgEl.style.color = 'var(--red)';
+  if (!nombre)    { msgEl.textContent = 'El nombre es requerido.'; return; }
+  if (!apellidos) { msgEl.textContent = 'Los apellidos son requeridos.'; return; }
+  if (!email)     { msgEl.textContent = 'El email es requerido.'; return; }
+  if (!sex)       { msgEl.textContent = 'Selecciona el sexo.'; return; }
+  if (!club)      { msgEl.textContent = 'Selecciona un club.'; return; }
+  if (!ath)       { msgEl.textContent = 'El número de confirmación ATH Móvil es requerido.'; return; }
+  if (isMinor && (!guardName || !guardRel)) {
+    msgEl.textContent = 'Para menores de edad, se requiere el nombre y relación del representante.'; return;
+  }
+  if (type === 'renewal' && !existingId) {
+    msgEl.textContent = 'Para renovación, selecciona tu perfil de la lista de búsqueda.'; return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Enviando...';
+  msgEl.textContent = '';
+
+  const country  = document.getElementById('membFCountry').value;
+  const isPR     = country === 'Puerto Rico';
+  const city     = isPR
+    ? document.getElementById('membFCitySelect').value
+    : document.getElementById('membFCityText').value.trim();
+
+  const body = {
+    type,
+    first_name:          nombre,
+    last_name:           apellidos,
+    email,
+    phone:               document.getElementById('membFTelefono').value.trim() || null,
+    dob:                 document.getElementById('membFDob').value || null,
+    sex,
+    club,
+    address:             document.getElementById('membFAddress').value.trim() || null,
+    city:                city || null,
+    state:               document.getElementById('membFState').value.trim() || null,
+    country,
+    zipcode:             document.getElementById('membFZip').value.trim() || null,
+    is_minor:            isMinor,
+    guardian_name:       isMinor ? guardName : null,
+    guardian_relation:   isMinor ? guardRel  : null,
+    ath_confirmation:    ath,
+    existing_player_id:  existingId ? Number(existingId) : null
+  };
+
+  try {
+    await sbPost('membership_requests', body);
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = '✅ ¡Solicitud enviada! El administrador la revisará y te contactará.';
+    btn.textContent = '✓ Solicitud Enviada';
+    // Scroll to message
+    msgEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch(err) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Error al enviar: ' + err.message;
+    btn.disabled = false;
+    btn.textContent = '📬 Enviar Solicitud de Membresía';
+  }
 }
 
 // ══════════════════════════════════════════
