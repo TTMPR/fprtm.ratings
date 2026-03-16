@@ -4456,9 +4456,10 @@ function closePendingPhotosModal() {
 
 async function approvePhoto(id, memberId, photoUrl) {
   try {
-    await sbPatch('photo_requests', `id=eq.${id}`, { status: 'approved' });
+    const { error: e1 } = await _supabase.from('photo_requests').update({ status: 'approved' }).eq('id', id);
+    if (e1) throw new Error(e1.message);
     // Reject any other pending for the same player
-    await sbPatch('photo_requests', `member_id=eq.${memberId}&status=eq.pending&id=neq.${id}`, { status: 'rejected' });
+    await _supabase.from('photo_requests').update({ status: 'rejected' }).eq('member_id', memberId).eq('status', 'pending').neq('id', id);
     PHOTO_MAP[memberId] = photoUrl;
     await updatePendingBadge();
     await showPendingPhotosModal();
@@ -4467,7 +4468,8 @@ async function approvePhoto(id, memberId, photoUrl) {
 
 async function rejectPhoto(id) {
   try {
-    await sbPatch('photo_requests', `id=eq.${id}`, { status: 'rejected' });
+    const { error } = await _supabase.from('photo_requests').update({ status: 'rejected' }).eq('id', id);
+    if (error) throw new Error(error.message);
     await updatePendingBadge();
     await showPendingPhotosModal();
   } catch (e) { alert('Error: ' + e.message); }
