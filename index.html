@@ -608,6 +608,37 @@
   .memb-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .memb-date { font-family: 'DM Mono'; font-size: 13px; color: var(--muted); text-align: right; }
   .memb-date .date { font-size: 12px; }
+
+  /* ── Photo upload modal ── */
+  #photoUploadModal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 2000;
+    align-items: center; justify-content: center;
+  }
+  #photoUploadModal.open { display: flex; }
+  .photo-modal-box {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px 24px; width: 90%; max-width: 400px;
+  }
+  .photo-preview-wrap {
+    width: 110px; height: 110px; border-radius: 50%; overflow: hidden;
+    margin: 16px auto; background: var(--navy2);
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .photo-preview-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-preview-initials { font-size: 34px; font-family: 'Bebas Neue'; color: var(--muted); }
+
+  /* ── Admin pending photos modal ── */
+  .pending-photo-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 14px; background: var(--navy);
+    border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px;
+  }
+  .pending-photo-thumb {
+    width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--border); flex-shrink: 0;
+  }
   .status-pill {
     padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 700;
     white-space: nowrap;
@@ -1082,6 +1113,7 @@
         <div class="profile-memb-dot"></div>
         <div id="profileMembStatusText">—</div>
       </div>
+      <button id="propFotoBtn" class="btn-secondary" style="margin-top:12px;padding:7px 16px;font-size:13px" onclick="showPhotoUploadModal()">📷 Proponer foto</button>
 
       <div class="profile-rating-box">
         <div class="rating-label">RATING FPRTM</div>
@@ -1498,6 +1530,12 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-size:32px;margin-bottom:12px">⚙</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Configuración</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Tabla de puntos, categorías</div>
+      </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showPendingPhotosModal()">
+        <div style="font-size:32px;margin-bottom:12px">🖼</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Fotos Pendientes</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar fotos de jugadores</div>
+        <span id="pendingPhotoBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
     </div>
   </div>
@@ -2291,7 +2329,7 @@ function renderPlayers(list, append = false) {
     card.className = 'player-card';
     card.onclick = () => showProfile(p);
     card.innerHTML = `
-      <div class="avatar-wrap"><div class="avatar">${initials(p.name)}</div></div>
+      <div class="avatar-wrap">${avatarHTML(p)}</div>
       <div class="player-info">
         <div class="rank-num ${p.rank <= 3 ? 'top3' : ''}">#${p.rank}</div>
         <div class="player-name">${p.name}</div>
@@ -2324,7 +2362,14 @@ async function showProfile(player) {
   document.getElementById('tab-overview').classList.add('active');
 
   // Basic info
-  document.getElementById('profileAvatar').textContent = initials(player.name);
+  _photoUploadPlayer = player;
+  const _photoUrl = PHOTO_MAP[player.id];
+  const _avatarEl = document.getElementById('profileAvatar');
+  if (_photoUrl) {
+    _avatarEl.innerHTML = `<img src="${_photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='${initials(player.name)}'">`;
+  } else {
+    _avatarEl.textContent = initials(player.name);
+  }
   document.getElementById('profileName').textContent   = player.name;
   document.getElementById('profileId').textContent     = 'ID: ' + player.id;
   document.getElementById('profileClub').textContent   = player.club || 'Sin club';
@@ -4283,6 +4328,166 @@ async function submitMembershipRequest(e) {
 }
 
 // ══════════════════════════════════════════
+// PHOTO REQUESTS
+// ══════════════════════════════════════════
+let PHOTO_MAP = {};          // member_id → approved photo_url
+let _photoUploadFile   = null;
+let _photoUploadPlayer = null;
+
+async function loadApprovedPhotos() {
+  try {
+    const data = await sbGet('photo_requests', '?status=eq.approved&select=member_id,photo_url&order=created_at.desc');
+    PHOTO_MAP = {};
+    data.forEach(r => { if (!PHOTO_MAP[r.member_id]) PHOTO_MAP[r.member_id] = r.photo_url; });
+  } catch (e) {
+    console.warn('loadApprovedPhotos:', e.message);
+  }
+}
+
+function avatarHTML(player, size = 54) {
+  const url = PHOTO_MAP[player.id];
+  if (url) return `<img src="${url}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid var(--border)" onerror="this.style.display='none'">`;
+  return `<div class="avatar">${initials(player.name)}</div>`;
+}
+
+function showPhotoUploadModal() {
+  if (!_photoUploadPlayer) return;
+  _photoUploadFile = null;
+  document.getElementById('photoSubmitBtn').disabled = true;
+  document.getElementById('photoSubmitBtn').textContent = 'Enviar para aprobación';
+  document.getElementById('photoUploadMsg').textContent = '';
+  document.getElementById('photoUploadMsg').style.color = '';
+  document.getElementById('photoDropLabel').textContent = 'Haz clic para seleccionar imagen';
+  document.getElementById('photoPreviewWrap').innerHTML = `<div class="photo-preview-initials">${initials(_photoUploadPlayer.name)}</div>`;
+  document.getElementById('photoModalSubtitle').textContent = `Para: ${_photoUploadPlayer.name} · Será revisada antes de publicarse`;
+  document.getElementById('photoFileInput').value = '';
+  document.getElementById('photoUploadModal').classList.add('open');
+}
+
+function closePhotoModal() {
+  document.getElementById('photoUploadModal').classList.remove('open');
+  _photoUploadFile = null;
+}
+
+function photoFileSelected(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const msgEl = document.getElementById('photoUploadMsg');
+  if (file.size > 5 * 1024 * 1024) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'La imagen no puede superar 5 MB.';
+    document.getElementById('photoSubmitBtn').disabled = true;
+    return;
+  }
+  _photoUploadFile = file;
+  msgEl.textContent = '';
+  document.getElementById('photoDropLabel').textContent = file.name;
+  document.getElementById('photoSubmitBtn').disabled = false;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('photoPreviewWrap').innerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitPhotoRequest() {
+  if (!_photoUploadFile || !_photoUploadPlayer) return;
+  const btn   = document.getElementById('photoSubmitBtn');
+  const msgEl = document.getElementById('photoUploadMsg');
+  btn.disabled = true;
+  msgEl.style.color = '';
+  msgEl.textContent = 'Subiendo…';
+  try {
+    const ext  = (_photoUploadFile.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = `pending/${Date.now()}_${_photoUploadPlayer.id}.${ext}`;
+    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/player-photos/${path}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': _photoUploadFile.type || 'image/jpeg',
+        'x-upsert': 'false'
+      },
+      body: _photoUploadFile
+    });
+    if (!uploadRes.ok) throw new Error(await uploadRes.text());
+    const photoUrl = `${SUPABASE_URL}/storage/v1/object/public/player-photos/${path}`;
+    await sbPost('photo_requests', { member_id: _photoUploadPlayer.id, photo_url: photoUrl, status: 'pending' });
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = '✓ Foto enviada. Será revisada pronto.';
+    btn.textContent = '✓ Enviado';
+    setTimeout(closePhotoModal, 2200);
+  } catch (err) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Error: ' + err.message;
+    btn.disabled = false;
+  }
+}
+
+async function showPendingPhotosModal() {
+  const modal = document.getElementById('pendingPhotosModal');
+  const list  = document.getElementById('pendingPhotosList');
+  modal.style.display = 'flex';
+  list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Cargando…</div>';
+  try {
+    const data = await sbGet('photo_requests', '?status=eq.pending&select=id,member_id,photo_url,created_at&order=created_at.asc');
+    if (!data.length) {
+      list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">No hay fotos pendientes.</div>';
+      return;
+    }
+    list.innerHTML = data.map(r => {
+      const player = ALL_PLAYERS.find(p => p.id === r.member_id);
+      const name   = player ? player.name : `ID ${r.member_id}`;
+      const fecha  = new Date(r.created_at).toLocaleDateString('es-PR');
+      return `<div class="pending-photo-item">
+        <img class="pending-photo-thumb" src="${r.photo_url}" alt="" onerror="this.style.opacity='0.3'">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600">${name}</div>
+          <div style="font-size:12px;color:var(--muted)">ID ${r.member_id} · ${fecha}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          <button class="btn-primary" style="padding:6px 12px;font-size:12px" onclick="approvePhoto(${r.id},${r.member_id},'${r.photo_url}')">✓ Aprobar</button>
+          <button class="btn-cancel"  style="padding:6px 12px;font-size:12px" onclick="rejectPhoto(${r.id})">✕ Rechazar</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--red);padding:20px">${e.message}</div>`;
+  }
+}
+
+function closePendingPhotosModal() {
+  document.getElementById('pendingPhotosModal').style.display = 'none';
+}
+
+async function approvePhoto(id, memberId, photoUrl) {
+  try {
+    await sbPatch('photo_requests', `id=eq.${id}`, { status: 'approved' });
+    // Reject any other pending for the same player
+    await sbPatch('photo_requests', `member_id=eq.${memberId}&status=eq.pending&id=neq.${id}`, { status: 'rejected' });
+    PHOTO_MAP[memberId] = photoUrl;
+    await updatePendingBadge();
+    await showPendingPhotosModal();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function rejectPhoto(id) {
+  try {
+    await sbPatch('photo_requests', `id=eq.${id}`, { status: 'rejected' });
+    await updatePendingBadge();
+    await showPendingPhotosModal();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function updatePendingBadge() {
+  if (!isAdmin()) return;
+  try {
+    const data  = await sbGet('photo_requests', '?status=eq.pending&select=id');
+    const badge = document.getElementById('pendingPhotoBadge');
+    if (badge) { badge.textContent = data.length; badge.style.display = data.length > 0 ? '' : 'none'; }
+  } catch (_) {}
+}
+
+// ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
@@ -4308,7 +4513,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   showLoading(true);
-  const [playersResult, membersResult] = await Promise.allSettled([loadPlayers(), loadMembers()]);
+  const [playersResult, membersResult] = await Promise.allSettled([loadPlayers(), loadMembers(), loadApprovedPhotos()]);
   if (playersResult.status === 'fulfilled') {
     ALL_PLAYERS = playersResult.value;
     ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
@@ -4336,7 +4541,50 @@ document.addEventListener('DOMContentLoaded', async () => {
   simAddOpponent();
   renderMembers();
   updateStats();
+  updatePendingBadge();
 });
 </script>
+
+<!-- ══════════════════════════════════════════
+     PHOTO UPLOAD MODAL
+═══════════════════════════════════════════ -->
+<div id="photoUploadModal">
+  <div class="photo-modal-box">
+    <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;margin-bottom:4px">PROPONER FOTO</div>
+    <div style="font-size:13px;color:var(--muted)" id="photoModalSubtitle">La foto será revisada antes de publicarse</div>
+    <div class="photo-preview-wrap" id="photoPreviewWrap">
+      <div class="photo-preview-initials" id="photoPreviewInitials">??</div>
+    </div>
+    <div id="photoDropArea"
+         style="border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;margin-bottom:16px"
+         onclick="document.getElementById('photoFileInput').click()">
+      <div style="font-size:28px;margin-bottom:6px">📷</div>
+      <div style="font-size:13px;color:var(--muted)" id="photoDropLabel">Haz clic para seleccionar imagen</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">JPG, PNG, WEBP · Máx 5 MB</div>
+      <input type="file" id="photoFileInput" accept="image/jpeg,image/png,image/webp"
+             style="display:none" onchange="photoFileSelected(event)">
+    </div>
+    <div id="photoUploadMsg" style="font-size:13px;margin-bottom:12px;min-height:18px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-cancel" onclick="closePhotoModal()">Cancelar</button>
+      <button class="btn-primary" id="photoSubmitBtn" onclick="submitPhotoRequest()" disabled>Enviar para aprobación</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADMIN PENDING PHOTOS MODAL
+═══════════════════════════════════════════ -->
+<div id="pendingPhotosModal"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:90%;max-width:520px;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px">FOTOS PENDIENTES</div>
+      <button class="btn-cancel" style="padding:6px 12px" onclick="closePendingPhotosModal()">✕</button>
+    </div>
+    <div id="pendingPhotosList"></div>
+  </div>
+</div>
+
 </body>
 </html>
