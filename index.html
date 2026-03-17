@@ -4026,10 +4026,10 @@ async function approveMembershipRequest(reqId) {
     }
 
     // Mark request as approved
-    await sbPatch('membership_requests', `id=eq.${reqId}`, {
-      status: 'approved',
-      processed_at: new Date().toISOString()
-    });
+    const { error: patchErr } = await _supabase.from('membership_requests')
+      .update({ status: 'approved', processed_at: new Date().toISOString() })
+      .eq('id', reqId);
+    if (patchErr) throw new Error(patchErr.message);
 
     // Remove card from UI
     document.getElementById('reqcard' + reqId)?.remove();
@@ -4059,10 +4059,10 @@ async function rejectMembershipRequest(reqId) {
   const msgEl = document.getElementById('reqmsg' + reqId);
   if (msgEl) msgEl.textContent = 'Rechazando...';
   try {
-    await sbPatch('membership_requests', `id=eq.${reqId}`, {
-      status: 'rejected',
-      processed_at: new Date().toISOString()
-    });
+    const { error: patchErr } = await _supabase.from('membership_requests')
+      .update({ status: 'rejected', processed_at: new Date().toISOString() })
+      .eq('id', reqId);
+    if (patchErr) throw new Error(patchErr.message);
     document.getElementById('reqcard' + reqId)?.remove();
     pendingRequests = pendingRequests.filter(r => r.id !== reqId);
     const badge = document.getElementById('pendingBadge');
@@ -4461,6 +4461,11 @@ async function approvePhoto(id, memberId, photoUrl) {
     if (!data || data.length === 0) throw new Error('Sin permiso para actualizar. Corre el SQL de fix de policies en Supabase.');
     await _supabase.from('photo_requests').update({ status: 'rejected' }).eq('member_id', memberId).eq('status', 'pending').neq('id', id);
     PHOTO_MAP[memberId] = photoUrl;
+    // Update avatar live if that player's profile is open
+    if (_photoUploadPlayer?.id === memberId) {
+      const el = document.getElementById('profileAvatar');
+      if (el) el.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    }
     await updatePendingBadge();
     await showPendingPhotosModal();
   } catch (e) { alert('Error: ' + e.message); }
