@@ -1113,7 +1113,10 @@
         <div class="profile-memb-dot"></div>
         <div id="profileMembStatusText">—</div>
       </div>
-      <button id="propFotoBtn" class="btn-secondary" style="margin-top:12px;padding:7px 16px;font-size:13px" onclick="showPhotoUploadModal()">📷 Proponer foto</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px">
+        <button id="propFotoBtn" class="btn-secondary" style="padding:7px 16px;font-size:13px" onclick="showPhotoUploadModal()">📷 Proponer foto</button>
+        <button id="cambiarClubBtn" class="btn-secondary" style="padding:7px 16px;font-size:13px" onclick="showClubChangeModal()">🏛 Cambiar club</button>
+      </div>
 
       <div class="profile-rating-box">
         <div class="rating-label">RATING FPRTM</div>
@@ -1536,6 +1539,12 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Fotos Pendientes</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar fotos de jugadores</div>
         <span id="pendingPhotoBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
+      </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showPendingClubChangesModal()">
+        <div style="font-size:32px;margin-bottom:12px">🏛</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Cambios de Club</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar solicitudes de cambio de club</div>
+        <span id="pendingClubBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
     </div>
   </div>
@@ -4560,6 +4569,172 @@ async function updatePendingBadge() {
     const badge = document.getElementById('pendingPhotoBadge');
     if (badge) { badge.textContent = data.length; badge.style.display = data.length > 0 ? '' : 'none'; }
   } catch (_) {}
+  try {
+    const data  = await sbGet('club_change_requests', '?status=eq.pending&select=id');
+    const badge = document.getElementById('pendingClubBadge');
+    if (badge) { badge.textContent = data.length; badge.style.display = data.length > 0 ? '' : 'none'; }
+  } catch (_) {}
+}
+
+// ── CLUB CHANGE REQUEST (player) ─────────────────────────────────────────────
+
+let _clubChangePlayer = null;
+
+function showClubChangeModal() {
+  if (!_photoUploadPlayer) return;
+  _clubChangePlayer = _photoUploadPlayer;
+
+  const clubs = [...new Set(ALL_PLAYERS.map(p => p.club).filter(Boolean))].sort();
+  const sel   = document.getElementById('clubChangeSelect');
+  sel.innerHTML = '<option value="">— Seleccionar club existente —</option>'
+    + clubs.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  document.getElementById('clubChangeSubtitle').textContent =
+    `Jugador: ${_clubChangePlayer.name} · ID ${_clubChangePlayer.id}`;
+  document.getElementById('clubChangeCurrent').textContent =
+    _clubChangePlayer.club || 'Sin club';
+  document.getElementById('clubChangeInput').value = '';
+  sel.value = '';
+  document.getElementById('clubChangeMsg').textContent = '';
+  document.getElementById('clubChangeModal').style.display = 'flex';
+}
+
+function closeClubChangeModal() {
+  document.getElementById('clubChangeModal').style.display = 'none';
+  _clubChangePlayer = null;
+}
+
+async function submitClubChangeRequest() {
+  if (!_clubChangePlayer) return;
+  const msgEl   = document.getElementById('clubChangeMsg');
+  const selVal  = document.getElementById('clubChangeSelect').value.trim();
+  const inpVal  = document.getElementById('clubChangeInput').value.trim();
+  const newClub = inpVal || selVal;
+
+  if (!newClub) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Selecciona o escribe el nombre del nuevo club.';
+    return;
+  }
+  if (newClub === (_clubChangePlayer.club || '')) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'El club nuevo es igual al actual.';
+    return;
+  }
+
+  msgEl.style.color = 'var(--muted)';
+  msgEl.textContent = 'Enviando solicitud…';
+  try {
+    await sbPost('club_change_requests', {
+      member_id:    _clubChangePlayer.id,
+      current_club: _clubChangePlayer.club || '',
+      new_club:     newClub,
+      status:       'pending'
+    });
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = '¡Solicitud enviada! El administrador la revisará pronto.';
+    setTimeout(closeClubChangeModal, 2000);
+  } catch (e) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Error: ' + e.message;
+  }
+}
+
+// ── CLUB CHANGE REQUESTS (admin queue) ───────────────────────────────────────
+
+async function showPendingClubChangesModal() {
+  const modal = document.getElementById('pendingClubChangesModal');
+  const list  = document.getElementById('pendingClubChangesList');
+  modal.style.display = 'flex';
+  list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Cargando…</div>';
+  try {
+    const data = await sbGet('club_change_requests',
+      '?status=eq.pending&select=id,member_id,current_club,new_club,created_at&order=created_at.asc');
+    if (!data.length) {
+      list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">No hay solicitudes pendientes.</div>';
+      return;
+    }
+    list.innerHTML = data.map(r => {
+      const player = ALL_PLAYERS.find(p => p.id === r.member_id);
+      const name   = player ? player.name : `ID ${r.member_id}`;
+      const fecha  = new Date(r.created_at).toLocaleDateString('es-PR');
+      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600">${name}</div>
+          <div style="font-size:12px;color:var(--muted)">ID ${r.member_id} · ${fecha}</div>
+          <div style="font-size:13px;margin-top:4px">
+            <span style="color:var(--muted)">${r.current_club || 'Sin club'}</span>
+            <span style="color:var(--accent);margin:0 6px">→</span>
+            <span style="font-weight:600">${r.new_club}</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          <button class="btn-primary" style="padding:6px 12px;font-size:12px"
+            onclick="approveClubChange(${r.id},${r.member_id},'${r.new_club.replace(/'/g,"\\'")}')">✓ Aprobar</button>
+          <button class="btn-cancel" style="padding:6px 12px;font-size:12px"
+            onclick="rejectClubChange(${r.id})">✕ Rechazar</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--red);padding:20px">${e.message}</div>`;
+  }
+}
+
+function closePendingClubChangesModal() {
+  document.getElementById('pendingClubChangesModal').style.display = 'none';
+}
+
+async function approveClubChange(id, memberId, newClub) {
+  try {
+    const { data, error } = await _supabase
+      .from('club_change_requests')
+      .update({ status: 'approved' })
+      .eq('id', id)
+      .select();
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) throw new Error('Sin permiso para actualizar. Revisa las policies en Supabase.');
+
+    // Reject any other pending requests for the same member
+    await _supabase
+      .from('club_change_requests')
+      .update({ status: 'rejected' })
+      .eq('member_id', memberId)
+      .eq('status', 'pending')
+      .neq('id', id);
+
+    // Apply the club change to the player record
+    await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${memberId}`, { 'Club': newClub });
+
+    // Update local caches
+    const pi = ALL_PLAYERS.findIndex(p => p.id === memberId);
+    if (pi !== -1) ALL_PLAYERS[pi].club = newClub;
+    const mi = MEMBERS.findIndex(m => m.id === memberId);
+    if (mi !== -1) MEMBERS[mi].club = newClub;
+
+    // Update profile view if open for this player
+    if (_photoUploadPlayer?.id === memberId) {
+      document.getElementById('profileClub').textContent = newClub;
+      _photoUploadPlayer.club = newClub;
+    }
+
+    await updatePendingBadge();
+    await showPendingClubChangesModal();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function rejectClubChange(id) {
+  try {
+    const { data, error } = await _supabase
+      .from('club_change_requests')
+      .update({ status: 'rejected' })
+      .eq('id', id)
+      .select();
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) throw new Error('Sin permiso para actualizar. Revisa las policies en Supabase.');
+    await updatePendingBadge();
+    await showPendingClubChangesModal();
+  } catch (e) { alert('Error: ' + e.message); }
 }
 
 // ══════════════════════════════════════════
@@ -4648,6 +4823,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 </div>
 
 <!-- ══════════════════════════════════════════
+     PLAYER CLUB CHANGE REQUEST MODAL
+═══════════════════════════════════════════ -->
+<div id="clubChangeModal"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:90%;max-width:420px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px">CAMBIAR CLUB</div>
+      <button class="btn-cancel" style="padding:6px 12px" onclick="closeClubChangeModal()">✕</button>
+    </div>
+    <div id="clubChangeSubtitle" style="font-size:13px;color:var(--muted);margin-bottom:20px">—</div>
+
+    <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px">Club actual</label>
+    <div id="clubChangeCurrent" style="font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)">—</div>
+
+    <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px">Nuevo club *</label>
+    <select id="clubChangeSelect" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;margin-bottom:6px">
+      <option value="">— Seleccionar club existente —</option>
+    </select>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-align:center">— o escribe un club nuevo —</div>
+    <input id="clubChangeInput" type="text" placeholder="Nombre del club nuevo"
+           style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;box-sizing:border-box;margin-bottom:16px">
+
+    <div id="clubChangeMsg" style="font-size:13px;min-height:18px;margin-bottom:12px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-cancel" onclick="closeClubChangeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="submitClubChangeRequest()">Enviar solicitud</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      ADMIN PENDING PHOTOS MODAL
 ═══════════════════════════════════════════ -->
 <div id="pendingPhotosModal"
@@ -4658,6 +4864,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       <button class="btn-cancel" style="padding:6px 12px" onclick="closePendingPhotosModal()">✕</button>
     </div>
     <div id="pendingPhotosList"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADMIN PENDING CLUB CHANGES MODAL
+═══════════════════════════════════════════ -->
+<div id="pendingClubChangesModal"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:90%;max-width:540px;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px">CAMBIOS DE CLUB PENDIENTES</div>
+      <button class="btn-cancel" style="padding:6px 12px" onclick="closePendingClubChangesModal()">✕</button>
+    </div>
+    <div id="pendingClubChangesList"></div>
   </div>
 </div>
 
