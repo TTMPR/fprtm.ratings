@@ -4456,9 +4456,9 @@ function closePendingPhotosModal() {
 
 async function approvePhoto(id, memberId, photoUrl) {
   try {
-    const { error: e1 } = await _supabase.from('photo_requests').update({ status: 'approved' }).eq('id', id);
+    const { data, error: e1 } = await _supabase.from('photo_requests').update({ status: 'approved' }).eq('id', id).select();
     if (e1) throw new Error(e1.message);
-    // Reject any other pending for the same player
+    if (!data || data.length === 0) throw new Error('Sin permiso para actualizar. Corre el SQL de fix de policies en Supabase.');
     await _supabase.from('photo_requests').update({ status: 'rejected' }).eq('member_id', memberId).eq('status', 'pending').neq('id', id);
     PHOTO_MAP[memberId] = photoUrl;
     await updatePendingBadge();
@@ -4468,8 +4468,9 @@ async function approvePhoto(id, memberId, photoUrl) {
 
 async function rejectPhoto(id) {
   try {
-    const { error } = await _supabase.from('photo_requests').update({ status: 'rejected' }).eq('id', id);
+    const { data, error } = await _supabase.from('photo_requests').update({ status: 'rejected' }).eq('id', id).select();
     if (error) throw new Error(error.message);
+    if (!data || data.length === 0) throw new Error('Sin permiso para actualizar. Corre el SQL de fix de policies en Supabase.');
     await updatePendingBadge();
     await showPendingPhotosModal();
   } catch (e) { alert('Error: ' + e.message); }
