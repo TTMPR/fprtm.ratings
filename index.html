@@ -1910,6 +1910,46 @@ Maria Lopez,Ana Torres,B</code>
           </div>
         </div>
 
+        <!-- Política de Membresía -->
+        <div style="margin-top:24px;border:1px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden">
+          <button type="button" onclick="toggleMembPolicy()" style="width:100%;background:rgba(255,255,255,0.04);border:none;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;color:var(--text);font-size:13px;font-weight:600;text-align:left">
+            <span>📋 Política y Reglamento de Membresía</span>
+            <span id="membPolicyChevron" style="font-size:10px;transition:transform 0.2s">▼</span>
+          </button>
+          <div id="membPolicyContent" style="display:none;padding:16px;background:rgba(0,0,0,0.2);font-size:12px;color:var(--muted);line-height:1.7;max-height:260px;overflow-y:auto">
+            <p style="color:var(--text);font-weight:600;margin-bottom:10px">Federación de Tenis de Mesa de Puerto Rico — Términos de Membresía</p>
+
+            <p><strong style="color:var(--text)">1. Elegibilidad</strong><br>
+            La membresía está abierta a cualquier persona interesada en el tenis de mesa en Puerto Rico. Los menores de 18 años requieren autorización de un padre, madre o tutor legal.</p>
+
+            <p><strong style="color:var(--text)">2. Cuota y Pago</strong><br>
+            La cuota anual de membresía es de <strong style="color:var(--accent)">$20.00 USD</strong>, pagadera mediante ATH Móvil al negocio <strong style="color:var(--text)">/fprtm</strong>. El pago debe realizarse antes de someter la solicitud. Las cuotas no son reembolsables una vez aprobada la membresía.</p>
+
+            <p><strong style="color:var(--text)">3. Vigencia</strong><br>
+            La membresía tiene una duración de un (1) año a partir de la fecha de aprobación. El miembro es responsable de renovar antes de la fecha de vencimiento para mantener su estatus activo y su rating oficial.</p>
+
+            <p><strong style="color:var(--text)">4. Uso de Datos Personales</strong><br>
+            La información suministrada será utilizada exclusivamente para la administración de la membresía, publicación de ratings y resultados de torneos, y comunicaciones oficiales de la Federación. No se compartirán datos con terceros sin consentimiento expreso.</p>
+
+            <p><strong style="color:var(--text)">5. Código de Conducta</strong><br>
+            Todo miembro se compromete a mantener una conducta deportiva, respetuosa e íntegra en todos los torneos y actividades oficiales de la Federación. El incumplimiento podrá resultar en la suspensión o cancelación de la membresía sin reembolso.</p>
+
+            <p><strong style="color:var(--text)">6. Ratings y Torneos</strong><br>
+            Los ratings oficiales son calculados y actualizados exclusivamente por la Federación tras la validación de los resultados. Los miembros con membresía vencida no podrán participar en torneos oficiales ni acumular puntos de rating.</p>
+
+            <p><strong style="color:var(--text)">7. Modificaciones</strong><br>
+            La Federación se reserva el derecho de modificar estas políticas en cualquier momento. Los cambios serán notificados a través de los canales oficiales de comunicación.</p>
+          </div>
+        </div>
+
+        <!-- Checkbox de aceptación -->
+        <div style="margin-top:16px;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px">
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;font-size:13px;color:var(--text);line-height:1.5">
+            <input type="checkbox" id="membPolicyAccepted" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:var(--accent)">
+            <span>He leído y acepto la <strong>Política y Reglamento de Membresía</strong> de la Federación de Tenis de Mesa de Puerto Rico, incluyendo los términos de pago, uso de datos y código de conducta.</span>
+          </label>
+        </div>
+
         <div id="membFormMsg" style="font-size:13px;margin-top:16px;min-height:20px;text-align:center"></div>
 
         <div style="margin-top:20px">
@@ -4249,6 +4289,14 @@ function membFormUpdateMinor() {
   document.getElementById('membMinorSection').classList.toggle('visible', isMinor);
 }
 
+function toggleMembPolicy() {
+  const content  = document.getElementById('membPolicyContent');
+  const chevron  = document.getElementById('membPolicyChevron');
+  const isOpen   = content.style.display !== 'none';
+  content.style.display = isOpen ? 'none' : 'block';
+  chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
 function membFormUpdateCity() {
   const country = document.getElementById('membFCountry').value;
   const selEl   = document.getElementById('membFCitySelect');
@@ -4299,6 +4347,9 @@ async function submitMembershipRequest(e) {
   }
   if (type === 'renewal' && !existingId) {
     msgEl.textContent = 'Para renovación, selecciona tu perfil de la lista de búsqueda.'; return;
+  }
+  if (!document.getElementById('membPolicyAccepted').checked) {
+    msgEl.textContent = 'Debes aceptar la Política y Reglamento de Membresía para continuar.'; return;
   }
 
   btn.disabled = true;
