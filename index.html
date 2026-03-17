@@ -4007,7 +4007,9 @@ async function approveMembershipRequest(reqId) {
       const patch = { 'Expiration Date': expStr };
       if (req.email) patch['Email'] = req.email;
       if (req.club)  patch['Club']  = req.club;
-      await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${req.existing_player_id}`, patch);
+      const { error: updErr } = await _supabase.from('Base de Datos')
+        .update(patch).eq('Member ID', req.existing_player_id);
+      if (updErr) throw new Error(updErr.message);
     } else {
       // Create new player with auto-generated 5-digit ID
       const newId  = await generateMemberId();
@@ -4022,7 +4024,8 @@ async function approveMembershipRequest(reqId) {
       if (req.sex)   body['Sex']   = req.sex;
       if (req.club)  body['Club']  = req.club;
       if (req.email) body['Email'] = req.email;
-      await sbPost('Base%20de%20Datos', body);
+      const { error: insErr } = await _supabase.from('Base de Datos').insert(body);
+      if (insErr) throw new Error(insErr.message);
     }
 
     // Mark request as approved
