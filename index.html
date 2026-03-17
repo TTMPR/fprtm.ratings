@@ -4049,11 +4049,9 @@ async function approveMembershipRequest(reqId) {
     // Refresh player data
     ALL_PLAYERS = await loadPlayers();
     ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
-    PLAYERS = ALL_PLAYERS;
     MEMBERS = await loadMembers();
     renderMembers(); updateStats();
-    displayedCount = PAGE_SIZE;
-    renderPlayers(PLAYERS.slice(0, PAGE_SIZE));
+    filterPlayers();
 
     // Update profile page live if the approved player is currently shown
     const approvedId = req.existing_player_id || null;
