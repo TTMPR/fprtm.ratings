@@ -4052,6 +4052,25 @@ async function approveMembershipRequest(reqId) {
     PLAYERS = ALL_PLAYERS;
     MEMBERS = await loadMembers();
     renderMembers(); updateStats();
+    displayedCount = PAGE_SIZE;
+    renderPlayers(PLAYERS.slice(0, PAGE_SIZE));
+
+    // Update profile page live if the approved player is currently shown
+    const approvedId = req.existing_player_id || null;
+    if (approvedId && _photoUploadPlayer?.id === approvedId) {
+      const fresh = ALL_PLAYERS.find(p => p.id === approvedId);
+      if (fresh) {
+        _photoUploadPlayer = fresh;
+        const _ms = getMemberInfo(fresh);
+        const _msEl  = document.getElementById('profileMembStatus');
+        const _msTxt = document.getElementById('profileMembStatusText');
+        if (_msEl && _msTxt) {
+          _msEl.style.display = '';
+          _msEl.className = 'profile-memb-status ' + _ms.status;
+          _msTxt.innerHTML = _ms.label;
+        }
+      }
+    }
   } catch(e) {
     if (msgEl) { msgEl.style.color = 'var(--red)'; msgEl.textContent = 'Error: ' + e.message; }
   }
