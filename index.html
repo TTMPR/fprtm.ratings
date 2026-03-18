@@ -775,7 +775,7 @@
   tr:hover td { background: var(--card); }
   tr td:first-child { font-family: 'Bebas Neue'; font-size: 20px; color: var(--muted); }
 
-  .scrollhint { text-align: center; color: var(--muted); font-size: 13px; margin: 24px 0; }
+  .scrollhint { text-align: center; color: var(--muted); font-size: 13px; margin: 24px 0; background: none; border: none; width: 100%; touch-action: manipulation; cursor: pointer; font-family: inherit; }
 
   /* ─── MOBILE BOTTOM NAV ─── */
   .bottom-nav {
@@ -1258,9 +1258,9 @@
   </div>
 
   <div class="player-grid" id="playerGrid"></div>
-  <p class="scrollhint" id="loadMore" onclick="loadMorePlayers()" style="cursor:pointer;margin-top:20px;">
+  <button class="scrollhint" id="loadMore" onclick="loadMorePlayers()" style="margin-top:20px;">
     ↓ Ver más jugadores
-  </p>
+  </button>
 </div>
 
 <!-- ══════════════════════════════════════════
