@@ -2606,8 +2606,9 @@ async function showProfile(player) {
 
   // Basic info
   _photoUploadPlayer = player;
-  const _photoUrl = PHOTO_MAP[player.id];
-  const _avatarEl = document.getElementById('profileAvatar');
+  const _photoInfo = PHOTO_MAP[player.id];
+  const _photoUrl  = _photoInfo?.url || null;
+  const _avatarEl  = document.getElementById('profileAvatar');
   if (_photoUrl) {
     _avatarEl.innerHTML = `<img src="${_photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.textContent='${initials(player.name)}'">`;
   } else {
@@ -4610,17 +4611,17 @@ let _photoUploadPlayer = null;
 
 async function loadApprovedPhotos() {
   try {
-    const data = await sbGet('photo_requests', '?status=eq.approved&select=member_id,photo_url&order=created_at.desc');
+    const data = await sbGet('photo_requests', '?status=eq.approved&select=member_id,photo_url,is_minor&order=created_at.desc');
     PHOTO_MAP = {};
-    data.forEach(r => { if (!PHOTO_MAP[r.member_id]) PHOTO_MAP[r.member_id] = r.photo_url; });
+    data.forEach(r => { if (!PHOTO_MAP[r.member_id]) PHOTO_MAP[r.member_id] = { url: r.photo_url, is_minor: !!r.is_minor }; });
   } catch (e) {
     console.warn('loadApprovedPhotos:', e.message);
   }
 }
 
 function avatarHTML(player, size = 54) {
-  const url = PHOTO_MAP[player.id];
-  if (url) return `<img src="${url}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid var(--border)" onerror="this.style.display='none'">`;
+  const info = PHOTO_MAP[player.id];
+  if (info) return `<img src="${info.url}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid var(--border)" onerror="this.style.display='none'">`;
   return `<div class="avatar">${initials(player.name)}</div>`;
 }
 
@@ -4635,7 +4636,20 @@ function showPhotoUploadModal() {
   document.getElementById('photoPreviewWrap').innerHTML = `<div class="photo-preview-initials">${initials(_photoUploadPlayer.name)}</div>`;
   document.getElementById('photoModalSubtitle').textContent = `Para: ${_photoUploadPlayer.name} · Será revisada antes de publicarse`;
   document.getElementById('photoFileInput').value = '';
+  document.getElementById('photoIsMinor').checked = false;
+  document.getElementById('photoMinorConsent').style.display = 'none';
+  document.getElementById('photoMinorConsentCheck').checked = false;
   document.getElementById('photoUploadModal').classList.add('open');
+}
+
+function photoMinorToggle() {
+  const isMinor = document.getElementById('photoIsMinor').checked;
+  const consentDiv   = document.getElementById('photoMinorConsent');
+  const consentCheck = document.getElementById('photoMinorConsentCheck');
+  consentDiv.style.display = isMinor ? '' : 'none';
+  if (!isMinor) consentCheck.checked = false;
+  const consentOk = !isMinor || consentCheck.checked;
+  document.getElementById('photoSubmitBtn').disabled = !(_photoUploadFile && consentOk);
 }
 
 function closePhotoModal() {
@@ -4656,7 +4670,7 @@ function photoFileSelected(e) {
   _photoUploadFile = file;
   msgEl.textContent = '';
   document.getElementById('photoDropLabel').textContent = file.name;
-  document.getElementById('photoSubmitBtn').disabled = false;
+  photoMinorToggle();
   const reader = new FileReader();
   reader.onload = ev => {
     document.getElementById('photoPreviewWrap').innerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover">`;
@@ -4680,7 +4694,8 @@ async function submitPhotoRequest() {
     if (upErr) throw new Error(upErr.message);
     const { data: { publicUrl } } = _supabase.storage.from('player-photos').getPublicUrl(path);
     const photoUrl = publicUrl;
-    await sbPost('photo_requests', { member_id: _photoUploadPlayer.id, photo_url: photoUrl, status: 'pending' });
+    const isMinor = document.getElementById('photoIsMinor').checked;
+    await sbPost('photo_requests', { member_id: _photoUploadPlayer.id, photo_url: photoUrl, status: 'pending', is_minor: isMinor });
     msgEl.style.color = 'var(--green)';
     msgEl.textContent = '✓ Foto enviada. Será revisada pronto.';
     btn.textContent = '✓ Enviado';
@@ -4698,23 +4713,30 @@ async function showPendingPhotosModal() {
   modal.style.display = 'flex';
   list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Cargando…</div>';
   try {
-    const data = await sbGet('photo_requests', '?status=eq.pending&select=id,member_id,photo_url,created_at&order=created_at.asc');
+    const data = await sbGet('photo_requests', '?status=eq.pending&select=id,member_id,photo_url,is_minor,created_at&order=created_at.asc');
     if (!data.length) {
       list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">No hay fotos pendientes.</div>';
       return;
     }
     list.innerHTML = data.map(r => {
-      const player = ALL_PLAYERS.find(p => p.id === r.member_id);
-      const name   = player ? player.name : `ID ${r.member_id}`;
-      const fecha  = new Date(r.created_at).toLocaleDateString('es-PR');
+      const player  = ALL_PLAYERS.find(p => p.id === r.member_id);
+      const name    = player ? player.name : `ID ${r.member_id}`;
+      const fecha   = new Date(r.created_at).toLocaleDateString('es-PR');
+      const menorBadge = r.is_minor
+        ? `<span style="background:var(--accent);color:#000;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:6px">MENOR</span>`
+        : '';
+      const menorNote = r.is_minor
+        ? `<div style="font-size:11px;color:var(--accent);margin-top:3px">⚠️ Tutor autorizó publicación</div>`
+        : '';
       return `<div class="pending-photo-item">
         <img class="pending-photo-thumb" src="${r.photo_url}" alt="" onerror="this.style.opacity='0.3'">
         <div style="flex:1;min-width:0">
-          <div style="font-weight:600">${name}</div>
+          <div style="font-weight:600">${name}${menorBadge}</div>
           <div style="font-size:12px;color:var(--muted)">ID ${r.member_id} · ${fecha}</div>
+          ${menorNote}
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
-          <button class="btn-primary" style="padding:6px 12px;font-size:12px" onclick="approvePhoto(${r.id},${r.member_id},'${r.photo_url}')">✓ Aprobar</button>
+          <button class="btn-primary" style="padding:6px 12px;font-size:12px" onclick="approvePhoto(${r.id},${r.member_id},'${r.photo_url}',${!!r.is_minor})">✓ Aprobar</button>
           <button class="btn-cancel"  style="padding:6px 12px;font-size:12px" onclick="rejectPhoto(${r.id})">✕ Rechazar</button>
         </div>
       </div>`;
@@ -4728,13 +4750,13 @@ function closePendingPhotosModal() {
   document.getElementById('pendingPhotosModal').style.display = 'none';
 }
 
-async function approvePhoto(id, memberId, photoUrl) {
+async function approvePhoto(id, memberId, photoUrl, isMinor = false) {
   try {
     const { data, error: e1 } = await _supabase.from('photo_requests').update({ status: 'approved' }).eq('id', id).select();
     if (e1) throw new Error(e1.message);
     if (!data || data.length === 0) throw new Error('Sin permiso para actualizar. Corre el SQL de fix de policies en Supabase.');
     await _supabase.from('photo_requests').update({ status: 'rejected' }).eq('member_id', memberId).eq('status', 'pending').neq('id', id);
-    PHOTO_MAP[memberId] = photoUrl;
+    PHOTO_MAP[memberId] = { url: photoUrl, is_minor: isMinor };
     // Update avatar live if that player's profile is open
     if (_photoUploadPlayer?.id === memberId) {
       const el = document.getElementById('profileAvatar');
@@ -5006,6 +5028,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div style="font-size:11px;color:var(--muted);margin-top:4px">JPG, PNG, WEBP · Máx 5 MB</div>
       <input type="file" id="photoFileInput" accept="image/jpeg,image/png,image/webp"
              style="display:none" onchange="photoFileSelected(event)">
+    </div>
+    <div id="photoMinorSection" style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px;background:var(--card)">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+        <input type="checkbox" id="photoIsMinor" onchange="photoMinorToggle()">
+        <span>¿El jugador es menor de 18 años?</span>
+      </label>
+      <div id="photoMinorConsent" style="display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+        <div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px">⚠️ Autorización de tutor requerida</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Para publicar fotos de menores de edad en el sistema FPRTM se requiere autorización expresa del padre, madre o tutor legal del jugador.</div>
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:12px;line-height:1.4">
+          <input type="checkbox" id="photoMinorConsentCheck" onchange="photoMinorToggle()" style="margin-top:2px;flex-shrink:0">
+          <span>Confirmo que cuento con la <strong>autorización del padre, madre o tutor legal</strong> para publicar esta foto.</span>
+        </label>
+      </div>
     </div>
     <div id="photoUploadMsg" style="font-size:13px;margin-bottom:12px;min-height:18px"></div>
     <div style="display:flex;gap:8px">
