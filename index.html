@@ -2575,10 +2575,21 @@ function renderPlayers(list, append = false) {
 }
 
 function loadMorePlayers() {
+  const grid = document.getElementById('playerGrid');
+  const prevCount = grid.querySelectorAll('.player-card').length;
   const next = PLAYERS.slice(displayedCount, displayedCount + PAGE_SIZE);
   renderPlayers(next, true);
   displayedCount += next.length;
   if (displayedCount >= PLAYERS.length) document.getElementById('loadMore').style.display = 'none';
+
+  // On mobile horizontal scroll: scroll to the first newly added card
+  const isMobileScroll = window.innerWidth <= 480;
+  if (isMobileScroll) {
+    const cards = grid.querySelectorAll('.player-card');
+    if (cards[prevCount]) {
+      cards[prevCount].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+    }
+  }
 }
 
 // ══════════════════════════════════════════
