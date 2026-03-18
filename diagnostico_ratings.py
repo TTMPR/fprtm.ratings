@@ -93,7 +93,7 @@ def load_partidos(torneo_id):
 # ─── DIAGNÓSTICO PRINCIPAL ────────────────────────────────────────────────────
 def run(torneo_nombre_filtro=None):
     print('\n' + '=' * 72)
-    print('  DIAGNOSTICO DE RATINGS — FPRTM')
+    print('  DIAGNOSTICO DE RATINGS — FPTM')
     print('=' * 72)
 
     torneos = load_torneos()

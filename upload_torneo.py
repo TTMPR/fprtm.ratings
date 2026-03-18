@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script para cargar los resultados del torneo Albergue Olímpico 2026
-a la base de datos FPRTM (Supabase).
+a la base de datos FPTM (Supabase).
 
 Uso: python3 upload_torneo.py
 """
@@ -68,7 +68,7 @@ def sb_patch(table, query, body):
     return r.json()
 
 # ─── JUGADORES FALTANTES ──────────────────────────────────────────────────────
-# Estos 6 jugadores aparecen en el CSV pero no están en la base de datos FPRTM
+# Estos 6 jugadores aparecen en el CSV pero no están en la base de datos FPTM
 MISSING_PLAYERS = [
     {'Member ID': 27578, 'First Name': 'Elio',   'Last Name': 'Nunez Mercado',      'Rating': 1500},
     {'Member ID': 33583, 'First Name': 'Diego',  'Last Name': 'Alamo Parra',        'Rating': 1500},
@@ -312,7 +312,7 @@ def save_to_db(pending, players, ratings, torneo_id):
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 def main():
     print('=' * 60)
-    print(f'  FPRTM — Carga de Torneo: {TORNEO_NOMBRE}')
+    print(f'  FPTM — Carga de Torneo: {TORNEO_NOMBRE}')
     print('=' * 60)
 
     players = load_all_players()

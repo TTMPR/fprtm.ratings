@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ratings — FPRTM</title>
+<title>Ratings — FPTM</title>
 <link rel="icon" type="image/png" href="ttm_pr_favicon_32x32.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1162,7 +1162,7 @@
 <header>
   <div class="logo">
     <a href="https://fprtm.com" target="_blank" rel="noopener noreferrer">
-      <img src="fprtm-logo.jpg" alt="FPRTM Logo" class="fprtm-logo-img">
+      <img src="fprtm-logo.jpg" alt="FPTM Logo" class="fprtm-logo-img">
     </a>
     <span class="fprtm-logo-sub">SISTEMA DE RATINGS</span>
   </div>
@@ -1290,7 +1290,7 @@
       </div>
 
       <div class="profile-rating-box">
-        <div class="rating-label">RATING FPRTM</div>
+        <div class="rating-label">RATING FPTM</div>
         <div class="big-rating">
           <span style="color:var(--accent);font-size:32px">★</span>
           <span id="profileRating">2132</span>
@@ -1670,7 +1670,7 @@ Maria Lopez,Ana Torres,B</code>
 <div id="adminPage" class="page">
   <div class="page-hero">
     <div class="overline">Panel Administrativo</div>
-    <h1>ADMIN FPRTM</h1>
+    <h1>ADMIN FPTM</h1>
     <p>Gestión de base de datos, torneos y configuración</p>
   </div>
   <div class="container">
@@ -1727,7 +1727,7 @@ Maria Lopez,Ana Torres,B</code>
 <div id="editMembModal">
   <div class="edit-memb-box">
     <div class="edit-memb-title">Editar Miembro</div>
-    <div class="edit-memb-sub" id="editMembSub">FPRTM #—</div>
+    <div class="edit-memb-sub" id="editMembSub">FPTM #—</div>
     <input type="hidden" id="editMembId">
     <div class="edit-field">
       <label>Nombre</label>
@@ -1895,7 +1895,7 @@ Maria Lopez,Ana Torres,B</code>
 <div id="configModal">
   <div class="edit-memb-box" style="width:480px">
     <div class="edit-memb-title">Configuración</div>
-    <div class="edit-memb-sub">Tabla de puntos del sistema de ratings FPRTM</div>
+    <div class="edit-memb-sub">Tabla de puntos del sistema de ratings FPTM</div>
     <table class="config-table">
       <thead>
         <tr>
@@ -2152,7 +2152,7 @@ Maria Lopez,Ana Torres,B</code>
 <div id="loginModal">
   <div class="login-box">
     <div class="login-header">
-      <div class="login-logo">FPRTM</div>
+      <div class="login-logo">FPTM</div>
       <p>Acceso al panel administrativo</p>
     </div>
     <div class="login-field">
@@ -3403,7 +3403,7 @@ function openEditMember(memberId) {
   const p = ALL_PLAYERS.find(x => x.id === memberId);
 
   document.getElementById('editMembId').value    = memberId;
-  document.getElementById('editMembSub').textContent = `FPRTM #${memberId}`;
+  document.getElementById('editMembSub').textContent = `FPTM #${memberId}`;
   document.getElementById('editMembName').value  = m ? m.name : (p ? p.name : '');
   document.getElementById('editMembEmail').value = m ? (m.email || '') : '';
   document.getElementById('editMembClub').value  = m ? (m.club !== '—' ? m.club : '') : (p ? (p.club || '') : '');
@@ -5036,7 +5036,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       </label>
       <div id="photoMinorConsent" style="display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
         <div style="font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px">⚠️ Autorización de tutor requerida</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Para publicar fotos de menores de edad en el sistema FPRTM se requiere autorización expresa del padre, madre o tutor legal del jugador.</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Para publicar fotos de menores de edad en el sistema FPTM se requiere autorización expresa del padre, madre o tutor legal del jugador.</div>
         <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:12px;line-height:1.4">
           <input type="checkbox" id="photoMinorConsentCheck" onchange="photoMinorToggle()" style="margin-top:2px;flex-shrink:0">
           <span>Confirmo que cuento con la <strong>autorización del padre, madre o tutor legal</strong> para publicar esta foto.</span>

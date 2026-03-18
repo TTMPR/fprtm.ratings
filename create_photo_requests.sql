@@ -1,5 +1,5 @@
 -- ============================================================
--- FPRTM — Tabla photo_requests
+-- FPTM — Tabla photo_requests
 -- Ejecutar en Supabase → SQL Editor antes de usar fotos
 -- ============================================================
 

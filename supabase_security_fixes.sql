@@ -1,5 +1,5 @@
 -- =============================================================================
--- FPRTM Security Fixes
+-- FPTM Security Fixes
 -- Run these statements in the Supabase SQL Editor (or via psql).
 -- Addresses all ERRORs and WARNs from the database security linter.
 -- =============================================================================
