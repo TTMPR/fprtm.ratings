@@ -777,6 +777,154 @@
 
   .scrollhint { text-align: center; color: var(--muted); font-size: 13px; margin: 24px 0; }
 
+  /* ─── MOBILE BOTTOM NAV ─── */
+  .bottom-nav {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(10,22,40,0.97);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .bottom-nav-btn {
+    flex: 1;
+    background: none; border: none;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 8px 4px;
+    color: var(--muted); font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;
+    cursor: pointer; transition: color 0.2s; gap: 3px;
+    min-height: 56px; font-family: 'DM Sans'; font-weight: 600;
+  }
+  .bottom-nav-btn .bn-icon { font-size: 20px; line-height: 1; }
+  .bottom-nav-btn.active { color: var(--accent); }
+  .bottom-nav-btn:hover { color: var(--text); }
+
+  /* ─── SLIDE UP ANIMATION (bottom sheets) ─── */
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  /* ─── RESPONSIVE: 480px — small phones ─── */
+  @media (max-width: 480px) {
+    .page-hero h1 { font-size: 38px; }
+    .page-hero { padding: 20px 12px 12px; }
+    .container, .calc-wrap, .memb-form-wrap { padding-left: 12px; padding-right: 12px; }
+    .search-wrap, .filters, .stats-row, .player-grid,
+    .table-wrap, .torneos-grid, .evento-grid, .evento-header,
+    .evento-search-wrap, .memb-grid, .memb-search-wrap,
+    .join-banner, .alert-banner, .requests-grid, .memb-page-tabs { padding-left: 12px; padding-right: 12px; }
+    .stats-row { gap: 8px; }
+
+    /* Player cards: horizontal scroll deck */
+    .player-grid {
+      display: flex !important;
+      flex-direction: row !important;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: 10px;
+      padding-bottom: 8px;
+    }
+    .player-grid::-webkit-scrollbar { display: none; }
+    .player-card {
+      scroll-snap-align: start;
+      min-width: 85vw;
+      flex-shrink: 0;
+    }
+  }
+
+  /* ─── RESPONSIVE: 768px — tablets & mobile ─── */
+  @media (max-width: 768px) {
+    /* Slim header: hide nav, keep logo + login */
+    header { padding: 0 16px; height: 52px; padding-top: env(safe-area-inset-top); }
+    header nav { display: none; }
+    .fprtm-logo-img { height: 38px; }
+    .fprtm-logo-sub { display: none; }
+    .ttmpr-badge { display: none; }
+    .login-btn { padding: 6px 14px !important; font-size: 13px !important; }
+
+    /* Show bottom nav, reserve space */
+    .bottom-nav { display: flex; }
+    body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+
+    /* Touch targets ≥ 44px */
+    .filter-chip { min-height: 44px; padding: 0 16px; display: inline-flex; align-items: center; }
+    .btn-primary, .btn-secondary, .btn-join { min-height: 44px; }
+    .edit-btn { min-height: 44px; display: inline-flex; align-items: center; }
+    .torneo-admin-btn { min-height: 44px; min-width: 44px; }
+
+    /* Padding adjustments */
+    .page-hero { padding: 28px 16px 16px; }
+    .container, .calc-wrap, .memb-form-wrap { padding-left: 16px; padding-right: 16px; }
+    .search-wrap, .filters, .stats-row, .player-grid,
+    .table-wrap, .torneos-grid, .evento-grid, .evento-header,
+    .evento-search-wrap, .memb-grid, .memb-search-wrap,
+    .join-banner, .alert-banner, .requests-grid, .memb-page-tabs { padding-left: 16px; padding-right: 16px; }
+
+    /* Torneo card layout on small screens */
+    .torneo-card { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .torneo-card-right { align-items: flex-start; flex-direction: row; gap: 12px; align-items: center; }
+
+    /* Modals as bottom sheets */
+    #editMembModal, #newPlayerModal, #newTournamentModal, #configModal,
+    #editTorneoModal, #deleteTorneoModal, #playerMatchesModal { align-items: flex-end !important; }
+    #editMembModal .edit-memb-box,
+    #newPlayerModal .edit-memb-box,
+    #newTournamentModal .edit-memb-box,
+    #configModal .edit-memb-box,
+    #editTorneoModal .edit-memb-box,
+    #deleteTorneoModal .edit-memb-box,
+    #playerMatchesModal .edit-memb-box {
+      width: 100% !important;
+      max-width: 100% !important;
+      border-radius: 20px 20px 0 0 !important;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+
+    /* Tables → Cards: hist-table */
+    .hist-table, .hist-table thead, .hist-table tbody,
+    .hist-table tr, .hist-table td { display: block; }
+    .hist-table thead { display: none; }
+    .hist-table tr {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 8px; overflow: hidden;
+    }
+    .hist-table td {
+      padding: 10px 14px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hist-table td:last-child { border-bottom: none; }
+    .hist-table td::before {
+      content: attr(data-label);
+      font-size: 10px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.5px; font-weight: 600; flex-shrink: 0; margin-right: 12px;
+    }
+  }
+
+  /* ─── RESPONSIVE: 1024px — tablets landscape / laptops ─── */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .container { padding: 40px 24px; }
+    .player-grid { grid-template-columns: repeat(2, 1fr); padding: 0 24px; }
+    .stats-row { padding: 0 24px 32px; }
+    .search-wrap, .filters, .join-banner, .alert-banner,
+    .memb-grid, .memb-page-tabs, .table-wrap,
+    .page-hero, .torneos-grid, .evento-grid { padding-left: 24px; padding-right: 24px; }
+  }
+
+  /* ─── RESPONSIVE: 1440px — wide desktop ─── */
+  @media (min-width: 1440px) {
+    .container, .player-grid, .stats-row, .search-wrap, .filters,
+    .join-banner, .alert-banner, .memb-grid, .memb-page-tabs,
+    .table-wrap, .page-hero { max-width: 1400px; }
+  }
+
   /* ─── LOGIN MODAL ─── */
   #loginModal {
     position: fixed; inset: 0; z-index: 9999;
@@ -1031,6 +1179,27 @@
     <button class="login-btn" id="loginBtn" onclick="showLogin()">🔐 Iniciar Sesión</button>
   </div>
 </header>
+
+<!-- ══════════════════════════════════════════
+     MOBILE BOTTOM NAV
+═══════════════════════════════════════════ -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-btn active" id="bnRankings" onclick="showPage('rankings')">
+    <span class="bn-icon">🏆</span>Rankings
+  </button>
+  <button class="bottom-nav-btn" id="bnCalculator" onclick="showPage('calculator')">
+    <span class="bn-icon">⚡</span>Calcular
+  </button>
+  <button class="bottom-nav-btn" id="bnTorneos" onclick="showPage('torneosList')">
+    <span class="bn-icon">🏓</span>Torneos
+  </button>
+  <button class="bottom-nav-btn" id="bnMembresia" style="display:none" onclick="showPage('membresia')">
+    <span class="bn-icon">🪪</span>Membresía
+  </button>
+  <button class="bottom-nav-btn" id="bnAdmin" style="display:none" onclick="showPage('admin')">
+    <span class="bn-icon">⚙</span>Admin
+  </button>
+</nav>
 
 <!-- ══════════════════════════════════════════
      PAGE: RANKINGS
@@ -2078,6 +2247,12 @@ function updateAuthUI() {
   const el_admin = document.getElementById('navAdmin');
   if (el_memb)  el_memb.style.display  = isLoggedIn ? '' : 'none';
   if (el_admin) el_admin.style.display = isAdmin()   ? '' : 'none';
+
+  // Sync bottom nav visibility
+  const bn_memb  = document.getElementById('bnMembresia');
+  const bn_admin = document.getElementById('bnAdmin');
+  if (bn_memb)  bn_memb.style.display  = isLoggedIn ? '' : 'none';
+  if (bn_admin) bn_admin.style.display = isAdmin()   ? '' : 'none';
   // Apply-to-DB buttons only visible for admins
   const el_calcApply  = document.getElementById('calcApplyBtn');
   const el_subirApply = document.getElementById('subirApplyBtn');
@@ -2320,6 +2495,11 @@ function showPage(key) {
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   const navMap = { rankings: 0, calculator: 1, torneosList: 2, torneoEvento: 2, membresia: 3, admin: 4 };
   if (navMap[key] !== undefined) document.querySelectorAll('nav button')[navMap[key]]?.classList.add('active');
+
+  // Sync bottom nav
+  const bnMap = { rankings: 'bnRankings', calculator: 'bnCalculator', torneosList: 'bnTorneos', torneoEvento: 'bnTorneos', membresia: 'bnMembresia', admin: 'bnAdmin' };
+  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  if (bnMap[key]) document.getElementById(bnMap[key])?.classList.add('active');
 
   // Reset subir page to step 1 every time it's opened
   if (key === 'subir') {
@@ -2618,12 +2798,12 @@ function renderTournamentHistory(parts, torneoMeta) {
           const deltaText  = delta > 0 ? `▲ +${delta}` : delta < 0 ? `▼ ${delta}` : `= 0`;
           const safeNombre = nombre.replace(/'/g, "\\'");
           return `<tr>
-            <td>
+            <td data-label="Torneo">
               <div class="hist-t-name" onclick="openTorneoEvento(${p.id_torneo},'${safeNombre}','${meta.fecha || ''}')">${nombre}</div>
               <div style="font-size:11px;color:var(--muted)">${fecha}</div>
             </td>
-            <td><span class="hist-delta ${deltaClass}">${deltaText}</span></td>
-            <td><span class="hist-rating-post">${p.rating_fin}</span></td>
+            <td data-label="Δ"><span class="hist-delta ${deltaClass}">${deltaText}</span></td>
+            <td data-label="Rating"><span class="hist-rating-post">${p.rating_fin}</span></td>
           </tr>`;
         }).join('')}
       </tbody>
