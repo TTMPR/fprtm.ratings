@@ -312,7 +312,7 @@ def save_to_db(pending, players, final_ratings, torneo_id):
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 def main():
     print('=' * 60)
-    print(f'  FPRTM -- Carga: {TORNEO_NOMBRE}')
+    print(f'  FPTM -- Carga: {TORNEO_NOMBRE}')
     print('=' * 60)
 
     players = load_all_players()

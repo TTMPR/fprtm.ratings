@@ -1,5 +1,5 @@
 -- ============================================================
---  FPRTM — Albergue Olímpico 2026 — TODOS LOS EVENTOS
+--  FPTM — Albergue Olímpico 2026 — TODOS LOS EVENTOS
 --  Generado automáticamente desde el CSV de StadiumCompete
 --  Pegar y ejecutar en: Supabase → SQL Editor
 --  IMPORTANTE: Ejecutar cada bloque DO $$ ... $$ por separado

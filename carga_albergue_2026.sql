@@ -1,5 +1,5 @@
 -- ============================================================
---  FPRTM — Carga Albergue Olímpico 2026
+--  FPTM — Carga Albergue Olímpico 2026
 --  Pegar y ejecutar en: Supabase → SQL Editor
 -- ============================================================
 
@@ -109,7 +109,7 @@ BEGIN
             CONTINUE;
         END IF;
 
-        -- Tabla de puntos FPRTM
+        -- Tabla de puntos FPTM
         v_diff      := ABS(r.rW - r.rL);
         v_winner_fav := r.rW >= r.rL;
 

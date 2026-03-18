@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script para cargar TODOS los partidos del torneo Albergue Olímpico 2026
-a la base de datos FPRTM (Supabase).
+a la base de datos FPTM (Supabase).
 
 Lee el CSV con formato: Round,WinnerID,LoserID,Scores
 donde los IDs tienen formato fprtm|XXXXX
@@ -310,7 +310,7 @@ def save_to_db(pending, players, final_ratings, torneo_id):
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 def main():
     print('=' * 60)
-    print(f'  FPRTM — Carga de Torneo: {TORNEO_NOMBRE}')
+    print(f'  FPTM — Carga de Torneo: {TORNEO_NOMBRE}')
     print('=' * 60)
 
     players = load_all_players()
