@@ -1721,6 +1721,11 @@ Maria Lopez,Ana Torres,B</code>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar solicitudes de cambio de club</div>
         <span id="pendingClubBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;transition:border-color 0.2s;" id="adminInscCard" onclick="toggleInscripciones()">
+        <div style="font-size:32px;margin-bottom:12px" id="adminInscIcon">📋</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Inscripciones</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px" id="adminInscStatus">Cargando...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -2162,9 +2167,20 @@ Maria Lopez,Ana Torres,B</code>
 
   <div class="container" style="max-width:580px;padding-top:0">
 
+    <!-- Banner: inscripciones cerradas (admin-controlled) -->
+    <div id="inscCerradoBanner" style="display:none;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.28);border-radius:14px;padding:36px 24px;text-align:center;margin-bottom:24px;">
+      <div style="font-size:52px;margin-bottom:16px;">🔒</div>
+      <h2 style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:10px;">Inscripciones cerradas</h2>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:20px;">Las inscripciones para este torneo están actualmente cerradas. Contáctanos para más información.</p>
+      <a href="https://wa.me/17872483994" target="_blank" style="display:inline-flex;align-items:center;gap:10px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:10px;padding:12px 20px;text-decoration:none;">
+        <span style="font-size:20px;">📲</span>
+        <span style="font-family:'Bebas Neue';font-size:22px;letter-spacing:0.06em;color:var(--green);">(787) 248-3994</span>
+      </a>
+    </div>
+
     <!-- Selector de torneo activo -->
     <div style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px;">
-      <img src="morovis-open-2026/logo.png" alt="Morovis Open 2026" style="width:72px;height:72px;object-fit:contain;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.previousElementSibling.style.display='inline'">
+      <img src="morovis-open-2026/logo.png" alt="Morovis Open 2026" style="width:72px;height:72px;object-fit:contain;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
       <span style="font-size:28px;display:none;">🏓</span>
       <div>
         <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:2px;">Torneo Activo</div>
@@ -2766,7 +2782,7 @@ function showPage(key) {
     document.getElementById('subirTorneoFecha').value = new Date().toISOString().split('T')[0];
   }
   // Reset inscription form on navigation
-  if (key === 'inscripciones') inscGoToStep(1);
+  if (key === 'inscripciones') { inscGoToStep(1); updateInscripcionesUI(); }
   // Load torneos list on navigation
   if (key === 'torneosList') loadTorneosList();
   // Load pending requests when admin opens membresia tab
@@ -5264,7 +5280,67 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderMembers();
   updateStats();
   updatePendingBadge();
+  loadInscripcionesStatus();
 });
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — OPEN/CLOSE TOGGLE (Admin)
+// ══════════════════════════════════════════
+let inscripcionesOpen = true;
+
+async function loadInscripcionesStatus() {
+  try {
+    const data = await sbGet('app_settings', '?key=eq.inscripciones_open&select=value');
+    if (data && data.length > 0) {
+      inscripcionesOpen = data[0].value === 'true';
+    }
+  } catch (e) {
+    console.warn('app_settings no disponible, asumiendo inscripciones abiertas:', e.message);
+    inscripcionesOpen = true;
+  }
+  updateInscripcionesUI();
+}
+
+function updateInscripcionesUI() {
+  const banner = document.getElementById('inscCerradoBanner');
+  const progressBar = document.getElementById('inscProgressBar');
+  const screen1 = document.getElementById('inscScreen1');
+  if (banner) banner.style.display = inscripcionesOpen ? 'none' : '';
+  if (progressBar) progressBar.style.display = inscripcionesOpen ? '' : 'none';
+  if (screen1 && screen1.style.display !== 'none') {
+    screen1.style.display = inscripcionesOpen ? 'block' : 'none';
+  }
+
+  const icon   = document.getElementById('adminInscIcon');
+  const status = document.getElementById('adminInscStatus');
+  const card   = document.getElementById('adminInscCard');
+  if (icon)   icon.textContent = inscripcionesOpen ? '📋' : '🔒';
+  if (status) status.textContent = inscripcionesOpen
+    ? 'Inscripciones abiertas · Toca para cerrar'
+    : 'Inscripciones cerradas · Toca para abrir';
+  if (card)   card.style.borderColor = inscripcionesOpen ? 'var(--border)' : 'rgba(239,68,68,0.4)';
+}
+
+async function toggleInscripciones() {
+  if (!isAdmin()) return;
+  const newValue = !inscripcionesOpen;
+  const status = document.getElementById('adminInscStatus');
+  if (status) status.textContent = 'Guardando...';
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/app_settings`, {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ key: 'inscripciones_open', value: newValue ? 'true' : 'false', updated_at: new Date().toISOString() })
+    });
+    if (!res.ok) { const err = await res.text(); throw new Error(err); }
+    inscripcionesOpen = newValue;
+    updateInscripcionesUI();
+  } catch (e) {
+    console.error('Error al cambiar estado inscripciones:', e);
+    if (status) status.textContent = 'Error al guardar';
+    setTimeout(updateInscripcionesUI, 2000);
+  }
+}
 
 // ══════════════════════════════════════════
 // INSCRIPCIONES — CONSTANTS

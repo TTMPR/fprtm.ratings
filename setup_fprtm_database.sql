@@ -215,6 +215,33 @@ CREATE POLICY "insert_torneos" ON public.torneos
   WITH CHECK (auth.jwt() ->> 'email' = 'joel@ttmpr.xyz');
 
 
+-- ---------------------------------------------------------------------------
+-- TABLE: app_settings
+-- Key-value store for global app configuration (e.g. inscripciones toggle)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.app_settings (
+  key        TEXT PRIMARY KEY,
+  value      TEXT NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Seed default: inscripciones open
+INSERT INTO public.app_settings (key, value)
+  VALUES ('inscripciones_open', 'true')
+  ON CONFLICT (key) DO NOTHING;
+
+-- RLS: anyone can read, only admin can write
+ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "read_app_settings" ON public.app_settings;
+CREATE POLICY "read_app_settings" ON public.app_settings
+  FOR SELECT TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "write_app_settings" ON public.app_settings;
+CREATE POLICY "write_app_settings" ON public.app_settings
+  FOR ALL TO authenticated
+  WITH CHECK (auth.jwt() ->> 'email' = 'joel@ttmpr.xyz');
+
 -- =============================================================================
 -- NOTE: After running this script, complete these manual steps in the Dashboard:
 --
