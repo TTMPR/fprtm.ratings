@@ -1721,6 +1721,11 @@ Maria Lopez,Ana Torres,B</code>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar solicitudes de cambio de club</div>
         <span id="pendingClubBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
+      <div id="inscAdminCard" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative;transition:border-color 0.2s" onclick="toggleInscripciones()">
+        <div id="inscAdminIcon" style="font-size:32px;margin-bottom:12px">📋</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Inscripciones</div>
+        <div id="inscAdminStatus" style="color:var(--muted);font-size:13px;margin-top:6px">Cargando...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -2171,6 +2176,13 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-size:18px;font-weight:700;color:var(--text);" id="inscTorneoNombre">Morovis Open 2026</div>
         <div style="font-size:12px;color:var(--muted);">Sáb 25 &amp; Dom 26 de abril · Morovis, PR</div>
       </div>
+    </div>
+
+    <!-- Inscripciones cerradas banner -->
+    <div id="inscCerradasBanner" style="display:none;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:32px 24px;text-align:center;margin-bottom:24px;">
+      <div style="font-size:40px;margin-bottom:12px;">🔒</div>
+      <div style="font-family:'Bebas Neue';font-size:30px;letter-spacing:0.08em;color:#ef4444;margin-bottom:10px;">Inscripciones Cerradas</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0;">El periodo de inscripción para este torneo ha finalizado.<br>Para información contacta a la FPTM.</p>
     </div>
 
     <!-- Progress bar -->
@@ -2765,8 +2777,8 @@ function showPage(key) {
     document.getElementById('subirStep1Msg').textContent = '';
     document.getElementById('subirTorneoFecha').value = new Date().toISOString().split('T')[0];
   }
-  // Reset inscription form on navigation
-  if (key === 'inscripciones') inscGoToStep(1);
+  // Reset/apply inscription state on navigation
+  if (key === 'inscripciones') applyInscripcionesState();
   // Load torneos list on navigation
   if (key === 'torneosList') loadTorneosList();
   // Load pending requests when admin opens membresia tab
@@ -5234,6 +5246,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     searchTimeout = setTimeout(filterPlayers, 350);
   });
 
+  loadInscripcionesConfig();
+
   showLoading(true);
   const [playersResult, membersResult] = await Promise.allSettled([loadPlayers(), loadMembers(), loadApprovedPhotos()]);
   if (playersResult.status === 'fulfilled') {
@@ -5317,6 +5331,64 @@ function inscUpdateProgress(step) {
     else if (i === step) seg.style.background = 'var(--accent)';
     else                 seg.style.background = 'var(--border)';
   }
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — OPEN / CLOSED SETTING
+// ══════════════════════════════════════════
+let inscripcionesOpen = true;
+
+async function loadInscripcionesConfig() {
+  try {
+    const data = await sbGet('app_settings', '?key=eq.inscripciones_open&select=value');
+    if (data && data.length) inscripcionesOpen = data[0].value === 'true';
+  } catch(e) {
+    console.warn('loadInscripcionesConfig:', e.message);
+  }
+  applyInscripcionesState();
+}
+
+function applyInscripcionesState() {
+  const banner   = document.getElementById('inscCerradasBanner');
+  const progress = document.getElementById('inscProgressBar');
+
+  if (inscripcionesOpen) {
+    if (banner)   banner.style.display   = 'none';
+    if (progress) progress.style.display = '';
+    inscGoToStep(1);
+  } else {
+    if (banner)   banner.style.display   = '';
+    if (progress) progress.style.display = 'none';
+    for (let i = 1; i <= 5; i++) {
+      const el = document.getElementById('inscScreen' + i);
+      if (el) el.style.display = 'none';
+    }
+  }
+
+  // Keep admin card in sync
+  const statusEl = document.getElementById('inscAdminStatus');
+  const cardEl   = document.getElementById('inscAdminCard');
+  const iconEl   = document.getElementById('inscAdminIcon');
+  if (statusEl) {
+    statusEl.textContent = inscripcionesOpen ? 'Abiertas — clic para cerrar' : 'Cerradas — clic para abrir';
+    statusEl.style.color = inscripcionesOpen ? 'var(--green)' : '#ef4444';
+  }
+  if (cardEl)  cardEl.style.borderColor = inscripcionesOpen ? 'var(--border)' : 'rgba(239,68,68,0.4)';
+  if (iconEl)  iconEl.textContent       = inscripcionesOpen ? '📋' : '🔒';
+}
+
+async function toggleInscripciones() {
+  if (!isAdmin()) { showLogin(); return; }
+  const newVal   = !inscripcionesOpen;
+  const statusEl = document.getElementById('inscAdminStatus');
+  if (statusEl) { statusEl.textContent = 'Guardando...'; statusEl.style.color = 'var(--muted)'; }
+  try {
+    await sbPatch('app_settings', 'key=eq.inscripciones_open', { value: String(newVal), updated_at: new Date().toISOString() });
+    inscripcionesOpen = newVal;
+  } catch(e) {
+    console.warn('toggleInscripciones:', e.message);
+  }
+  applyInscripcionesState();
 }
 
 // ══════════════════════════════════════════
