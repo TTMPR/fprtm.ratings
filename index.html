@@ -5401,17 +5401,20 @@ async function toggleInscripciones() {
   localStorage.setItem('inscripciones_open', String(inscripcionesOpen));
   applyInscripcionesState();
 
-  // Upsert to Supabase using the auth client so the user JWT is sent
-  // (direct fetch with anon key is blocked by RLS for writes)
+  // Upsert to Supabase with anon key (RLS must be disabled — see fix_app_settings_rls.sql)
   try {
-    const { error } = await _supabase
-      .from('app_settings')
-      .upsert({ key: 'inscripciones_open', value: String(inscripcionesOpen), updated_at: new Date().toISOString() });
-    if (error) throw new Error(error.message);
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/app_settings`, {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ key: 'inscripciones_open', value: String(inscripcionesOpen), updated_at: new Date().toISOString() })
+    });
+    if (!res.ok) throw new Error(await res.text());
     inscSbSynced = true;
     applyInscripcionesState();
   } catch(e) {
     console.warn('toggleInscripciones (Supabase sync failed):', e.message);
+    const syncEl = document.getElementById('inscAdminSync');
+    if (syncEl) { syncEl.textContent = '✕ Error al guardar: ' + e.message; syncEl.style.color = '#ef4444'; }
   }
 }
 
