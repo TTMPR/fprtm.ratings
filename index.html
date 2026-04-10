@@ -1170,6 +1170,7 @@
     <button id="navRankings" class="active" onclick="showPage('rankings')">🏆 Rankings</button>
     <button id="navCalculator" onclick="showPage('calculator')">⚡ Calcular Rating</button>
     <button id="navTorneos" onclick="showPage('torneosList')">🏓 Torneos</button>
+    <button id="navInscripciones" onclick="showPage('inscripciones')">📋 Inscripciones</button>
     <button id="navMembresia" style="display:none" onclick="showPage('membresia')">🪪 Membresía</button>
     <button id="navAdmin" style="display:none" onclick="showPage('admin')">⚙ Admin</button>
   </nav>
@@ -1194,6 +1195,9 @@
   </button>
   <button class="bottom-nav-btn" id="bnTorneos" onclick="showPage('torneosList')">
     <span class="bn-icon">🏓</span>Torneos
+  </button>
+  <button class="bottom-nav-btn" id="bnInscripciones" onclick="showPage('inscripciones')">
+    <span class="bn-icon">📋</span>Inscripción
   </button>
   <button class="bottom-nav-btn" id="bnMembresia" style="display:none" onclick="showPage('membresia')">
     <span class="bn-icon">🪪</span>Membresía
@@ -2147,6 +2151,255 @@ Maria Lopez,Ana Torres,B</code>
 </div>
 
 <!-- ══════════════════════════════════════════
+     PAGE: INSCRIPCIONES A TORNEOS
+═══════════════════════════════════════════ -->
+<div id="inscripcionesPage" class="page">
+  <div class="page-hero">
+    <div class="overline">Federación Puertorriqueña de Tenis de Mesa</div>
+    <h1>INSCRIPCIONES</h1>
+    <p>Portal de inscripción oficial para torneos FPTM</p>
+  </div>
+
+  <div class="container" style="max-width:580px;padding-top:0">
+
+    <!-- Selector de torneo activo -->
+    <div style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px;">
+      <span style="font-size:28px;">🏓</span>
+      <div>
+        <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:2px;">Torneo Activo</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);" id="inscTorneoNombre">Morovis Open 2026</div>
+        <div style="font-size:12px;color:var(--muted);">Sáb 25 &amp; Dom 26 de abril · Morovis, PR</div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div style="display:flex;gap:6px;margin-bottom:24px;" id="inscProgressBar">
+      <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg1"></div>
+      <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg2"></div>
+      <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg3"></div>
+      <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg4"></div>
+      <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg5"></div>
+    </div>
+
+    <!-- ═══ PANTALLA 1: Verificación ═══ -->
+    <div id="inscScreen1" style="display:block;">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 1 de 5 — Verificación</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">¿Cuál es tu situación en la FPTM?</h2>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Esto determina tu cargo base y tu número de participante.</p>
+
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button onclick="inscSelectOpcion('miembro')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'DM Sans';" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">🪪</span>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:600;margin-bottom:3px;">Soy miembro de la FPTM</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.4;">Tengo membresía activa o la tuve · cargo base $0</div>
+            </div>
+            <span style="color:var(--muted);font-size:18px;">→</span>
+          </button>
+          <button onclick="inscSelectOpcion('rating')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'DM Sans';" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">📊</span>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:600;margin-bottom:3px;">Tengo rating pero no soy miembro</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.4;">Aparezco en ratings.ttmpr.xyz · cargo base $10</div>
+            </div>
+            <span style="color:var(--muted);font-size:18px;">→</span>
+          </button>
+          <button onclick="inscSelectOpcion('nuevo')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'DM Sans';" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">✨</span>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:600;margin-bottom:3px;">Nunca he participado</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.4;">Primera vez en un torneo FPTM · cargo base $10</div>
+            </div>
+            <span style="color:var(--muted);font-size:18px;">→</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bloque nuevo jugador -->
+      <div id="inscNuevoBlock" style="display:none;background:var(--card2);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:24px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Inscripción manual</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Comunícate con Joel Vega</h2>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:16px;">Para registrarte por primera vez en la FPTM debes coordinar tu inscripción directamente.</p>
+        <a href="https://wa.me/17872483994" target="_blank" style="text-decoration:none;display:block;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:center;gap:12px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:18px;">
+            <span style="font-size:28px;">📲</span>
+            <div>
+              <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">WhatsApp</div>
+              <div style="font-family:'Bebas Neue';font-size:28px;letter-spacing:0.06em;color:var(--green);">(787) 248-3994</div>
+            </div>
+          </div>
+        </a>
+        <button onclick="document.getElementById('inscNuevoBlock').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);padding:10px 16px;border-radius:8px;cursor:pointer;font-size:14px;width:100%;">← Volver</button>
+      </div>
+
+      <!-- Buscador -->
+      <div id="inscSearchCard" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;" id="inscSearchLabel">Buscar en sistema FPTM</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Busca tu nombre</h2>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:16px;" id="inscSearchSub">Ingresa tu nombre para encontrar tu perfil en el sistema oficial.</p>
+
+        <div style="position:relative;margin-bottom:14px;">
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px;">⌕</span>
+          <input type="text" id="inscSearchInput" placeholder="Ej: Juan García..." oninput="inscHandleSearch()" autocomplete="off"
+            style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:13px 16px 13px 44px;font-family:'DM Sans';font-size:15px;color:var(--text);outline:none;transition:border 0.2s;"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+
+        <div id="inscResultsList" style="display:none;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;"></div>
+
+        <div id="inscAlertBox" style="display:none;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:14px;margin-bottom:12px;">
+          <div style="font-weight:700;margin-bottom:4px;font-size:15px;" id="inscAlertTitle"></div>
+          <p style="font-size:13px;color:#ccc;line-height:1.5;" id="inscAlertMsg"></p>
+        </div>
+
+        <div id="inscNotFound" style="display:none;font-size:13px;color:var(--muted);text-align:center;margin-top:8px;">
+          No encontrado. <span style="color:var(--accent);cursor:pointer;font-weight:600;" onclick="inscGoToStep(2, false)">Continuar sin ID →</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PANTALLA 2: Cargo base ═══ -->
+    <div id="inscScreen2" style="display:none;">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 2 de 5 — Balance</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Tu cargo base</h2>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Calculado según tu estatus de membresía en la FPTM.</p>
+
+        <div style="background:rgba(232,184,75,0.06);border:1px solid rgba(232,184,75,0.18);border-radius:12px;padding:20px;">
+          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px;">
+            <span>Cargo de inscripción base</span>
+            <span id="inscBaseAmtLabel">$10.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:12px;">
+            <span>Estatus</span>
+            <span id="inscEstatusLabel" style="color:var(--accent);">No federado</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:22px;font-weight:700;color:var(--text);padding-top:12px;border-top:1px solid var(--border);">
+            <span>Base total</span>
+            <span id="inscBaseTotalDisplay" style="color:var(--accent);">$10.00</span>
+          </div>
+        </div>
+      </div>
+      <button onclick="inscGoToStep(3)" style="background:var(--accent);color:var(--navy);width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;transition:all 0.18s;" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">Continuar → Obtener ID</button>
+    </div>
+
+    <!-- ═══ PANTALLA 3: ID ═══ -->
+    <div id="inscScreen3" style="display:none;">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 3 de 5 — Tu ID</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Tu número de participante</h2>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Usa este ID al registrarte en Stadium Compete y al enviar tu pago.</p>
+
+        <div style="text-align:center;padding:24px 0 16px;">
+          <div style="font-size:12px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">FPTM# · ID de Participante</div>
+          <div id="inscIdDisplay" style="font-family:'Bebas Neue';font-size:72px;letter-spacing:0.12em;color:var(--accent);line-height:1;">—</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:8px;min-height:18px;" id="inscIdSubNote"></div>
+          <button onclick="inscCopyId()" id="inscCopyBtn" style="margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.25);color:var(--accent);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.18s;">
+            📋 Copiar ID
+          </button>
+        </div>
+      </div>
+      <button onclick="inscGoToStep(4)" style="background:var(--accent);color:var(--navy);width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;">Continuar → Stadium Compete</button>
+    </div>
+
+    <!-- ═══ PANTALLA 4: Stadium Compete ═══ -->
+    <div id="inscScreen4" style="display:none;">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 4 de 5 — Registro Oficial</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Inscríbete en Stadium Compete</h2>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:16px;">Sigue los pasos a continuación para completar tu registro oficial.</p>
+
+        <!-- ID box -->
+        <div style="background:rgba(232,184,75,0.06);border:1px solid rgba(232,184,75,0.2);border-radius:12px;padding:18px;margin-bottom:16px;">
+          <div style="font-size:11px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Tu FPTM# — Member ID</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div id="inscIdDisplaySC" style="font-family:'Bebas Neue';font-size:48px;color:var(--accent);letter-spacing:0.12em;line-height:1;flex:1;">—</div>
+            <button onclick="inscCopyIdSC()" id="inscCopyBtnSC" style="background:rgba(232,184,75,0.15);border:1px solid rgba(232,184,75,0.3);color:var(--accent);padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">📋 Copiar</button>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;" id="inscScIdNote"></div>
+        </div>
+
+        <!-- Steps -->
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">1</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Copia tu FPTM# con el botón de arriba.</div></div>
+          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">2</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Abre Stadium Compete abajo. Asegúrate de estar <strong>logueado</strong>.</div></div>
+          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">3</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Selecciona el sistema <strong style="color:var(--accent);">Federación Puertorriqueña de Tenis de Mesa</strong>.</div></div>
+          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">4</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Pega tu FPTM# en el campo <strong>"Member ID"</strong> y presiona <strong>"Link"</strong>.</div></div>
+          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">5</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Selecciona tus categorías y somete tu entrada (<strong>"Submit Entry"</strong>).</div></div>
+        </div>
+
+        <a id="inscScLink" href="https://stadiumcompete.com/tournament/a9760a84-79e7-48f5-adfd-58e440430b0d?playerId=" target="_blank" style="text-decoration:none;display:block;margin-bottom:16px;">
+          <button style="background:var(--accent);color:var(--navy);width:100%;padding:16px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;">🏓 Abrir Stadium Compete</button>
+        </a>
+
+        <div style="height:1px;background:var(--border);margin:16px 0;"></div>
+        <button onclick="inscGoToStep(3)" style="background:none;border:1px solid var(--accent);color:var(--accent);width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">← Volver a mi FPTM#</button>
+      </div>
+
+      <button onclick="inscGoToStep(5)" style="background:var(--accent);color:var(--navy);width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;margin-bottom:8px;">Ya completé mi registro → Categorías &amp; Pago</button>
+    </div>
+
+    <!-- ═══ PANTALLA 5: Categorías & Pago ═══ -->
+    <div id="inscScreen5" style="display:none;">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 5 de 5 — Categorías &amp; Pago</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Selecciona tus categorías</h2>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:16px;">No puedes inscribirte en dos eventos del mismo horario. Cupo máximo 32 por categoría de Rating.</p>
+
+        <div id="inscCatList" style="display:flex;flex-direction:column;gap:10px;"></div>
+
+        <div style="background:rgba(232,184,75,0.06);border:1px solid rgba(232,184,75,0.18);border-radius:12px;padding:20px;margin-top:16px;">
+          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px;">
+            <span>Cargo base</span><span id="inscCheckoutBase">$10.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:12px;">
+            <span>Categorías seleccionadas (<span id="inscCatCount">0</span>)</span><span id="inscCatTotal">$0.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:22px;font-weight:700;color:var(--text);padding-top:12px;border-top:1px solid var(--border);">
+            <span>Total a pagar</span><span id="inscGrandTotal" style="color:var(--accent);">$10.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pago -->
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:4px;color:var(--text);">💳 Pago</h3>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;margin:14px 0;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px;">
+            <span>ID de participante</span>
+            <span style="font-family:monospace;font-size:14px;color:var(--accent);" id="inscConfirmId">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="font-size:13px;color:var(--muted);">Total a pagar</span>
+            <span style="font-size:20px;font-weight:700;color:var(--accent);" id="inscConfirmTotal">$10.00</span>
+          </div>
+        </div>
+
+        <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:20px;text-align:center;margin-bottom:16px;">
+          <div style="font-size:11px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Plataforma de pago oficial</div>
+          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:16px;">ATH Móvil Business · <span style="color:var(--green);">fprtm</span></div>
+          <a href="https://pagos.athmovilapp.com/pagoPorCodigo.html?id=686cd0cb-1395-4ebb-96b1-96719cd6f5e9" target="_blank" style="text-decoration:none;display:block;">
+            <button style="background:var(--green);color:#000;width:100%;padding:17px;border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;border:none;">💚 Pagar con ATH Móvil</button>
+          </a>
+        </div>
+
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;">Luego del pago, envía la <strong style="color:var(--text);">captura del recibo</strong> con tu <strong style="color:var(--text);">ID de participante</strong> al:</p>
+        <a href="https://wa.me/19392104299" target="_blank" style="text-decoration:none;">
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;">
+            <span style="font-size:20px;">📲</span>
+            <span style="font-family:'Bebas Neue';font-size:28px;letter-spacing:0.06em;color:var(--green);">939-210-4299</span>
+          </div>
+        </a>
+      </div>
+
+      <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px;">¿Dudas? Escríbele a Joel Vega al <a href="tel:9392104299" style="color:var(--accent);">939-210-4299</a></p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      LOGIN MODAL
 ═══════════════════════════════════════════ -->
 <div id="loginModal">
@@ -2474,6 +2727,7 @@ const pages = {
   subir:          'subirPage',
   torneosList:    'torneosListPage',
   torneoEvento:   'torneoEventoPage',
+  inscripciones:  'inscripcionesPage',
   membresia:      'membresia_page',
   admin:          'adminPage',
   profile:        'profilePage',
@@ -2495,11 +2749,11 @@ function showPage(key) {
   if (target) { target.style.display = 'block'; setTimeout(() => target.classList.add('active'), 10); }
 
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  const navMap = { rankings: 0, calculator: 1, torneosList: 2, torneoEvento: 2, membresia: 3, admin: 4 };
+  const navMap = { rankings: 0, calculator: 1, torneosList: 2, torneoEvento: 2, inscripciones: 3, membresia: 4, admin: 5 };
   if (navMap[key] !== undefined) document.querySelectorAll('nav button')[navMap[key]]?.classList.add('active');
 
   // Sync bottom nav
-  const bnMap = { rankings: 'bnRankings', calculator: 'bnCalculator', torneosList: 'bnTorneos', torneoEvento: 'bnTorneos', membresia: 'bnMembresia', admin: 'bnAdmin' };
+  const bnMap = { rankings: 'bnRankings', calculator: 'bnCalculator', torneosList: 'bnTorneos', torneoEvento: 'bnTorneos', inscripciones: 'bnInscripciones', membresia: 'bnMembresia', admin: 'bnAdmin' };
   document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
   if (bnMap[key]) document.getElementById(bnMap[key])?.classList.add('active');
 
@@ -2510,6 +2764,8 @@ function showPage(key) {
     document.getElementById('subirStep1Msg').textContent = '';
     document.getElementById('subirTorneoFecha').value = new Date().toISOString().split('T')[0];
   }
+  // Reset inscription form on navigation
+  if (key === 'inscripciones') inscGoToStep(1);
   // Load torneos list on navigation
   if (key === 'torneosList') loadTorneosList();
   // Load pending requests when admin opens membresia tab
@@ -5008,6 +5264,357 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateStats();
   updatePendingBadge();
 });
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — CONSTANTS
+// ══════════════════════════════════════════
+const INSC_CATEGORIES = [
+  { id: 'ev1',  name: '7 o Menos Abierto',       desc: 'Trofeos y medallas',           price: 11, slot: 'SAB-900'  },
+  { id: 'ev2',  name: '9 o Menos Masculino',      desc: 'Trofeos y medallas',           price: 20, slot: 'SAB-900'  },
+  { id: 'ev3',  name: '9 o Menos Femenino',       desc: 'Trofeos y medallas',           price: 20, slot: 'SAB-900'  },
+  { id: 'ev4',  name: '13 o Menos Masculino',     desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'SAB-900'  },
+  { id: 'ev5',  name: '13 o Menos Femenino',      desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'SAB-900'  },
+  { id: 'ev6',  name: 'Abierto',                  desc: '1ro $85 · 2do $70 · 3/4 $60', price: 25, slot: 'SAB-900'  },
+  { id: 'ev7',  name: '1500 o Menos',             desc: '1ro $45 · 2do $35 · 3/4 $30', price: 20, slot: 'SAB-1100' },
+  { id: 'ev8',  name: '1900 o Menos',             desc: '1ro $65 · 2do $60 · 3/4 $55', price: 20, slot: 'SAB-1230' },
+  { id: 'ev9',  name: '1700 o Menos',             desc: '1ro $55 · 2do $50 · 3/4 $45', price: 20, slot: 'SAB-1230' },
+  { id: 'ev10', name: '11 o Menos Masculino',     desc: '1ro $30 · 2do $25 · 3/4 $20', price: 20, slot: 'DOM-900'  },
+  { id: 'ev11', name: '11 o Menos Femenino',      desc: '1ro $30 · 2do $25 · 3/4 $20', price: 20, slot: 'DOM-900'  },
+  { id: 'ev12', name: '15 o Menos Masculino',     desc: '1ro $40 · 2do $35 · 3/4 $30', price: 20, slot: 'DOM-900'  },
+  { id: 'ev13', name: '15 o Menos Femenino',      desc: '1ro $40 · 2do $35 · 3/4 $30', price: 20, slot: 'DOM-900'  },
+  { id: 'ev14', name: 'Seniors – 40 años o más',  desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'DOM-1100' },
+  { id: 'ev15', name: '1600 o Menos',             desc: '1ro $50 · 2do $45 · 3/4 $40', price: 20, slot: 'DOM-1230' },
+  { id: 'ev16', name: '1800 o Menos',             desc: '1ro $60 · 2do $55 · 3/4 $50', price: 20, slot: 'DOM-1230' },
+];
+const INSC_SLOT_LABELS = {
+  'SAB-900':  'Sáb 25-abr · 9:00 a.m.',
+  'SAB-1100': 'Sáb 25-abr · 11:00 a.m.',
+  'SAB-1230': 'Sáb 25-abr · 12:30 p.m.',
+  'DOM-900':  'Dom 26-abr · 9:00 a.m.',
+  'DOM-1100': 'Dom 26-abr · 11:00 a.m.',
+  'DOM-1230': 'Dom 26-abr · 12:30 p.m.',
+};
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — STATE
+// ══════════════════════════════════════════
+const inscState = {
+  opcion: null,       // 'miembro' | 'rating' | 'nuevo'
+  player: null,       // selected player object from ALL_PLAYERS
+  selectedCats: new Set(),
+  searchTimer: null,
+};
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — PROGRESS BAR
+// ══════════════════════════════════════════
+function inscUpdateProgress(step) {
+  for (let i = 1; i <= 5; i++) {
+    const seg = document.getElementById('inscSeg' + i);
+    if (!seg) continue;
+    if (i < step)       seg.style.background = 'rgba(232,184,75,0.5)';
+    else if (i === step) seg.style.background = 'var(--accent)';
+    else                 seg.style.background = 'var(--border)';
+  }
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — STEP NAVIGATION
+// ══════════════════════════════════════════
+function inscGoToStep(step) {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('inscScreen' + i);
+    if (el) el.style.display = 'none';
+  }
+  const target = document.getElementById('inscScreen' + step);
+  if (target) target.style.display = '';
+  inscUpdateProgress(step);
+
+  if (step === 1) {
+    // Full reset
+    inscState.opcion = null;
+    inscState.player = null;
+    inscState.selectedCats = new Set();
+    const si = document.getElementById('inscSearchInput');
+    if (si) si.value = '';
+    const rl = document.getElementById('inscResultsList');
+    if (rl) { rl.innerHTML = ''; rl.style.display = 'none'; }
+    const ab = document.getElementById('inscAlertBox');
+    if (ab) ab.style.display = 'none';
+    const nf = document.getElementById('inscNotFound');
+    if (nf) nf.style.display = 'none';
+    const sc = document.getElementById('inscSearchCard');
+    if (sc) sc.style.display = 'none';
+    const nb = document.getElementById('inscNuevoBlock');
+    if (nb) nb.style.display = 'none';
+  }
+
+  if (step === 2) {
+    const p = inscState.player;
+    const isMember = p && p.member;
+    const base = isMember ? 0 : 10;
+    const estatusText = isMember ? 'Miembro activo' : (p ? 'No federado / vencido' : 'Jugador nuevo');
+    const baseEl  = document.getElementById('inscBaseAmtLabel');
+    const estEl   = document.getElementById('inscEstatusLabel');
+    const totalEl = document.getElementById('inscBaseTotalDisplay');
+    if (baseEl)  baseEl.textContent  = '$' + base.toFixed(2);
+    if (estEl)   estEl.textContent   = estatusText;
+    if (totalEl) totalEl.textContent = '$' + base.toFixed(2);
+    if (estEl)   estEl.style.color   = isMember ? 'var(--green)' : 'var(--accent)';
+  }
+
+  if (step === 3) {
+    const p = inscState.player;
+    const fptmId = p ? ('FPTM-' + String(p.id)) : '—';
+    const idEl   = document.getElementById('inscIdDisplay');
+    const noteEl = document.getElementById('inscIdSubNote');
+    if (idEl)   idEl.textContent   = fptmId;
+    if (noteEl) noteEl.textContent = p ? p.name : '';
+    // reset copy button
+    const cb = document.getElementById('inscCopyBtn');
+    if (cb) cb.textContent = '📋 Copiar ID';
+  }
+
+  if (step === 4) {
+    const p = inscState.player;
+    const rawId  = p ? String(p.id) : '';
+    const fptmId = p ? ('FPTM-' + String(p.id)) : '—';
+    const idEl   = document.getElementById('inscIdDisplaySC');
+    const noteEl = document.getElementById('inscScIdNote');
+    const link   = document.getElementById('inscScLink');
+    if (idEl)   idEl.textContent   = fptmId;
+    if (noteEl) noteEl.textContent = p ? p.name : '';
+    if (link)   link.href = 'https://stadiumcompete.com/tournament/a9760a84-79e7-48f5-adfd-58e440430b0d?playerId=' + encodeURIComponent(rawId);
+    const cb = document.getElementById('inscCopyBtnSC');
+    if (cb) cb.textContent = '📋 Copiar';
+  }
+
+  if (step === 5) {
+    inscRenderCategories();
+    inscUpdateTotals();
+  }
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — OPTION SELECTOR (Step 1)
+// ══════════════════════════════════════════
+function inscSelectOpcion(type) {
+  inscState.opcion = type;
+  inscState.player = null;
+
+  const sc = document.getElementById('inscSearchCard');
+  const nb = document.getElementById('inscNuevoBlock');
+  const ab = document.getElementById('inscAlertBox');
+  const rl = document.getElementById('inscResultsList');
+  const nf = document.getElementById('inscNotFound');
+  const si = document.getElementById('inscSearchInput');
+  const lbl = document.getElementById('inscSearchLabel');
+  const sub = document.getElementById('inscSearchSub');
+
+  if (ab) ab.style.display = 'none';
+  if (rl) { rl.innerHTML = ''; rl.style.display = 'none'; }
+  if (nf) nf.style.display = 'none';
+  if (si) si.value = '';
+
+  if (type === 'nuevo') {
+    if (sc) sc.style.display = 'none';
+    if (nb) nb.style.display = '';
+  } else {
+    if (nb) nb.style.display = 'none';
+    if (sc) sc.style.display = '';
+    if (type === 'miembro') {
+      if (lbl) lbl.textContent = 'Verificar membresía FPTM';
+      if (sub) sub.textContent = 'Ingresa tu nombre para verificar tu membresía activa.';
+    } else {
+      if (lbl) lbl.textContent = 'Buscar en sistema FPTM';
+      if (sub) sub.textContent = 'Ingresa tu nombre para encontrar tu perfil con rating.';
+    }
+  }
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — PLAYER SEARCH
+// ══════════════════════════════════════════
+function inscHandleSearch() {
+  clearTimeout(inscState.searchTimer);
+  inscState.searchTimer = setTimeout(() => {
+    const q = (document.getElementById('inscSearchInput')?.value || '').trim().toLowerCase();
+    const rl = document.getElementById('inscResultsList');
+    const nf = document.getElementById('inscNotFound');
+    if (!rl) return;
+
+    if (q.length < 2) {
+      rl.innerHTML = ''; rl.style.display = 'none';
+      if (nf) nf.style.display = 'none';
+      return;
+    }
+
+    const matches = ALL_PLAYERS.filter(p => p.name.toLowerCase().includes(q)).slice(0, 8);
+    if (!matches.length) {
+      rl.innerHTML = '<div style="padding:10px 14px;color:var(--muted);font-size:13px">No se encontraron resultados.</div>';
+      rl.style.display = '';
+      if (nf) nf.style.display = '';
+      return;
+    }
+    if (nf) nf.style.display = 'none';
+    rl.style.display = '';
+    rl.innerHTML = matches.map(p => {
+      const badge = p.member
+        ? '<span style="color:var(--green);font-size:11px;font-weight:600">● Activo</span>'
+        : '<span style="color:var(--red);font-size:11px;font-weight:600">● Inactivo</span>';
+      const rating = p.rating ? `<span style="color:var(--muted);font-size:12px"> · ${p.rating}</span>` : '';
+      return `<div onclick="inscSelectPlayer(${p.id})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;transition:background 0.15s" onmouseover="this.style.background='rgba(232,184,75,0.06)'" onmouseout="this.style.background='transparent'">
+        <div>
+          <div style="font-size:14px;font-weight:500">${p.name}</div>
+          <div style="margin-top:2px">${badge}${rating}</div>
+        </div>
+        <div style="color:var(--muted);font-size:12px;white-space:nowrap">FPTM-${String(p.id)}</div>
+      </div>`;
+    }).join('');
+  }, 250);
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — SELECT PLAYER
+// ══════════════════════════════════════════
+function inscSelectPlayer(id) {
+  const p = ALL_PLAYERS.find(x => x.id === id);
+  if (!p) return;
+  inscState.player = p;
+
+  const si = document.getElementById('inscSearchInput');
+  if (si) si.value = p.name;
+  const rl = document.getElementById('inscResultsList');
+  if (rl) { rl.innerHTML = ''; rl.style.display = 'none'; }
+
+  const isMember = p.member;
+  const baseCharge = isMember ? '$0.00' : '$10.00';
+  let statusHtml;
+  if (isMember) {
+    statusHtml = `<span style="color:var(--green)">✓ Membresía activa</span>`;
+  } else if (p.rating) {
+    statusHtml = `<span style="color:var(--accent)">⚠ Sin membresía activa</span>`;
+  } else {
+    statusHtml = `<span style="color:var(--muted)">Sin membresía / sin rating</span>`;
+  }
+
+  const ab = document.getElementById('inscAlertBox');
+  const at = document.getElementById('inscAlertTitle');
+  const am = document.getElementById('inscAlertMsg');
+  if (ab) ab.style.display = '';
+  if (at) at.textContent = p.name;
+  if (am) am.innerHTML = `${statusHtml} &nbsp;·&nbsp; Cargo base: <strong>${baseCharge}</strong>
+    ${p.rating ? `<br><span style="color:var(--muted);font-size:12px">Rating: ${p.rating} · FPTM-${String(p.id)}</span>` : ''}
+    <br><br><button onclick="inscGoToStep(2)" style="background:var(--accent);color:var(--navy);border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:4px;">Continuar →</button>`;
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — COPY FPTM ID
+// ══════════════════════════════════════════
+function inscCopyId() {
+  const p = inscState.player;
+  if (!p) return;
+  const id = 'FPTM-' + String(p.id);
+  navigator.clipboard.writeText(id).then(() => {
+    const btn = document.getElementById('inscCopyBtn');
+    if (btn) { btn.textContent = '✓ Copiado'; setTimeout(() => { btn.textContent = '📋 Copiar ID'; }, 2000); }
+  });
+}
+
+function inscCopyIdSC() {
+  const p = inscState.player;
+  if (!p) return;
+  navigator.clipboard.writeText(String(p.id)).then(() => {
+    const btn = document.getElementById('inscCopyBtnSC');
+    if (btn) { btn.textContent = '✓ Copiado'; setTimeout(() => { btn.textContent = '📋 Copiar'; }, 2000); }
+  });
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — CATEGORIES (Step 5)
+// ══════════════════════════════════════════
+function inscRenderCategories() {
+  const container = document.getElementById('inscCatList');
+  if (!container) return;
+
+  const bySlot = {};
+  INSC_CATEGORIES.forEach(cat => {
+    if (!bySlot[cat.slot]) bySlot[cat.slot] = [];
+    bySlot[cat.slot].push(cat);
+  });
+
+  let html = '';
+  Object.entries(bySlot).forEach(([slot, cats]) => {
+    html += `<div style="margin-bottom:6px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600">${INSC_SLOT_LABELS[slot] || slot}</div>`;
+    cats.forEach(cat => {
+      const sel = inscState.selectedCats.has(cat.id);
+      html += `<div onclick="inscToggleCat('${cat.id}')"
+        style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'};background:${sel ? 'rgba(232,184,75,0.08)' : 'rgba(255,255,255,0.03)'};cursor:pointer;transition:all .15s">
+        <div style="width:20px;height:20px;border-radius:5px;border:1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'};background:${sel ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          ${sel ? '<span style="color:#0a1628;font-size:13px;font-weight:700">✓</span>' : ''}
+        </div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600">${cat.name}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${cat.desc}</div>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:${sel ? 'var(--accent)' : 'var(--muted)'}">$${cat.price}</div>
+      </div>`;
+    });
+    html += '<div style="height:6px"></div>';
+  });
+  container.innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — TOGGLE CATEGORY
+// ══════════════════════════════════════════
+function inscToggleCat(id) {
+  const cat = INSC_CATEGORIES.find(c => c.id === id);
+  if (!cat) return;
+
+  if (inscState.selectedCats.has(id)) {
+    inscState.selectedCats.delete(id);
+  } else {
+    const conflictId = [...inscState.selectedCats].find(selId => {
+      const s = INSC_CATEGORIES.find(c => c.id === selId);
+      return s && s.slot === cat.slot;
+    });
+    if (conflictId) {
+      const conflictCat = INSC_CATEGORIES.find(c => c.id === conflictId);
+      if (!confirm(`"${cat.name}" y "${conflictCat.name}" son en el mismo horario (${INSC_SLOT_LABELS[cat.slot]}). ¿Reemplazar?`)) return;
+      inscState.selectedCats.delete(conflictId);
+    }
+    inscState.selectedCats.add(id);
+  }
+  inscRenderCategories();
+  inscUpdateTotals();
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — TOTALS
+// ══════════════════════════════════════════
+function inscUpdateTotals() {
+  const p = inscState.player;
+  const isMember = p && p.member;
+  const base = isMember ? 0 : 10;
+
+  let catTotal = 0;
+  inscState.selectedCats.forEach(id => {
+    const cat = INSC_CATEGORIES.find(c => c.id === id);
+    if (cat) catTotal += cat.price;
+  });
+  const grand = base + catTotal;
+
+  const fptmId = p ? ('FPTM-' + String(p.id)) : '—';
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('inscCheckoutBase', '$' + base.toFixed(2));
+  set('inscCatCount', String(inscState.selectedCats.size));
+  set('inscCatTotal', '$' + catTotal.toFixed(2));
+  set('inscGrandTotal', '$' + grand.toFixed(2));
+  set('inscConfirmId', fptmId);
+  set('inscConfirmTotal', '$' + grand.toFixed(2));
+}
 </script>
 
 <!-- ══════════════════════════════════════════
