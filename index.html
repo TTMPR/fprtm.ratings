@@ -2179,11 +2179,17 @@ Maria Lopez,Ana Torres,B</code>
       </div>
     </div>
 
-    <!-- Inscripciones cerradas banner -->
+    <!-- Inscripciones cerradas banner (público) -->
     <div id="inscCerradasBanner" style="display:none;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:32px 24px;text-align:center;margin-bottom:24px;">
       <div style="font-size:40px;margin-bottom:12px;">🔒</div>
       <div style="font-family:'Bebas Neue';font-size:30px;letter-spacing:0.08em;color:#ef4444;margin-bottom:10px;">Inscripciones Cerradas</div>
       <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0;">El periodo de inscripción para este torneo ha finalizado.<br>Para información contacta a la FPTM.</p>
+    </div>
+
+    <!-- Vista previa admin (solo visible cuando está logueado y las inscripciones están cerradas) -->
+    <div id="inscPreviewBanner" style="display:none;background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.35);border-radius:10px;padding:12px 16px;margin-bottom:20px;display:none;align-items:center;gap:10px;">
+      <span style="font-size:18px;">🔒</span>
+      <span style="font-size:13px;color:var(--accent);font-weight:600;">Vista previa — Inscripciones cerradas para el público</span>
     </div>
 
     <!-- Progress bar -->
@@ -5361,16 +5367,27 @@ async function loadInscripcionesConfig() {
 }
 
 function applyInscripcionesState() {
-  const banner   = document.getElementById('inscCerradasBanner');
-  const progress = document.getElementById('inscProgressBar');
+  const banner        = document.getElementById('inscCerradasBanner');
+  const previewBanner = document.getElementById('inscPreviewBanner');
+  const progress      = document.getElementById('inscProgressBar');
 
   if (inscripcionesOpen) {
-    if (banner)   banner.style.display   = 'none';
-    if (progress) progress.style.display = '';
+    // Open for everyone
+    if (banner)        banner.style.display        = 'none';
+    if (previewBanner) previewBanner.style.display  = 'none';
+    if (progress)      progress.style.display       = '';
+    inscGoToStep(1);
+  } else if (isAdmin()) {
+    // Closed but admin is logged in — show preview with the form accessible
+    if (banner)        banner.style.display        = 'none';
+    if (previewBanner) previewBanner.style.display  = 'flex';
+    if (progress)      progress.style.display       = '';
     inscGoToStep(1);
   } else {
-    if (banner)   banner.style.display   = '';
-    if (progress) progress.style.display = 'none';
+    // Closed for the public
+    if (banner)        banner.style.display        = '';
+    if (previewBanner) previewBanner.style.display  = 'none';
+    if (progress)      progress.style.display       = 'none';
     for (let i = 1; i <= 5; i++) {
       const el = document.getElementById('inscScreen' + i);
       if (el) el.style.display = 'none';
