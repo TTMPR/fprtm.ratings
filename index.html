@@ -5401,14 +5401,13 @@ async function toggleInscripciones() {
   localStorage.setItem('inscripciones_open', String(inscripcionesOpen));
   applyInscripcionesState();
 
-  // Upsert to Supabase (INSERT or UPDATE — works even if seeded row is missing)
+  // Upsert to Supabase using the auth client so the user JWT is sent
+  // (direct fetch with anon key is blocked by RLS for writes)
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/app_settings`, {
-      method: 'POST',
-      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ key: 'inscripciones_open', value: String(inscripcionesOpen), updated_at: new Date().toISOString() })
-    });
-    if (!res.ok) throw new Error(await res.text());
+    const { error } = await _supabase
+      .from('app_settings')
+      .upsert({ key: 'inscripciones_open', value: String(inscripcionesOpen), updated_at: new Date().toISOString() });
+    if (error) throw new Error(error.message);
     inscSbSynced = true;
     applyInscripcionesState();
   } catch(e) {
