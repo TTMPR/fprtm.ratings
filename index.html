@@ -5339,13 +5339,22 @@ function inscUpdateProgress(step) {
 let inscripcionesOpen = true;
 
 async function loadInscripcionesConfig() {
+  // Local storage gives an instant value while the network call resolves
+  const cached = localStorage.getItem('inscripciones_open');
+  if (cached !== null) inscripcionesOpen = cached === 'true';
+  applyInscripcionesState();
+
+  // Sync from Supabase (overwrites local value if table exists)
   try {
     const data = await sbGet('app_settings', '?key=eq.inscripciones_open&select=value');
-    if (data && data.length) inscripcionesOpen = data[0].value === 'true';
+    if (data && data.length) {
+      inscripcionesOpen = data[0].value === 'true';
+      localStorage.setItem('inscripciones_open', String(inscripcionesOpen));
+      applyInscripcionesState();
+    }
   } catch(e) {
-    console.warn('loadInscripcionesConfig:', e.message);
+    console.warn('loadInscripcionesConfig (Supabase):', e.message);
   }
-  applyInscripcionesState();
 }
 
 function applyInscripcionesState() {
@@ -5379,16 +5388,17 @@ function applyInscripcionesState() {
 
 async function toggleInscripciones() {
   if (!isAdmin()) { showLogin(); return; }
-  const newVal   = !inscripcionesOpen;
-  const statusEl = document.getElementById('inscAdminStatus');
-  if (statusEl) { statusEl.textContent = 'Guardando...'; statusEl.style.color = 'var(--muted)'; }
-  try {
-    await sbPatch('app_settings', 'key=eq.inscripciones_open', { value: String(newVal), updated_at: new Date().toISOString() });
-    inscripcionesOpen = newVal;
-  } catch(e) {
-    console.warn('toggleInscripciones:', e.message);
-  }
+  // Flip immediately — don't wait for network
+  inscripcionesOpen = !inscripcionesOpen;
+  localStorage.setItem('inscripciones_open', String(inscripcionesOpen));
   applyInscripcionesState();
+
+  // Persist to Supabase in the background (requires create_app_settings.sql to have been run)
+  try {
+    await sbPatch('app_settings', 'key=eq.inscripciones_open', { value: String(inscripcionesOpen), updated_at: new Date().toISOString() });
+  } catch(e) {
+    console.warn('toggleInscripciones (Supabase sync failed):', e.message);
+  }
 }
 
 // ══════════════════════════════════════════
