@@ -2206,6 +2206,13 @@ Maria Lopez,Ana Torres,B</code>
       <span style="font-size:13px;color:var(--accent);font-weight:600;">Vista previa — Inscripciones cerradas para el público</span>
     </div>
 
+    <!-- Botón Inscritos — solo admin -->
+    <div id="inscritosAdminBtn" style="display:none;margin-bottom:16px;">
+      <button onclick="showInscritosModal()" style="width:100%;background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.3);color:var(--accent);border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        📋 Ver inscritos por categoría
+      </button>
+    </div>
+
     <!-- Progress bar -->
     <div style="display:flex;gap:6px;margin-bottom:24px;" id="inscProgressBar">
       <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg1"></div>
@@ -5422,23 +5429,28 @@ function applyInscripcionesState() {
   const previewBanner = document.getElementById('inscPreviewBanner');
   const progress      = document.getElementById('inscProgressBar');
 
+  const adminBtn = document.getElementById('inscritosAdminBtn');
+
   if (inscripcionesOpen) {
     // Open for everyone
     if (banner)        banner.style.display        = 'none';
     if (previewBanner) previewBanner.style.display  = 'none';
     if (progress)      progress.style.display       = '';
+    if (adminBtn)      adminBtn.style.display        = isAdmin() ? '' : 'none';
     inscGoToStep(1);
   } else if (isAdmin()) {
     // Closed but admin is logged in — show preview with the form accessible
     if (banner)        banner.style.display        = 'none';
     if (previewBanner) previewBanner.style.display  = 'flex';
     if (progress)      progress.style.display       = '';
+    if (adminBtn)      adminBtn.style.display        = '';
     inscGoToStep(1);
   } else {
     // Closed for the public
     if (banner)        banner.style.display        = '';
     if (previewBanner) previewBanner.style.display  = 'none';
     if (progress)      progress.style.display       = 'none';
+    if (adminBtn)      adminBtn.style.display        = 'none';
     for (let i = 1; i <= 5; i++) {
       const el = document.getElementById('inscScreen' + i);
       if (el) el.style.display = 'none';
