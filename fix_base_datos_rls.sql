@@ -13,12 +13,21 @@ DECLARE
   col text;
 BEGIN
   FOR col IN
-    SELECT column_name
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name   = 'Base de Datos'
-      AND is_nullable  = 'NO'
-      AND column_name NOT IN ('Member ID', 'Date of Birth')
+    SELECT c.column_name
+    FROM information_schema.columns c
+    WHERE c.table_schema = 'public'
+      AND c.table_name   = 'Base de Datos'
+      AND c.is_nullable  = 'NO'
+      AND c.column_name NOT IN (
+        SELECT kcu.column_name
+        FROM information_schema.table_constraints tc
+        JOIN information_schema.key_column_usage kcu
+          ON tc.constraint_name = kcu.constraint_name
+         AND tc.table_schema    = kcu.table_schema
+        WHERE tc.table_schema    = 'public'
+          AND tc.table_name      = 'Base de Datos'
+          AND tc.constraint_type = 'PRIMARY KEY'
+      )
   LOOP
     EXECUTE format(
       'ALTER TABLE public."Base de Datos" ALTER COLUMN %I DROP NOT NULL',
