@@ -4556,9 +4556,11 @@ async function approveMembershipRequest(reqId) {
         'New Rating':      1450,
         'Expiration Date': expStr
       };
-      if (req.sex)   body['Sex']   = req.sex;
-      if (req.club)  body['Club']  = req.club;
-      if (req.email) body['Email'] = req.email;
+      if (req.sex)     body['Sex']          = req.sex;
+      if (req.club)    body['Club']         = req.club;
+      if (req.email)   body['Email']        = req.email;
+      if (req.address) body['Home Address'] = req.address;
+      if (req.city)    body['Home Address'] = (req.address ? req.address + ', ' : '') + req.city + (req.state ? ', ' + req.state : '');
       const { error: insErr } = await _supabase.from('Base de Datos').insert(body);
       if (insErr) throw new Error(insErr.message);
     }
