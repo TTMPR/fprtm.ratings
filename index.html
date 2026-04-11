@@ -2001,7 +2001,7 @@ Maria Lopez,Ana Torres,B</code>
             <input type="tel" id="membFTelefono" placeholder="(787) 000-0000" autocomplete="tel">
           </div>
           <div class="edit-field">
-            <label>Fecha de Nacimiento</label>
+            <label>Fecha de Nacimiento *</label>
             <input type="date" id="membFDob">
           </div>
           <div class="edit-field">
@@ -4534,19 +4534,20 @@ async function approveMembershipRequest(reqId) {
       if (updErr) throw new Error(updErr.message);
     } else {
       // Create new player with auto-generated 5-digit ID
+      if (!req.dob) throw new Error('Esta solicitud no tiene fecha de nacimiento. Pídele al solicitante que vuelva a llenar el formulario.');
       const newId  = await generateMemberId();
       const body = {
         'Member ID':       newId,
         'First Name':      req.first_name,
         'Last Name':       req.last_name,
+        'Date of Birth':   req.dob,
         'Rating':          1450,
         'New Rating':      1450,
         'Expiration Date': expStr
       };
-      if (req.sex)   body['Sex']            = req.sex;
-      if (req.club)  body['Club']           = req.club;
-      if (req.email) body['Email']          = req.email;
-      if (req.dob)   body['Date of Birth']  = req.dob;
+      if (req.sex)   body['Sex']   = req.sex;
+      if (req.club)  body['Club']  = req.club;
+      if (req.email) body['Email'] = req.email;
       const { error: insErr } = await _supabase.from('Base de Datos').insert(body);
       if (insErr) throw new Error(insErr.message);
     }
@@ -4825,6 +4826,8 @@ async function submitMembershipRequest(e) {
   if (!sex)       { msgEl.textContent = 'Selecciona el sexo.'; return; }
   if (!club)      { msgEl.textContent = 'Selecciona un club.'; return; }
   if (!ath)       { msgEl.textContent = 'El número de confirmación ATH Móvil es requerido.'; return; }
+  const dob = document.getElementById('membFDob').value;
+  if (type === 'new' && !dob) { msgEl.textContent = 'La fecha de nacimiento es requerida para nuevos miembros.'; return; }
   if (isMinor && (!guardName || !guardRel)) {
     msgEl.textContent = 'Para menores de edad, se requiere el nombre y relación del representante.'; return;
   }
