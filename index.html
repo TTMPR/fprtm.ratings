@@ -2353,7 +2353,7 @@ Maria Lopez,Ana Torres,B</code>
 
         <!-- ID box -->
         <div style="background:rgba(232,184,75,0.06);border:1px solid rgba(232,184,75,0.2);border-radius:12px;padding:18px;margin-bottom:16px;">
-          <div style="font-size:11px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Tu FPTM# — Member ID</div>
+          <div style="font-size:11px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Tu Member ID — pega este número en Stadium Compete</div>
           <div style="display:flex;align-items:center;gap:10px;">
             <div id="inscIdDisplaySC" style="font-family:'Bebas Neue';font-size:48px;color:var(--accent);letter-spacing:0.12em;line-height:1;flex:1;">—</div>
             <button onclick="inscCopyIdSC()" id="inscCopyBtnSC" style="background:rgba(232,184,75,0.15);border:1px solid rgba(232,184,75,0.3);color:var(--accent);padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">📋 Copiar</button>
@@ -2368,6 +2368,7 @@ Maria Lopez,Ana Torres,B</code>
           <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">3</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Selecciona el sistema <strong style="color:var(--accent);">Federación Puertorriqueña de Tenis de Mesa</strong>.</div></div>
           <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">4</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Pega tu FPTM# en el campo <strong>"Member ID"</strong> y presiona <strong>"Link"</strong>.</div></div>
           <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">5</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Selecciona tus categorías y somete tu entrada (<strong>"Submit Entry"</strong>).</div></div>
+          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:#000;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">6</div><div style="font-size:14px;line-height:1.5;color:var(--text);"><strong>Regresa a esta página</strong> y presiona el botón de abajo para completar tu inscripción y realizar el pago.</div></div>
         </div>
 
         <a id="inscScLink" href="https://stadiumcompete.com/tournament/a9760a84-79e7-48f5-adfd-58e440430b0d?playerId=" target="_blank" style="text-decoration:none;display:block;margin-bottom:16px;">
@@ -2390,7 +2391,10 @@ Maria Lopez,Ana Torres,B</code>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
         <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 5 de 5 — Categorías &amp; Pago</div>
         <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Selecciona tus categorías</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:16px;">No puedes inscribirte en dos eventos del mismo horario. Cupo máximo 32 por categoría de Rating.</p>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:10px;">No puedes inscribirte en dos eventos del mismo horario. Cupo máximo 32 por categoría de Rating.</p>
+        <div style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--accent);margin-bottom:16px;">
+          ⚠ Selecciona las <strong>mismas categorías</strong> que escogiste en Stadium Compete.
+        </div>
 
         <div id="inscCatList" style="display:flex;flex-direction:column;gap:10px;"></div>
 
@@ -5557,14 +5561,13 @@ function inscGoToStep(step) {
 
   if (step === 4) {
     const p = inscState.player;
-    const rawId  = p ? String(p.id) : '';
-    const fptmId = p ? ('FPTM-' + String(p.id)) : '—';
+    const rawId  = p ? String(p.id) : '—';
     const idEl   = document.getElementById('inscIdDisplaySC');
     const noteEl = document.getElementById('inscScIdNote');
     const link   = document.getElementById('inscScLink');
-    if (idEl)   idEl.textContent   = fptmId;
+    if (idEl)   idEl.textContent   = rawId;
     if (noteEl) noteEl.textContent = p ? p.name : '';
-    if (link)   link.href = 'https://stadiumcompete.com/tournament/a9760a84-79e7-48f5-adfd-58e440430b0d?playerId=' + encodeURIComponent(rawId);
+    if (link)   link.href = 'https://stadiumcompete.com/tournament/a9760a84-79e7-48f5-adfd-58e440430b0d?playerId=' + encodeURIComponent(p ? String(p.id) : '');
     const cb = document.getElementById('inscCopyBtnSC');
     if (cb) cb.textContent = '📋 Copiar';
   }
