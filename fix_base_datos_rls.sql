@@ -24,7 +24,6 @@ BEGIN
       'ALTER TABLE public."Base de Datos" ALTER COLUMN %I DROP NOT NULL',
       col
     );
-    RAISE NOTICE 'Dropped NOT NULL on column: %', col;
   END LOOP;
 END $$;
 
