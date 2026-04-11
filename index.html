@@ -1689,6 +1689,11 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Exportar Rankings</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Descargar Excel actualizado</div>
       </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportStadiumCompete()">
+        <div style="font-size:32px;margin-bottom:12px">🏟</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Exportar Stadium</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV para importar en Stadium Compete</div>
+      </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPage('membresia')">
         <div style="font-size:32px;margin-bottom:12px">🪪</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Gestionar Membresías</div>
@@ -3848,6 +3853,93 @@ function exportRankings() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════
+// EXPORTAR STADIUM COMPETE
+// ══════════════════════════════════════════
+async function exportStadiumCompete() {
+  if (!currentUser) { showLogin(); return; }
+
+  const btn = event?.currentTarget;
+  const origHTML = btn ? btn.innerHTML : null;
+  if (btn) btn.innerHTML = '<div style="font-size:32px;margin-bottom:12px">⏳</div><div style="font-family:\'Bebas Neue\';font-size:20px;letter-spacing:2px">Exportar Stadium</div><div style="color:var(--muted);font-size:13px;margin-top:6px">Descargando datos...</div>';
+
+  try {
+    // Fetch full player data including sensitive fields (admin-only via JWT)
+    const { data, error } = await _supabase
+      .from('Base de Datos')
+      .select('"Member ID","First Name","Last Name","Date of Birth","Sex","Email","Club","Rating","New Rating","Home Address"')
+      .order('"New Rating"', { ascending: false, nullsFirst: false });
+
+    if (error) throw new Error(error.message);
+
+    // Normalize Sex to M/F
+    function normSex(raw) {
+      const v = (raw || '').toString().trim().toUpperCase();
+      if (v === 'M' || v === 'MALE' || v === 'MASCULINO' || v === 'H' || v === 'HOMBRE') return 'M';
+      if (v === 'F' || v === 'FEMALE' || v === 'FEMENINO' || v === 'MUJER') return 'F';
+      return raw || '';
+    }
+
+    // Split "Home Address" into components
+    // Format stored: "street, city, state" (from membership form)
+    function parseAddress(raw) {
+      if (!raw) return { address: '', city: '', state: '', country: '', zip: '' };
+      const parts = raw.split(',').map(s => s.trim());
+      return {
+        address: parts[0] || '',
+        city:    parts[1] || '',
+        state:   parts[2] || '',
+        country: 'US',
+        zip:     ''
+      };
+    }
+
+    const headers = [
+      'Member ID', 'First Name', 'Last Name', 'Date of Birth',
+      'Sex', 'Email', 'Club', 'Rating',
+      'Address', 'City', 'State', 'Country', 'Zip Code'
+    ];
+
+    const rows = (data || []).map(p => {
+      const addr = parseAddress(p['Home Address']);
+      const rating = p['New Rating'] ?? p['Rating'] ?? '';
+      return [
+        p['Member ID']    || '',
+        p['First Name']   || '',
+        p['Last Name']    || '',
+        p['Date of Birth']|| '',
+        normSex(p['Sex']),
+        p['Email']        || '',
+        p['Club']         || '',
+        rating,
+        addr.address,
+        addr.city,
+        addr.state,
+        addr.country,
+        addr.zip
+      ];
+    });
+
+    const csv = [headers, ...rows]
+      .map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = `stadium_compete_import_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    alert('Error al exportar: ' + e.message);
+  } finally {
+    if (btn && origHTML) btn.innerHTML = origHTML;
+  }
 }
 
 // ══════════════════════════════════════════
