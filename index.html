@@ -4501,6 +4501,13 @@ function renderPendingRequests(reqs) {
         <div class="req-field"><label>Confirmación ATH</label><span class="req-ath">${r.ath_confirmation}</span></div>
         ${existingInfo}
         ${r.is_minor ? `<div class="req-field"><label>Menor · Guardián</label><span>${r.guardian_name || '—'} (${r.guardian_relation || '—'})</span></div>` : ''}
+        ${r.type === 'new' ? (r.dob
+          ? `<div class="req-field"><label>Fecha de Nacimiento</label><span>${r.dob}</span></div>`
+          : `<div class="req-field" style="align-items:center;gap:8px">
+               <label style="color:#f59e0b;white-space:nowrap">⚠ Fecha de Nacimiento</label>
+               <input type="date" id="reqDob${r.id}" style="background:rgba(255,255,255,0.06);border:1px solid #f59e0b;border-radius:6px;padding:5px 8px;color:var(--text);font-size:13px;flex:1" required>
+             </div>`)
+          : ''}
       </div>
       <div class="request-card-actions">
         <span id="reqmsg${r.id}" style="font-size:13px;color:var(--muted);margin-right:auto"></span>
@@ -4534,13 +4541,17 @@ async function approveMembershipRequest(reqId) {
       if (updErr) throw new Error(updErr.message);
     } else {
       // Create new player with auto-generated 5-digit ID
-      if (!req.dob) throw new Error('Esta solicitud no tiene fecha de nacimiento. Pídele al solicitante que vuelva a llenar el formulario.');
+      const dob = req.dob || document.getElementById('reqDob' + reqId)?.value || null;
+      if (!dob) {
+        if (msgEl) { msgEl.style.color = '#f59e0b'; msgEl.textContent = 'Ingresa la fecha de nacimiento antes de aprobar.'; }
+        return;
+      }
       const newId  = await generateMemberId();
       const body = {
         'Member ID':       newId,
         'First Name':      req.first_name,
         'Last Name':       req.last_name,
-        'Date of Birth':   req.dob,
+        'Date of Birth':   dob,
         'Rating':          1450,
         'New Rating':      1450,
         'Expiration Date': expStr
