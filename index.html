@@ -3736,7 +3736,8 @@ async function saveEditMember() {
   msg.textContent = '';
 
   try {
-    await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${id}`, body);
+    const { error: updErr } = await _supabase.from('Base de Datos').update(body).eq('Member ID', id);
+    if (updErr) throw new Error(updErr.message);
 
     // Update local MEMBERS cache
     const mi = MEMBERS.findIndex(x => x.id === id);
@@ -3863,7 +3864,8 @@ async function saveNewPlayer() {
   if (expFormatted)  body['Expiration Date'] = expFormatted;
 
   try {
-    await sbPost('Base%20de%20Datos', body);
+    const { error: insErr } = await _supabase.from('Base de Datos').insert(body);
+    if (insErr) throw new Error(insErr.message);
     msg.style.color = 'var(--green)';
     msg.textContent = `¡${firstName} ${lastName} registrado exitosamente!`;
     btn.textContent = '¡Creado!';
