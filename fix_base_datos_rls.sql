@@ -5,6 +5,11 @@
 -- Corre esto en el SQL Editor de Supabase.
 -- =============================================================================
 
+-- "Date of Birth" tiene NOT NULL pero no siempre está disponible al crear
+-- un jugador desde una solicitud de membresía o manualmente.
+ALTER TABLE public."Base de Datos"
+  ALTER COLUMN "Date of Birth" DROP NOT NULL;
+
 -- Permitir al admin insertar nuevos jugadores
 DROP POLICY IF EXISTS "admin_insert_base_datos" ON public."Base de Datos";
 CREATE POLICY "admin_insert_base_datos"
