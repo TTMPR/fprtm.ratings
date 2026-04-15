@@ -7056,7 +7056,7 @@ async function approveRegSubmission(id) {
         'Club':            r.club  || '',
         'Home Address':    [r.address, r.city, r.state, r.zip].filter(Boolean).join(', '),
         'New Rating':      null,
-        'Rating':          null,
+        'Rating':          0,
         'Expiration Date': null,
       });
     if (insErr) throw new Error(insErr.message);
