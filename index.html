@@ -1726,6 +1726,17 @@ Maria Lopez,Ana Torres,B</code>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar solicitudes de cambio de club</div>
         <span id="pendingClubBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showRegTokenModal()">
+        <div style="font-size:32px;margin-bottom:12px">🔗</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Generar Enlace</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Registro para no miembros</div>
+      </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showRegSubmissionsModal()">
+        <div style="font-size:32px;margin-bottom:12px">📥</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Solicitudes</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Revisar registros de no miembros</div>
+        <span id="pendingRegBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
+      </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscAdminModal()">
         <div style="font-size:32px;margin-bottom:12px">📋</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Gestionar Inscritos</div>
@@ -2531,6 +2542,193 @@ Maria Lopez,Ana Torres,B</code>
 
 
 <!-- ══════════════════════════════════════════
+     GENERAR ENLACE — MODAL ADMIN
+═══════════════════════════════════════════ -->
+<div id="regTokenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:520px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;">Generar Enlace de Registro</div>
+      <button onclick="document.getElementById('regTokenModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);padding:7px 13px;border-radius:8px;cursor:pointer;">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.55;">Genera un enlace de un solo uso que le envías directamente al jugador. Al abrir el enlace, el jugador completa su propia información sin necesidad de que la ingreses tú.</p>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Nota (opcional — para tu referencia)</label>
+      <input id="regTokenLabel" type="text" placeholder="Ej: Para Juan Pérez"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans';font-size:14px;color:var(--text);outline:none;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+    <button onclick="generateRegToken()" style="width:100%;background:var(--accent);color:var(--navy);padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;margin-bottom:20px;">🔗 Generar enlace</button>
+
+    <!-- Generated link display -->
+    <div id="regTokenResult" style="display:none;">
+      <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Enlace generado — copia y envía</div>
+        <div id="regTokenUrl" style="font-family:'DM Mono';font-size:12px;color:#4ade80;word-break:break-all;line-height:1.5;"></div>
+      </div>
+      <button onclick="copyRegTokenUrl()" style="width:100%;background:none;border:1px solid var(--border);color:var(--text);padding:11px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📋 Copiar enlace</button>
+    </div>
+
+    <!-- Existing tokens list -->
+    <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px;">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px;">Historial de enlaces</div>
+      <div id="regTokenList" style="font-size:13px;color:var(--muted);">Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SOLICITUDES DE REGISTRO — MODAL ADMIN
+═══════════════════════════════════════════ -->
+<div id="regSubmissionsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;">Solicitudes de Registro</div>
+        <div id="regSubmissionsTotal" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
+      </div>
+      <button onclick="document.getElementById('regSubmissionsModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+    <div id="regSubmissionsList">Cargando...</div>
+  </div>
+</div>
+
+<!-- Detail drawer for a single submission -->
+<div id="regSubmissionDetail" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1100;overflow-y:auto;padding:16px;">
+  <div style="max-width:560px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px;">
+    <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;margin-bottom:4px;">Detalle de Solicitud</div>
+    <div id="regDetailSubtitle" style="font-size:12px;color:var(--muted);margin-bottom:20px;"></div>
+    <div id="regDetailBody" style="font-size:14px;color:var(--text);line-height:1.7;"></div>
+    <div id="regDetailMsg" style="font-size:13px;color:#ef4444;min-height:18px;margin:12px 0;"></div>
+    <div id="regDetailActions" style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;"></div>
+    <button onclick="document.getElementById('regSubmissionDetail').style.display='none'" style="margin-top:12px;width:100%;background:none;border:1px solid var(--border);color:var(--muted);padding:11px;border-radius:10px;font-size:14px;cursor:pointer;">← Volver</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FORMULARIO DE REGISTRO (ENLACE PÚBLICO)
+═══════════════════════════════════════════ -->
+<div id="publicRegOverlay" style="display:none;position:fixed;inset:0;background:var(--navy);z-index:2000;overflow-y:auto;">
+  <div style="max-width:600px;margin:0 auto;padding:32px 16px 64px;">
+    <!-- FPTM header -->
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="font-family:'Bebas Neue';font-size:36px;letter-spacing:4px;color:var(--accent);">FPTM</div>
+      <div style="font-size:13px;color:var(--muted);">Federación Puertorriqueña de Tenis de Mesa</div>
+    </div>
+
+    <!-- Token validation state -->
+    <div id="regFormTokenMsg" style="text-align:center;padding:48px 0;color:var(--muted);font-size:15px;">Verificando enlace...</div>
+
+    <!-- Actual form (hidden until token validated) -->
+    <div id="regFormBody" style="display:none;">
+      <div style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:20px 24px;margin-bottom:28px;">
+        <div style="font-size:11px;color:var(--accent);font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Registro de Participante</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);">Morovis Open 2026</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Sáb 25 &amp; Dom 26 de abril · Morovis, PR</div>
+      </div>
+
+      <input type="hidden" id="regFormToken">
+
+      <!-- Personal -->
+      <div class="memb-form-section">
+        <div class="mfs-title">Información Personal</div>
+        <div class="mfs-grid">
+          <div class="edit-field">
+            <label>Nombre *</label>
+            <input type="text" id="regFNombre" placeholder="Sin acentos o ñ" autocomplete="given-name">
+          </div>
+          <div class="edit-field">
+            <label>Apellidos *</label>
+            <input type="text" id="regFApellidos" placeholder="Sin acentos o ñ" autocomplete="family-name">
+          </div>
+          <div class="edit-field">
+            <label>Email *</label>
+            <input type="email" id="regFEmail" placeholder="correo@ejemplo.com" autocomplete="email">
+          </div>
+          <div class="edit-field">
+            <label>Teléfono</label>
+            <input type="tel" id="regFTelefono" placeholder="(787) 000-0000" autocomplete="tel">
+          </div>
+          <div class="edit-field">
+            <label>Fecha de Nacimiento *</label>
+            <input type="date" id="regFDob">
+          </div>
+          <div class="edit-field">
+            <label>Sexo *</label>
+            <select id="regFSex">
+              <option value="">— Seleccionar —</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+            </select>
+          </div>
+          <div class="edit-field mfs-full">
+            <label>Club</label>
+            <input type="text" id="regFClub" placeholder="Nombre de tu club o escuela">
+          </div>
+        </div>
+
+        <!-- Menor de edad -->
+        <div style="margin-top:20px;">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:var(--text);">
+            <input type="checkbox" id="regFIsMinor" onchange="regFormUpdateMinor()" style="width:16px;height:16px;accent-color:var(--accent);">
+            ¿Eres menor de 18 años?
+          </label>
+          <div id="regMinorSection" style="display:none;margin-top:14px;padding:16px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:10px;">
+            <p style="font-size:12px;color:#f59e0b;margin-bottom:14px;">Se requiere autorización de un adulto responsable.</p>
+            <div class="mfs-grid">
+              <div class="edit-field">
+                <label>Nombre del representante / guardián *</label>
+                <input type="text" id="regFGuardianName" placeholder="Nombre completo">
+              </div>
+              <div class="edit-field">
+                <label>Relación con el menor *</label>
+                <input type="text" id="regFGuardianRelation" placeholder="Padre, Madre, Tutor">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="memb-form-section">
+        <div class="mfs-title">Dirección</div>
+        <div class="mfs-grid">
+          <div class="edit-field mfs-full">
+            <label>Dirección</label>
+            <input type="text" id="regFAddress" placeholder="Calle, Urb., Apto #..." autocomplete="street-address">
+          </div>
+          <div class="edit-field">
+            <label>Ciudad / Municipio</label>
+            <input type="text" id="regFCity" placeholder="San Juan">
+          </div>
+          <div class="edit-field">
+            <label>Estado / País</label>
+            <input type="text" id="regFState" placeholder="Puerto Rico">
+          </div>
+          <div class="edit-field">
+            <label>Código Postal</label>
+            <input type="text" id="regFZip" placeholder="00000" maxlength="10">
+          </div>
+        </div>
+      </div>
+
+      <div id="regFormMsg" style="font-size:13px;color:#ef4444;min-height:18px;margin:8px 0 16px;"></div>
+      <button onclick="submitPublicReg()" id="regSubmitBtn"
+        style="width:100%;background:var(--accent);color:var(--navy);padding:16px;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;border:none;">
+        Enviar Solicitud de Registro
+      </button>
+      <p style="font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.5;">Tu información será revisada por el administrador de la FPTM. Una vez aprobada recibirás tu número de participante.</p>
+    </div>
+
+    <!-- Success state -->
+    <div id="regFormSuccess" style="display:none;text-align:center;padding:40px 0;">
+      <div style="font-size:56px;margin-bottom:16px;">✅</div>
+      <div style="font-family:'Bebas Neue';font-size:28px;letter-spacing:2px;color:#4ade80;margin-bottom:12px;">¡Solicitud Enviada!</div>
+      <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el Morovis Open 2026.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      LOGIN MODAL
 ═══════════════════════════════════════════ -->
 <div id="loginModal">
@@ -2650,11 +2848,23 @@ function updateAuthUI() {
     btn.textContent = '👤 ' + currentUser.email.split('@')[0] + ' · Salir';
     btn.classList.add('signed-in');
     btn.onclick = signOut;
+    loadPendingRegBadge();
   } else {
     btn.textContent = '🔐 Iniciar Sesión';
     btn.classList.remove('signed-in');
     btn.onclick = showLogin;
   }
+}
+
+async function loadPendingRegBadge() {
+  try {
+    const { count } = await _supabase
+      .from('player_reg_submissions')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending');
+    const badge = document.getElementById('pendingRegBadge');
+    if (badge) { badge.textContent = count || 0; badge.style.display = count > 0 ? '' : 'none'; }
+  } catch(e) { /* silent */ }
 }
 
 function showLogin() {
@@ -5469,6 +5679,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     searchTimeout = setTimeout(filterPlayers, 350);
   });
 
+  // Check for public registration link (?registro=TOKEN) — shows form overlay instead of app
+  initPublicRegForm();
+
   loadInscripcionesConfig();
 
   showLoading(true);
@@ -6622,6 +6835,360 @@ async function confirmDeleteInscripcion(id, nombre) {
     loadInscritosSection();
   } catch(e) {
     alert('Error al eliminar: ' + e.message);
+  }
+}
+
+// ══════════════════════════════════════════
+// REGISTRO NO-MIEMBROS — TOKEN GENERATION (admin)
+// ══════════════════════════════════════════
+async function showRegTokenModal() {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('regTokenModal').style.display = '';
+  document.getElementById('regTokenResult').style.display = 'none';
+  document.getElementById('regTokenLabel').value = '';
+  loadRegTokenList();
+}
+
+async function generateRegToken() {
+  if (!currentUser) return;
+  const label = document.getElementById('regTokenLabel').value.trim();
+  try {
+    const { data, error } = await _supabase
+      .from('player_reg_tokens')
+      .insert({ label: label || null })
+      .select('token')
+      .single();
+    if (error) throw new Error(error.message);
+
+    const base = window.location.origin + window.location.pathname;
+    const url  = `${base}?registro=${data.token}`;
+    document.getElementById('regTokenUrl').textContent = url;
+    document.getElementById('regTokenResult').style.display = '';
+    loadRegTokenList();
+  } catch(e) {
+    alert('Error al generar enlace: ' + e.message);
+  }
+}
+
+function copyRegTokenUrl() {
+  const url = document.getElementById('regTokenUrl').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('[onclick="copyRegTokenUrl()"]');
+    if (btn) { btn.textContent = '✓ Copiado!'; setTimeout(() => { btn.textContent = '📋 Copiar enlace'; }, 2000); }
+  });
+}
+
+async function loadRegTokenList() {
+  const listEl = document.getElementById('regTokenList');
+  if (!listEl) return;
+  try {
+    const { data, error } = await _supabase
+      .from('player_reg_tokens')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(15);
+    if (error) throw new Error(error.message);
+    if (!data || !data.length) { listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;">Sin enlaces generados.</div>'; return; }
+
+    listEl.innerHTML = data.map(t => {
+      const fecha = new Date(t.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const statusBadge = t.used
+        ? '<span style="color:#4ade80;font-size:11px;font-weight:600;">● Usado</span>'
+        : '<span style="color:var(--accent);font-size:11px;font-weight:600;">● Activo</span>';
+      const base = window.location.origin + window.location.pathname;
+      const url  = `${base}?registro=${t.token}`;
+      return `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;color:var(--text);font-weight:500;">${t.label || '<span style="color:var(--muted);font-style:italic">Sin nota</span>'}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px;">${fecha}</div>
+          </div>
+          <div>${statusBadge}</div>
+          ${!t.used ? `<button onclick="navigator.clipboard.writeText('${url}')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">Copiar</button>` : ''}
+        </div>`;
+    }).join('');
+  } catch(e) {
+    listEl.innerHTML = `<div style="color:#ef4444;font-size:13px;">Error: ${e.message}</div>`;
+  }
+}
+
+// ══════════════════════════════════════════
+// REGISTRO NO-MIEMBROS — SUBMISSIONS (admin)
+// ══════════════════════════════════════════
+async function showRegSubmissionsModal() {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('regSubmissionsModal').style.display = '';
+  loadRegSubmissions();
+}
+
+async function loadRegSubmissions() {
+  const listEl = document.getElementById('regSubmissionsList');
+  const totalEl = document.getElementById('regSubmissionsTotal');
+  listEl.innerHTML = '<div style="text-align:center;padding:40px 0;">Cargando...</div>';
+  try {
+    const { data, error } = await _supabase
+      .from('player_reg_submissions')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+
+    const pending = (data || []).filter(r => r.status === 'pending').length;
+    if (totalEl) totalEl.textContent = `${(data||[]).length} solicitud${(data||[]).length !== 1 ? 'es' : ''} · ${pending} pendiente${pending !== 1 ? 's' : ''}`;
+
+    // Update badge on admin card
+    const badge = document.getElementById('pendingRegBadge');
+    if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? '' : 'none'; }
+
+    if (!data || !data.length) {
+      listEl.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);">No hay solicitudes aún.</div>';
+      return;
+    }
+
+    const statusColor = { pending: 'var(--accent)', approved: '#4ade80', rejected: '#ef4444' };
+    const statusLabel = { pending: 'Pendiente', approved: 'Aprobado', rejected: 'Rechazado' };
+
+    listEl.innerHTML = data.map(r => {
+      const fecha = new Date(r.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric', year: 'numeric' });
+      const sc = statusColor[r.status] || 'var(--muted)';
+      const sl = statusLabel[r.status] || r.status;
+      return `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.15s;"
+             onclick="openRegSubmissionDetail(${r.id})" onmouseover="this.style.background='rgba(232,184,75,0.04)'" onmouseout="this.style.background='transparent'">
+          <div style="flex:1;">
+            <div style="font-weight:600;color:var(--text);font-size:14px;">${r.nombre} ${r.apellidos}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">${r.email || '—'} · ${fecha}</div>
+          </div>
+          <span style="color:${sc};font-size:12px;font-weight:600;white-space:nowrap;">${sl}</span>
+          <span style="color:var(--muted);font-size:16px;">›</span>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    listEl.innerHTML = `<div style="color:#ef4444;padding:20px;">Error: ${e.message}</div>`;
+  }
+}
+
+async function openRegSubmissionDetail(id) {
+  const detailEl = document.getElementById('regSubmissionDetail');
+  const bodyEl   = document.getElementById('regDetailBody');
+  const actEl    = document.getElementById('regDetailActions');
+  const subEl    = document.getElementById('regDetailSubtitle');
+  const msgEl    = document.getElementById('regDetailMsg');
+  msgEl.textContent = '';
+
+  try {
+    const { data: r, error } = await _supabase
+      .from('player_reg_submissions')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error) throw new Error(error.message);
+
+    const fecha = new Date(r.created_at).toLocaleDateString('es-PR', { dateStyle: 'long' });
+    subEl.textContent = `Recibido el ${fecha} · ${r.status === 'pending' ? 'Pendiente de revisión' : r.status === 'approved' ? 'Aprobado' : 'Rechazado'}`;
+
+    const row = (label, val) => val
+      ? `<div style="display:flex;gap:12px;margin-bottom:8px;"><span style="min-width:140px;color:var(--muted);font-size:13px;">${label}</span><span style="color:var(--text);font-size:13px;font-weight:500;">${val}</span></div>`
+      : '';
+
+    bodyEl.innerHTML = `
+      ${row('Nombre', r.nombre + ' ' + r.apellidos)}
+      ${row('Email', r.email)}
+      ${row('Teléfono', r.telefono)}
+      ${row('Fecha de Nac.', r.dob)}
+      ${row('Sexo', r.sex === 'M' ? 'Masculino' : r.sex === 'F' ? 'Femenino' : r.sex)}
+      ${row('Club', r.club)}
+      ${row('Dirección', [r.address, r.city, r.state, r.zip].filter(Boolean).join(', '))}
+      ${r.is_minor ? row('Guardián', r.guardian_name + (r.guardian_relation ? ` (${r.guardian_relation})` : '')) : ''}
+    `;
+
+    actEl.innerHTML = '';
+    if (r.status === 'pending') {
+      actEl.innerHTML = `
+        <button onclick="approveRegSubmission(${r.id})"
+          style="flex:2;background:var(--green);color:#000;padding:12px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;">
+          ✓ Aprobar — Agregar al sistema
+        </button>
+        <button onclick="rejectRegSubmission(${r.id})"
+          style="flex:1;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);color:#ef4444;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">
+          Rechazar
+        </button>`;
+    } else if (r.status === 'approved' && r.approved_member_id) {
+      actEl.innerHTML = `<div style="font-size:13px;color:#4ade80;font-weight:600;">✓ Aprobado — FPTM-${r.approved_member_id}</div>`;
+    }
+
+    detailEl.style.display = '';
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function approveRegSubmission(id) {
+  const msgEl = document.getElementById('regDetailMsg');
+  msgEl.textContent = '';
+  try {
+    // Fetch submission
+    const { data: r, error: rErr } = await _supabase
+      .from('player_reg_submissions').select('*').eq('id', id).single();
+    if (rErr) throw new Error(rErr.message);
+
+    // Generate next member ID
+    const newMemberId = await generateMemberId();
+
+    // Insert into Base de Datos
+    const { error: insErr } = await _supabase
+      .from('Base de Datos')
+      .insert({
+        'Member ID':       newMemberId,
+        'First Name':      r.nombre,
+        'Last Name':       r.apellidos,
+        'Email':           r.email || '',
+        'Date of Birth':   r.dob   || null,
+        'Sex':             r.sex   || '',
+        'Club':            r.club  || '',
+        'Home Address':    [r.address, r.city, r.state, r.zip].filter(Boolean).join(', '),
+        'New Rating':      null,
+        'Rating':          null,
+        'Expiration Date': null,
+      });
+    if (insErr) throw new Error(insErr.message);
+
+    // Mark submission approved
+    await _supabase.from('player_reg_submissions').update({
+      status: 'approved',
+      approved_at: new Date().toISOString(),
+      approved_member_id: newMemberId,
+    }).eq('id', id);
+
+    // Refresh local player list
+    ALL_PLAYERS = await loadPlayers();
+    ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
+    PLAYERS = ALL_PLAYERS;
+
+    document.getElementById('regSubmissionDetail').style.display = 'none';
+    loadRegSubmissions();
+    alert(`✓ Jugador aprobado — FPTM-${newMemberId}`);
+  } catch(e) {
+    msgEl.textContent = 'Error al aprobar: ' + e.message;
+  }
+}
+
+async function rejectRegSubmission(id) {
+  if (!confirm('¿Rechazar esta solicitud de registro?')) return;
+  try {
+    await _supabase.from('player_reg_submissions')
+      .update({ status: 'rejected' }).eq('id', id);
+    document.getElementById('regSubmissionDetail').style.display = 'none';
+    loadRegSubmissions();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+// ══════════════════════════════════════════
+// REGISTRO NO-MIEMBROS — PUBLIC FORM
+// ══════════════════════════════════════════
+function regFormUpdateMinor() {
+  const isMinor = document.getElementById('regFIsMinor').checked;
+  document.getElementById('regMinorSection').style.display = isMinor ? '' : 'none';
+}
+
+async function initPublicRegForm() {
+  const params = new URLSearchParams(window.location.search);
+  const token  = params.get('registro');
+  if (!token) return;
+
+  // Show overlay, hide normal app
+  document.getElementById('publicRegOverlay').style.display = '';
+  document.querySelector('nav')?.style && (document.querySelector('nav').style.display = 'none');
+  document.querySelector('.bottom-nav')?.style && (document.querySelector('.bottom-nav').style.display = 'none');
+
+  const msgEl = document.getElementById('regFormTokenMsg');
+
+  try {
+    const { data: tok, error } = await _supabase
+      .from('player_reg_tokens')
+      .select('token, used, label')
+      .eq('token', token)
+      .maybeSingle();
+
+    if (error || !tok) {
+      msgEl.innerHTML = '<div style="color:#ef4444;font-size:16px;">❌ Enlace inválido o expirado.<br><small style="font-size:13px;color:var(--muted);">Comunícate con el administrador de la FPTM.</small></div>';
+      return;
+    }
+    if (tok.used) {
+      msgEl.innerHTML = '<div style="color:#ef4444;font-size:16px;">❌ Este enlace ya fue utilizado.<br><small style="font-size:13px;color:var(--muted);">Cada enlace es de un solo uso. Solicita uno nuevo al administrador.</small></div>';
+      return;
+    }
+
+    // Valid token — show form
+    document.getElementById('regFormToken').value = token;
+    msgEl.style.display = 'none';
+    document.getElementById('regFormBody').style.display = '';
+  } catch(e) {
+    msgEl.innerHTML = `<div style="color:#ef4444;">Error: ${e.message}</div>`;
+  }
+}
+
+async function submitPublicReg() {
+  const token    = document.getElementById('regFormToken').value;
+  const nombre   = document.getElementById('regFNombre').value.trim();
+  const apellidos= document.getElementById('regFApellidos').value.trim();
+  const email    = document.getElementById('regFEmail').value.trim();
+  const dob      = document.getElementById('regFDob').value;
+  const sex      = document.getElementById('regFSex').value;
+  const msgEl    = document.getElementById('regFormMsg');
+  msgEl.textContent = '';
+
+  if (!nombre)    { msgEl.textContent = 'Ingresa tu nombre.';    return; }
+  if (!apellidos) { msgEl.textContent = 'Ingresa tus apellidos.'; return; }
+  if (!email)     { msgEl.textContent = 'Ingresa tu email.';     return; }
+  if (!dob)       { msgEl.textContent = 'Ingresa tu fecha de nacimiento.'; return; }
+  if (!sex)       { msgEl.textContent = 'Selecciona tu sexo.';   return; }
+
+  const isMinor = document.getElementById('regFIsMinor').checked;
+  if (isMinor) {
+    const gName = document.getElementById('regFGuardianName').value.trim();
+    const gRel  = document.getElementById('regFGuardianRelation').value.trim();
+    if (!gName || !gRel) { msgEl.textContent = 'Completa la información del guardián.'; return; }
+  }
+
+  const btn = document.getElementById('regSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    const { error: subErr } = await _supabase
+      .from('player_reg_submissions')
+      .insert({
+        token,
+        nombre,
+        apellidos,
+        email,
+        telefono:          document.getElementById('regFTelefono').value.trim() || null,
+        dob,
+        sex,
+        club:              document.getElementById('regFClub').value.trim() || null,
+        address:           document.getElementById('regFAddress').value.trim() || null,
+        city:              document.getElementById('regFCity').value.trim() || null,
+        state:             document.getElementById('regFState').value.trim() || null,
+        zip:               document.getElementById('regFZip').value.trim() || null,
+        is_minor:          isMinor,
+        guardian_name:     isMinor ? document.getElementById('regFGuardianName').value.trim() : null,
+        guardian_relation: isMinor ? document.getElementById('regFGuardianRelation').value.trim() : null,
+      });
+    if (subErr) throw new Error(subErr.message);
+
+    // Mark token as used
+    await _supabase.from('player_reg_tokens')
+      .update({ used: true, used_at: new Date().toISOString() })
+      .eq('token', token);
+
+    document.getElementById('regFormBody').style.display    = 'none';
+    document.getElementById('regFormSuccess').style.display = '';
+  } catch(e) {
+    msgEl.textContent = 'Error al enviar: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Enviar Solicitud de Registro';
   }
 }
 </script>
