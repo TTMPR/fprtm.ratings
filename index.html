@@ -7013,6 +7013,12 @@ async function openRegSubmissionDetail(id) {
     actEl.innerHTML = '';
     if (r.status === 'pending') {
       actEl.innerHTML = `
+        <div style="width:100%;margin-bottom:4px;">
+          <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Rating inicial (0 = sin rating)</label>
+          <input id="regApproveRating" type="number" min="0" max="3000" step="1" value="0" placeholder="0"
+            style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Mono';font-size:16px;color:var(--text);outline:none;"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
         <button onclick="approveRegSubmission(${r.id})"
           style="flex:2;background:var(--green);color:#000;padding:12px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;">
           ✓ Aprobar — Agregar al sistema
@@ -7040,6 +7046,10 @@ async function approveRegSubmission(id) {
       .from('player_reg_submissions').select('*').eq('id', id).single();
     if (rErr) throw new Error(rErr.message);
 
+    // Read rating entered by admin (default 0 = unrated)
+    const ratingInput = document.getElementById('regApproveRating');
+    const rating = ratingInput ? (parseInt(ratingInput.value, 10) || 0) : 0;
+
     // Generate next member ID
     const newMemberId = await generateMemberId();
 
@@ -7055,8 +7065,8 @@ async function approveRegSubmission(id) {
         'Sex':             r.sex   || '',
         'Club':            r.club  || '',
         'Home Address':    [r.address, r.city, r.state, r.zip].filter(Boolean).join(', '),
-        'New Rating':      null,
-        'Rating':          0,
+        'New Rating':      rating > 0 ? rating : null,
+        'Rating':          rating,
         'Expiration Date': null,
       });
     if (insErr) throw new Error(insErr.message);
