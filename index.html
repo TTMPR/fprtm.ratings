@@ -6866,7 +6866,13 @@ async function generateRegToken() {
     document.getElementById('regTokenResult').style.display = '';
     loadRegTokenList();
   } catch(e) {
-    alert('Error al generar enlace: ' + e.message);
+    const missing = e.message.includes('schema cache') || e.message.includes('does not exist');
+    const listEl = document.getElementById('regTokenList');
+    if (missing && listEl) {
+      listEl.innerHTML = `<div style="color:#f59e0b;font-size:13px;line-height:1.6;">⚠ Tablas no creadas aún.<br><small style="color:var(--muted);">Corre <strong>create_player_reg_tokens.sql</strong> y <strong>create_player_reg_submissions.sql</strong> en el SQL Editor de Supabase.</small></div>`;
+    } else {
+      alert('Error al generar enlace: ' + e.message);
+    }
   }
 }
 
@@ -6908,7 +6914,10 @@ async function loadRegTokenList() {
         </div>`;
     }).join('');
   } catch(e) {
-    listEl.innerHTML = `<div style="color:#ef4444;font-size:13px;">Error: ${e.message}</div>`;
+    const missing = e.message.includes('schema cache') || e.message.includes('does not exist');
+    listEl.innerHTML = missing
+      ? `<div style="color:#f59e0b;font-size:13px;line-height:1.6;">⚠ Tabla no encontrada.<br><small style="color:var(--muted);">Corre <strong>create_player_reg_tokens.sql</strong> y <strong>create_player_reg_submissions.sql</strong> en el SQL Editor de Supabase.</small></div>`
+      : `<div style="color:#ef4444;font-size:13px;">Error: ${e.message}</div>`;
   }
 }
 
