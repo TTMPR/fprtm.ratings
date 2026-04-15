@@ -2404,19 +2404,51 @@ Maria Lopez,Ana Torres,B</code>
           </div>
         </div>
 
-        <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:20px;text-align:center;margin-bottom:16px;">
-          <div style="font-size:11px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Plataforma de pago oficial</div>
-          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:16px;">ATH Móvil Business · <span style="color:var(--green);">fprtm</span></div>
-          <button onclick="inscRegistrarYPagar()" style="background:var(--green);color:#000;width:100%;padding:17px;border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;border:none;">💚 Pagar con ATH Móvil</button>
+        <!-- PASO A: Botón ATH Móvil (visible antes de pagar) -->
+        <div id="inscPagoAntes">
+          <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:20px;text-align:center;margin-bottom:12px;">
+            <div style="font-size:11px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Plataforma de pago oficial</div>
+            <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:16px;">ATH Móvil Business · <span style="color:var(--green);">fprtm</span></div>
+            <button onclick="inscIniciarPago()" style="background:var(--green);color:#000;width:100%;padding:17px;border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;border:none;">💚 Pagar con ATH Móvil</button>
+          </div>
+          <p style="font-size:12px;color:var(--muted);text-align:center;line-height:1.5;">Al presionar el botón se abrirá ATH Móvil. Luego de pagar, regresa aquí para completar tu inscripción.</p>
         </div>
 
-        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;">Luego del pago, envía la <strong style="color:var(--text);">captura del recibo</strong> con tu <strong style="color:var(--text);">ID de participante</strong> al:</p>
-        <a href="https://wa.me/19392104299" target="_blank" style="text-decoration:none;">
-          <div style="display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;">
-            <span style="font-size:20px;">📲</span>
-            <span style="font-family:'Bebas Neue';font-size:28px;letter-spacing:0.06em;color:var(--green);">939-210-4299</span>
+        <!-- PASO B: Confirmación post-pago (oculto hasta que paguen) -->
+        <div id="inscPagoDespues" style="display:none;">
+          <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:18px;margin-bottom:14px;">
+            <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:10px;">✓ ¿Ya realizaste el pago? Completa estos pasos:</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;gap:10px;align-items:flex-start;">
+                <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.2);color:#4ade80;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">1</div>
+                <div style="font-size:13px;color:var(--muted);line-height:1.5;">Envía una <strong style="color:var(--text);">captura del recibo</strong> junto con tu <strong style="color:var(--text);">nombre completo</strong> al WhatsApp:</div>
+              </div>
+              <a href="https://wa.me/19392104299" target="_blank" style="text-decoration:none;margin-left:30px;">
+                <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;">
+                  <span style="font-size:16px;">📲</span>
+                  <span style="font-family:'Bebas Neue';font-size:22px;letter-spacing:0.06em;color:var(--green);">939-210-4299</span>
+                </div>
+              </a>
+              <div style="display:flex;gap:10px;align-items:flex-start;margin-top:4px;">
+                <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.2);color:#4ade80;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">2</div>
+                <div style="font-size:13px;color:var(--muted);line-height:1.5;">Ingresa el <strong style="color:var(--text);">número de referencia</strong> de tu pago en ATH Móvil:</div>
+              </div>
+              <input id="inscRefCode" type="text" placeholder="Ej: 202504251234567"
+                oninput="inscToggleSubmit()"
+                style="margin-left:30px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-family:'DM Mono';font-size:14px;color:var(--text);outline:none;letter-spacing:0.05em;"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
           </div>
-        </a>
+
+          <button id="inscSubmitBtn" onclick="inscSometerInscripcion()" disabled
+            style="background:var(--green);color:#000;width:100%;padding:16px;border-radius:10px;font-size:16px;font-weight:700;cursor:not-allowed;border:none;opacity:0.4;margin-bottom:10px;transition:opacity 0.2s;">
+            Someter Inscripción
+          </button>
+
+          <button onclick="inscIniciarPago()" style="background:none;border:1px solid var(--border);color:var(--muted);width:100%;padding:11px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
+            ← Volver a abrir ATH Móvil
+          </button>
+        </div>
       </div>
 
       <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px;">¿Dudas? Escríbele a Joel Vega al <a href="tel:9392104299" style="color:var(--accent);">939-210-4299</a></p>
@@ -5617,6 +5649,11 @@ function inscGoToStep(step) {
   if (step === 3) {
     inscRenderCategories();
     inscUpdateTotals();
+    // Reset payment state: show ATH Móvil button, hide post-payment section
+    const antes   = document.getElementById('inscPagoAntes');
+    const despues = document.getElementById('inscPagoDespues');
+    if (antes)   antes.style.display   = '';
+    if (despues) despues.style.display = 'none';
   }
 }
 
@@ -5958,42 +5995,103 @@ function inscUpdateTotals() {
 }
 
 // ══════════════════════════════════════════
-// INSCRIPCIONES — REGISTRAR Y PAGAR
+// INSCRIPCIONES — PAGAR (Paso A: abrir ATH Móvil)
 // ══════════════════════════════════════════
-async function inscRegistrarYPagar() {
+function inscIniciarPago() {
+  if (inscState.selectedCats.size === 0) {
+    alert('Selecciona al menos una categoría antes de pagar.');
+    return;
+  }
+  window.open('https://pagos.athmovilapp.com/pagoPorCodigo.html?id=686cd0cb-1395-4ebb-96b1-96719cd6f5e9', '_blank');
+  // Reveal post-payment section
+  const antes   = document.getElementById('inscPagoAntes');
+  const despues = document.getElementById('inscPagoDespues');
+  if (antes)   antes.style.display   = 'none';
+  if (despues) despues.style.display = '';
+  const ref = document.getElementById('inscRefCode');
+  if (ref) { ref.value = ''; ref.style.borderColor = 'var(--border)'; }
+  inscToggleSubmit();
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — HABILITAR BOTÓN SOMETER
+// ══════════════════════════════════════════
+function inscToggleSubmit() {
+  const code = (document.getElementById('inscRefCode')?.value || '').trim();
+  const btn  = document.getElementById('inscSubmitBtn');
+  if (!btn) return;
+  btn.disabled = !code;
+  btn.style.opacity = code ? '1' : '0.4';
+  btn.style.cursor  = code ? 'pointer' : 'not-allowed';
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — SOMETER INSCRIPCIÓN (Paso B)
+// ══════════════════════════════════════════
+async function inscSometerInscripcion() {
+  const code = (document.getElementById('inscRefCode')?.value || '').trim();
+  if (!code) { alert('Ingresa el número de referencia del pago.'); return; }
+
   const p    = inscState.player;
   const cats = [...inscState.selectedCats].map(id => INSC_CATEGORIES.find(c => c.id === id)).filter(Boolean);
   const isMember = p && p.member;
   const base  = isMember ? 0 : 10;
   const total = base + cats.reduce((s, c) => s + c.price, 0);
 
-  // Abrir ATH Móvil de inmediato (no bloquear por el save)
-  window.open('https://pagos.athmovilapp.com/pagoPorCodigo.html?id=686cd0cb-1395-4ebb-96b1-96719cd6f5e9', '_blank');
+  const btn = document.getElementById('inscSubmitBtn');
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+  btn.style.opacity = '0.7';
 
-  // Guardar en Supabase en segundo plano (upsert por torneo+member_id)
-  if (p) {
-    const memberId = p.id || null;
-    const fptmId = memberId ? ('FPTM-' + String(memberId)) : 'NUEVO';
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/insc_registro`, {
-        method: 'POST',
-        headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-        body: JSON.stringify({
-          torneo:     'Morovis Open 2026',
-          member_id:  memberId,
-          nombre:     p.name,
-          fptm_id:    fptmId,
-          sex:        (inscState.sex || p.sex || null),
-          dob:        inscState.dob || null,
-          categorias: cats.map(c => ({ id: c.id, name: c.name, price: c.price })),
-          base:       base,
-          total:      total,
-          updated_at: new Date().toISOString()
-        })
-      });
-    } catch(e) {
-      console.warn('inscRegistrarYPagar save failed:', e.message);
+  try {
+    const memberId = p?.id || null;
+    const fptmId   = memberId ? String(memberId) : 'NUEVO';
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/insc_registro`, {
+      method:  'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({
+        torneo:     'Morovis Open 2026',
+        member_id:  memberId,
+        nombre:     p?.name || 'Jugador nuevo',
+        fptm_id:    fptmId,
+        sex:        inscState.sex || p?.sex || null,
+        dob:        inscState.dob || null,
+        categorias: cats.map(c => ({ id: c.id, name: c.name, price: c.price })),
+        base:       base,
+        total:      total,
+        referencia: code,
+        updated_at: new Date().toISOString()
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || res.statusText);
     }
+
+    // Show success state
+    const despues = document.getElementById('inscPagoDespues');
+    if (despues) despues.innerHTML = `
+      <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:24px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:10px;">✅</div>
+        <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:1px;color:#4ade80;margin-bottom:8px;">¡Inscripción Sometida!</div>
+        <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
+          Tu inscripción fue registrada exitosamente.<br>
+          <strong style="color:var(--text);">Referencia:</strong> ${code}
+        </p>
+        <p style="font-size:13px;color:var(--muted);line-height:1.5;">
+          Recuerda enviar la <strong style="color:var(--text);">captura del recibo</strong> al
+          <a href="https://wa.me/19392104299" target="_blank" style="color:var(--green);">939-210-4299</a>
+          si aún no lo has hecho.
+        </p>
+      </div>`;
+  } catch(e) {
+    btn.textContent  = origText;
+    btn.disabled     = false;
+    btn.style.opacity = '1';
+    alert('Error al guardar la inscripción: ' + e.message);
   }
 }
 
