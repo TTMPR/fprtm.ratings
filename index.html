@@ -1731,6 +1731,11 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Inscritos</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Listado por categoría — Morovis Open 2026</div>
       </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportInscripcionesStadium()">
+        <div style="font-size:32px;margin-bottom:12px">📤</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Exportar Inscritos</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV para Stadium Compete</div>
+      </div>
       <div id="inscAdminCard" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative;transition:border-color 0.2s" onclick="toggleInscripciones()">
         <div id="inscAdminIcon" style="font-size:32px;margin-bottom:12px">📋</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Inscripciones</div>
@@ -2211,8 +2216,8 @@ Maria Lopez,Ana Torres,B</code>
       <span style="font-size:13px;color:var(--accent);font-weight:600;">Vista previa — Inscripciones cerradas para el público</span>
     </div>
 
-    <!-- Botón Inscritos — solo admin -->
-    <div id="inscritosAdminBtn" style="display:none;margin-bottom:16px;">
+    <!-- Botón Inscritos — visible para todos -->
+    <div style="margin-bottom:16px;">
       <button onclick="showInscritosModal()" style="width:100%;background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.3);color:var(--accent);border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
         📋 Ver inscritos por categoría
       </button>
@@ -2223,14 +2228,12 @@ Maria Lopez,Ana Torres,B</code>
       <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg1"></div>
       <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg2"></div>
       <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg3"></div>
-      <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg4"></div>
-      <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg5"></div>
     </div>
 
     <!-- ═══ PANTALLA 1: Verificación ═══ -->
     <div id="inscScreen1" style="display:block;">
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 1 de 5 — Verificación</div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 1 de 3 — Verificación</div>
         <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">¿Cuál es tu situación en la FPTM?</h2>
         <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Esto determina tu cargo base y tu número de participante.</p>
 
@@ -2308,7 +2311,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- ═══ PANTALLA 2: Cargo base ═══ -->
     <div id="inscScreen2" style="display:none;">
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 2 de 5 — Balance</div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 2 de 3 — Balance</div>
         <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Tu cargo base</h2>
         <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Calculado según tu estatus de membresía en la FPTM.</p>
 
@@ -2327,85 +2330,15 @@ Maria Lopez,Ana Torres,B</code>
           </div>
         </div>
       </div>
-      <button onclick="inscGoToStep(3)" style="background:var(--accent);color:var(--navy);width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;transition:all 0.18s;" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">Continuar → Obtener ID</button>
+      <button onclick="inscGoToStep(3)" style="background:var(--accent);color:var(--navy);width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;transition:all 0.18s;" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">Continuar → Categorías</button>
     </div>
 
-    <!-- ═══ PANTALLA 3: ID ═══ -->
+    <!-- ═══ PANTALLA 3: Categorías & Pago ═══ -->
     <div id="inscScreen3" style="display:none;">
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 3 de 5 — Tu ID</div>
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Tu número de participante</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Usa este ID al registrarte en Stadium Compete y al enviar tu pago.</p>
-
-        <div style="text-align:center;padding:24px 0 16px;">
-          <div style="font-size:12px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Member ID · ID de Participante</div>
-          <div id="inscIdDisplay" style="font-family:'Bebas Neue';font-size:72px;letter-spacing:0.12em;color:var(--accent);line-height:1;">—</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:8px;min-height:18px;" id="inscIdSubNote"></div>
-          <button onclick="inscCopyId()" id="inscCopyBtn" style="margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.25);color:var(--accent);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.18s;">
-            📋 Copiar ID
-          </button>
-        </div>
-      </div>
-      <button onclick="inscGoToStep(4)" style="background:var(--accent);color:var(--navy);width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;">Continuar → Stadium Compete</button>
-    </div>
-
-    <!-- ═══ PANTALLA 4: Stadium Compete ═══ -->
-    <div id="inscScreen4" style="display:none;">
-
-      <!-- PARTE A: Ir a Stadium Compete -->
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:12px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 4 de 5 — Registro Oficial</div>
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Inscríbete en Stadium Compete</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:16px;">Sigue estos pasos en Stadium Compete. <strong>No cierres esta página.</strong></p>
-
-        <!-- ID box -->
-        <div style="background:rgba(232,184,75,0.06);border:1px solid rgba(232,184,75,0.2);border-radius:12px;padding:18px;margin-bottom:16px;">
-          <div style="font-size:11px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Tu Member ID — pega este número en Stadium Compete</div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div id="inscIdDisplaySC" style="font-family:'Bebas Neue';font-size:48px;color:var(--accent);letter-spacing:0.12em;line-height:1;flex:1;">—</div>
-            <button onclick="inscCopyIdSC()" id="inscCopyBtnSC" style="background:rgba(232,184,75,0.15);border:1px solid rgba(232,184,75,0.3);color:var(--accent);padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">📋 Copiar</button>
-          </div>
-          <div style="font-size:12px;color:var(--muted);margin-top:6px;" id="inscScIdNote"></div>
-        </div>
-
-        <!-- Steps -->
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">1</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Copia tu Member ID con el botón de arriba.</div></div>
-          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">2</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Presiona <strong>"Abrir Stadium Compete"</strong> abajo. Asegúrate de estar <strong>logueado</strong>.</div></div>
-          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">3</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Selecciona el sistema <strong style="color:var(--accent);">Federación Puertorriqueña de Tenis de Mesa</strong>.</div></div>
-          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">4</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Pega tu Member ID en el campo <strong>"Member ID"</strong> y presiona <strong>"Link"</strong>.</div></div>
-          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">5</div><div style="font-size:14px;line-height:1.5;color:var(--text);"><strong>Verifica que tu información esté correcta</strong> — nombre y <strong>club</strong>. El sistema no transfiere el club automáticamente; debes añadirlo manualmente.</div></div>
-          <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--navy);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">6</div><div style="font-size:14px;line-height:1.5;color:var(--text);">Selecciona tus categorías y somete tu entrada (<strong>"Submit Entry"</strong>).</div></div>
-        </div>
-
-        <a id="inscScLink" href="https://stadiumcompete.com/tournament/a9760a84-79e7-48f5-adfd-58e440430b0d?playerId=" target="_blank" style="text-decoration:none;display:block;margin-bottom:16px;">
-          <button style="background:var(--accent);color:var(--navy);width:100%;padding:16px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;">🏓 Abrir Stadium Compete</button>
-        </a>
-
-        <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:12px 14px;font-size:13px;color:#fca5a5;line-height:1.5;">
-          ⚠ <strong style="color:#ef4444;">Importante:</strong> Si registras tu entry en Stadium Compete y <strong>no realizas el pago</strong>, el administrador eliminará tu entry del torneo.
-        </div>
-      </div>
-
-      <!-- PARTE B: Después de Stadium Compete -->
-      <div style="background:rgba(34,197,94,0.06);border:2px solid rgba(34,197,94,0.3);border-radius:14px;padding:20px;margin-bottom:12px;">
-        <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4ade80;margin-bottom:6px;">✓ Después de completar Stadium Compete</div>
-        <p style="font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:14px;">¿Ya sometiste tu entry en Stadium Compete? Regresa aquí y continúa con el pago.</p>
-        <button onclick="inscGoToStep(5)" style="background:#22c55e;color:#000;width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;">Ya completé mi registro → Categorías &amp; Pago</button>
-      </div>
-
-      <button onclick="inscGoToStep(3)" style="background:none;border:1px solid var(--border);color:var(--muted);width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">← Volver al Paso 3</button>
-    </div>
-
-    <!-- ═══ PANTALLA 5: Categorías & Pago ═══ -->
-    <div id="inscScreen5" style="display:none;">
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 5 de 5 — Categorías &amp; Pago</div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 3 de 3 — Categorías &amp; Pago</div>
         <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Selecciona tus categorías</h2>
         <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:10px;">No puedes inscribirte en dos eventos del mismo horario. Cupo máximo 32 por categoría de Rating.</p>
-        <div style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--accent);margin-bottom:16px;">
-          ⚠ Selecciona las <strong>mismas categorías</strong> que escogiste en Stadium Compete.
-        </div>
 
         <div id="inscCatList" style="display:flex;flex-direction:column;gap:10px;"></div>
 
@@ -2452,6 +2385,7 @@ Maria Lopez,Ana Torres,B</code>
       </div>
 
       <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px;">¿Dudas? Escríbele a Joel Vega al <a href="tel:9392104299" style="color:var(--accent);">939-210-4299</a></p>
+      <button onclick="inscGoToStep(2)" style="background:none;border:1px solid var(--border);color:var(--muted);width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;">← Volver al Paso 2</button>
     </div>
 
   </div>
@@ -5450,22 +5384,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 // INSCRIPCIONES — CONSTANTS
 // ══════════════════════════════════════════
 const INSC_CATEGORIES = [
-  { id: 'ev1',  name: '7 o Menos Abierto',       desc: 'Trofeos y medallas',           price: 11, slot: 'SAB-900'  },
-  { id: 'ev2',  name: '9 o Menos Masculino',      desc: 'Trofeos y medallas',           price: 20, slot: 'SAB-900'  },
-  { id: 'ev3',  name: '9 o Menos Femenino',       desc: 'Trofeos y medallas',           price: 20, slot: 'SAB-900'  },
-  { id: 'ev4',  name: '13 o Menos Masculino',     desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'SAB-900'  },
-  { id: 'ev5',  name: '13 o Menos Femenino',      desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'SAB-900'  },
-  { id: 'ev6',  name: 'Abierto',                  desc: '1ro $85 · 2do $70 · 3/4 $60', price: 25, slot: 'SAB-900'  },
-  { id: 'ev7',  name: '1500 o Menos',             desc: '1ro $45 · 2do $35 · 3/4 $30', price: 20, slot: 'SAB-1100' },
-  { id: 'ev8',  name: '1900 o Menos',             desc: '1ro $65 · 2do $60 · 3/4 $55', price: 20, slot: 'SAB-1230' },
-  { id: 'ev9',  name: '1700 o Menos',             desc: '1ro $55 · 2do $50 · 3/4 $45', price: 20, slot: 'SAB-1230' },
-  { id: 'ev10', name: '11 o Menos Masculino',     desc: '1ro $30 · 2do $25 · 3/4 $20', price: 20, slot: 'DOM-900'  },
-  { id: 'ev11', name: '11 o Menos Femenino',      desc: '1ro $30 · 2do $25 · 3/4 $20', price: 20, slot: 'DOM-900'  },
-  { id: 'ev12', name: '15 o Menos Masculino',     desc: '1ro $40 · 2do $35 · 3/4 $30', price: 20, slot: 'DOM-900'  },
-  { id: 'ev13', name: '15 o Menos Femenino',      desc: '1ro $40 · 2do $35 · 3/4 $30', price: 20, slot: 'DOM-900'  },
-  { id: 'ev14', name: 'Seniors – 40 años o más',  desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'DOM-1100' },
-  { id: 'ev15', name: '1600 o Menos',             desc: '1ro $50 · 2do $45 · 3/4 $40', price: 20, slot: 'DOM-1230' },
-  { id: 'ev16', name: '1800 o Menos',             desc: '1ro $60 · 2do $55 · 3/4 $50', price: 20, slot: 'DOM-1230' },
+  { id: 'ev1',  name: '7 o Menos Abierto',       desc: 'Trofeos y medallas',           price: 11, slot: 'SAB-900',  maxAge: 7 },
+  { id: 'ev2',  name: '9 o Menos Masculino',      desc: 'Trofeos y medallas',           price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'M' },
+  { id: 'ev3',  name: '9 o Menos Femenino',       desc: 'Trofeos y medallas',           price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'F' },
+  { id: 'ev4',  name: '13 o Menos Masculino',     desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'M' },
+  { id: 'ev5',  name: '13 o Menos Femenino',      desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'F' },
+  { id: 'ev6',  name: 'Abierto',                  desc: '1ro $85 · 2do $70 · 3/4 $60', price: 25, slot: 'SAB-900' },
+  { id: 'ev7',  name: '1500 o Menos',             desc: '1ro $45 · 2do $35 · 3/4 $30', price: 20, slot: 'SAB-1100', maxRating: 1500 },
+  { id: 'ev8',  name: '1900 o Menos',             desc: '1ro $65 · 2do $60 · 3/4 $55', price: 20, slot: 'SAB-1230', maxRating: 1900 },
+  { id: 'ev9',  name: '1700 o Menos',             desc: '1ro $55 · 2do $50 · 3/4 $45', price: 20, slot: 'SAB-1230', maxRating: 1700 },
+  { id: 'ev10', name: '11 o Menos Masculino',     desc: '1ro $30 · 2do $25 · 3/4 $20', price: 20, slot: 'DOM-900',  maxAge: 11, sex: 'M' },
+  { id: 'ev11', name: '11 o Menos Femenino',      desc: '1ro $30 · 2do $25 · 3/4 $20', price: 20, slot: 'DOM-900',  maxAge: 11, sex: 'F' },
+  { id: 'ev12', name: '15 o Menos Masculino',     desc: '1ro $40 · 2do $35 · 3/4 $30', price: 20, slot: 'DOM-900',  maxAge: 15, sex: 'M' },
+  { id: 'ev13', name: '15 o Menos Femenino',      desc: '1ro $40 · 2do $35 · 3/4 $30', price: 20, slot: 'DOM-900',  maxAge: 15, sex: 'F' },
+  { id: 'ev14', name: 'Seniors – 40 años o más',  desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'DOM-1100', minAge: 40 },
+  { id: 'ev15', name: '1600 o Menos',             desc: '1ro $50 · 2do $45 · 3/4 $40', price: 20, slot: 'DOM-1230', maxRating: 1600 },
+  { id: 'ev16', name: '1800 o Menos',             desc: '1ro $60 · 2do $55 · 3/4 $50', price: 20, slot: 'DOM-1230', maxRating: 1800 },
 ];
 const INSC_SLOT_LABELS = {
   'SAB-900':  'Sáb 25-abr · 9:00 a.m.',
@@ -5484,13 +5418,14 @@ const inscState = {
   player: null,       // selected player object from ALL_PLAYERS
   selectedCats: new Set(),
   searchTimer: null,
+  dob: null,
 };
 
 // ══════════════════════════════════════════
 // INSCRIPCIONES — PROGRESS BAR
 // ══════════════════════════════════════════
 function inscUpdateProgress(step) {
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= 3; i++) {
     const seg = document.getElementById('inscSeg' + i);
     if (!seg) continue;
     if (i < step)       seg.style.background = 'rgba(232,184,75,0.5)';
@@ -5530,29 +5465,24 @@ function applyInscripcionesState() {
   const previewBanner = document.getElementById('inscPreviewBanner');
   const progress      = document.getElementById('inscProgressBar');
 
-  const adminBtn = document.getElementById('inscritosAdminBtn');
-
   if (inscripcionesOpen) {
     // Open for everyone
     if (banner)        banner.style.display        = 'none';
     if (previewBanner) previewBanner.style.display  = 'none';
     if (progress)      progress.style.display       = '';
-    if (adminBtn)      adminBtn.style.display        = isAdmin() ? '' : 'none';
     inscGoToStep(1);
   } else if (isAdmin()) {
     // Closed but admin is logged in — show preview with the form accessible
     if (banner)        banner.style.display        = 'none';
     if (previewBanner) previewBanner.style.display  = 'flex';
     if (progress)      progress.style.display       = '';
-    if (adminBtn)      adminBtn.style.display        = '';
     inscGoToStep(1);
   } else {
-    // Closed for the public
+    // Closed for the public — form hidden but "Ver Inscritos" button stays visible
     if (banner)        banner.style.display        = '';
     if (previewBanner) previewBanner.style.display  = 'none';
     if (progress)      progress.style.display       = 'none';
-    if (adminBtn)      adminBtn.style.display        = 'none';
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 3; i++) {
       const el = document.getElementById('inscScreen' + i);
       if (el) el.style.display = 'none';
     }
@@ -5603,7 +5533,7 @@ async function toggleInscripciones() {
 // INSCRIPCIONES — STEP NAVIGATION
 // ══════════════════════════════════════════
 function inscGoToStep(step) {
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= 3; i++) {
     const el = document.getElementById('inscScreen' + i);
     if (el) el.style.display = 'none';
   }
@@ -5612,9 +5542,9 @@ function inscGoToStep(step) {
   inscUpdateProgress(step);
 
   if (step === 1) {
-    // Full reset
     inscState.opcion = null;
     inscState.player = null;
+    inscState.dob = null;
     inscState.selectedCats = new Set();
     const si = document.getElementById('inscSearchInput');
     if (si) si.value = '';
@@ -5622,10 +5552,6 @@ function inscGoToStep(step) {
     if (rl) { rl.innerHTML = ''; rl.style.display = 'none'; }
     const ab = document.getElementById('inscAlertBox');
     if (ab) ab.style.display = 'none';
-    const nf = document.getElementById('inscNotFound');
-    if (nf) nf.style.display = 'none';
-    const sc = document.getElementById('inscSearchCard');
-    if (sc) sc.style.display = 'none';
     const nb = document.getElementById('inscNuevoBlock');
     if (nb) nb.style.display = 'none';
   }
@@ -5645,31 +5571,6 @@ function inscGoToStep(step) {
   }
 
   if (step === 3) {
-    const p = inscState.player;
-    const fptmId = p ? String(p.id) : '—';
-    const idEl   = document.getElementById('inscIdDisplay');
-    const noteEl = document.getElementById('inscIdSubNote');
-    if (idEl)   idEl.textContent   = fptmId;
-    if (noteEl) noteEl.textContent = p ? p.name : '';
-    // reset copy button
-    const cb = document.getElementById('inscCopyBtn');
-    if (cb) cb.textContent = '📋 Copiar ID';
-  }
-
-  if (step === 4) {
-    const p = inscState.player;
-    const rawId  = p ? String(p.id) : '—';
-    const idEl   = document.getElementById('inscIdDisplaySC');
-    const noteEl = document.getElementById('inscScIdNote');
-    const link   = document.getElementById('inscScLink');
-    if (idEl)   idEl.textContent   = rawId;
-    if (noteEl) noteEl.textContent = p ? p.name : '';
-    if (link)   link.href = 'https://stadiumcompete.com/tournament/a9760a84-79e7-48f5-adfd-58e440430b0d?playerId=' + encodeURIComponent(p ? String(p.id) : '');
-    const cb = document.getElementById('inscCopyBtnSC');
-    if (cb) cb.textContent = '📋 Copiar';
-  }
-
-  if (step === 5) {
     inscRenderCategories();
     inscUpdateTotals();
   }
@@ -5761,6 +5662,11 @@ function inscSelectPlayer(id) {
   const p = ALL_PLAYERS.find(x => x.id === id);
   if (!p) return;
   inscState.player = p;
+  inscState.dob = null; // reset
+  fetchPlayerDob(p.id).then(dob => {
+    inscState.dob = dob;
+    inscRenderCategories(); // re-render if already on categories step
+  });
 
   const si = document.getElementById('inscSearchInput');
   if (si) si.value = p.name;
@@ -5789,29 +5695,58 @@ function inscSelectPlayer(id) {
 }
 
 // ══════════════════════════════════════════
-// INSCRIPCIONES — COPY FPTM ID
+// INSCRIPCIONES — FETCH PLAYER DOB
 // ══════════════════════════════════════════
-function inscCopyId() {
-  const p = inscState.player;
-  if (!p) return;
-  const id = String(p.id);
-  navigator.clipboard.writeText(id).then(() => {
-    const btn = document.getElementById('inscCopyBtn');
-    if (btn) { btn.textContent = '✓ Copiado'; setTimeout(() => { btn.textContent = '📋 Copiar ID'; }, 2000); }
-  });
-}
-
-function inscCopyIdSC() {
-  const p = inscState.player;
-  if (!p) return;
-  navigator.clipboard.writeText(String(p.id)).then(() => {
-    const btn = document.getElementById('inscCopyBtnSC');
-    if (btn) { btn.textContent = '✓ Copiado'; setTimeout(() => { btn.textContent = '📋 Copiar'; }, 2000); }
-  });
+async function fetchPlayerDob(memberId) {
+  try {
+    const { data, error } = await _supabase
+      .from('Base de Datos')
+      .select('"Date of Birth"')
+      .eq('Member ID', memberId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data['Date of Birth'] || null;
+  } catch(e) { return null; }
 }
 
 // ══════════════════════════════════════════
-// INSCRIPCIONES — CATEGORIES (Step 5)
+// INSCRIPCIONES — CATEGORY ELIGIBILITY
+// ══════════════════════════════════════════
+function inscCatEligible(cat) {
+  const p = inscState.player;
+  if (!p) return { ok: true };
+
+  // Rating check
+  if (cat.maxRating && p.rating > cat.maxRating) {
+    return { ok: false, reason: `Tu rating (${p.rating}) supera el límite de ${cat.maxRating}.` };
+  }
+
+  // Sex check
+  if (cat.sex && p.sex && p.sex !== cat.sex) {
+    const g = cat.sex === 'M' ? 'masculina' : 'femenina';
+    return { ok: false, reason: `Categoría ${g}.` };
+  }
+
+  // Age check
+  if ((cat.maxAge || cat.minAge) && inscState.dob) {
+    const tourney = new Date(2026, 3, 25); // April 25, 2026
+    const birth   = new Date(inscState.dob);
+    let age = tourney.getFullYear() - birth.getFullYear();
+    const m = tourney.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && tourney.getDate() < birth.getDate())) age--;
+    if (cat.maxAge && age > cat.maxAge) {
+      return { ok: false, reason: `Esta categoría es para ${cat.maxAge} años o menos (tu edad al torneo: ${age}).` };
+    }
+    if (cat.minAge && age < cat.minAge) {
+      return { ok: false, reason: `Esta categoría es para ${cat.minAge} años o más (tu edad al torneo: ${age}).` };
+    }
+  }
+
+  return { ok: true };
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — CATEGORIES (Step 3)
 // ══════════════════════════════════════════
 function inscRenderCategories() {
   const container = document.getElementById('inscCatList');
@@ -5828,16 +5763,17 @@ function inscRenderCategories() {
     html += `<div style="margin-bottom:6px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600">${INSC_SLOT_LABELS[slot] || slot}</div>`;
     cats.forEach(cat => {
       const sel = inscState.selectedCats.has(cat.id);
-      html += `<div onclick="inscToggleCat('${cat.id}')"
-        style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'};background:${sel ? 'rgba(232,184,75,0.08)' : 'rgba(255,255,255,0.03)'};cursor:pointer;transition:all .15s">
+      const elig = inscCatEligible(cat);
+      const disabled = !elig.ok;
+      html += `<div onclick="${disabled ? '' : `inscToggleCat('${cat.id}')`}"
+        style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1.5px solid ${sel ? 'var(--accent)' : disabled ? 'rgba(255,255,255,0.05)' : 'var(--border)'};background:${sel ? 'rgba(232,184,75,0.08)' : disabled ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)'};cursor:${disabled ? 'not-allowed' : 'pointer'};transition:all .15s;opacity:${disabled ? '0.45' : '1'}">
         <div style="width:20px;height:20px;border-radius:5px;border:1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'};background:${sel ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
           ${sel ? '<span style="color:#0a1628;font-size:13px;font-weight:700">✓</span>' : ''}
         </div>
         <div style="flex:1">
-          <div style="font-size:14px;font-weight:600">${cat.name}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">${cat.desc}</div>
+          <div style="font-size:14px;font-weight:600;color:${disabled ? 'var(--muted)' : 'var(--text)'};">${cat.name}</div>
+          <div style="font-size:12px;color:var(--muted);">${disabled ? elig.reason : cat.desc} · $${cat.price}</div>
         </div>
-        <div style="font-size:14px;font-weight:600;color:${sel ? 'var(--accent)' : 'var(--muted)'}">$${cat.price}</div>
       </div>`;
     });
     html += '<div style="height:6px"></div>';
@@ -5851,6 +5787,14 @@ function inscRenderCategories() {
 function inscToggleCat(id) {
   const cat = INSC_CATEGORIES.find(c => c.id === id);
   if (!cat) return;
+
+  if (!inscState.selectedCats.has(id)) {
+    const eligibility = inscCatEligible(cat);
+    if (!eligibility.ok) {
+      alert(eligibility.reason);
+      return;
+    }
+  }
 
   if (inscState.selectedCats.has(id)) {
     inscState.selectedCats.delete(id);
@@ -5885,7 +5829,7 @@ function inscUpdateTotals() {
   });
   const grand = base + catTotal;
 
-  const fptmId = p ? ('FPTM-' + String(p.id)) : '—';
+  const fptmId = p ? String(p.id) : '—';
 
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set('inscCheckoutBase', '$' + base.toFixed(2));
@@ -5936,19 +5880,15 @@ async function inscRegistrarYPagar() {
 // INSCRITOS — MODAL ADMIN
 // ══════════════════════════════════════════
 async function showInscritosModal() {
-  if (!isAdmin()) { showLogin(); return; }
   document.getElementById('inscritosModal').style.display = '';
   const content = document.getElementById('inscritosContent');
   content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando...</div>';
 
   try {
-    const { data, error } = await _supabase
-      .from('insc_registro')
-      .select('*')
-      .order('created_at', { ascending: true });
-    if (error) throw new Error(error.message);
+    const data = await sbGet('insc_registro', '?torneo=eq.Morovis%20Open%202026&order=created_at.asc');
+    if (!data) throw new Error('No se pudo obtener datos');
 
-    if (!data || !data.length) {
+    if (!data.length) {
       content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No hay inscritos aún.</div>';
       document.getElementById('inscritosTotal').textContent = '0 inscritos';
       return;
@@ -5990,6 +5930,83 @@ async function showInscritosModal() {
     content.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--muted)">Sin categorías seleccionadas.</div>';
   } catch(e) {
     content.innerHTML = `<div style="color:var(--red);padding:20px;">Error: ${e.message}<br><small>Corre create_insc_registro.sql en Supabase primero.</small></div>`;
+  }
+}
+
+// ══════════════════════════════════════════
+// INSCRITOS — EXPORTAR CSV (Stadium Compete)
+// ══════════════════════════════════════════
+async function exportInscripcionesStadium() {
+  if (!currentUser) { showLogin(); return; }
+  try {
+    // Fetch all inscriptions
+    const { data: inscs, error: inscsErr } = await _supabase
+      .from('insc_registro')
+      .select('*')
+      .eq('torneo', 'Morovis Open 2026')
+      .order('created_at', { ascending: true });
+    if (inscsErr) throw new Error(inscsErr.message);
+    if (!inscs || !inscs.length) { alert('No hay inscritos para exportar.'); return; }
+
+    // Fetch player details for all member IDs
+    const memberIds = inscs.map(i => i.member_id).filter(Boolean);
+    const { data: players, error: plErr } = await _supabase
+      .from('Base de Datos')
+      .select('"Member ID","First Name","Last Name","Rating","New Rating","Sex","Email","Home Address"')
+      .in('"Member ID"', memberIds);
+    if (plErr) throw new Error(plErr.message);
+
+    const playerMap = {};
+    (players || []).forEach(p => { playerMap[p['Member ID']] = p; });
+
+    function normSex(raw) {
+      const v = (raw || '').toString().trim().toUpperCase();
+      if (v === 'M' || v === 'MALE' || v === 'MASCULINO') return 'M';
+      if (v === 'F' || v === 'FEMALE' || v === 'FEMENINO') return 'F';
+      return raw || '';
+    }
+    function parseAddress(raw) {
+      if (!raw) return { address: '', city: '', state: '' };
+      const parts = raw.split(',').map(s => s.trim());
+      return { address: parts[0] || '', city: parts[1] || '', state: parts[2] || '' };
+    }
+
+    const headers = ['id', 'firstName', 'lastName', 'rating', 'sex', 'email', 'address', 'city', 'state', 'country'];
+
+    const rows = inscs.map(insc => {
+      const p = playerMap[insc.member_id] || {};
+      const nameParts = (insc.nombre || '').split(' ');
+      const addr = parseAddress(p['Home Address']);
+      const rating = p['New Rating'] ?? p['Rating'] ?? '';
+      return [
+        insc.member_id || '',
+        p['First Name'] || nameParts[0] || '',
+        p['Last Name'] || nameParts.slice(1).join(' ') || '',
+        rating,
+        normSex(p['Sex']),
+        p['Email'] || '',
+        addr.address,
+        addr.city,
+        addr.state,
+        'US'
+      ];
+    });
+
+    const csv = [headers, ...rows]
+      .map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = `inscritos_morovis_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    alert('Error al exportar: ' + e.message);
   }
 }
 </script>
