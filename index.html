@@ -7067,7 +7067,7 @@ async function approveRegSubmission(id) {
         'Home Address':    [r.address, r.city, r.state, r.zip].filter(Boolean).join(', '),
         'New Rating':      rating > 0 ? rating : null,
         'Rating':          rating,
-        'Expiration Date': null,
+        'Expiration Date': '',
       });
     if (insErr) throw new Error(insErr.message);
 
