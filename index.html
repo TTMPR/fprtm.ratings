@@ -2327,13 +2327,14 @@ Maria Lopez,Ana Torres,B</code>
       <!-- Fecha de nacimiento y sexo -->
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
         <h3 style="font-size:15px;font-weight:600;margin-bottom:4px;color:var(--text);">Datos de validación</h3>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;">Requeridos para validar las categorías disponibles. Si están en el sistema se pre-llenan automáticamente.</p>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;">Determinan qué categorías puedes jugar. Si tu información está en el sistema se pre-llena automáticamente — <strong style="color:var(--text);">verifica que sea correcta.</strong></p>
         <div style="display:flex;flex-direction:column;gap:14px;">
           <div>
             <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Fecha de Nacimiento *</label>
             <input type="date" id="inscDobInput" max="2026-12-31"
               style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'DM Sans';font-size:15px;color:var(--text);outline:none;"
               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            <div id="inscDobNote" style="margin-top:5px;font-size:11px;color:var(--muted);min-height:14px;"></div>
           </div>
           <div>
             <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Sexo *</label>
@@ -2344,6 +2345,7 @@ Maria Lopez,Ana Torres,B</code>
               <option value="M" style="background:#1e283c">Masculino (M)</option>
               <option value="F" style="background:#1e283c">Femenino (F)</option>
             </select>
+            <div id="inscSexNote" style="margin-top:5px;font-size:11px;color:var(--muted);min-height:14px;"></div>
           </div>
         </div>
       </div>
@@ -5467,6 +5469,46 @@ const INSC_SLOT_LABELS = {
   'DOM-1230': 'Dom 26-abr · 12:30 p.m.',
 };
 
+// Normalize sex from DB (may be 'Male', 'Female', 'Masculino', etc.) → 'M' | 'F' | ''
+function normSexForForm(raw) {
+  const v = (raw || '').toString().trim().toUpperCase();
+  if (['M','MALE','MASCULINO'].includes(v)) return 'M';
+  if (['F','FEMALE','FEMENINO'].includes(v)) return 'F';
+  return '';
+}
+// Normalize DOB from DB to YYYY-MM-DD for <input type="date">
+function normDobForInput(raw) {
+  if (!raw) return null;
+  const s = String(raw).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);  // already YYYY-MM-DD
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);     // MM/DD/YYYY
+  if (m) return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  return null;
+}
+// Update the small note lines under DOB and Sex fields
+function inscUpdateFieldNotes() {
+  const dobNote = document.getElementById('inscDobNote');
+  const sexNote = document.getElementById('inscSexNote');
+  if (dobNote) {
+    if (inscState._dobFromDb) {
+      dobNote.innerHTML = '<span style="color:#4ade80;">✓ Obtenido del sistema — verifica que sea correcto</span>';
+    } else if (inscState.dob) {
+      dobNote.innerHTML = '<span style="color:var(--muted);">Ingresado manualmente</span>';
+    } else {
+      dobNote.innerHTML = '<span style="color:var(--muted);">No encontrado en el sistema — ingresa tu fecha</span>';
+    }
+  }
+  if (sexNote) {
+    if (inscState._sexFromDb) {
+      sexNote.innerHTML = '<span style="color:#4ade80;">✓ Obtenido del sistema — verifica que sea correcto</span>';
+    } else if (inscState.sex) {
+      sexNote.innerHTML = '<span style="color:var(--muted);">Ingresado manualmente</span>';
+    } else {
+      sexNote.innerHTML = '<span style="color:var(--muted);">No encontrado en el sistema — selecciona tu sexo</span>';
+    }
+  }
+}
+
 // ══════════════════════════════════════════
 // INSCRIPCIONES — STATE
 // ══════════════════════════════════════════
@@ -5477,6 +5519,8 @@ const inscState = {
   searchTimer: null,
   dob: null,
   sex: '',
+  _dobFromDb: false,  // true when DOB came from Supabase (for UX note)
+  _sexFromDb: false,  // true when sex came from Supabase player record
 };
 
 // ══════════════════════════════════════════
@@ -5634,6 +5678,10 @@ function inscGoToStep(step) {
     const sexIn = document.getElementById('inscSexInput');
     if (dobIn) dobIn.value = inscState.dob || '';
     if (sexIn) sexIn.value = inscState.sex || '';
+    // Reset border colors (may have been marked red on previous failed attempt)
+    if (dobIn) dobIn.style.borderColor = 'var(--border)';
+    if (sexIn) sexIn.style.borderColor = 'var(--border)';
+    inscUpdateFieldNotes();
   }
 
   if (step === 3) {
@@ -5651,20 +5699,25 @@ function inscGoToStep(step) {
 // INSCRIPCIONES — CONFIRM STEP 2
 // ══════════════════════════════════════════
 function inscConfirmStep2() {
-  const dob = (document.getElementById('inscDobInput')?.value || '').trim();
-  const sex = (document.getElementById('inscSexInput')?.value || '').trim();
+  const dobEl = document.getElementById('inscDobInput');
+  const sexEl = document.getElementById('inscSexInput');
+  const dob = (dobEl?.value || '').trim();
+  const sex = (sexEl?.value || '').trim();
   if (!dob) {
-    const el = document.getElementById('inscDobInput');
-    if (el) el.style.borderColor = 'var(--red)';
-    alert('Por favor ingresa tu fecha de nacimiento.');
+    if (dobEl) dobEl.style.borderColor = '#ef4444';
+    const note = document.getElementById('inscDobNote');
+    if (note) note.innerHTML = '<span style="color:#ef4444;">Requerido — ingresa tu fecha de nacimiento</span>';
     return;
   }
   if (!sex) {
-    const el = document.getElementById('inscSexInput');
-    if (el) el.style.borderColor = 'var(--red)';
-    alert('Por favor selecciona tu sexo.');
+    if (sexEl) sexEl.style.borderColor = '#ef4444';
+    const note = document.getElementById('inscSexNote');
+    if (note) note.innerHTML = '<span style="color:#ef4444;">Requerido — selecciona tu sexo</span>';
     return;
   }
+  // If the value changed from what the DB had, mark as manual
+  if (dob !== inscState.dob) inscState._dobFromDb = false;
+  if (sex !== inscState.sex) inscState._sexFromDb = false;
   inscState.dob = dob;
   inscState.sex = sex;
   inscGoToStep(3);
@@ -5678,6 +5731,8 @@ function inscSelectOpcion(type) {
   inscState.player = null;
   inscState.dob = null;
   inscState.sex = '';
+  inscState._dobFromDb = false;
+  inscState._sexFromDb = false;
 
   const sc = document.getElementById('inscSearchCard');
   const nb = document.getElementById('inscNuevoBlock');
@@ -5758,13 +5813,21 @@ function inscSelectPlayer(id) {
   const p = ALL_PLAYERS.find(x => x.id === id);
   if (!p) return;
   inscState.player = p;
-  inscState.dob = null; // reset
-  inscState.sex = p.sex || '';
-  fetchPlayerDob(p.id).then(dob => {
+  inscState.dob = null;
+  inscState._dobFromDb = false;
+  const normalizedSex = normSexForForm(p.sex);
+  inscState.sex = normalizedSex;
+  inscState._sexFromDb = !!normalizedSex;  // sex came from the DB player record
+  fetchPlayerDob(p.id).then(rawDob => {
+    const dob = normDobForInput(rawDob);
     inscState.dob = dob;
+    inscState._dobFromDb = !!dob;
     // Pre-fill input if Step 2 is currently shown and the field is empty
     const dobIn = document.getElementById('inscDobInput');
-    if (dobIn && !dobIn.value && dob) dobIn.value = dob;
+    if (dobIn && !dobIn.value && dob) {
+      dobIn.value = dob;
+      inscUpdateFieldNotes();
+    }
     inscRenderCategories(); // re-render if already on categories step
   });
 
