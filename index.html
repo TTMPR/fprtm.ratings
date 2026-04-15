@@ -1726,10 +1726,10 @@ Maria Lopez,Ana Torres,B</code>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar solicitudes de cambio de club</div>
         <span id="pendingClubBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPage('inscripciones')">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscAdminModal()">
         <div style="font-size:32px;margin-bottom:12px">📋</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Inscritos</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Listado por categoría — Morovis Open 2026</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Gestionar Inscritos</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Editar y eliminar inscripciones</div>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportInscripcionesStadium()">
         <div style="font-size:32px;margin-bottom:12px">📤</div>
@@ -1742,6 +1742,70 @@ Maria Lopez,Ana Torres,B</code>
         <div id="inscAdminStatus" style="color:var(--muted);font-size:13px;margin-top:6px">Cargando...</div>
         <div id="inscAdminSync" style="font-size:11px;margin-top:4px;color:var(--muted)"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     GESTIONAR INSCRITOS MODAL (admin)
+═══════════════════════════════════════════ -->
+<div id="inscAdminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:900px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;">Gestionar Inscritos — Morovis Open 2026</div>
+        <div id="inscAdminModalTotal" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
+      </div>
+      <button onclick="closeInscAdminModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+
+    <!-- Table -->
+    <div id="inscAdminTable" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
+  </div>
+</div>
+
+<!-- Edit inscription sub-modal -->
+<div id="inscEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1100;overflow-y:auto;padding:16px;">
+  <div style="max-width:560px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px;">
+    <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;margin-bottom:4px;">Editar Inscripción</div>
+    <div id="inscEditSubtitle" style="font-size:12px;color:var(--muted);margin-bottom:20px;"></div>
+
+    <input type="hidden" id="inscEditId">
+
+    <!-- Name -->
+    <div style="margin-bottom:16px;">
+      <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Nombre</label>
+      <input id="inscEditNombre" type="text"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans';font-size:14px;color:var(--text);outline:none;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+
+    <!-- Reference -->
+    <div style="margin-bottom:16px;">
+      <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Referencia de pago</label>
+      <input id="inscEditRef" type="text"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Mono';font-size:14px;color:var(--text);outline:none;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+
+    <!-- Categories -->
+    <div style="margin-bottom:20px;">
+      <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:10px;">Categorías inscritas</label>
+      <div id="inscEditCatList" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;"></div>
+    </div>
+
+    <!-- Total preview -->
+    <div style="background:rgba(232,184,75,0.06);border:1px solid rgba(232,184,75,0.18);border-radius:10px;padding:14px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:var(--muted);">Total calculado</span>
+      <span id="inscEditTotal" style="font-size:18px;font-weight:700;color:var(--accent);">$0.00</span>
+    </div>
+
+    <div id="inscEditMsg" style="font-size:13px;color:#ef4444;min-height:18px;margin-bottom:12px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeInscEditModal()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button onclick="saveEditInscripcion()" style="flex:2;background:var(--accent);color:var(--navy);padding:12px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;">Guardar cambios</button>
     </div>
   </div>
 </div>
@@ -6359,6 +6423,206 @@ async function exportInscripcionesStadium() {
     URL.revokeObjectURL(url);
   } catch(e) {
     alert('Error al exportar: ' + e.message);
+  }
+}
+
+// ══════════════════════════════════════════
+// GESTIONAR INSCRITOS — ADMIN
+// ══════════════════════════════════════════
+let _inscAdminData = [];   // cached list for the management modal
+
+async function showInscAdminModal() {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('inscAdminModal').style.display = '';
+  await loadInscAdminTable();
+}
+
+function closeInscAdminModal() {
+  document.getElementById('inscAdminModal').style.display = 'none';
+  _inscAdminData = [];
+}
+
+async function loadInscAdminTable() {
+  const tableEl = document.getElementById('inscAdminTable');
+  const totalEl = document.getElementById('inscAdminModalTotal');
+  tableEl.innerHTML = '<div style="text-align:center;padding:40px 0;">Cargando...</div>';
+
+  try {
+    const { data, error } = await _supabase
+      .from('insc_registro')
+      .select('*')
+      .eq('torneo', 'Morovis Open 2026')
+      .order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+
+    _inscAdminData = data || [];
+    if (totalEl) totalEl.textContent = `${_inscAdminData.length} inscripción${_inscAdminData.length !== 1 ? 'es' : ''}`;
+
+    if (!_inscAdminData.length) {
+      tableEl.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);">No hay inscripciones aún.</div>';
+      return;
+    }
+
+    // Build table
+    let html = `
+      <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">#</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Jugador</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Categorías</th>
+            <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Referencia</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Total</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Fecha</th>
+            <th style="padding:8px 10px;"></th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    _inscAdminData.forEach((row, i) => {
+      const cats = Array.isArray(row.categorias) ? row.categorias : [];
+      const catNames = cats.map(c => c.name).join(', ') || '—';
+      const fecha = row.created_at
+        ? new Date(row.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric' })
+        : '—';
+      html += `
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;"
+            onmouseover="this.style.background='rgba(232,184,75,0.04)'"
+            onmouseout="this.style.background='transparent'">
+          <td style="padding:10px 10px;color:var(--muted);">${i + 1}</td>
+          <td style="padding:10px 10px;">
+            <div style="font-weight:600;color:var(--text);">${row.nombre || '—'}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px;">${row.fptm_id || ''}</div>
+          </td>
+          <td style="padding:10px 10px;color:var(--muted);max-width:220px;">
+            <div style="white-space:normal;line-height:1.5;">${catNames}</div>
+          </td>
+          <td style="padding:10px 10px;font-family:'DM Mono';font-size:12px;color:var(--accent);">${row.referencia || '—'}</td>
+          <td style="padding:10px 10px;text-align:right;font-weight:600;color:var(--text);">$${(row.total || 0).toFixed(2)}</td>
+          <td style="padding:10px 10px;text-align:right;color:var(--muted);white-space:nowrap;">${fecha}</td>
+          <td style="padding:10px 10px;text-align:right;white-space:nowrap;">
+            <button onclick="openEditInscripcion(${row.id})"
+              style="background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.3);color:var(--accent);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;margin-right:6px;">
+              Editar
+            </button>
+            <button onclick="confirmDeleteInscripcion(${row.id}, '${(row.nombre || '').replace(/'/g, "\\'")}')"
+              style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;">
+              Eliminar
+            </button>
+          </td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    tableEl.innerHTML = html;
+  } catch(e) {
+    tableEl.innerHTML = `<div style="color:#ef4444;padding:20px;">Error: ${e.message}</div>`;
+  }
+}
+
+// ── Edit ──────────────────────────────────
+function openEditInscripcion(id) {
+  const row = _inscAdminData.find(r => r.id === id);
+  if (!row) return;
+
+  document.getElementById('inscEditId').value = id;
+  document.getElementById('inscEditNombre').value = row.nombre || '';
+  document.getElementById('inscEditRef').value    = row.referencia || '';
+  document.getElementById('inscEditSubtitle').textContent = `${row.fptm_id || ''} · creado ${row.created_at ? new Date(row.created_at).toLocaleDateString('es-PR') : '—'}`;
+  document.getElementById('inscEditMsg').textContent = '';
+
+  // Category checkboxes
+  const selectedIds = new Set((Array.isArray(row.categorias) ? row.categorias : []).map(c => c.id));
+  const listEl = document.getElementById('inscEditCatList');
+  listEl.innerHTML = INSC_CATEGORIES.map(cat => {
+    const checked = selectedIds.has(cat.id) ? 'checked' : '';
+    return `
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.02);transition:background 0.15s;"
+             onmouseover="this.style.background='rgba(232,184,75,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+        <input type="checkbox" value="${cat.id}" ${checked}
+          onchange="recalcInscEditTotal()"
+          style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);">${cat.name}</div>
+          <div style="font-size:11px;color:var(--muted);">${INSC_SLOT_LABELS[cat.slot] || cat.slot} · $${cat.price}</div>
+        </div>
+      </label>`;
+  }).join('');
+
+  recalcInscEditTotal();
+  document.getElementById('inscEditModal').style.display = '';
+}
+
+function recalcInscEditTotal() {
+  const checked = [...document.querySelectorAll('#inscEditCatList input[type=checkbox]:checked')]
+    .map(cb => INSC_CATEGORIES.find(c => c.id === cb.value))
+    .filter(Boolean);
+  const row = _inscAdminData.find(r => r.id === Number(document.getElementById('inscEditId').value));
+  const base = (row?.base ?? 10);
+  const catSum = checked.reduce((s, c) => s + c.price, 0);
+  const total = base + catSum;
+  const el = document.getElementById('inscEditTotal');
+  if (el) el.textContent = `$${total.toFixed(2)}`;
+}
+
+function closeInscEditModal() {
+  document.getElementById('inscEditModal').style.display = 'none';
+}
+
+async function saveEditInscripcion() {
+  const id      = Number(document.getElementById('inscEditId').value);
+  const nombre  = document.getElementById('inscEditNombre').value.trim();
+  const ref     = document.getElementById('inscEditRef').value.trim();
+  const msgEl   = document.getElementById('inscEditMsg');
+  msgEl.textContent = '';
+
+  if (!nombre) { msgEl.textContent = 'El nombre no puede estar vacío.'; return; }
+
+  const row = _inscAdminData.find(r => r.id === id);
+  const base = row?.base ?? 10;
+
+  const checkedCats = [...document.querySelectorAll('#inscEditCatList input[type=checkbox]:checked')]
+    .map(cb => INSC_CATEGORIES.find(c => c.id === cb.value))
+    .filter(Boolean);
+  const total = base + checkedCats.reduce((s, c) => s + c.price, 0);
+  const categorias = checkedCats.map(c => ({ id: c.id, name: c.name, price: c.price }));
+
+  const saveBtn = document.querySelector('#inscEditModal button[onclick="saveEditInscripcion()"]');
+  if (saveBtn) { saveBtn.textContent = 'Guardando...'; saveBtn.disabled = true; }
+
+  try {
+    const { error } = await _supabase
+      .from('insc_registro')
+      .update({ nombre, referencia: ref, categorias, total, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw new Error(error.message);
+
+    closeInscEditModal();
+    await loadInscAdminTable();   // refresh list
+    loadInscritosSection();       // refresh public section too
+  } catch(e) {
+    msgEl.textContent = 'Error: ' + e.message;
+  } finally {
+    if (saveBtn) { saveBtn.textContent = 'Guardar cambios'; saveBtn.disabled = false; }
+  }
+}
+
+// ── Delete ────────────────────────────────
+async function confirmDeleteInscripcion(id, nombre) {
+  if (!confirm(`¿Eliminar la inscripción de "${nombre}"?\nEsta acción no se puede deshacer.`)) return;
+
+  try {
+    const { error } = await _supabase
+      .from('insc_registro')
+      .delete()
+      .eq('id', id);
+    if (error) throw new Error(error.message);
+
+    await loadInscAdminTable();
+    loadInscritosSection();
+  } catch(e) {
+    alert('Error al eliminar: ' + e.message);
   }
 }
 </script>
