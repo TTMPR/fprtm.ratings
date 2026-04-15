@@ -2268,17 +2268,27 @@ Maria Lopez,Ana Torres,B</code>
       <!-- Bloque nuevo jugador -->
       <div id="inscNuevoBlock" style="display:none;background:var(--card2);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:24px;margin-bottom:16px;">
         <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Inscripción manual</div>
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Comunícate con Joel Vega</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:16px;">Para registrarte por primera vez en la FPTM debes coordinar tu inscripción directamente.</p>
-        <a href="https://wa.me/17872483994" target="_blank" style="text-decoration:none;display:block;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;justify-content:center;gap:12px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:18px;">
-            <span style="font-size:28px;">📲</span>
-            <div>
-              <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">WhatsApp</div>
-              <div style="font-family:'Bebas Neue';font-size:28px;letter-spacing:0.06em;color:var(--green);">(787) 248-3994</div>
-            </div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Datos del jugador nuevo</h2>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:16px;">Completa estos datos para validar categorías por edad y sexo.</p>
+
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px;">
+          <input type="text" id="inscNuevoNombre" placeholder="Nombre y apellido"
+            style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:13px 14px;font-family:'DM Sans';font-size:15px;color:var(--text);outline:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <input type="date" id="inscNuevoDob"
+              style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:13px 14px;font-family:'DM Sans';font-size:15px;color:var(--text);outline:none;">
+            <select id="inscNuevoSex"
+              style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:13px 14px;font-family:'DM Sans';font-size:15px;color:var(--text);outline:none;">
+              <option value="">Sexo (F / M)</option>
+              <option value="F">F</option>
+              <option value="M">M</option>
+            </select>
           </div>
-        </a>
+        </div>
+
+        <div id="inscNuevoMsg" style="font-size:13px;color:var(--muted);min-height:18px;margin-bottom:12px;"></div>
+
+        <button onclick="inscContinueNuevo()" style="background:var(--accent);color:var(--navy);border:none;border-radius:8px;padding:12px 16px;cursor:pointer;font-size:14px;font-weight:700;width:100%;margin-bottom:10px;">Continuar →</button>
         <button onclick="document.getElementById('inscNuevoBlock').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);padding:10px 16px;border-radius:8px;cursor:pointer;font-size:14px;width:100%;">← Volver</button>
       </div>
 
@@ -5419,6 +5429,7 @@ const inscState = {
   selectedCats: new Set(),
   searchTimer: null,
   dob: null,
+  sex: '',
 };
 
 // ══════════════════════════════════════════
@@ -5545,6 +5556,7 @@ function inscGoToStep(step) {
     inscState.opcion = null;
     inscState.player = null;
     inscState.dob = null;
+    inscState.sex = '';
     inscState.selectedCats = new Set();
     const si = document.getElementById('inscSearchInput');
     if (si) si.value = '';
@@ -5554,13 +5566,15 @@ function inscGoToStep(step) {
     if (ab) ab.style.display = 'none';
     const nb = document.getElementById('inscNuevoBlock');
     if (nb) nb.style.display = 'none';
+    const msg = document.getElementById('inscNuevoMsg');
+    if (msg) msg.textContent = '';
   }
 
   if (step === 2) {
     const p = inscState.player;
     const isMember = p && p.member;
     const base = isMember ? 0 : 10;
-    const estatusText = isMember ? 'Miembro activo' : (p ? 'No federado / vencido' : 'Jugador nuevo');
+    const estatusText = isMember ? 'Miembro activo' : (inscState.opcion === 'nuevo' ? 'Jugador nuevo' : 'No federado / vencido');
     const baseEl  = document.getElementById('inscBaseAmtLabel');
     const estEl   = document.getElementById('inscEstatusLabel');
     const totalEl = document.getElementById('inscBaseTotalDisplay');
@@ -5582,6 +5596,8 @@ function inscGoToStep(step) {
 function inscSelectOpcion(type) {
   inscState.opcion = type;
   inscState.player = null;
+  inscState.dob = null;
+  inscState.sex = '';
 
   const sc = document.getElementById('inscSearchCard');
   const nb = document.getElementById('inscNuevoBlock');
@@ -5611,6 +5627,27 @@ function inscSelectOpcion(type) {
       if (sub) sub.textContent = 'Ingresa tu nombre para encontrar tu perfil con rating.';
     }
   }
+}
+
+function inscContinueNuevo() {
+  const nameEl = document.getElementById('inscNuevoNombre');
+  const dobEl = document.getElementById('inscNuevoDob');
+  const sexEl = document.getElementById('inscNuevoSex');
+  const msgEl = document.getElementById('inscNuevoMsg');
+
+  const nombre = (nameEl?.value || '').trim();
+  const dob = (dobEl?.value || '').trim();
+  const sex = (sexEl?.value || '').trim();
+  if (msgEl) msgEl.textContent = '';
+
+  if (!nombre) { if (msgEl) msgEl.textContent = 'Ingresa nombre y apellido.'; return; }
+  if (!dob)    { if (msgEl) msgEl.textContent = 'Selecciona la fecha de nacimiento.'; return; }
+  if (!['F', 'M'].includes(sex)) { if (msgEl) msgEl.textContent = 'Selecciona el sexo (F o M).'; return; }
+
+  inscState.player = { id: null, name: nombre, rating: null, member: false, sex };
+  inscState.dob = dob;
+  inscState.sex = sex;
+  inscGoToStep(2);
 }
 
 // ══════════════════════════════════════════
@@ -5663,6 +5700,7 @@ function inscSelectPlayer(id) {
   if (!p) return;
   inscState.player = p;
   inscState.dob = null; // reset
+  inscState.sex = p.sex || '';
   fetchPlayerDob(p.id).then(dob => {
     inscState.dob = dob;
     inscRenderCategories(); // re-render if already on categories step
@@ -5722,23 +5760,46 @@ function inscCatEligible(cat) {
   }
 
   // Sex check
-  if (cat.sex && p.sex && p.sex !== cat.sex) {
+  const playerSex = (inscState.sex || p.sex || '').toUpperCase();
+  if (cat.sex && !playerSex) {
+    return { ok: false, reason: 'Esta categoría requiere sexo del jugador (F o M).' };
+  }
+  if (cat.sex && playerSex !== cat.sex) {
     const g = cat.sex === 'M' ? 'masculina' : 'femenina';
     return { ok: false, reason: `Categoría ${g}.` };
   }
 
   // Age check
-  if ((cat.maxAge || cat.minAge) && inscState.dob) {
-    const tourney = new Date(2026, 3, 25); // April 25, 2026
-    const birth   = new Date(inscState.dob);
-    let age = tourney.getFullYear() - birth.getFullYear();
-    const m = tourney.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && tourney.getDate() < birth.getDate())) age--;
-    if (cat.maxAge && age > cat.maxAge) {
-      return { ok: false, reason: `Esta categoría es para ${cat.maxAge} años o menos (tu edad al torneo: ${age}).` };
+  if (cat.maxAge || cat.minAge) {
+    if (!inscState.dob) {
+      return { ok: false, reason: 'Fecha de nacimiento requerida para validar edad.' };
     }
-    if (cat.minAge && age < cat.minAge) {
-      return { ok: false, reason: `Esta categoría es para ${cat.minAge} años o más (tu edad al torneo: ${age}).` };
+    const birth = new Date(`${inscState.dob}T00:00:00`);
+    if (Number.isNaN(birth.getTime())) {
+      return { ok: false, reason: 'Fecha de nacimiento inválida.' };
+    }
+
+    // Reglas oficiales por cierre de año 2026.
+    const maxAgeCutoff = {
+      7:  '2019-01-01',
+      9:  '2017-01-01',
+      11: '2015-01-01',
+      13: '2013-01-01',
+      15: '2011-01-01',
+    };
+
+    if (cat.maxAge && maxAgeCutoff[cat.maxAge]) {
+      const minDob = new Date(`${maxAgeCutoff[cat.maxAge]}T00:00:00`);
+      if (birth < minDob) {
+        return { ok: false, reason: `${cat.maxAge} o menos: nacido/a en o después de ${maxAgeCutoff[cat.maxAge]}.` };
+      }
+    }
+
+    if (cat.minAge === 40) {
+      const maxDob = new Date('1986-12-31T23:59:59');
+      if (birth > maxDob) {
+        return { ok: false, reason: 'Seniors 40+: nacido/a en o antes de 1986-12-31.' };
+      }
     }
   }
 
@@ -5829,7 +5890,7 @@ function inscUpdateTotals() {
   });
   const grand = base + catTotal;
 
-  const fptmId = p ? String(p.id) : '—';
+  const fptmId = (p && p.id) ? String(p.id) : 'NUEVO';
 
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set('inscCheckoutBase', '$' + base.toFixed(2));
@@ -5855,15 +5916,19 @@ async function inscRegistrarYPagar() {
 
   // Guardar en Supabase en segundo plano (upsert por torneo+member_id)
   if (p) {
+    const memberId = p.id || null;
+    const fptmId = memberId ? ('FPTM-' + String(memberId)) : 'NUEVO';
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/insc_registro`, {
         method: 'POST',
         headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
         body: JSON.stringify({
           torneo:     'Morovis Open 2026',
-          member_id:  p.id,
+          member_id:  memberId,
           nombre:     p.name,
-          fptm_id:    'FPTM-' + String(p.id),
+          fptm_id:    fptmId,
+          sex:        (inscState.sex || p.sex || null),
+          dob:        inscState.dob || null,
           categorias: cats.map(c => ({ id: c.id, name: c.name, price: c.price })),
           base:       base,
           total:      total,
