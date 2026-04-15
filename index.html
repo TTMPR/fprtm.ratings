@@ -5678,14 +5678,13 @@ async function toggleInscripciones() {
   localStorage.setItem('inscripciones_open', String(inscripcionesOpen));
   applyInscripcionesState();
 
-  // Upsert to Supabase with anon key (RLS must be disabled — see fix_app_settings_rls.sql)
+  // Upsert using the authenticated Supabase client (requires RLS + authenticated_write policy)
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/app_settings`, {
-      method: 'POST',
-      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ key: 'inscripciones_open', value: String(inscripcionesOpen), updated_at: new Date().toISOString() })
-    });
-    if (!res.ok) throw new Error(await res.text());
+    const { error } = await _supabase
+      .from('app_settings')
+      .upsert({ key: 'inscripciones_open', value: String(inscripcionesOpen), updated_at: new Date().toISOString() },
+               { onConflict: 'key' });
+    if (error) throw new Error(error.message);
     inscSbSynced = true;
     applyInscripcionesState();
   } catch(e) {
