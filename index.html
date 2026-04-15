@@ -6243,6 +6243,29 @@ function inscritoSelectTab(catId) {
 // ══════════════════════════════════════════
 // INSCRITOS — EXPORTAR CSV (Stadium Compete)
 // ══════════════════════════════════════════
+
+// Maps our internal category IDs → Stadium event names (as shown in Stadium's UI)
+// Replace values with the actual Stadium Event IDs once available from
+// Stadium → Admin → Edit Event Settings dialog.
+const STADIUM_EVENT_IDS = {
+  ev1:  '7U - Abierto',
+  ev2:  '9U - Masculino',
+  ev3:  '9U - Femenino',
+  ev4:  '13U - Masculino',
+  ev5:  '13U - Femenino',
+  ev6:  'ABIERTO',
+  ev7:  '1500 o Menos',
+  ev8:  '1900 o Menos',
+  ev9:  '1700 o Menos',
+  ev10: '11U - Masculino',
+  ev11: '11U - Femenino',
+  ev12: '15U - Masculino',
+  ev13: '15U - Femenino',
+  ev14: 'Seniors',
+  ev15: '1600 o Menos',
+  ev16: '1800 o Menos',
+};
+
 async function exportInscripcionesStadium() {
   if (!currentUser) { showLogin(); return; }
   try {
@@ -6255,47 +6278,69 @@ async function exportInscripcionesStadium() {
     if (inscsErr) throw new Error(inscsErr.message);
     if (!inscs || !inscs.length) { alert('No hay inscritos para exportar.'); return; }
 
-    // Fetch player details for all member IDs
+    // Fetch full player details (DOB included — admin-only export)
     const memberIds = inscs.map(i => i.member_id).filter(Boolean);
     const { data: players, error: plErr } = await _supabase
       .from('Base de Datos')
-      .select('"Member ID","First Name","Last Name","Rating","New Rating","Sex","Email","Home Address"')
+      .select('"Member ID","First Name","Last Name","Rating","New Rating","Sex","Email","Home Address","Date of Birth"')
       .in('"Member ID"', memberIds);
     if (plErr) throw new Error(plErr.message);
 
     const playerMap = {};
     (players || []).forEach(p => { playerMap[p['Member ID']] = p; });
 
-    function normSex(raw) {
-      const v = (raw || '').toString().trim().toUpperCase();
-      if (v === 'M' || v === 'MALE' || v === 'MASCULINO') return 'M';
-      if (v === 'F' || v === 'FEMALE' || v === 'FEMENINO') return 'F';
-      return raw || '';
-    }
     function parseAddress(raw) {
-      if (!raw) return { address: '', city: '', state: '' };
-      const parts = raw.split(',').map(s => s.trim());
-      return { address: parts[0] || '', city: parts[1] || '', state: parts[2] || '' };
+      if (!raw) return { address: '', city: '', state: '', zip: '' };
+      // Extract trailing zip code: "Calle X, San Juan, PR 00901"
+      const zipMatch = raw.match(/\b(\d{5}(?:-\d{4})?)\s*$/);
+      const zip = zipMatch ? zipMatch[1] : '';
+      const cleaned = raw.replace(/,?\s*\d{5}(?:-\d{4})?\s*$/, '').trim();
+      const parts = cleaned.split(',').map(s => s.trim());
+      // Handle "San Juan PR" → city=San Juan, state=PR
+      const cityRaw = parts[1] || '';
+      const stateInCity = cityRaw.match(/^(.*?)\s+([A-Z]{2})$/);
+      const city  = stateInCity ? stateInCity[1] : cityRaw;
+      const state = stateInCity ? stateInCity[2] : (parts[2] || '');
+      return { address: parts[0] || '', city, state, zip };
     }
 
-    const headers = ['id', 'firstName', 'lastName', 'rating', 'sex', 'email', 'address', 'city', 'state', 'country'];
+    const headers = [
+      'id', 'firstName', 'lastName', 'rating', 'sex', 'dob',
+      'email', 'address', 'city', 'state', 'country', 'zipCode',
+      'membershipIds', 'events'
+    ];
 
     const rows = inscs.map(insc => {
-      const p = playerMap[insc.member_id] || {};
+      const p       = playerMap[insc.member_id] || {};
       const nameParts = (insc.nombre || '').split(' ');
-      const addr = parseAddress(p['Home Address']);
-      const rating = p['New Rating'] ?? p['Rating'] ?? '';
+      const addr    = parseAddress(p['Home Address']);
+      const rating  = p['New Rating'] ?? p['Rating'] ?? '';
+      const sex     = normSexForForm(insc.sex || p['Sex']);
+      const dob     = normDobForInput(insc.dob || p['Date of Birth']) || '';
+      const membId  = insc.member_id ? `fptm|${insc.member_id}` : '';
+
+      // Map each registered category to its Stadium event name/ID
+      const cats   = Array.isArray(insc.categorias) ? insc.categorias : [];
+      const events = cats
+        .map(c => STADIUM_EVENT_IDS[c.id] || '')
+        .filter(Boolean)
+        .join(',');
+
       return [
         insc.member_id || '',
         p['First Name'] || nameParts[0] || '',
-        p['Last Name'] || nameParts.slice(1).join(' ') || '',
+        p['Last Name']  || nameParts.slice(1).join(' ') || '',
         rating,
-        normSex(p['Sex']),
+        sex,
+        dob,
         p['Email'] || '',
         addr.address,
         addr.city,
         addr.state,
-        'US'
+        'US',
+        addr.zip,
+        membId,
+        events,
       ];
     });
 
