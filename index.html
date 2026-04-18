@@ -1747,6 +1747,11 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Exportar Inscritos</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV para Stadium Compete</div>
       </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="sincronizarInscripcionesDB()">
+        <div style="font-size:32px;margin-bottom:12px">🔄</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Sincronizar Datos</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Actualizar Base de Datos con datos de inscripciones</div>
+      </div>
       <div id="inscAdminCard" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative;transition:border-color 0.2s" onclick="toggleInscripciones()">
         <div id="inscAdminIcon" style="font-size:32px;margin-bottom:12px">📋</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Inscripciones</div>
@@ -2421,6 +2426,13 @@ Maria Lopez,Ana Torres,B</code>
               <option value="F" style="background:#1e283c">Femenino (F)</option>
             </select>
             <div id="inscSexNote" style="margin-top:5px;font-size:11px;color:var(--muted);min-height:14px;"></div>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Club / Pueblo</label>
+            <input type="text" id="inscClubInput" placeholder="Ej: Club Morovis, Bayamón..."
+              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'DM Sans';font-size:15px;color:var(--text);outline:none;"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            <div id="inscClubNote" style="margin-top:5px;font-size:11px;color:var(--muted);min-height:14px;"></div>
           </div>
         </div>
       </div>
@@ -5786,6 +5798,14 @@ function inscUpdateFieldNotes() {
       sexNote.innerHTML = '<span style="color:var(--muted);">No encontrado en el sistema — selecciona tu sexo</span>';
     }
   }
+  const clubNote = document.getElementById('inscClubNote');
+  if (clubNote) {
+    if (inscState._clubFromDb) {
+      clubNote.innerHTML = '<span style="color:#4ade80;">✓ Obtenido del sistema — verifica que sea correcto</span>';
+    } else {
+      clubNote.innerHTML = '<span style="color:var(--muted);">Opcional — actualiza si es incorrecto o estaba vacío</span>';
+    }
+  }
 }
 
 // ══════════════════════════════════════════
@@ -5798,8 +5818,10 @@ const inscState = {
   searchTimer: null,
   dob: null,
   sex: '',
+  club: '',
   _dobFromDb: false,  // true when DOB came from Supabase (for UX note)
   _sexFromDb: false,  // true when sex came from Supabase player record
+  _clubFromDb: false, // true when club came from player record
 };
 
 // ══════════════════════════════════════════
@@ -5951,11 +5973,13 @@ function inscGoToStep(step) {
     if (estEl)   estEl.textContent   = estatusText;
     if (totalEl) totalEl.textContent = '$' + base.toFixed(2);
     if (estEl)   estEl.style.color   = isMember ? 'var(--green)' : 'var(--accent)';
-    // Pre-fill DOB and Sex from inscState (values from DB)
-    const dobIn = document.getElementById('inscDobInput');
-    const sexIn = document.getElementById('inscSexInput');
-    if (dobIn) dobIn.value = inscState.dob || '';
-    if (sexIn) sexIn.value = inscState.sex || '';
+    // Pre-fill DOB, Sex, and Club from inscState (values from DB)
+    const dobIn  = document.getElementById('inscDobInput');
+    const sexIn  = document.getElementById('inscSexInput');
+    const clubIn = document.getElementById('inscClubInput');
+    if (dobIn)  dobIn.value  = inscState.dob  || '';
+    if (sexIn)  sexIn.value  = inscState.sex  || '';
+    if (clubIn) clubIn.value = inscState.club || '';
     // Reset border colors (may have been marked red on previous failed attempt)
     if (dobIn) dobIn.style.borderColor = 'var(--border)';
     if (sexIn) sexIn.style.borderColor = 'var(--border)';
@@ -5993,11 +6017,15 @@ function inscConfirmStep2() {
     if (note) note.innerHTML = '<span style="color:#ef4444;">Requerido — selecciona tu sexo</span>';
     return;
   }
+  const clubEl = document.getElementById('inscClubInput');
+  const club = (clubEl?.value || '').trim();
   // If the value changed from what the DB had, mark as manual
-  if (dob !== inscState.dob) inscState._dobFromDb = false;
-  if (sex !== inscState.sex) inscState._sexFromDb = false;
-  inscState.dob = dob;
-  inscState.sex = sex;
+  if (dob  !== inscState.dob)  inscState._dobFromDb  = false;
+  if (sex  !== inscState.sex)  inscState._sexFromDb  = false;
+  if (club !== inscState.club) inscState._clubFromDb = false;
+  inscState.dob  = dob;
+  inscState.sex  = sex;
+  inscState.club = club;
   inscGoToStep(3);
 }
 
@@ -6009,8 +6037,10 @@ function inscSelectOpcion(type) {
   inscState.player = null;
   inscState.dob = null;
   inscState.sex = '';
+  inscState.club = '';
   inscState._dobFromDb = false;
   inscState._sexFromDb = false;
+  inscState._clubFromDb = false;
 
   const sc = document.getElementById('inscSearchCard');
   const nb = document.getElementById('inscNuevoBlock');
@@ -6095,7 +6125,10 @@ function inscSelectPlayer(id) {
   inscState._dobFromDb = false;
   const normalizedSex = normSexForForm(p.sex);
   inscState.sex = normalizedSex;
-  inscState._sexFromDb = !!normalizedSex;  // sex came from the DB player record
+  inscState._sexFromDb = !!normalizedSex;
+  const clubVal = (p.club && p.club !== '—') ? p.club : '';
+  inscState.club = clubVal;
+  inscState._clubFromDb = !!clubVal;
   fetchPlayerDob(p.id).then(rawDob => {
     const dob = normDobForInput(rawDob);
     inscState.dob = dob;
@@ -6368,6 +6401,7 @@ async function inscSometerInscripcion() {
         fptm_id:    fptmId,
         sex:        inscState.sex || p?.sex || null,
         dob:        inscState.dob || null,
+        club:       inscState.club || null,
         categorias: cats.map(c => ({ id: c.id, name: c.name, price: c.price })),
         base:       base,
         total:      total,
@@ -6599,7 +6633,7 @@ async function exportInscripcionesStadium() {
     const memberIds = inscs.map(i => i.member_id).filter(Boolean);
     const { data: players, error: plErr } = await _supabase
       .from('Base de Datos')
-      .select('"Member ID","First Name","Last Name","Rating","New Rating","Sex","Email","Home Address","Date of Birth"')
+      .select('"Member ID","First Name","Last Name","Rating","New Rating","Sex","Email","Home Address","Date of Birth","Club"')
       .in('"Member ID"', memberIds);
     if (plErr) throw new Error(plErr.message);
 
@@ -6635,7 +6669,7 @@ async function exportInscripcionesStadium() {
       const sex     = normSexForForm(insc.sex || p['Sex']);
       const dob     = normDobForInput(insc.dob || p['Date of Birth']) || '';
       const membId  = insc.member_id ? `fptm|${insc.member_id}` : '';
-      const clubId  = matchClubId(p['Club'] || '');
+      const clubId  = matchClubId(insc.club || p['Club'] || '');
 
       // Map each registered category to its Stadium event name/ID
       const cats   = Array.isArray(insc.categorias) ? insc.categorias : [];
@@ -6678,6 +6712,48 @@ async function exportInscripcionesStadium() {
     URL.revokeObjectURL(url);
   } catch(e) {
     alert('Error al exportar: ' + e.message);
+  }
+}
+
+// ══════════════════════════════════════════
+// SINCRONIZAR INSCRIPCIONES → BASE DE DATOS
+// ══════════════════════════════════════════
+async function sincronizarInscripcionesDB() {
+  if (!isAdmin()) { showLogin(); return; }
+  if (!confirm('¿Actualizar Base de Datos con los datos (DOB, Sexo, Club) de las inscripciones?\n\nSolo se actualizan campos donde el jugador proveyó información durante la inscripción.')) return;
+
+  try {
+    const { data: inscs, error } = await _supabase
+      .from('insc_registro')
+      .select('member_id, dob, sex, club')
+      .eq('torneo', 'Morovis Open 2026')
+      .not('member_id', 'is', null);
+    if (error) throw new Error(error.message);
+
+    let updated = 0, skipped = 0, errors = 0;
+    for (const insc of (inscs || [])) {
+      const patch = {};
+      if (insc.dob)  patch['Date of Birth'] = insc.dob;
+      if (insc.sex)  patch['Sex']           = insc.sex;
+      if (insc.club) patch['Club']          = insc.club;
+      if (!Object.keys(patch).length) { skipped++; continue; }
+
+      const { error: upErr } = await _supabase
+        .from('Base de Datos')
+        .update(patch)
+        .eq('Member ID', insc.member_id);
+      if (upErr) { errors++; console.error('Sync error', insc.member_id, upErr.message); }
+      else updated++;
+    }
+
+    alert(`Sincronización completa.\n✅ Actualizados: ${updated}\n⏭ Sin cambios: ${skipped}\n❌ Errores: ${errors}`);
+    if (updated > 0) {
+      ALL_PLAYERS = await loadPlayers();
+      ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
+      PLAYERS = ALL_PLAYERS;
+    }
+  } catch(e) {
+    alert('Error al sincronizar: ' + e.message);
   }
 }
 
