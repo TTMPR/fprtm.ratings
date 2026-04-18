@@ -2081,11 +2081,11 @@ Maria Lopez,Ana Torres,B</code>
         <div class="mfs-grid">
           <div class="edit-field">
             <label>Nombre *</label>
-            <input type="text" id="membFNombre" placeholder="Sin acentos o ñ" autocomplete="given-name">
+            <input type="text" id="membFNombre" placeholder="Sin acentos o ñ" autocomplete="given-name" oninput="updateMembPaymentNota()">
           </div>
           <div class="edit-field">
             <label>Apellidos *</label>
-            <input type="text" id="membFApellidos" placeholder="Sin acentos o ñ" autocomplete="family-name">
+            <input type="text" id="membFApellidos" placeholder="Sin acentos o ñ" autocomplete="family-name" oninput="updateMembPaymentNota()">
           </div>
           <div class="edit-field">
             <label>Email *</label>
@@ -2188,6 +2188,10 @@ Maria Lopez,Ana Torres,B</code>
             Una vez enviado, copia el <strong style="color:var(--text)">número de confirmación</strong>
             de la transacción e ingrésalo abajo. Tu solicitud será procesada una vez
             el administrador confirme el pago.
+          </div>
+          <div style="background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.35);border-radius:10px;padding:14px 16px;margin-bottom:18px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">💬 Escribe esto en la nota del pago</div>
+            <div id="membPaymentNota" style="font-family:'DM Mono';font-size:17px;font-weight:700;color:var(--accent);letter-spacing:0.04em;">Membresía / [Tu nombre]</div>
           </div>
           <a href="https://wa.me/19392104299" target="_blank" style="text-decoration:none;display:block;margin:14px 0 4px;">
             <div style="display:flex;align-items:center;gap:12px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:10px;padding:12px 16px;">
@@ -5192,6 +5196,7 @@ function membSelectPlayer(playerId) {
   // Show main form
   document.getElementById('membMainForm').style.display = '';
   document.getElementById('membMainForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  updateMembPaymentNota();
 }
 
 function membFormLoadClubs() {
@@ -5200,6 +5205,15 @@ function membFormLoadClubs() {
   if (!sel) return;
   sel.innerHTML = '<option value="">— Seleccionar club —</option>'
     + clubs.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function updateMembPaymentNota() {
+  const nombre    = (document.getElementById('membFNombre')?.value    || '').trim();
+  const apellidos = (document.getElementById('membFApellidos')?.value || '').trim();
+  const el = document.getElementById('membPaymentNota');
+  if (!el) return;
+  const fullName = [nombre, apellidos].filter(Boolean).join(' ');
+  el.textContent = fullName ? `Membresía / ${fullName}` : 'Membresía / [Tu nombre]';
 }
 
 function membFormUpdateMinor() {
