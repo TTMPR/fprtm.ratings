@@ -6633,7 +6633,7 @@ async function exportInscripcionesStadium() {
       const sex     = normSexForForm(insc.sex || p['Sex']);
       const dob     = normDobForInput(insc.dob || p['Date of Birth']) || '';
       const membId  = insc.member_id ? `fptm|${insc.member_id}` : '';
-      const clubId  = matchClubId(p['Club'] || insc.nombre || '');
+      const clubId  = matchClubId(p['Club'] || '');
 
       // Map each registered category to its Stadium event name/ID
       const cats   = Array.isArray(insc.categorias) ? insc.categorias : [];
