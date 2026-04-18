@@ -4136,7 +4136,7 @@ async function exportStadiumCompete() {
     // Fetch full player data including sensitive fields (admin-only via JWT)
     const { data, error } = await _supabase
       .from('Base de Datos')
-      .select('"Member ID","First Name","Last Name","Date of Birth","Sex","Email","Rating","New Rating","Home Address"')
+      .select('"Member ID","First Name","Last Name","Date of Birth","Sex","Email","Rating","New Rating","Home Address","Club"')
       .order('"New Rating"', { ascending: false, nullsFirst: false });
 
     if (error) throw new Error(error.message);
@@ -4166,12 +4166,13 @@ async function exportStadiumCompete() {
     const headers = [
       'Member ID', 'First Name', 'Last Name', 'Date of Birth',
       'Sex', 'Email', 'Rating',
-      'Address', 'City', 'State', 'Country', 'Zip Code'
+      'Address', 'City', 'State', 'Country', 'Zip Code', 'Club ID'
     ];
 
     const rows = (data || []).map(p => {
       const addr = parseAddress(p['Home Address']);
       const rating = p['New Rating'] ?? p['Rating'] ?? '';
+      const clubId = matchClubId(p['Club'] || '');
       return [
         p['Member ID']    || '',
         p['First Name']   || '',
@@ -4184,7 +4185,8 @@ async function exportStadiumCompete() {
         addr.city,
         addr.state,
         addr.country,
-        addr.zip
+        addr.zip,
+        clubId
       ];
     });
 
