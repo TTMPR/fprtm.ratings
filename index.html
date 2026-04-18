@@ -6523,6 +6523,45 @@ function inscritoSelectTab(catId) {
 // Maps our internal category IDs → Stadium event names (as shown in Stadium's UI)
 // Replace values with the actual Stadium Event IDs once available from
 // Stadium → Admin → Edit Event Settings dialog.
+// Stadium Compete Club IDs keyed by normalized town keyword (longest first to avoid prefix conflicts)
+const STADIUM_CLUB_IDS = [
+  ['trujillo alto', 'f88d69ca-4c65-4273-ae60-e76e3e398ed7'],
+  ['vega alta',     '65f36aed-9723-4759-a5c6-57c11471b837'],
+  ['vega baja',     'c5512815-1f1e-4925-9606-fa56c21ad60d'],
+  ['san juan',      '81c2ed14-00c2-4cb3-8c2c-20e3713c1a4f'],
+  ['anasco',        'd0b16798-f779-4c95-8dbc-8b5ce187b929'],
+  ['bayamon',       '3412c426-03c7-4a22-931a-19a7b365b412'],
+  ['cayey',         'd9df033f-0828-4152-8d61-22198d4f8b6b'],
+  ['ceiba',         '1c81c48a-818c-4d43-885c-e76d8321446d'],
+  ['cidra',         '37063efa-08ec-4fa4-a187-e54559502069'],
+  ['corozal',       '792b51ec-548f-4418-8ee9-0a04b6cad925'],
+  ['florida',       '2ebe4251-e490-4cd9-b3dd-1e86706f6dc8'],
+  ['guaynabo',      'a8e1da73-0c6f-40ae-b79b-61cf5ea9e63c'],
+  ['humacao',       '70838caf-98b2-43c4-bd48-90b95825358c'],
+  ['mayaguez',      '190690c2-be86-4154-948d-bff943bbdec7'],
+  ['morovis',       '37ef6be4-6696-4e75-8997-7dae33d02a03'],
+  ['naguabo',       '1b9447e4-1051-428b-8aa4-ee213098ac0c'],
+  ['salinas',       'ce28f134-9d0b-416f-b7d3-934d85e453a1'],
+  ['utuado',        '6a0a9eee-4b72-46f7-8115-9b6415d61674'],
+  ['villalba',      'be0aba41-7b0a-429c-b3d5-1011c21ff58d'],
+];
+
+// Normalize string: lowercase, strip accents, collapse spaces
+function normalizeClub(s) {
+  return (s || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+// Returns the Stadium Club UUID for a given club name, or '' if not matched
+function matchClubId(clubName) {
+  const n = normalizeClub(clubName);
+  for (const [keyword, uuid] of STADIUM_CLUB_IDS) {
+    if (n.includes(keyword)) return uuid;
+  }
+  return '';
+}
+
 const STADIUM_EVENT_IDS = {
   ev1:  '7u---abierto',
   ev2:  '9u---masculine',
@@ -6583,7 +6622,7 @@ async function exportInscripcionesStadium() {
     const headers = [
       'id', 'firstName', 'lastName', 'rating', 'sex', 'dob',
       'email', 'address', 'city', 'state', 'country', 'zipCode',
-      'membershipIds', 'events'
+      'membershipIds', 'clubId', 'events'
     ];
 
     const rows = inscs.map(insc => {
@@ -6594,6 +6633,7 @@ async function exportInscripcionesStadium() {
       const sex     = normSexForForm(insc.sex || p['Sex']);
       const dob     = normDobForInput(insc.dob || p['Date of Birth']) || '';
       const membId  = insc.member_id ? `fptm|${insc.member_id}` : '';
+      const clubId  = matchClubId(p['Club'] || insc.nombre || '');
 
       // Map each registered category to its Stadium event name/ID
       const cats   = Array.isArray(insc.categorias) ? insc.categorias : [];
@@ -6616,6 +6656,7 @@ async function exportInscripcionesStadium() {
         'US',
         addr.zip,
         membId,
+        clubId,
         events,
       ];
     });
