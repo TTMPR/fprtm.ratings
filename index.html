@@ -2276,6 +2276,17 @@ Maria Lopez,Ana Torres,B</code>
 
   <div class="container" style="max-width:580px;padding-top:0">
 
+    <!-- Torneo activo — siempre visible -->
+    <div style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+      <img src="Morovis Open.jpg" alt="Morovis Open 2026" style="width:72px;height:72px;object-fit:cover;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
+      <span style="font-size:28px;display:none;">🏓</span>
+      <div>
+        <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:2px;">Torneo Activo</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);" id="inscTorneoNombre">Morovis Open 2026</div>
+        <div style="font-size:12px;color:var(--muted);">Sáb 25 &amp; Dom 26 de abril · Morovis, PR</div>
+      </div>
+    </div>
+
     <!-- Sub-tabs -->
     <div style="display:flex;gap:6px;margin-bottom:24px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:4px;">
       <button id="inscSubTabForm" onclick="inscSwitchTab('form')"
@@ -2290,15 +2301,6 @@ Maria Lopez,Ana Torres,B</code>
 
     <!-- ══ TAB: INSCRIBIRSE ══ -->
     <div id="inscTabFormContent">
-    <div style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px;">
-      <img src="Morovis Open.jpg" alt="Morovis Open 2026" style="width:72px;height:72px;object-fit:cover;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.previousElementSibling.style.display='inline'">
-      <span style="font-size:28px;display:none;">🏓</span>
-      <div>
-        <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:2px;">Torneo Activo</div>
-        <div style="font-size:18px;font-weight:700;color:var(--text);" id="inscTorneoNombre">Morovis Open 2026</div>
-        <div style="font-size:12px;color:var(--muted);">Sáb 25 &amp; Dom 26 de abril · Morovis, PR</div>
-      </div>
-    </div>
 
     <!-- Inscripciones cerradas banner (público) -->
     <div id="inscCerradasBanner" style="display:none;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:32px 24px;text-align:center;margin-bottom:24px;">
