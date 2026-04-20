@@ -2276,9 +2276,9 @@ Maria Lopez,Ana Torres,B</code>
 
   <div class="container" style="max-width:580px;padding-top:0">
 
-    <!-- Selector de torneo activo -->
-    <div style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px;">
-      <img src="Morovis Open.jpg" alt="Morovis Open 2026" style="width:72px;height:72px;object-fit:cover;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.previousElementSibling.style.display='inline'">
+    <!-- Torneo activo — siempre visible -->
+    <div style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+      <img src="Morovis Open.jpg" alt="Morovis Open 2026" style="width:72px;height:72px;object-fit:cover;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
       <span style="font-size:28px;display:none;">🏓</span>
       <div>
         <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:2px;">Torneo Activo</div>
@@ -2286,6 +2286,21 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-size:12px;color:var(--muted);">Sáb 25 &amp; Dom 26 de abril · Morovis, PR</div>
       </div>
     </div>
+
+    <!-- Sub-tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:24px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:4px;">
+      <button id="inscSubTabForm" onclick="inscSwitchTab('form')"
+        style="flex:1;padding:10px 0;border-radius:9px;border:none;font-family:'DM Sans';font-size:14px;font-weight:700;cursor:pointer;transition:all 0.18s;background:var(--accent);color:var(--navy);">
+        Inscribirse
+      </button>
+      <button id="inscSubTabInscritos" onclick="inscSwitchTab('inscritos')"
+        style="flex:1;padding:10px 0;border-radius:9px;border:none;font-family:'DM Sans';font-size:14px;font-weight:600;cursor:pointer;transition:all 0.18s;background:transparent;color:var(--muted);">
+        Ver Inscritos
+      </button>
+    </div>
+
+    <!-- ══ TAB: INSCRIBIRSE ══ -->
+    <div id="inscTabFormContent">
 
     <!-- Inscripciones cerradas banner (público) -->
     <div id="inscCerradasBanner" style="display:none;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:32px 24px;text-align:center;margin-bottom:24px;">
@@ -2531,9 +2546,10 @@ Maria Lopez,Ana Torres,B</code>
       <button onclick="inscGoToStep(2)" style="background:none;border:1px solid var(--border);color:var(--muted);width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;">← Volver al Paso 2</button>
     </div>
 
-    <!-- ═══ INSCRITOS — SECCIÓN PÚBLICA ═══ -->
-    <div id="inscritosSectionWrap" style="margin-top:48px;padding-top:32px;border-top:1px solid var(--border);">
-      <!-- Header -->
+    </div><!-- /inscTabFormContent -->
+
+    <!-- ══ TAB: VER INSCRITOS ══ -->
+    <div id="inscTabInscritos" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;">
         <div>
           <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;color:var(--text);">INSCRITOS</div>
@@ -2541,17 +2557,11 @@ Maria Lopez,Ana Torres,B</code>
         </div>
         <div id="inscritosSectionBadge" style="display:none;background:rgba(232,184,75,0.12);border:1px solid rgba(232,184,75,0.3);color:var(--accent);font-family:'Bebas Neue';font-size:17px;letter-spacing:1px;padding:5px 14px;border-radius:20px;white-space:nowrap;"></div>
       </div>
-      <!-- Category tabs — horizontally scrollable -->
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-        <div id="inscritosTabs" style="display:flex;border-bottom:1px solid var(--border);min-width:max-content;">
-          <!-- injected by JS -->
-        </div>
+        <div id="inscritosTabs" style="display:flex;border-bottom:1px solid var(--border);min-width:max-content;"></div>
       </div>
-      <!-- Player list for selected tab -->
-      <div id="inscritosTabContent" style="padding-top:20px;min-height:100px;">
-        <div style="text-align:center;padding:48px 0;color:var(--muted);font-size:14px;">Cargando...</div>
-      </div>
-    </div>
+      <div id="inscritosTabContent" style="padding-top:20px;min-height:100px;"></div>
+    </div><!-- /inscTabInscritos -->
 
   </div>
 </div>
@@ -3122,7 +3132,7 @@ function showPage(key) {
     document.getElementById('subirTorneoFecha').value = new Date().toISOString().split('T')[0];
   }
   // Reset/apply inscription state on navigation
-  if (key === 'inscripciones') { applyInscripcionesState(); loadInscritosSection(); }
+  if (key === 'inscripciones') { applyInscripcionesState(); inscSwitchTab('form'); }
   // Load torneos list on navigation
   if (key === 'torneosList') loadTorneosList();
   // Load pending requests when admin opens membresia tab
@@ -6549,6 +6559,29 @@ async function inscSometerInscripcion() {
 // ══════════════════════════════════════════
 // INSCRITOS — SECCIÓN PÚBLICA INLINE
 // ══════════════════════════════════════════
+// INSCRIPCIONES — SUB-TABS
+// ══════════════════════════════════════════
+function inscSwitchTab(tab) {
+  const isForm = tab === 'form';
+  const formEl  = document.getElementById('inscTabFormContent');
+  const listEl  = document.getElementById('inscTabInscritos');
+  const btnForm = document.getElementById('inscSubTabForm');
+  const btnList = document.getElementById('inscSubTabInscritos');
+  if (formEl) formEl.style.display = isForm ? '' : 'none';
+  if (listEl) listEl.style.display = isForm ? 'none' : '';
+  if (btnForm) {
+    btnForm.style.background = isForm ? 'var(--accent)' : 'transparent';
+    btnForm.style.color      = isForm ? 'var(--navy)' : 'var(--muted)';
+    btnForm.style.fontWeight = isForm ? '700' : '600';
+  }
+  if (btnList) {
+    btnList.style.background = !isForm ? 'var(--accent)' : 'transparent';
+    btnList.style.color      = !isForm ? 'var(--navy)' : 'var(--muted)';
+    btnList.style.fontWeight = !isForm ? '700' : '600';
+  }
+  if (!isForm) loadInscritosSection();
+}
+
 let _inscritosByCategory = null;
 
 async function loadInscritosSection() {
