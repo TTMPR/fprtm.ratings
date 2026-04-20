@@ -5833,9 +5833,10 @@ const inscState = {
   dob: null,
   sex: '',
   club: '',
-  _dobFromDb: false,  // true when DOB came from Supabase (for UX note)
-  _sexFromDb: false,  // true when sex came from Supabase player record
-  _clubFromDb: false, // true when club came from player record
+  existingInsc: null, // existing insc_registro row if player already inscribed
+  _dobFromDb: false,
+  _sexFromDb: false,
+  _clubFromDb: false,
 };
 
 // ══════════════════════════════════════════
@@ -5962,6 +5963,7 @@ function inscGoToStep(step) {
     inscState.player = null;
     inscState.dob = null;
     inscState.sex = '';
+    inscState.existingInsc = null;
     inscState.selectedCats = new Set();
     const si = document.getElementById('inscSearchInput');
     if (si) si.value = '';
@@ -6052,6 +6054,7 @@ function inscSelectOpcion(type) {
   inscState.dob = null;
   inscState.sex = '';
   inscState.club = '';
+  inscState.existingInsc = null;
   inscState._dobFromDb = false;
   inscState._sexFromDb = false;
   inscState._clubFromDb = false;
@@ -6136,6 +6139,7 @@ function inscSelectPlayer(id) {
   if (!p) return;
   inscState.player = p;
   inscState.dob = null;
+  inscState.existingInsc = null;
   inscState._dobFromDb = false;
   const normalizedSex = normSexForForm(p.sex);
   inscState.sex = normalizedSex;
@@ -6143,17 +6147,21 @@ function inscSelectPlayer(id) {
   const clubVal = (p.club && p.club !== '—') ? p.club : '';
   inscState.club = clubVal;
   inscState._clubFromDb = !!clubVal;
+
   fetchPlayerDob(p.id).then(rawDob => {
     const dob = normDobForInput(rawDob);
     inscState.dob = dob;
     inscState._dobFromDb = !!dob;
-    // Pre-fill input if Step 2 is currently shown and the field is empty
     const dobIn = document.getElementById('inscDobInput');
-    if (dobIn && !dobIn.value && dob) {
-      dobIn.value = dob;
-      inscUpdateFieldNotes();
-    }
-    inscRenderCategories(); // re-render if already on categories step
+    if (dobIn && !dobIn.value && dob) { dobIn.value = dob; inscUpdateFieldNotes(); }
+    inscRenderCategories();
+  });
+
+  fetchExistingInscripcion(p.id).then(existing => {
+    inscState.existingInsc = existing;
+    renderInscPlayerCard(p);
+    inscRenderCategories();
+    inscUpdateTotals();
   });
 
   const si = document.getElementById('inscSearchInput');
@@ -6161,8 +6169,20 @@ function inscSelectPlayer(id) {
   const rl = document.getElementById('inscResultsList');
   if (rl) { rl.innerHTML = ''; rl.style.display = 'none'; }
 
+  const ab = document.getElementById('inscAlertBox');
+  const at = document.getElementById('inscAlertTitle');
+  if (ab) ab.style.display = '';
+  if (at) at.textContent = p.name;
+  renderInscPlayerCard(p);
+}
+
+function renderInscPlayerCard(p) {
+  const am = document.getElementById('inscAlertMsg');
+  if (!am) return;
+
   const isMember = p.member;
-  const baseCharge = isMember ? '$0.00' : '$10.00';
+  const existing = inscState.existingInsc;
+
   let statusHtml;
   if (isMember) {
     statusHtml = `<span style="color:var(--green)">✓ Membresía activa</span>`;
@@ -6172,14 +6192,26 @@ function inscSelectPlayer(id) {
     statusHtml = `<span style="color:var(--muted)">Sin membresía / sin rating</span>`;
   }
 
-  const ab = document.getElementById('inscAlertBox');
-  const at = document.getElementById('inscAlertTitle');
-  const am = document.getElementById('inscAlertMsg');
-  if (ab) ab.style.display = '';
-  if (at) at.textContent = p.name;
-  if (am) am.innerHTML = `${statusHtml} &nbsp;·&nbsp; Cargo base: <strong>${baseCharge}</strong>
+  let existingHtml = '';
+  if (existing === null) {
+    // Still loading
+    existingHtml = `<div style="font-size:12px;color:var(--muted);margin-top:8px;">Verificando inscripción existente...</div>`;
+  } else if (existing) {
+    const catNames = (existing.categorias || []).map(c => c.name).join(', ');
+    existingHtml = `<div style="margin-top:10px;padding:10px 12px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:8px;font-size:13px;">
+      <span style="color:#4ade80;font-weight:700;">✅ Ya inscrito</span>
+      <span style="color:var(--muted);margin-left:6px;">— puedes añadir más categorías</span>
+      <div style="color:var(--muted);font-size:12px;margin-top:4px;">${catNames}</div>
+    </div>`;
+  }
+
+  const baseCharge = (existing || isMember) ? '$0.00' : '$10.00';
+  const btnLabel = existing ? 'Añadir categorías →' : 'Continuar →';
+
+  am.innerHTML = `${statusHtml} &nbsp;·&nbsp; Cargo base: <strong>${baseCharge}</strong>
     ${p.rating ? `<br><span style="color:var(--muted);font-size:12px">Rating: ${p.rating} · FPTM-${String(p.id)}</span>` : ''}
-    <br><br><button onclick="inscGoToStep(2)" style="background:var(--accent);color:var(--navy);border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:4px;">Continuar →</button>`;
+    ${existingHtml}
+    <br><button onclick="inscGoToStep(2)" style="background:var(--accent);color:var(--navy);border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:4px;">${btnLabel}</button>`;
 }
 
 // ══════════════════════════════════════════
@@ -6194,6 +6226,14 @@ async function fetchPlayerDob(memberId) {
       .maybeSingle();
     if (error || !data) return null;
     return data['Date of Birth'] || null;
+  } catch(e) { return null; }
+}
+
+async function fetchExistingInscripcion(memberId) {
+  try {
+    const data = await sbGet('insc_registro',
+      `?torneo=eq.Morovis%20Open%202026&member_id=eq.${memberId}&limit=1`);
+    return data?.[0] || null;
   } catch(e) { return null; }
 }
 
@@ -6263,6 +6303,8 @@ function inscRenderCategories() {
   const container = document.getElementById('inscCatList');
   if (!container) return;
 
+  const existingIds = new Set((inscState.existingInsc?.categorias || []).map(c => c.id));
+
   const bySlot = {};
   INSC_CATEGORIES.forEach(cat => {
     if (!bySlot[cat.slot]) bySlot[cat.slot] = [];
@@ -6270,20 +6312,44 @@ function inscRenderCategories() {
   });
 
   let html = '';
+  if (existingIds.size > 0) {
+    html += `<div style="margin-bottom:12px;padding:10px 12px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:8px;font-size:12px;color:var(--muted);">
+      ✅ <strong style="color:#4ade80;">Ya inscrito</strong> en ${existingIds.size} categoría${existingIds.size !== 1 ? 's' : ''} — selecciona las adicionales que deseas añadir
+    </div>`;
+  }
+
   Object.entries(bySlot).forEach(([slot, cats]) => {
     html += `<div style="margin-bottom:6px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600">${INSC_SLOT_LABELS[slot] || slot}</div>`;
     cats.forEach(cat => {
-      const sel = inscState.selectedCats.has(cat.id);
-      const elig = inscCatEligible(cat);
-      const disabled = !elig.ok;
-      html += `<div onclick="${disabled ? '' : `inscToggleCat('${cat.id}')`}"
-        style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1.5px solid ${sel ? 'var(--accent)' : disabled ? 'rgba(255,255,255,0.05)' : 'var(--border)'};background:${sel ? 'rgba(232,184,75,0.08)' : disabled ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)'};cursor:${disabled ? 'not-allowed' : 'pointer'};transition:all .15s;opacity:${disabled ? '0.45' : '1'}">
-        <div style="width:20px;height:20px;border-radius:5px;border:1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'};background:${sel ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      const isExisting = existingIds.has(cat.id);
+      const sel        = inscState.selectedCats.has(cat.id);
+      const elig       = isExisting ? { ok: true } : inscCatEligible(cat);
+      const disabled   = isExisting || !elig.ok;
+
+      const border = isExisting ? '#22c55e' : sel ? 'var(--accent)' : !elig.ok ? 'rgba(255,255,255,0.05)' : 'var(--border)';
+      const bg     = isExisting ? 'rgba(34,197,94,0.07)' : sel ? 'rgba(232,184,75,0.08)' : !elig.ok ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)';
+      const cursor = disabled ? 'default' : 'pointer';
+      const opacity = !elig.ok && !isExisting ? '0.45' : '1';
+
+      let checkEl;
+      if (isExisting) {
+        checkEl = `<span style="font-size:16px;flex-shrink:0;">✅</span>`;
+      } else {
+        checkEl = `<div style="width:20px;height:20px;border-radius:5px;border:1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'};background:${sel ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
           ${sel ? '<span style="color:#0a1628;font-size:13px;font-weight:700">✓</span>' : ''}
-        </div>
+        </div>`;
+      }
+
+      const subText = isExisting
+        ? `<span style="color:#4ade80;font-size:11px;font-weight:600;">Ya inscrito · $${cat.price}</span>`
+        : `<span style="color:var(--muted);font-size:12px;">${!elig.ok ? elig.reason : cat.desc} · $${cat.price}</span>`;
+
+      html += `<div onclick="${disabled ? '' : `inscToggleCat('${cat.id}')`}"
+        style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1.5px solid ${border};background:${bg};cursor:${cursor};transition:all .15s;opacity:${opacity};margin-bottom:4px;">
+        ${checkEl}
         <div style="flex:1">
-          <div style="font-size:14px;font-weight:600;color:${disabled ? 'var(--muted)' : 'var(--text)'};">${cat.name}</div>
-          <div style="font-size:12px;color:var(--muted);">${disabled ? elig.reason : cat.desc} · $${cat.price}</div>
+          <div style="font-size:14px;font-weight:600;color:${isExisting ? '#86efac' : !elig.ok ? 'var(--muted)' : 'var(--text)'};">${cat.name}</div>
+          ${subText}
         </div>
       </div>`;
     });
@@ -6331,7 +6397,9 @@ function inscToggleCat(id) {
 function inscUpdateTotals() {
   const p = inscState.player;
   const isMember = p && p.member;
-  const base = isMember ? 0 : 10;
+  const hasExisting = !!inscState.existingInsc;
+  // No base charge if player is already inscribed (already paid it)
+  const base = hasExisting ? 0 : (isMember ? 0 : 10);
 
   let catTotal = 0;
   inscState.selectedCats.forEach(id => {
@@ -6389,11 +6457,32 @@ async function inscSometerInscripcion() {
   const code = (document.getElementById('inscRefCode')?.value || '').trim();
   if (!code) { alert('Ingresa el número de referencia del pago.'); return; }
 
-  const p    = inscState.player;
-  const cats = [...inscState.selectedCats].map(id => INSC_CATEGORIES.find(c => c.id === id)).filter(Boolean);
+  const p          = inscState.player;
+  const existing   = inscState.existingInsc;
+  const newCats    = [...inscState.selectedCats].map(id => INSC_CATEGORIES.find(c => c.id === id)).filter(Boolean);
+
+  if (newCats.length === 0) {
+    alert(existing
+      ? 'No seleccionaste categorías adicionales. Elige al menos una para continuar.'
+      : 'Selecciona al menos una categoría antes de continuar.');
+    return;
+  }
+
   const isMember = p && p.member;
-  const base  = isMember ? 0 : 10;
-  const total = base + cats.reduce((s, c) => s + c.price, 0);
+  const base  = existing ? 0 : (isMember ? 0 : 10);
+  const newTotal = base + newCats.reduce((s, c) => s + c.price, 0);
+
+  // Merge existing + new categories (avoid duplicates)
+  const existingCats = existing?.categorias || [];
+  const existingIdSet = new Set(existingCats.map(c => c.id));
+  const mergedCats = [...existingCats, ...newCats.filter(c => !existingIdSet.has(c.id))];
+
+  // Append reference codes
+  const existingRef = existing?.referencia || '';
+  const mergedRef   = existingRef ? `${existingRef} / ${code}` : code;
+
+  // Accumulated total
+  const accTotal = (existing?.total ?? 0) + newTotal;
 
   const btn = document.getElementById('inscSubmitBtn');
   const origText = btn.textContent;
@@ -6416,10 +6505,10 @@ async function inscSometerInscripcion() {
         sex:        inscState.sex || p?.sex || null,
         dob:        inscState.dob || null,
         club:       inscState.club || null,
-        categorias: cats.map(c => ({ id: c.id, name: c.name, price: c.price })),
-        base:       base,
-        total:      total,
-        referencia: code,
+        categorias: mergedCats.map(c => ({ id: c.id, name: c.name, price: c.price })),
+        base:       existing?.base ?? base,
+        total:      accTotal,
+        referencia: mergedRef,
         updated_at: new Date().toISOString()
       })
     });
@@ -6429,14 +6518,18 @@ async function inscSometerInscripcion() {
       throw new Error(err.message || res.statusText);
     }
 
+    const isAddition = !!existing;
+    const addedNames = newCats.map(c => c.name).join(', ');
+
     // Show success state
     const despues = document.getElementById('inscPagoDespues');
     if (despues) despues.innerHTML = `
       <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:24px;text-align:center;">
         <div style="font-size:36px;margin-bottom:10px;">✅</div>
-        <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:1px;color:#4ade80;margin-bottom:8px;">¡Inscripción Sometida!</div>
+        <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:1px;color:#4ade80;margin-bottom:8px;">${isAddition ? '¡Categorías Añadidas!' : '¡Inscripción Sometida!'}</div>
+        ${isAddition ? `<p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Añadidas: <strong style="color:var(--text);">${addedNames}</strong></p>` : ''}
         <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
-          Tu inscripción fue registrada exitosamente.<br>
+          ${isAddition ? 'Tus categorías adicionales fueron registradas.' : 'Tu inscripción fue registrada exitosamente.'}<br>
           <strong style="color:var(--text);">Referencia:</strong> ${code}
         </p>
         <p style="font-size:13px;color:var(--muted);line-height:1.5;">
