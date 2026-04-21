@@ -5763,22 +5763,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 // INSCRIPCIONES — CONSTANTS
 // ══════════════════════════════════════════
 const INSC_CATEGORIES = [
-  { id: 'ev1',  name: '7 o Menos Abierto',       desc: 'Trofeos y medallas',           price: 11, slot: 'SAB-900',  maxAge: 7 },
-  { id: 'ev2',  name: '9 o Menos Masculino',      desc: 'Trofeos y medallas',           price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'M' },
-  { id: 'ev3',  name: '9 o Menos Femenino',       desc: 'Trofeos y medallas',           price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'F' },
-  { id: 'ev4',  name: '13 o Menos Masculino',     desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'M' },
-  { id: 'ev5',  name: '13 o Menos Femenino',      desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'F' },
-  { id: 'ev6',  name: 'Abierto',                  desc: '1ro $85 · 2do $70 · 3/4 $60', price: 25, slot: 'SAB-900' },
-  { id: 'ev7',  name: '1500 o Menos',             desc: '1ro $45 · 2do $35 · 3/4 $30', price: 20, slot: 'SAB-1100', maxRating: 1500 },
-  { id: 'ev8',  name: '1900 o Menos',             desc: '1ro $65 · 2do $60 · 3/4 $55', price: 20, slot: 'SAB-1230', maxRating: 1900 },
-  { id: 'ev9',  name: '1700 o Menos',             desc: '1ro $55 · 2do $50 · 3/4 $45', price: 20, slot: 'SAB-1230', maxRating: 1700 },
-  { id: 'ev10', name: '11 o Menos Masculino',     desc: '1ro $30 · 2do $25 · 3/4 $20', price: 20, slot: 'DOM-900',  maxAge: 11, sex: 'M' },
-  { id: 'ev11', name: '11 o Menos Femenino',      desc: '1ro $30 · 2do $25 · 3/4 $20', price: 20, slot: 'DOM-900',  maxAge: 11, sex: 'F' },
-  { id: 'ev12', name: '15 o Menos Masculino',     desc: '1ro $40 · 2do $35 · 3/4 $30', price: 20, slot: 'DOM-900',  maxAge: 15, sex: 'M' },
-  { id: 'ev13', name: '15 o Menos Femenino',      desc: '1ro $40 · 2do $35 · 3/4 $30', price: 20, slot: 'DOM-900',  maxAge: 15, sex: 'F' },
-  { id: 'ev14', name: 'Seniors – 40 años o más',  desc: '1ro $35 · 2do $30 · 3/4 $25', price: 20, slot: 'DOM-1100', minAge: 40 },
-  { id: 'ev15', name: '1600 o Menos',             desc: '1ro $50 · 2do $45 · 3/4 $40', price: 20, slot: 'DOM-1230', maxRating: 1600 },
-  { id: 'ev16', name: '1800 o Menos',             desc: '1ro $60 · 2do $55 · 3/4 $50', price: 20, slot: 'DOM-1230', maxRating: 1800 },
+  { id: 'ev1',  name: '7 o Menos Abierto',       desc: 'Trofeos y medallas',                  price: 11, slot: 'SAB-900',  maxAge: 7 },
+  { id: 'ev2',  name: '9 o Menos Masculino',      desc: 'Trofeos y medallas',                  price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'M' },
+  { id: 'ev3',  name: '9 o Menos Femenino',       desc: 'Trofeos y medallas',                  price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'F' },
+  { id: 'ev4',  name: '13 o Menos Masculino',     desc: '1ro $35 · 2do $30 · 3/4 $25',        price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'M' },
+  { id: 'ev5',  name: '13 o Menos Femenino',      desc: '1ro $35 · 2do $30 · 3/4 $25',        price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'F' },
+  { id: 'ev6',  name: 'Abierto',                  desc: '1ro $250 · 2do $125 · 3/4 $70',      price: 25, slot: 'SAB-900',  maxPlayers: 32 },
+  { id: 'ev7',  name: '1500 o Menos',             desc: '1ro $45 · 2do $35 · 3/4 $30',        price: 20, slot: 'SAB-1100', maxRating: 1500, maxPlayers: 32 },
+  { id: 'ev8',  name: '1900 o Menos',             desc: '1ro $150 · 2do $100 · 3/4 $55',      price: 20, slot: 'SAB-1230', maxRating: 1900, maxPlayers: 32 },
+  { id: 'ev9',  name: '1700 o Menos',             desc: '1ro $75 · 2do $50 · 3/4 $45',        price: 20, slot: 'SAB-1230', maxRating: 1700, maxPlayers: 32 },
+  { id: 'ev10', name: '11 o Menos Masculino',     desc: '1ro $30 · 2do $25 · 3/4 $20',        price: 20, slot: 'DOM-900',  maxAge: 11, sex: 'M' },
+  { id: 'ev11', name: '11 o Menos Femenino',      desc: '1ro $30 · 2do $25 · 3/4 $20',        price: 20, slot: 'DOM-900',  maxAge: 11, sex: 'F' },
+  { id: 'ev12', name: '15 o Menos Masculino',     desc: '1ro $40 · 2do $35 · 3/4 $30',        price: 20, slot: 'DOM-900',  maxAge: 15, sex: 'M' },
+  { id: 'ev13', name: '15 o Menos Femenino',      desc: '1ro $40 · 2do $35 · 3/4 $30',        price: 20, slot: 'DOM-900',  maxAge: 15, sex: 'F' },
+  { id: 'ev14', name: 'Seniors – 40 años o más',  desc: '1ro $75 · 2do $50 · 3/4 $25',        price: 20, slot: 'DOM-1100', minAge: 40 },
+  { id: 'ev15', name: '1600 o Menos',             desc: '1ro $50 · 2do $45 · 3/4 $40',        price: 20, slot: 'DOM-1230', maxRating: 1600, maxPlayers: 32 },
+  { id: 'ev16', name: '1800 o Menos',             desc: '1ro $100 · 2do $75 · 3/4 $50',       price: 20, slot: 'DOM-1230', maxRating: 1800, maxPlayers: 32 },
 ];
 const INSC_SLOT_LABELS = {
   'SAB-900':  'Sáb 25-abr · 9:00 a.m.',
@@ -6025,6 +6025,8 @@ function inscGoToStep(step) {
     const despues = document.getElementById('inscPagoDespues');
     if (antes)   antes.style.display   = '';
     if (despues) despues.style.display = 'none';
+    // Fetch live capacity counts then re-render
+    loadCatCounts().then(() => { inscRenderCategories(); inscUpdateTotals(); });
   }
 }
 
@@ -6253,6 +6255,24 @@ async function fetchExistingInscripcion(memberId) {
 }
 
 // ══════════════════════════════════════════
+// INSCRIPCIONES — CATEGORY COUNTS (capacity)
+// ══════════════════════════════════════════
+let _catCounts = {}; // catId → number of players currently registered
+
+async function loadCatCounts() {
+  try {
+    const data = await sbGet('insc_registro',
+      '?torneo=eq.Morovis%20Open%202026&select=categorias');
+    _catCounts = {};
+    (data || []).forEach(row => {
+      (Array.isArray(row.categorias) ? row.categorias : []).forEach(c => {
+        _catCounts[c.id] = (_catCounts[c.id] || 0) + 1;
+      });
+    });
+  } catch(e) { /* silent — capacity check skipped if fetch fails */ }
+}
+
+// ══════════════════════════════════════════
 // INSCRIPCIONES — CATEGORY ELIGIBILITY
 // ══════════════════════════════════════════
 function inscCatEligible(cat) {
@@ -6308,6 +6328,14 @@ function inscCatEligible(cat) {
     }
   }
 
+  // Capacity check
+  if (cat.maxPlayers) {
+    const count = _catCounts[cat.id] || 0;
+    if (count >= cat.maxPlayers) {
+      return { ok: false, reason: `Lleno — cupo máximo de ${cat.maxPlayers} jugadores alcanzado.` };
+    }
+  }
+
   return { ok: true };
 }
 
@@ -6355,9 +6383,13 @@ function inscRenderCategories() {
         </div>`;
       }
 
+      const count = _catCounts[cat.id] || 0;
+      const capBadge = cat.maxPlayers && !isExisting
+        ? ` <span style="color:${count >= cat.maxPlayers ? '#ef4444' : 'var(--muted)'};">(${count}/${cat.maxPlayers})</span>`
+        : '';
       const subText = isExisting
         ? `<span style="color:#4ade80;font-size:11px;font-weight:600;">Ya inscrito · $${cat.price}</span>`
-        : `<span style="color:var(--muted);font-size:12px;">${!elig.ok ? elig.reason : cat.desc} · $${cat.price}</span>`;
+        : `<span style="color:var(--muted);font-size:12px;">${!elig.ok ? elig.reason : cat.desc} · $${cat.price}${capBadge}</span>`;
 
       html += `<div onclick="${disabled ? '' : `inscToggleCat('${cat.id}')`}"
         style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1.5px solid ${border};background:${bg};cursor:${cursor};transition:all .15s;opacity:${opacity};margin-bottom:4px;">
