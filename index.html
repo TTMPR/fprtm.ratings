@@ -1155,6 +1155,20 @@
     .join-banner-inner { flex-direction: column; }
     .request-card-details { grid-template-columns: 1fr 1fr; }
   }
+  @keyframes blink-red {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.2; }
+  }
+  .dot-pending {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    margin-left: 7px;
+    vertical-align: middle;
+    animation: blink-red 1.2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -6644,7 +6658,7 @@ async function loadInscritosSection() {
     data.forEach(row => {
       const cats = Array.isArray(row.categorias) ? row.categorias : [];
       cats.forEach(c => {
-        if (byCat[c.id]) byCat[c.id].players.push({ nombre: row.nombre, fptm_id: row.fptm_id });
+        if (byCat[c.id]) byCat[c.id].players.push({ nombre: row.nombre, fptm_id: row.fptm_id, pagado: !!row.pagado });
       });
     });
     _inscritosByCategory = byCat;
@@ -6719,7 +6733,9 @@ function inscritoSelectTab(catId) {
                     color:var(--accent);font-size:11px;font-weight:700;
                     display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i + 1}</div>
         <div style="flex:1;">
-          <div style="font-size:14px;font-weight:600;color:var(--text);">${pl.nombre}</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;">
+            ${pl.nombre}${!pl.pagado ? '<span class="dot-pending" title="Pago pendiente de confirmación"></span>' : ''}
+          </div>
           ${pl.fptm_id ? `<div style="font-size:11px;color:var(--muted);margin-top:1px;">${pl.fptm_id}</div>` : ''}
         </div>
       </div>`;
@@ -6982,6 +6998,7 @@ async function loadInscAdminTable() {
             <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Categorías</th>
             <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Referencia</th>
             <th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Total</th>
+            <th style="text-align:center;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Pagado</th>
             <th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Fecha</th>
             <th style="padding:8px 10px;"></th>
           </tr>
@@ -7008,6 +7025,16 @@ async function loadInscAdminTable() {
           </td>
           <td style="padding:10px 10px;font-family:'DM Mono';font-size:12px;color:var(--accent);">${row.referencia || '—'}</td>
           <td style="padding:10px 10px;text-align:right;font-weight:600;color:var(--text);">$${(row.total || 0).toFixed(2)}</td>
+          <td style="padding:10px 10px;text-align:center;">
+            <button onclick="togglePagado(${row.id}, ${!!row.pagado})"
+              title="${row.pagado ? 'Marcar como pendiente' : 'Confirmar pago'}"
+              style="border:none;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;
+                     background:${row.pagado ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.1)'};
+                     color:${row.pagado ? '#4ade80' : '#ef4444'};
+                     border:1px solid ${row.pagado ? 'rgba(34,197,94,0.35)' : 'rgba(239,68,68,0.3)'};">
+              ${row.pagado ? '✓ Pagado' : '● Pendiente'}
+            </button>
+          </td>
           <td style="padding:10px 10px;text-align:right;color:var(--muted);white-space:nowrap;">${fecha}</td>
           <td style="padding:10px 10px;text-align:right;white-space:nowrap;">
             <button onclick="openEditInscripcion(${row.id})"
@@ -7026,6 +7053,21 @@ async function loadInscAdminTable() {
     tableEl.innerHTML = html;
   } catch(e) {
     tableEl.innerHTML = `<div style="color:#ef4444;padding:20px;">Error: ${e.message}</div>`;
+  }
+}
+
+// ── Pago toggle ───────────────────────────
+async function togglePagado(id, currentValue) {
+  try {
+    const { error } = await _supabase
+      .from('insc_registro')
+      .update({ pagado: !currentValue })
+      .eq('id', id);
+    if (error) throw new Error(error.message);
+    await loadInscAdminTable();
+    loadInscritosSection();
+  } catch(e) {
+    alert('Error al actualizar pago: ' + e.message);
   }
 }
 
