@@ -2522,7 +2522,7 @@ Maria Lopez,Ana Torres,B</code>
         <!-- PASO B: Confirmación post-pago (oculto hasta que paguen) -->
         <div id="inscPagoDespues" style="display:none;">
           <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:18px;margin-bottom:14px;">
-            <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:10px;">✓ ¿Ya realizaste el pago? Completa estos pasos:</div>
+            <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:12px;">✓ ¿Ya realizaste el pago?</div>
             <div style="display:flex;flex-direction:column;gap:8px;">
               <div style="display:flex;gap:10px;align-items:flex-start;">
                 <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.2);color:#4ade80;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">1</div>
@@ -2534,14 +2534,16 @@ Maria Lopez,Ana Torres,B</code>
                   <span style="font-family:'Bebas Neue';font-size:22px;letter-spacing:0.06em;color:var(--green);">939-210-4299</span>
                 </div>
               </a>
-              <div style="display:flex;gap:10px;align-items:flex-start;margin-top:4px;">
-                <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.2);color:#4ade80;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">2</div>
-                <div style="font-size:13px;color:var(--muted);line-height:1.5;">Ingresa el <strong style="color:var(--text);">número de referencia</strong> de tu pago en ATH Móvil:</div>
+              <div style="margin-top:6px;">
+                <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;transition:border-color 0.15s;"
+                       id="inscConfirmCheckLabel">
+                  <input type="checkbox" id="inscConfirmCheck" onchange="inscToggleSubmit()"
+                    style="width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:var(--green);cursor:pointer;">
+                  <span style="font-size:13px;color:var(--text);line-height:1.5;">
+                    Ya envié la captura del recibo al <strong style="color:var(--green);">939-210-4299</strong>
+                  </span>
+                </label>
               </div>
-              <input id="inscRefCode" type="text" placeholder="Ej: 202504251234567"
-                oninput="inscToggleSubmit()"
-                style="margin-left:30px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-family:'DM Mono';font-size:14px;color:var(--text);outline:none;letter-spacing:0.05em;"
-                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
             </div>
           </div>
 
@@ -6039,6 +6041,8 @@ function inscGoToStep(step) {
     const despues = document.getElementById('inscPagoDespues');
     if (antes)   antes.style.display   = '';
     if (despues) despues.style.display = 'none';
+    const chk = document.getElementById('inscConfirmCheck');
+    if (chk) { chk.checked = false; inscToggleSubmit(); }
     // Fetch live capacity counts then re-render
     loadCatCounts().then(() => { inscRenderCategories(); inscUpdateTotals(); });
   }
@@ -6503,21 +6507,20 @@ function inscIniciarPago() {
 // INSCRIPCIONES — HABILITAR BOTÓN SOMETER
 // ══════════════════════════════════════════
 function inscToggleSubmit() {
-  const code = (document.getElementById('inscRefCode')?.value || '').trim();
-  const btn  = document.getElementById('inscSubmitBtn');
+  const checked = document.getElementById('inscConfirmCheck')?.checked;
+  const label   = document.getElementById('inscConfirmCheckLabel');
+  const btn     = document.getElementById('inscSubmitBtn');
   if (!btn) return;
-  btn.disabled = !code;
-  btn.style.opacity = code ? '1' : '0.4';
-  btn.style.cursor  = code ? 'pointer' : 'not-allowed';
+  btn.disabled      = !checked;
+  btn.style.opacity = checked ? '1' : '0.4';
+  btn.style.cursor  = checked ? 'pointer' : 'not-allowed';
+  if (label) label.style.borderColor = checked ? 'var(--green)' : 'var(--border)';
 }
 
 // ══════════════════════════════════════════
 // INSCRIPCIONES — SOMETER INSCRIPCIÓN (Paso B)
 // ══════════════════════════════════════════
 async function inscSometerInscripcion() {
-  const code = (document.getElementById('inscRefCode')?.value || '').trim();
-  if (!code) { alert('Ingresa el número de referencia del pago.'); return; }
-
   const p          = inscState.player;
   const existing   = inscState.existingInsc;
   const newCats    = [...inscState.selectedCats].map(id => INSC_CATEGORIES.find(c => c.id === id)).filter(Boolean);
@@ -6537,10 +6540,6 @@ async function inscSometerInscripcion() {
   const existingCats = existing?.categorias || [];
   const existingIdSet = new Set(existingCats.map(c => c.id));
   const mergedCats = [...existingCats, ...newCats.filter(c => !existingIdSet.has(c.id))];
-
-  // Append reference codes
-  const existingRef = existing?.referencia || '';
-  const mergedRef   = existingRef ? `${existingRef} / ${code}` : code;
 
   // Accumulated total
   const accTotal = (existing?.total ?? 0) + newTotal;
@@ -6569,7 +6568,6 @@ async function inscSometerInscripcion() {
         categorias: mergedCats.map(c => ({ id: c.id, name: c.name, price: c.price })),
         base:       existing?.base ?? base,
         total:      accTotal,
-        referencia: mergedRef,
         updated_at: new Date().toISOString()
       })
     });
@@ -6589,14 +6587,9 @@ async function inscSometerInscripcion() {
         <div style="font-size:36px;margin-bottom:10px;">✅</div>
         <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:1px;color:#4ade80;margin-bottom:8px;">${isAddition ? '¡Categorías Añadidas!' : '¡Inscripción Sometida!'}</div>
         ${isAddition ? `<p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Añadidas: <strong style="color:var(--text);">${addedNames}</strong></p>` : ''}
-        <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
-          ${isAddition ? 'Tus categorías adicionales fueron registradas.' : 'Tu inscripción fue registrada exitosamente.'}<br>
-          <strong style="color:var(--text);">Referencia:</strong> ${code}
-        </p>
-        <p style="font-size:13px;color:var(--muted);line-height:1.5;">
-          Recuerda enviar la <strong style="color:var(--text);">captura del recibo</strong> al
-          <a href="https://wa.me/19392104299" target="_blank" style="color:var(--green);">939-210-4299</a>
-          si aún no lo has hecho.
+        <p style="font-size:14px;color:var(--muted);line-height:1.6;">
+          ${isAddition ? 'Tus categorías adicionales fueron registradas.' : 'Tu inscripción fue registrada exitosamente.'}
+          ${isAddition ? '' : '<br>Si aún no has enviado la captura del recibo, hazlo al <a href="https://wa.me/19392104299" target="_blank" style="color:var(--green);">939-210-4299</a>.'}
         </p>
       </div>`;
   } catch(e) {
