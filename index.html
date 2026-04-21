@@ -2216,10 +2216,14 @@ Maria Lopez,Ana Torres,B</code>
               </div>
             </div>
           </a>
-          <div class="edit-field" style="margin-bottom:0">
-            <label>Número de Confirmación ATH Móvil *</label>
-            <input type="text" id="membFAth" placeholder="Ej: 20260315123456" style="font-family:'DM Mono';letter-spacing:1px">
-          </div>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;margin-top:12px;transition:border-color 0.15s;" id="membScreenshotCheckLabel">
+            <input type="checkbox" id="membScreenshotCheck"
+              style="width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:var(--green);cursor:pointer;"
+              onchange="this.closest('label').style.borderColor=this.checked?'var(--green)':'var(--border)'">
+            <span style="font-size:13px;color:var(--text);line-height:1.5;">
+              Ya envié la captura del recibo al <strong style="color:var(--green);">939-210-4299</strong>
+            </span>
+          </label>
         </div>
 
         <!-- Política de Membresía -->
@@ -5140,10 +5144,12 @@ function showMembershipForm(type) {
 
   // Clear form fields
   ['membFNombre','membFApellidos','membFEmail','membFTelefono','membFDob',
-   'membFAddress','membFState','membFZip','membFAth','membFGuardianName','membFGuardianRelation']
+   'membFAddress','membFState','membFZip','membFGuardianName','membFGuardianRelation']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const sx = document.getElementById('membFSex'); if (sx) sx.value = '';
   const mi = document.getElementById('membFIsMinor'); if (mi) mi.checked = false;
+  const sc = document.getElementById('membScreenshotCheck'); if (sc) { sc.checked = false; }
+  const sl = document.getElementById('membScreenshotCheckLabel'); if (sl) sl.style.borderColor = 'var(--border)';
   document.getElementById('membMinorSection')?.classList.remove('visible');
 
   membFormLoadClubs();
@@ -5290,7 +5296,7 @@ async function submitMembershipRequest(e) {
   const email     = document.getElementById('membFEmail').value.trim();
   const sex       = document.getElementById('membFSex').value;
   const club      = document.getElementById('membFClub').value;
-  const ath       = document.getElementById('membFAth').value.trim();
+  const screenshotSent = document.getElementById('membScreenshotCheck')?.checked;
   const isMinor   = document.getElementById('membFIsMinor').checked;
   const guardName = document.getElementById('membFGuardianName').value.trim();
   const guardRel  = document.getElementById('membFGuardianRelation').value.trim();
@@ -5304,7 +5310,7 @@ async function submitMembershipRequest(e) {
   if (!email)     { msgEl.textContent = 'El email es requerido.'; return; }
   if (!sex)       { msgEl.textContent = 'Selecciona el sexo.'; return; }
   if (!club)      { msgEl.textContent = 'Selecciona un club.'; return; }
-  if (!ath)       { msgEl.textContent = 'El número de confirmación ATH Móvil es requerido.'; return; }
+  if (!screenshotSent) { msgEl.textContent = 'Confirma que enviaste la captura del recibo al WhatsApp.'; return; }
   const dob = document.getElementById('membFDob').value;
   if (type === 'new' && !dob) { msgEl.textContent = 'La fecha de nacimiento es requerida para nuevos miembros.'; return; }
   if (isMinor && (!guardName || !guardRel)) {
@@ -5344,7 +5350,6 @@ async function submitMembershipRequest(e) {
     is_minor:            isMinor,
     guardian_name:       isMinor ? guardName : null,
     guardian_relation:   isMinor ? guardRel  : null,
-    ath_confirmation:    ath,
     existing_player_id:  existingId ? Number(existingId) : null
   };
 
