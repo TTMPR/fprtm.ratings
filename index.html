@@ -5350,7 +5350,8 @@ async function submitMembershipRequest(e) {
     is_minor:            isMinor,
     guardian_name:       isMinor ? guardName : null,
     guardian_relation:   isMinor ? guardRel  : null,
-    existing_player_id:  existingId ? Number(existingId) : null
+    existing_player_id:  existingId ? Number(existingId) : null,
+    ath_confirmation:    'captura-enviada'
   };
 
   try {
