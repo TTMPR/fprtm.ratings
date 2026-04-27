@@ -1692,7 +1692,10 @@ Maria Lopez,Ana Torres,B</code>
     <p>Gestión de base de datos, torneos y configuración</p>
   </div>
   <div class="container">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+
+    <!-- ── Rankings & Datos ── -->
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">Rankings & Datos</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;">
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPage('subir')">
         <div style="font-size:32px;margin-bottom:12px">📸</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Subir Resultados</div>
@@ -1708,25 +1711,30 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Exportar Stadium</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV para importar en Stadium Compete</div>
       </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPage('membresia')">
-        <div style="font-size:32px;margin-bottom:12px">🪪</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Gestionar Membresías</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Activar, vencer, alertas</div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showConfigModal()">
+        <div style="font-size:32px;margin-bottom:12px">⚙</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Configuración</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Tabla de puntos, categorías</div>
       </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="sincronizarInscripcionesDB()">
+        <div style="font-size:32px;margin-bottom:12px">🔄</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Sincronizar Datos</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Actualizar Base de Datos con datos de inscripciones</div>
+      </div>
+    </div>
+
+    <!-- ── Jugadores ── -->
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">Jugadores</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;">
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showNewPlayerModal()">
         <div style="font-size:32px;margin-bottom:12px">➕</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Nuevo Jugador</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Registrar jugador en el sistema</div>
       </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showNewTournamentModal()">
-        <div style="font-size:32px;margin-bottom:12px">🏓</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Crear Torneo</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Nuevo evento en calendario</div>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showConfigModal()">
-        <div style="font-size:32px;margin-bottom:12px">⚙</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Configuración</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Tabla de puntos, categorías</div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPage('membresia')">
+        <div style="font-size:32px;margin-bottom:12px">🪪</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Gestionar Membresías</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Activar, vencer, alertas</div>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showPendingPhotosModal()">
         <div style="font-size:32px;margin-bottom:12px">🖼</div>
@@ -1751,6 +1759,16 @@ Maria Lopez,Ana Torres,B</code>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Revisar registros de no miembros</div>
         <span id="pendingRegBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
+    </div>
+
+    <!-- ── Torneos & Inscripciones ── -->
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">Torneos & Inscripciones</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showNewTournamentModal()">
+        <div style="font-size:32px;margin-bottom:12px">🏓</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Crear Torneo</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Nuevo evento en calendario</div>
+      </div>
       <div id="adminCardGestionar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscAdminModal()">
         <div style="font-size:32px;margin-bottom:12px">📋</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Gestionar Inscritos</div>
@@ -1766,6 +1784,12 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Reporte por Categoría</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Jugadores inscritos con rating y club</div>
       </div>
+      <div id="inscAdminCard" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative;transition:border-color 0.2s" onclick="toggleInscripciones()">
+        <div id="inscAdminIcon" style="font-size:32px;margin-bottom:12px">📋</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Inscripciones</div>
+        <div id="inscAdminStatus" style="color:var(--muted);font-size:13px;margin-top:6px">Cargando...</div>
+        <div id="inscAdminSync" style="font-size:11px;margin-top:4px;color:var(--muted)"></div>
+      </div>
       <div id="adminCardArchivar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;transition:border-color 0.2s;" onclick="toggleTorneoArchivado()">
         <div id="adminCardArchivarIcon" style="font-size:32px;margin-bottom:12px">🗃️</div>
         <div id="adminCardArchivarTitle" style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Archivar Torneo</div>
@@ -1776,18 +1800,8 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Past Tournaments</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Ver historial de torneos archivados</div>
       </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="sincronizarInscripcionesDB()">
-        <div style="font-size:32px;margin-bottom:12px">🔄</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Sincronizar Datos</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Actualizar Base de Datos con datos de inscripciones</div>
-      </div>
-      <div id="inscAdminCard" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative;transition:border-color 0.2s" onclick="toggleInscripciones()">
-        <div id="inscAdminIcon" style="font-size:32px;margin-bottom:12px">📋</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Inscripciones</div>
-        <div id="inscAdminStatus" style="color:var(--muted);font-size:13px;margin-top:6px">Cargando...</div>
-        <div id="inscAdminSync" style="font-size:11px;margin-top:4px;color:var(--muted)"></div>
-      </div>
     </div>
+
   </div>
 </div>
 
