@@ -1751,20 +1751,30 @@ Maria Lopez,Ana Torres,B</code>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Revisar registros de no miembros</div>
         <span id="pendingRegBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscAdminModal()">
+      <div id="adminCardGestionar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscAdminModal()">
         <div style="font-size:32px;margin-bottom:12px">📋</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Gestionar Inscritos</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Editar y eliminar inscripciones</div>
       </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportInscripcionesStadium()">
+      <div id="adminCardExportar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportInscripcionesStadium()">
         <div style="font-size:32px;margin-bottom:12px">📤</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Exportar Inscritos</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV para Stadium Compete</div>
       </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscReporteModal()">
+      <div id="adminCardReporte" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscReporteModal()">
         <div style="font-size:32px;margin-bottom:12px">📊</div>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Reporte por Categoría</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Jugadores inscritos con rating y club</div>
+      </div>
+      <div id="adminCardArchivar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;transition:border-color 0.2s;" onclick="toggleTorneoArchivado()">
+        <div id="adminCardArchivarIcon" style="font-size:32px;margin-bottom:12px">🗃️</div>
+        <div id="adminCardArchivarTitle" style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Archivar Torneo</div>
+        <div id="adminCardArchivarDesc" style="color:var(--muted);font-size:13px;margin-top:6px">Mover inscripciones a historial</div>
+      </div>
+      <div id="adminCardPastTorneos" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPastTorneosModal()">
+        <div style="font-size:32px;margin-bottom:12px">🏆</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Past Tournaments</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Ver historial de torneos archivados</div>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="sincronizarInscripcionesDB()">
         <div style="font-size:32px;margin-bottom:12px">🔄</div>
@@ -1777,6 +1787,66 @@ Maria Lopez,Ana Torres,B</code>
         <div id="inscAdminStatus" style="color:var(--muted);font-size:13px;margin-top:6px">Cargando...</div>
         <div id="inscAdminSync" style="font-size:11px;margin-top:4px;color:var(--muted)"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAST TOURNAMENTS MODAL (admin)
+═══════════════════════════════════════════ -->
+<div id="pastTorneosModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px;">
+      <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;">Past Tournaments</div>
+      <button onclick="closePastTorneosModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+    <div id="pastTorneoslist" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
+  </div>
+</div>
+
+<!-- Past Tournament Detail Modal -->
+<div id="pastTorneoDetailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:1100;overflow-y:auto;padding:16px;">
+  <div style="max-width:900px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div id="pastTorneoDetailTitle" style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;"></div>
+        <div id="pastTorneoDetailSub" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
+      </div>
+      <button onclick="closePastTorneoDetailModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+    <!-- Sub-tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:20px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:4px;">
+      <button id="pastDetailTabGestionar" onclick="pastDetailSwitchTab('gestionar')"
+        style="flex:1;padding:9px 0;border-radius:9px;border:none;font-family:'DM Sans';font-size:14px;font-weight:700;cursor:pointer;transition:all 0.18s;background:var(--accent);color:var(--navy);">
+        Gestionar Inscritos
+      </button>
+      <button id="pastDetailTabReporte" onclick="pastDetailSwitchTab('reporte')"
+        style="flex:1;padding:9px 0;border-radius:9px;border:none;font-family:'DM Sans';font-size:14px;font-weight:600;cursor:pointer;transition:all 0.18s;background:transparent;color:var(--muted);">
+        Reporte por Categoría
+      </button>
+    </div>
+    <!-- Gestionar panel -->
+    <div id="pastDetailGestionarPanel">
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+        <input id="pastDetailSearchInput" type="text" placeholder="🔍 Buscar por nombre o ID…"
+          oninput="pastDetailSearch(this.value)"
+          style="flex:1;min-width:180px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;
+                 padding:9px 14px;font-family:'DM Sans';font-size:13px;color:var(--text);outline:none;"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <select id="pastDetailStatusFilter" onchange="pastDetailSearch(document.getElementById('pastDetailSearchInput').value)"
+          style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:9px 12px;
+                 font-family:'DM Sans';font-size:13px;color:var(--text);outline:none;cursor:pointer;">
+          <option value="">Todos</option>
+          <option value="pagado">✓ Pagados</option>
+          <option value="pendiente">● Pendientes</option>
+        </select>
+      </div>
+      <div id="pastDetailGestionarTable" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
+    </div>
+    <!-- Reporte panel -->
+    <div id="pastDetailReportePanel" style="display:none;">
+      <div id="pastDetailReporteTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;"></div>
+      <div id="pastDetailReporteContent" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
     </div>
   </div>
 </div>
@@ -2334,8 +2404,27 @@ Maria Lopez,Ana Torres,B</code>
 
   <div class="container" style="max-width:580px;padding-top:0">
 
+    <!-- Próximamente placeholder (shown when torneo is archived) -->
+    <div id="inscArchivedPlaceholder" style="display:none;text-align:center;padding:40px 16px;">
+      <img src="fprtm logo.jpg" alt="FPTM" style="width:100px;height:100px;object-fit:cover;border-radius:50%;margin-bottom:24px;opacity:0.85;" onerror="this.style.display='none'">
+      <div style="font-family:'Bebas Neue';font-size:32px;letter-spacing:2px;margin-bottom:16px;">Próximamente</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.75;max-width:420px;margin:0 auto 28px;">
+        Únete a nuestro canal de WhatsApp para recibir información sobre logística, sorteos y cambios de último momento en nuestros eventos federativos. Este es un medio de apoyo diseñado para facilitar el flujo de información técnica de manera rápida y organizada.
+      </p>
+      <a href="https://whatsapp.com/channel/0029VbCmA4L6rsQrAKOglc25" target="_blank" rel="noopener"
+        style="display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;text-decoration:none;
+               padding:14px 24px;border-radius:12px;font-weight:700;font-size:15px;transition:opacity 0.15s;"
+        onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Únete al canal de WhatsApp
+      </a>
+      <p style="font-size:11px;color:var(--muted);margin-top:32px;opacity:0.6;">
+        Contenido técnico y gestión de datos impulsados por la tecnología de TTM PR.
+      </p>
+    </div>
+
     <!-- Torneo activo — siempre visible -->
-    <div style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+    <div id="inscTorneoCard" style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
       <img src="Morovis Open.jpg" alt="Morovis Open 2026" style="width:72px;height:72px;object-fit:cover;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
       <span style="font-size:28px;display:none;">🏓</span>
       <div>
@@ -2345,7 +2434,8 @@ Maria Lopez,Ana Torres,B</code>
       </div>
     </div>
 
-    <!-- Sub-tabs -->
+    <!-- Sub-tabs (hidden when archived) -->
+    <div id="inscActiveTorneoUI">
     <div style="display:flex;gap:6px;margin-bottom:24px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:4px;">
       <button id="inscSubTabForm" onclick="inscSwitchTab('form')"
         style="flex:1;padding:10px 0;border-radius:9px;border:none;font-family:'DM Sans';font-size:14px;font-weight:700;cursor:pointer;transition:all 0.18s;background:var(--accent);color:var(--navy);">
@@ -2622,6 +2712,7 @@ Maria Lopez,Ana Torres,B</code>
       </div>
       <div id="inscritosTabContent" style="padding-top:20px;min-height:100px;"></div>
     </div><!-- /inscTabInscritos -->
+    </div><!-- /inscActiveTorneoUI -->
 
   </div>
 </div>
@@ -5788,6 +5879,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initPublicRegForm();
 
   loadInscripcionesConfig();
+  loadTorneoArchivoConfig();
 
   showLoading(true);
   const [playersResult, membersResult] = await Promise.allSettled([loadPlayers(), loadMembers(), loadApprovedPhotos()]);
@@ -5959,22 +6051,42 @@ function applyInscripcionesState() {
   const banner        = document.getElementById('inscCerradasBanner');
   const previewBanner = document.getElementById('inscPreviewBanner');
   const progress      = document.getElementById('inscProgressBar');
+  const placeholder   = document.getElementById('inscArchivedPlaceholder');
+  const activeUI      = document.getElementById('inscActiveTorneoUI');
+  const torneoCard    = document.getElementById('inscTorneoCard');
 
-  if (inscripcionesOpen) {
+  if (torneoArchivado) {
+    // Archived — show placeholder, hide everything else
+    if (placeholder)   placeholder.style.display   = '';
+    if (activeUI)      activeUI.style.display       = 'none';
+    if (torneoCard)    torneoCard.style.display      = 'none';
+    if (banner)        banner.style.display         = 'none';
+    if (previewBanner) previewBanner.style.display  = 'none';
+    if (progress)      progress.style.display       = 'none';
+  } else if (inscripcionesOpen) {
     // Open for everyone
-    if (banner)        banner.style.display        = 'none';
+    if (placeholder)   placeholder.style.display   = 'none';
+    if (activeUI)      activeUI.style.display       = '';
+    if (torneoCard)    torneoCard.style.display      = '';
+    if (banner)        banner.style.display         = 'none';
     if (previewBanner) previewBanner.style.display  = 'none';
     if (progress)      progress.style.display       = '';
     inscGoToStep(1);
   } else if (isAdmin()) {
     // Closed but admin is logged in — show preview with the form accessible
-    if (banner)        banner.style.display        = 'none';
+    if (placeholder)   placeholder.style.display   = 'none';
+    if (activeUI)      activeUI.style.display       = '';
+    if (torneoCard)    torneoCard.style.display      = '';
+    if (banner)        banner.style.display         = 'none';
     if (previewBanner) previewBanner.style.display  = 'flex';
     if (progress)      progress.style.display       = '';
     inscGoToStep(1);
   } else {
     // Closed for the public — form hidden but "Ver Inscritos" button stays visible
-    if (banner)        banner.style.display        = '';
+    if (placeholder)   placeholder.style.display   = 'none';
+    if (activeUI)      activeUI.style.display       = '';
+    if (torneoCard)    torneoCard.style.display      = '';
+    if (banner)        banner.style.display         = '';
     if (previewBanner) previewBanner.style.display  = 'none';
     if (progress)      progress.style.display       = 'none';
     for (let i = 1; i <= 3; i++) {
@@ -5998,6 +6110,8 @@ function applyInscripcionesState() {
   }
   if (cardEl)  cardEl.style.borderColor = inscripcionesOpen ? 'var(--border)' : 'rgba(239,68,68,0.4)';
   if (iconEl)  iconEl.textContent       = inscripcionesOpen ? '📋' : '🔒';
+
+  applyTorneoArchivoAdminCards();
 }
 
 async function toggleInscripciones() {
@@ -6021,6 +6135,383 @@ async function toggleInscripciones() {
     const syncEl = document.getElementById('inscAdminSync');
     if (syncEl) { syncEl.textContent = '✕ Error al guardar: ' + e.message; syncEl.style.color = '#ef4444'; }
   }
+}
+
+// ══════════════════════════════════════════
+// TORNEO ARCHIVO (archive / past tournaments)
+// ══════════════════════════════════════════
+let torneoArchivado = false;
+
+async function loadTorneoArchivoConfig() {
+  const cached = localStorage.getItem('torneo_archivado');
+  if (cached !== null) torneoArchivado = cached === 'true';
+  applyInscripcionesState();
+  try {
+    const data = await sbGet('app_settings', '?key=eq.torneo_archivado&select=value');
+    if (data && data.length) {
+      torneoArchivado = data[0].value === 'true';
+      localStorage.setItem('torneo_archivado', String(torneoArchivado));
+    }
+  } catch(e) { console.warn('loadTorneoArchivoConfig:', e.message); }
+  applyInscripcionesState();
+}
+
+function applyTorneoArchivoAdminCards() {
+  const cardGestionar   = document.getElementById('adminCardGestionar');
+  const cardExportar    = document.getElementById('adminCardExportar');
+  const cardReporte     = document.getElementById('adminCardReporte');
+  const cardPast        = document.getElementById('adminCardPastTorneos');
+  const cardArchivarTitle = document.getElementById('adminCardArchivarTitle');
+  const cardArchivarDesc  = document.getElementById('adminCardArchivarDesc');
+  const cardArchivarIcon  = document.getElementById('adminCardArchivarIcon');
+  const cardArchivar      = document.getElementById('adminCardArchivar');
+
+  if (torneoArchivado) {
+    if (cardGestionar) cardGestionar.style.display = 'none';
+    if (cardExportar)  cardExportar.style.display  = 'none';
+    if (cardReporte)   cardReporte.style.display   = 'none';
+    if (cardPast)      cardPast.style.display       = '';
+    if (cardArchivarTitle) cardArchivarTitle.textContent = 'Reactivar Torneo';
+    if (cardArchivarDesc)  cardArchivarDesc.textContent  = 'Volver a abrir inscripciones';
+    if (cardArchivarIcon)  cardArchivarIcon.textContent  = '🔓';
+    if (cardArchivar)      cardArchivar.style.borderColor = 'rgba(34,197,94,0.4)';
+  } else {
+    if (cardGestionar) cardGestionar.style.display = '';
+    if (cardExportar)  cardExportar.style.display  = '';
+    if (cardReporte)   cardReporte.style.display   = '';
+    if (cardPast)      cardPast.style.display       = 'none';
+    if (cardArchivarTitle) cardArchivarTitle.textContent = 'Archivar Torneo';
+    if (cardArchivarDesc)  cardArchivarDesc.textContent  = 'Mover inscripciones a historial';
+    if (cardArchivarIcon)  cardArchivarIcon.textContent  = '🗃️';
+    if (cardArchivar)      cardArchivar.style.borderColor = 'var(--border)';
+  }
+}
+
+async function toggleTorneoArchivado() {
+  if (!isAdmin()) { showLogin(); return; }
+
+  const willArchive = !torneoArchivado;
+  const confirmMsg = willArchive
+    ? '¿Archivar el torneo? Esto ocultará el formulario de inscripción al público y moverá los datos a Past Tournaments.'
+    : '¿Reactivar el torneo? Esto restaurará la vista de inscripciones.';
+  if (!confirm(confirmMsg)) return;
+
+  torneoArchivado = willArchive;
+  // Also close inscriptions when archiving
+  if (torneoArchivado) {
+    inscripcionesOpen = false;
+    localStorage.setItem('inscripciones_open', 'false');
+  }
+  localStorage.setItem('torneo_archivado', String(torneoArchivado));
+  applyInscripcionesState();
+
+  try {
+    const now = new Date().toISOString();
+    const promises = [
+      _supabase.from('app_settings').upsert(
+        { key: 'torneo_archivado', value: String(torneoArchivado), updated_at: now },
+        { onConflict: 'key' }
+      )
+    ];
+    if (torneoArchivado) {
+      promises.push(_supabase.from('app_settings').upsert(
+        { key: 'inscripciones_open', value: 'false', updated_at: now },
+        { onConflict: 'key' }
+      ));
+    }
+    await Promise.all(promises);
+  } catch(e) {
+    console.warn('toggleTorneoArchivado (sync failed):', e.message);
+  }
+}
+
+// ── Past Tournaments modal ──────────────────
+async function showPastTorneosModal() {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('pastTorneosModal').style.display = '';
+  const listEl = document.getElementById('pastTorneoslist');
+  listEl.innerHTML = '<div style="text-align:center;padding:40px 0;">Cargando...</div>';
+
+  try {
+    const { data, error } = await _supabase
+      .from('insc_registro')
+      .select('torneo, id')
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+
+    // Group by torneo
+    const counts = {};
+    (data || []).forEach(r => { counts[r.torneo] = (counts[r.torneo] || 0) + 1; });
+    const torneos = Object.keys(counts);
+
+    if (!torneos.length) {
+      listEl.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);">No hay torneos archivados.</div>';
+      return;
+    }
+
+    listEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+        ${torneos.map(t => `
+          <div onclick="openPastTorneoDetail('${t.replace(/'/g, "\\'")}')"
+            style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:border-color 0.15s;"
+            onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="font-size:28px;margin-bottom:10px;">🏓</div>
+            <div style="font-weight:700;color:var(--text);margin-bottom:4px;">${t}</div>
+            <div style="font-size:12px;color:var(--muted);">${counts[t]} jugador${counts[t] !== 1 ? 'es' : ''}</div>
+          </div>`).join('')}
+      </div>`;
+  } catch(e) {
+    listEl.innerHTML = `<div style="color:#ef4444;padding:20px;">Error: ${e.message}</div>`;
+  }
+}
+
+function closePastTorneosModal() {
+  document.getElementById('pastTorneosModal').style.display = 'none';
+}
+
+// ── Past Tournament Detail ──────────────────
+let _pastDetailData    = [];
+let _pastDetailPlayers = {};
+let _pastDetailTorneo  = '';
+let _pastDetailSort    = { key: 'created_at', dir: 'asc' };
+let _pastDetailFilter  = '';
+let _pastDetailStatus  = '';
+
+async function openPastTorneoDetail(torneoName) {
+  _pastDetailTorneo = torneoName;
+  document.getElementById('pastTorneoDetailModal').style.display = '';
+  document.getElementById('pastTorneoDetailTitle').textContent = torneoName;
+  document.getElementById('pastTorneoDetailSub').textContent = 'Cargando...';
+  document.getElementById('pastDetailGestionarTable').innerHTML =
+    '<div style="text-align:center;padding:40px 0;">Cargando...</div>';
+  document.getElementById('pastDetailSearchInput').value = '';
+  _pastDetailFilter = ''; _pastDetailStatus = '';
+  pastDetailSwitchTab('gestionar');
+
+  try {
+    const { data: inscs, error: e1 } = await _supabase
+      .from('insc_registro').select('*')
+      .eq('torneo', torneoName).order('created_at', { ascending: true });
+    if (e1) throw new Error(e1.message);
+    _pastDetailData = inscs || [];
+
+    const memberIds = _pastDetailData.map(i => i.member_id).filter(Boolean);
+    const { data: players, error: e2 } = await _supabase
+      .from('Base de Datos')
+      .select('"Member ID","First Name","Last Name","Rating","New Rating","Club"')
+      .in('"Member ID"', memberIds);
+    if (e2) throw new Error(e2.message);
+    _pastDetailPlayers = {};
+    (players || []).forEach(p => { _pastDetailPlayers[p['Member ID']] = p; });
+
+    document.getElementById('pastTorneoDetailSub').textContent =
+      `${_pastDetailData.length} jugador${_pastDetailData.length !== 1 ? 'es' : ''} inscritos`;
+
+    renderPastDetailGestionar();
+    renderPastDetailReporte();
+  } catch(e) {
+    document.getElementById('pastTorneoDetailSub').textContent = 'Error: ' + e.message;
+  }
+}
+
+function closePastTorneoDetailModal() {
+  document.getElementById('pastTorneoDetailModal').style.display = 'none';
+}
+
+function pastDetailSwitchTab(tab) {
+  const gPanel = document.getElementById('pastDetailGestionarPanel');
+  const rPanel = document.getElementById('pastDetailReportePanel');
+  const gBtn   = document.getElementById('pastDetailTabGestionar');
+  const rBtn   = document.getElementById('pastDetailTabReporte');
+  const activeStyle   = { background: 'var(--accent)', color: 'var(--navy)', fontWeight: '700' };
+  const inactiveStyle = { background: 'transparent',   color: 'var(--muted)', fontWeight: '600' };
+  if (tab === 'gestionar') {
+    gPanel.style.display = ''; rPanel.style.display = 'none';
+    Object.assign(gBtn.style, activeStyle); Object.assign(rBtn.style, inactiveStyle);
+  } else {
+    gPanel.style.display = 'none'; rPanel.style.display = '';
+    Object.assign(rBtn.style, activeStyle); Object.assign(gBtn.style, inactiveStyle);
+  }
+}
+
+function pastDetailSearch(q) {
+  _pastDetailFilter = (q || '').toLowerCase().trim();
+  _pastDetailStatus = document.getElementById('pastDetailStatusFilter')?.value || '';
+  renderPastDetailGestionar();
+}
+
+function renderPastDetailGestionar() {
+  const tableEl = document.getElementById('pastDetailGestionarTable');
+  let rows = _pastDetailData.filter(r => {
+    if (_pastDetailStatus === 'pagado'   && !r.pagado) return false;
+    if (_pastDetailStatus === 'pendiente' &&  r.pagado) return false;
+    if (_pastDetailFilter) {
+      const n = (r.nombre || '').toLowerCase();
+      const id = (r.fptm_id || '').toLowerCase();
+      if (!n.includes(_pastDetailFilter) && !id.includes(_pastDetailFilter)) return false;
+    }
+    return true;
+  });
+
+  const { key, dir } = _pastDetailSort;
+  rows = [...rows].sort((a, b) => {
+    let av, bv;
+    if (key === 'nombre')      { av = (a.nombre || '').toLowerCase(); bv = (b.nombre || '').toLowerCase(); }
+    else if (key === 'total')  { av = a.total || 0; bv = b.total || 0; }
+    else if (key === 'pagado') { av = a.pagado ? 1 : 0; bv = b.pagado ? 1 : 0; }
+    else                       { av = a.created_at || ''; bv = b.created_at || ''; }
+    if (av < bv) return dir === 'asc' ? -1 : 1;
+    if (av > bv) return dir === 'asc' ?  1 : -1;
+    return 0;
+  });
+
+  if (!rows.length) {
+    tableEl.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);">No hay resultados.</div>';
+    return;
+  }
+
+  const sa = (col) => _pastDetailSort.key !== col
+    ? '<span style="opacity:0.25;margin-left:4px;">↕</span>'
+    : `<span style="color:var(--accent);margin-left:4px;">${_pastDetailSort.dir === 'asc' ? '↑' : '↓'}</span>`;
+  const th = 'text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;cursor:pointer;user-select:none;';
+  const thr = 'text-align:right;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;cursor:pointer;user-select:none;';
+  const thc = 'text-align:center;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;';
+
+  let html = `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead><tr style="border-bottom:1px solid var(--border);">
+      <th style="${th}">#</th>
+      <th style="${th}" onclick="_pastDetailSort={key:'nombre',dir:_pastDetailSort.key==='nombre'&&_pastDetailSort.dir==='asc'?'desc':'asc'};renderPastDetailGestionar()">Jugador${sa('nombre')}</th>
+      <th style="${th}">Categorías</th>
+      <th style="${thr}" onclick="_pastDetailSort={key:'total',dir:_pastDetailSort.key==='total'&&_pastDetailSort.dir==='asc'?'desc':'asc'};renderPastDetailGestionar()">Total${sa('total')}</th>
+      <th style="${thc}">Pagado</th>
+      <th style="${thr}" onclick="_pastDetailSort={key:'created_at',dir:_pastDetailSort.key==='created_at'&&_pastDetailSort.dir==='asc'?'desc':'asc'};renderPastDetailGestionar()">Fecha${sa('created_at')}</th>
+    </tr></thead><tbody>`;
+
+  rows.forEach((row, i) => {
+    const cats = Array.isArray(row.categorias) ? row.categorias : [];
+    const catNames = cats.map(c => c.name).join(', ') || '—';
+    const fecha = row.created_at
+      ? new Date(row.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric', year: 'numeric' })
+      : '—';
+    html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+      <td style="padding:10px;color:var(--muted);">${i + 1}</td>
+      <td style="padding:10px;">
+        <div style="font-weight:600;color:var(--text);">${row.nombre || '—'}</div>
+        <div style="font-size:11px;color:var(--muted);">${row.fptm_id || ''}</div>
+      </td>
+      <td style="padding:10px;color:var(--muted);max-width:200px;"><div style="white-space:normal;line-height:1.5;">${catNames}</div></td>
+      <td style="padding:10px;text-align:right;font-weight:600;color:var(--text);">$${(row.total || 0).toFixed(2)}</td>
+      <td style="padding:10px;text-align:center;">
+        <span style="border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;
+          background:${row.pagado ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.1)'};
+          color:${row.pagado ? '#4ade80' : '#ef4444'};
+          border:1px solid ${row.pagado ? 'rgba(34,197,94,0.35)' : 'rgba(239,68,68,0.3)'};">
+          ${row.pagado ? '✓ Pagado' : '● Pendiente'}
+        </span>
+      </td>
+      <td style="padding:10px;text-align:right;color:var(--muted);white-space:nowrap;">${fecha}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table></div>';
+  tableEl.innerHTML = html;
+}
+
+function renderPastDetailReporte() {
+  const tabsEl    = document.getElementById('pastDetailReporteTabs');
+  const contentEl = document.getElementById('pastDetailReporteContent');
+
+  const usedCatIds = new Set();
+  _pastDetailData.forEach(row => {
+    (Array.isArray(row.categorias) ? row.categorias : []).forEach(c => usedCatIds.add(c.id));
+  });
+
+  // Build category list from data (name from INSC_CATEGORIES if available, else raw id)
+  const cats = [];
+  usedCatIds.forEach(id => {
+    const found = INSC_CATEGORIES.find(c => c.id === id);
+    cats.push(found || { id, name: id });
+  });
+
+  tabsEl.innerHTML = cats.map(c => `
+    <button id="pastReporteTab_${c.id}" onclick="renderPastDetailReporteTab('${c.id}')"
+      style="padding:7px 16px;border-radius:20px;border:1px solid var(--border);
+             background:transparent;color:var(--muted);font-family:'DM Sans';
+             font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap;">
+      ${c.name}
+    </button>`).join('');
+
+  if (cats.length) renderPastDetailReporteTab(cats[0].id);
+  else contentEl.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);">No hay categorías.</div>';
+}
+
+function renderPastDetailReporteTab(catId) {
+  // Update tab active states
+  document.querySelectorAll('[id^="pastReporteTab_"]').forEach(btn => {
+    const active = btn.id === `pastReporteTab_${catId}`;
+    btn.style.background  = active ? 'var(--accent)' : 'transparent';
+    btn.style.color       = active ? '#1a1f2e'       : 'var(--muted)';
+    btn.style.borderColor = active ? 'var(--accent)'  : 'var(--border)';
+  });
+
+  const cat       = INSC_CATEGORIES.find(c => c.id === catId) || { id: catId, name: catId };
+  const contentEl = document.getElementById('pastDetailReporteContent');
+
+  const entries = [];
+  _pastDetailData.forEach(row => {
+    if (!(Array.isArray(row.categorias) ? row.categorias : []).find(c => c.id === catId)) return;
+    const p = _pastDetailPlayers[row.member_id] || {};
+    const rating = p['New Rating'] ?? p['Rating'] ?? null;
+    entries.push({
+      nombre: row.nombre || `${p['First Name'] || ''} ${p['Last Name'] || ''}`.trim() || '—',
+      fptmId: row.fptm_id || row.member_id || '',
+      rating: rating !== null && rating !== '' ? Number(rating) : null,
+      club:   row.club || p['Club'] || '—',
+    });
+  });
+
+  entries.sort((a, b) => {
+    if (a.rating === null && b.rating === null) return 0;
+    if (a.rating === null) return 1;
+    if (b.rating === null) return -1;
+    return b.rating - a.rating;
+  });
+
+  if (!entries.length) {
+    contentEl.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);">No hay jugadores en esta categoría.</div>';
+    return;
+  }
+
+  let html = `
+    <div style="margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:1.5px;">${cat.name}</div>
+      ${cat.desc ? `<div style="font-size:12px;color:var(--muted);">${cat.desc}</div>` : ''}
+      <div style="margin-left:auto;font-size:13px;font-weight:700;color:var(--accent);">${entries.length} jugador${entries.length !== 1 ? 'es' : ''}</div>
+    </div>
+    <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr style="border-bottom:1px solid var(--border);">
+        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">#</th>
+        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">Jugador</th>
+        <th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600;">Rating</th>
+        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">Club</th>
+      </tr></thead><tbody>`;
+
+  entries.forEach((e, i) => {
+    html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+      <td style="padding:10px;color:var(--muted);font-weight:600;">${i + 1}</td>
+      <td style="padding:10px;">
+        <div style="font-weight:600;color:var(--text);">${e.nombre}</div>
+        <div style="font-size:11px;color:var(--muted);">${e.fptmId}</div>
+      </td>
+      <td style="padding:10px;text-align:right;font-family:'DM Mono';font-size:13px;font-weight:700;color:var(--accent);">
+        ${e.rating !== null ? e.rating : '<span style="color:var(--muted);font-weight:400;">—</span>'}
+      </td>
+      <td style="padding:10px;color:var(--muted);">${e.club}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table></div>';
+  contentEl.innerHTML = html;
 }
 
 // ══════════════════════════════════════════
