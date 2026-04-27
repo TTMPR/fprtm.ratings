@@ -1550,12 +1550,13 @@ Maria Lopez,Ana Torres,B</code>
 
       <!-- Results preview -->
       <div class="calc-result" id="subirResult">
-        <h4>RESULTADOS A APLICAR</h4>
+        <h4>RESULTADOS — VISTA PREVIA</h4>
         <div id="subirResultBody"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-          <button class="btn-primary" id="subirApplyBtn" onclick="subirApplyRatings()">✓ Confirmar y Aplicar a Base de Datos</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn-primary" id="subirSaveDraftBtn" onclick="subirGuardarBorrador()">💾 Guardar como Borrador</button>
           <button class="btn-secondary" onclick="document.getElementById('subirResult').classList.remove('show')">Recalcular</button>
         </div>
+        <div id="subirDraftMsg" style="margin-top:10px;font-size:13px;"></div>
       </div>
 
       <div style="margin-top:16px">
@@ -1721,6 +1722,12 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Sincronizar Datos</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Actualizar Base de Datos con datos de inscripciones</div>
       </div>
+      <div id="adminCardDraftResults" style="display:none;background:var(--card2);border:1px solid rgba(232,184,75,0.4);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showDraftResultsModal()">
+        <div style="font-size:32px;margin-bottom:12px">📬</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Resultados Pendientes</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Revisar y publicar ratings del torneo</div>
+        <span id="draftResultsBadge" style="position:absolute;top:12px;right:12px;background:var(--accent);color:var(--navy);border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">!</span>
+      </div>
     </div>
 
     <!-- ── Jugadores ── -->
@@ -1802,6 +1809,34 @@ Maria Lopez,Ana Torres,B</code>
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     RESULTADOS DRAFT MODAL (admin)
+═══════════════════════════════════════════ -->
+<div id="draftResultsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:700px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;">Resultados Pendientes de Publicación</div>
+        <div id="draftModalSub" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
+      </div>
+      <button onclick="closeDraftResultsModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+    <div id="draftModalBody" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
+    <div id="draftModalActions" style="display:none;margin-top:20px;display:none;gap:10px;flex-wrap:wrap;">
+      <button id="draftPublishBtn" onclick="draftPublicar()"
+        style="flex:1;padding:14px;background:var(--accent);color:var(--navy);border:none;border-radius:10px;font-family:'Bebas Neue';font-size:18px;letter-spacing:1.5px;cursor:pointer;transition:opacity 0.15s;"
+        onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+        ✓ Publicar Ratings
+      </button>
+      <button onclick="draftDescartar()"
+        style="padding:14px 20px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:10px;font-family:'DM Sans';font-size:14px;font-weight:600;cursor:pointer;">
+        Descartar
+      </button>
+    </div>
+    <div id="draftModalMsg" style="margin-top:12px;font-size:13px;text-align:center;"></div>
   </div>
 </div>
 
@@ -3999,6 +4034,229 @@ function subirProcesarCsv() {
   document.getElementById('subirResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+async function subirGuardarBorrador() {
+  if (!currentUser) { showLogin(); return; }
+  if (!subirPending.length) return;
+
+  const nombre = document.getElementById('subirTorneoNombre').value.trim();
+  const fecha  = document.getElementById('subirTorneoFecha').value;
+  const btn    = document.getElementById('subirSaveDraftBtn');
+  const msgEl  = document.getElementById('subirDraftMsg');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Guardando...';
+  msgEl.textContent = '';
+
+  // Build snapshot map (same logic as subirApplyRatings)
+  const snapshotMap = {};
+  for (const r of subirPending) {
+    const pA = ALL_PLAYERS.find(x => x.id === r.idA);
+    const pB = ALL_PLAYERS.find(x => x.id === r.idB);
+    if (r.idA && !snapshotMap[r.idA]) snapshotMap[r.idA] = {
+      id_jugador: r.idA, nombre: r.pA, club: pA?.club || '',
+      rating_inicio: r.rA, rating_fin: r.rA, ganados: 0, perdidos: 0
+    };
+    if (r.idB && !snapshotMap[r.idB]) snapshotMap[r.idB] = {
+      id_jugador: r.idB, nombre: r.pB, club: pB?.club || '',
+      rating_inicio: r.rB, rating_fin: r.rB, ganados: 0, perdidos: 0
+    };
+    const winnerIsA = r.winner === r.pA;
+    if (r.idA) {
+      snapshotMap[r.idA].rating_fin += r.aGain;
+      if (winnerIsA) snapshotMap[r.idA].ganados++; else snapshotMap[r.idA].perdidos++;
+    }
+    if (r.idB) {
+      snapshotMap[r.idB].rating_fin += r.bGain;
+      if (!winnerIsA) snapshotMap[r.idB].ganados++; else snapshotMap[r.idB].perdidos++;
+    }
+  }
+
+  try {
+    const { error } = await _supabase.from('resultados_draft').insert({
+      torneo_nombre: nombre,
+      torneo_fecha:  fecha,
+      partidos:      subirPending,
+      snapshot_map:  Object.values(snapshotMap),
+      status:        'pending'
+    });
+    if (error) throw new Error(error.message);
+
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = '✓ Borrador guardado. Ve al panel admin para revisarlo y publicarlo.';
+    btn.textContent = '✓ Borrador guardado';
+    await loadDraftResultsBadge();
+  } catch(e) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Error al guardar: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = '💾 Guardar como Borrador';
+  }
+}
+
+async function loadDraftResultsBadge() {
+  try {
+    const { data, error } = await _supabase
+      .from('resultados_draft').select('id').eq('status', 'pending');
+    if (error) return;
+    const card  = document.getElementById('adminCardDraftResults');
+    if (card) card.style.display = data?.length ? '' : 'none';
+  } catch(e) {}
+}
+
+let _currentDraftId = null;
+let _currentDraftSnapshot = [];
+
+async function showDraftResultsModal() {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('draftResultsModal').style.display = '';
+  const bodyEl    = document.getElementById('draftModalBody');
+  const actionsEl = document.getElementById('draftModalActions');
+  const msgEl     = document.getElementById('draftModalMsg');
+  bodyEl.innerHTML = '<div style="text-align:center;padding:40px 0;">Cargando...</div>';
+  actionsEl.style.display = 'none';
+  msgEl.textContent = '';
+  _currentDraftId = null;
+
+  try {
+    const { data, error } = await _supabase
+      .from('resultados_draft')
+      .select('*')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+    if (error || !data) throw new Error('No hay borradores pendientes.');
+
+    _currentDraftId       = data.id;
+    _currentDraftSnapshot = Array.isArray(data.snapshot_map) ? data.snapshot_map : [];
+    const partidos        = Array.isArray(data.partidos) ? data.partidos : [];
+    const fecha = data.torneo_fecha
+      ? new Date(data.torneo_fecha + 'T12:00:00').toLocaleDateString('es-PR', { month: 'long', day: 'numeric', year: 'numeric' })
+      : data.torneo_fecha;
+    const guardado = new Date(data.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    document.getElementById('draftModalSub').textContent =
+      `${data.torneo_nombre} · ${fecha} · guardado ${guardado}`;
+
+    // Summary table
+    const summaryRows = _currentDraftSnapshot
+      .sort((a, b) => (b.rating_fin - b.rating_inicio) - (a.rating_fin - a.rating_inicio))
+      .map(s => {
+        const delta = s.rating_fin - s.rating_inicio;
+        return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+          <td style="padding:10px;">${s.nombre}</td>
+          <td style="padding:10px;font-family:'DM Mono';font-size:12px;color:var(--muted);">${s.rating_inicio}</td>
+          <td style="padding:10px;font-family:'DM Mono';font-size:12px;font-weight:700;color:var(--accent);">${s.rating_fin}</td>
+          <td style="padding:10px;font-weight:700;color:${delta >= 0 ? 'var(--green)' : '#ef4444'};">${delta >= 0 ? '+' : ''}${delta}</td>
+          <td style="padding:10px;color:var(--muted);font-size:12px;">${s.ganados}G · ${s.perdidos}P</td>
+        </tr>`;
+      }).join('');
+
+    bodyEl.innerHTML = `
+      <div style="margin-bottom:12px;font-size:13px;color:var(--muted);">
+        ${partidos.length} partido${partidos.length !== 1 ? 's' : ''} · ${_currentDraftSnapshot.length} jugador${_currentDraftSnapshot.length !== 1 ? 'es' : ''} afectados
+      </div>
+      <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">Jugador</th>
+          <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">Antes</th>
+          <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">Después</th>
+          <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">Cambio</th>
+          <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">Record</th>
+        </tr></thead>
+        <tbody>${summaryRows}</tbody>
+      </table></div>`;
+
+    actionsEl.style.display = 'flex';
+  } catch(e) {
+    bodyEl.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--muted);">${e.message}</div>`;
+  }
+}
+
+function closeDraftResultsModal() {
+  document.getElementById('draftResultsModal').style.display = 'none';
+}
+
+async function draftPublicar() {
+  if (!_currentDraftId || !_currentDraftSnapshot.length) return;
+  const btn   = document.getElementById('draftPublishBtn');
+  const msgEl = document.getElementById('draftModalMsg');
+  btn.disabled = true;
+  btn.textContent = '⏳ Publicando...';
+  msgEl.textContent = '';
+
+  const nombre = document.getElementById('draftModalSub')?.textContent?.split(' · ')[0] || '';
+  const errors = [];
+  let applied  = 0;
+
+  // Apply ratings to Base de Datos
+  for (const snap of _currentDraftSnapshot) {
+    try {
+      await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${snap.id_jugador}`, { 'New Rating': snap.rating_fin });
+      const p = ALL_PLAYERS.find(x => x.id === snap.id_jugador);
+      if (p) p.rating = snap.rating_fin;
+      applied++;
+    } catch(e) { errors.push(`${snap.nombre}: ${e.message}`); }
+  }
+
+  // Save partidos + resultados_evento
+  try {
+    const { data: draft } = await _supabase
+      .from('resultados_draft').select('torneo_nombre,torneo_fecha,partidos,snapshot_map').eq('id', _currentDraftId).single();
+    if (draft) {
+      let torneoId = null;
+      try { const [t] = await sbPost('torneos', { nombre: draft.torneo_nombre, fecha: draft.torneo_fecha }); torneoId = t?.id; } catch(e) {}
+      if (torneoId && Array.isArray(draft.partidos)) {
+        for (const r of draft.partidos) {
+          try {
+            await sbPost('partidos', {
+              torneo_id: torneoId, jugador_a_id: r.idA, jugador_b_id: r.idB,
+              ganador: r.winner === r.pA ? 'A' : 'B',
+              rating_a_antes: r.rA, rating_b_antes: r.rB,
+              rating_a_despues: r.rA + r.aGain, rating_b_despues: r.rB + r.bGain,
+              fecha: draft.torneo_fecha, nombre_a: r.pA, nombre_b: r.pB
+            });
+          } catch(e) {}
+        }
+        const rows = _currentDraftSnapshot.map(s => ({ ...s, id_torneo: torneoId }));
+        for (let i = 0; i < rows.length; i += 50) {
+          try { await sbPost('resultados_evento', rows.slice(i, i + 50)); } catch(e) {}
+        }
+      }
+    }
+  } catch(e) { console.warn('Error guardando historial:', e.message); }
+
+  // Mark draft as published
+  await _supabase.from('resultados_draft').update({ status: 'published', published_at: new Date().toISOString() }).eq('id', _currentDraftId);
+
+  // Refresh rankings
+  ALL_PLAYERS.sort((a, b) => b.rating - a.rating);
+  ALL_PLAYERS.forEach((p, i) => { p.rank = i + 1; RANK_BY_ID[p.id] = p.rank; });
+  filterPlayers();
+  await loadDraftResultsBadge();
+
+  if (errors.length) {
+    msgEl.style.color = '#ef4444';
+    msgEl.textContent = `⚠ ${applied} aplicados, ${errors.length} con error. Revisa la consola.`;
+    btn.textContent = '✓ Publicar Ratings';
+    btn.disabled = false;
+  } else {
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = `✓ ${applied} ratings publicados correctamente.`;
+    btn.textContent = '✓ Publicado';
+    document.getElementById('draftModalActions').style.display = 'none';
+  }
+}
+
+async function draftDescartar() {
+  if (!_currentDraftId) return;
+  if (!confirm('¿Descartar este borrador? Los ratings NO se aplicarán.')) return;
+  await _supabase.from('resultados_draft').update({ status: 'discarded' }).eq('id', _currentDraftId);
+  await loadDraftResultsBadge();
+  closeDraftResultsModal();
+}
+
 async function subirApplyRatings() {
   if (!currentUser) { showLogin(); return; }
   if (!subirPending.length) return;
@@ -5701,6 +5959,7 @@ async function updatePendingBadge() {
     const badge = document.getElementById('pendingClubBadge');
     if (badge) { badge.textContent = data.length; badge.style.display = data.length > 0 ? '' : 'none'; }
   } catch (_) {}
+  await loadDraftResultsBadge();
 }
 
 // ── CLUB CHANGE REQUEST (player) ─────────────────────────────────────────────
