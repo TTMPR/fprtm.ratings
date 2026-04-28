@@ -3,12 +3,13 @@
 -- Run in Supabase SQL Editor.
 
 CREATE TABLE IF NOT EXISTS public.resultados_draft (
-  id          UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
-  torneo_nombre TEXT      NOT NULL,
-  torneo_fecha  DATE      NOT NULL,
-  partidos      JSONB     NOT NULL,
-  snapshot_map  JSONB     NOT NULL,
-  status        TEXT      DEFAULT 'pending',
+  id            UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  torneo_nombre TEXT        NOT NULL,
+  torneo_fecha  DATE        NOT NULL,
+  partidos      JSONB       NOT NULL,
+  snapshot_map  JSONB       NOT NULL,
+  col_name      TEXT,       -- e.g. "rating_morovis_open_2026"
+  status        TEXT        DEFAULT 'pending',
   created_at    TIMESTAMPTZ DEFAULT NOW(),
   published_at  TIMESTAMPTZ
 );

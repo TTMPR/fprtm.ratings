@@ -3951,27 +3951,42 @@ function subirLoadFile(file) {
     const st    = document.getElementById('subirCsvStatus');
     st.style.display = 'block';
 
-    // ── Detect Stadium Compete export (tab-separated, has header with 'entryAMembershipIds') ──
+    // Detect separator from first line
     const firstLine = lines[0] || '';
-    const isStadium = firstLine.includes('\t') && /entryAMembershipIds/i.test(firstLine);
+    const sep = firstLine.includes('\t') ? '\t' : ',';
+
+    // Parse a single CSV line respecting quoted fields
+    function parseLine(line) {
+      if (sep === '\t') return line.split('\t').map(s => s.trim());
+      const result = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        if (line[i] === '"') { inQ = !inQ; }
+        else if (line[i] === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+        else { cur += line[i]; }
+      }
+      result.push(cur.trim());
+      return result;
+    }
+
+    const headers = parseLine(firstLine);
+    // ── Detect Stadium Compete export (has these columns) ──
+    const isStadium = headers.some(h => /winnerMembershipIds|loserMembershipIds/i.test(h));
 
     if (isStadium) {
-      const headers = firstLine.split('\t').map(h => h.trim());
-      const col = name => headers.indexOf(name);
-      const iWinMembId = col('winnerMembershipIds');
-      const iLosMembId = col('loserMembershipIds');
-      const iEntAMembId = col('entryAMembershipIds');
-      const iEntBMembId = col('entryBMembershipIds');
+      const col = name => headers.findIndex(h => h.trim().toLowerCase() === name.toLowerCase());
+      const iWin  = col('winnerMembershipIds');
+      const iLos  = col('loserMembershipIds');
 
       subirCsvRows = [];
       for (let i = 1; i < lines.length; i++) {
-        const parts = lines[i].split('\t');
-        const membA = (parts[iEntAMembId] || '').split('|')[1]?.trim();
-        const membB = (parts[iEntBMembId] || '').split('|')[1]?.trim();
-        const membW = (parts[iWinMembId]  || '').split('|')[1]?.trim();
-        if (!membA || !membB || !membW) continue;
-        const win = membW === membA ? 'A' : 'B';
-        subirCsvRows.push({ pA: `#${membA}`, pB: `#${membB}`, win });
+        const parts = parseLine(lines[i]);
+        // Extract 5-digit member ID from "fptm|65333"
+        const membW = (parts[iWin] || '').split('|').pop()?.trim();
+        const membL = (parts[iLos] || '').split('|').pop()?.trim();
+        if (!membW || !membL || isNaN(Number(membW)) || isNaN(Number(membL))) continue;
+        // Winner is always pA so win='A'
+        subirCsvRows.push({ pA: `#${membW}`, pB: `#${membL}`, win: 'A' });
       }
     } else {
       // ── Legacy simple format: playerA, playerB, A/B ──
@@ -3980,7 +3995,7 @@ function subirLoadFile(file) {
         return true;
       });
       subirCsvRows = dataLines.map(l => {
-        const parts = l.split(',').map(s => s.trim());
+        const parts = parseLine(l);
         return { pA: parts[0] || '', pB: parts[1] || '', win: (parts[2] || 'A').toUpperCase() };
       }).filter(r => r.pA && r.pB);
     }
@@ -4097,18 +4112,36 @@ async function subirGuardarBorrador() {
     }
   }
 
+  // Generate column name for this tournament: "Morovis Open 2026" → "rating_morovis_open_2026"
+  const colName = 'rating_' + nombre.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
   try {
     const { error } = await _supabase.from('resultados_draft').insert({
       torneo_nombre: nombre,
       torneo_fecha:  fecha,
       partidos:      subirPending,
       snapshot_map:  Object.values(snapshotMap),
+      col_name:      colName,
       status:        'pending'
     });
     if (error) throw new Error(error.message);
 
+    // Show SQL to create the column — admin must run this before publishing
+    const sql = `ALTER TABLE public."Base de Datos" ADD COLUMN IF NOT EXISTS "${colName}" INTEGER;`;
     msgEl.style.color = 'var(--green)';
-    msgEl.textContent = '✓ Borrador guardado. Ve al panel admin para revisarlo y publicarlo.';
+    msgEl.innerHTML = `
+      <div style="margin-bottom:8px;">✓ Borrador guardado. Antes de publicar, corre este SQL en Supabase:</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <code style="flex:1;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;
+                     padding:10px 12px;font-size:12px;font-family:'DM Mono';color:var(--accent);
+                     display:block;word-break:break-all;">${sql}</code>
+        <button onclick="navigator.clipboard.writeText('${sql.replace(/'/g,"\\'")}').then(()=>this.textContent='✓').catch(()=>{})"
+          style="flex-shrink:0;padding:8px 12px;background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.3);
+                 color:var(--accent);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">
+          Copiar
+        </button>
+      </div>
+      <div style="margin-top:6px;font-size:12px;color:var(--muted);">Luego ve al panel admin → Resultados Pendientes para publicar.</div>`;
     btn.textContent = '✓ Borrador guardado';
     await loadDraftResultsBadge();
   } catch(e) {
@@ -4146,7 +4179,7 @@ async function showDraftResultsModal() {
   try {
     const { data, error } = await _supabase
       .from('resultados_draft')
-      .select('*')
+      .select('id,torneo_nombre,torneo_fecha,partidos,snapshot_map,col_name,created_at')
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(1)
@@ -4156,6 +4189,7 @@ async function showDraftResultsModal() {
     _currentDraftId       = data.id;
     _currentDraftSnapshot = Array.isArray(data.snapshot_map) ? data.snapshot_map : [];
     const partidos        = Array.isArray(data.partidos) ? data.partidos : [];
+    const colName         = data.col_name || null;
     const fecha = data.torneo_fecha
       ? new Date(data.torneo_fecha + 'T12:00:00').toLocaleDateString('es-PR', { month: 'long', day: 'numeric', year: 'numeric' })
       : data.torneo_fecha;
@@ -4181,6 +4215,16 @@ async function showDraftResultsModal() {
     bodyEl.innerHTML = `
       <div style="margin-bottom:12px;font-size:13px;color:var(--muted);">
         ${partidos.length} partido${partidos.length !== 1 ? 's' : ''} · ${_currentDraftSnapshot.length} jugador${_currentDraftSnapshot.length !== 1 ? 'es' : ''} afectados
+        ${colName ? `
+        <div style="margin-top:10px;padding:10px 14px;background:rgba(232,184,75,0.07);border:1px solid rgba(232,184,75,0.25);border-radius:8px;">
+          <span style="font-size:11px;color:var(--accent);font-weight:700;letter-spacing:0.08em;">COLUMNA A CREAR:</span>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+            <code style="font-family:'DM Mono';font-size:12px;color:var(--text);flex:1;">ALTER TABLE public."Base de Datos" ADD COLUMN IF NOT EXISTS "${colName}" INTEGER;</code>
+            <button onclick="navigator.clipboard.writeText('ALTER TABLE public.&quot;Base de Datos&quot; ADD COLUMN IF NOT EXISTS &quot;${colName}&quot; INTEGER;').then(()=>this.textContent='✓')"
+              style="flex-shrink:0;padding:5px 10px;background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.3);color:var(--accent);border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;">Copiar</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Corre esto en Supabase SQL Editor antes de publicar.</div>
+        </div>` : ''}
       </div>
       <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
@@ -4212,14 +4256,23 @@ async function draftPublicar() {
   btn.textContent = '⏳ Publicando...';
   msgEl.textContent = '';
 
-  const nombre = document.getElementById('draftModalSub')?.textContent?.split(' · ')[0] || '';
   const errors = [];
   let applied  = 0;
 
-  // Apply ratings to Base de Datos
+  // Fetch full draft to get col_name
+  const { data: draft } = await _supabase
+    .from('resultados_draft')
+    .select('torneo_nombre,torneo_fecha,partidos,snapshot_map,col_name')
+    .eq('id', _currentDraftId).single();
+
+  const colName = draft?.col_name || null;
+
+  // Apply New Rating + per-tournament column to Base de Datos
   for (const snap of _currentDraftSnapshot) {
     try {
-      await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${snap.id_jugador}`, { 'New Rating': snap.rating_fin });
+      const patch = { 'New Rating': snap.rating_fin };
+      if (colName) patch[colName] = snap.rating_fin;
+      await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${snap.id_jugador}`, patch);
       const p = ALL_PLAYERS.find(x => x.id === snap.id_jugador);
       if (p) p.rating = snap.rating_fin;
       applied++;
@@ -4228,8 +4281,6 @@ async function draftPublicar() {
 
   // Save partidos + resultados_evento
   try {
-    const { data: draft } = await _supabase
-      .from('resultados_draft').select('torneo_nombre,torneo_fecha,partidos,snapshot_map').eq('id', _currentDraftId).single();
     if (draft) {
       let torneoId = null;
       try { const [t] = await sbPost('torneos', { nombre: draft.torneo_nombre, fecha: draft.torneo_fecha }); torneoId = t?.id; } catch(e) {}
