@@ -3988,8 +3988,8 @@ function subirLoadFile(file) {
         const membW = rawW.split('|').pop()?.trim();
         const membL = rawL.split('|').pop()?.trim();
         if (!membW || !membL || isNaN(Number(membW)) || isNaN(Number(membL))) {
-          // Only track skips that look like real matches (both sides have something)
-          if (rawW && rawL && !rawW.startsWith('DRAW_SOURCE') && !rawL.startsWith('DRAW_SOURCE')) {
+          // Track any skip where at least one side has a non-empty value
+          if (rawW || rawL) {
             const desc = iDesc >= 0 ? (parts[iDesc] || '') : '';
             skippedRows.push(`Línea ${i + 1}${desc ? ` (${desc})` : ''}: winner="${rawW}" loser="${rawL}"`);
           }
