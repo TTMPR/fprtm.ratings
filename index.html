@@ -3951,27 +3951,42 @@ function subirLoadFile(file) {
     const st    = document.getElementById('subirCsvStatus');
     st.style.display = 'block';
 
-    // ── Detect Stadium Compete export (tab-separated, has header with 'entryAMembershipIds') ──
+    // Detect separator from first line
     const firstLine = lines[0] || '';
-    const isStadium = firstLine.includes('\t') && /entryAMembershipIds/i.test(firstLine);
+    const sep = firstLine.includes('\t') ? '\t' : ',';
+
+    // Parse a single CSV line respecting quoted fields
+    function parseLine(line) {
+      if (sep === '\t') return line.split('\t').map(s => s.trim());
+      const result = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        if (line[i] === '"') { inQ = !inQ; }
+        else if (line[i] === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+        else { cur += line[i]; }
+      }
+      result.push(cur.trim());
+      return result;
+    }
+
+    const headers = parseLine(firstLine);
+    // ── Detect Stadium Compete export (has these columns) ──
+    const isStadium = headers.some(h => /entryAMembershipIds|winnerMembershipIds/i.test(h));
 
     if (isStadium) {
-      const headers = firstLine.split('\t').map(h => h.trim());
-      const col = name => headers.indexOf(name);
-      const iWinMembId = col('winnerMembershipIds');
-      const iLosMembId = col('loserMembershipIds');
-      const iEntAMembId = col('entryAMembershipIds');
-      const iEntBMembId = col('entryBMembershipIds');
+      const col = name => headers.findIndex(h => h.trim().toLowerCase() === name.toLowerCase());
+      const iEntA = col('entryAMembershipIds');
+      const iEntB = col('entryBMembershipIds');
+      const iWin  = col('winnerMembershipIds');
 
       subirCsvRows = [];
       for (let i = 1; i < lines.length; i++) {
-        const parts = lines[i].split('\t');
-        const membA = (parts[iEntAMembId] || '').split('|')[1]?.trim();
-        const membB = (parts[iEntBMembId] || '').split('|')[1]?.trim();
-        const membW = (parts[iWinMembId]  || '').split('|')[1]?.trim();
-        if (!membA || !membB || !membW) continue;
-        const win = membW === membA ? 'A' : 'B';
-        subirCsvRows.push({ pA: `#${membA}`, pB: `#${membB}`, win });
+        const parts = parseLine(lines[i]);
+        const membA = (parts[iEntA] || '').split('|').pop()?.trim();
+        const membB = (parts[iEntB] || '').split('|').pop()?.trim();
+        const membW = (parts[iWin]  || '').split('|').pop()?.trim();
+        if (!membA || !membB || !membW || isNaN(Number(membA)) || isNaN(Number(membB))) continue;
+        subirCsvRows.push({ pA: `#${membA}`, pB: `#${membB}`, win: membW === membA ? 'A' : 'B' });
       }
     } else {
       // ── Legacy simple format: playerA, playerB, A/B ──
@@ -3980,7 +3995,7 @@ function subirLoadFile(file) {
         return true;
       });
       subirCsvRows = dataLines.map(l => {
-        const parts = l.split(',').map(s => s.trim());
+        const parts = parseLine(l);
         return { pA: parts[0] || '', pB: parts[1] || '', win: (parts[2] || 'A').toUpperCase() };
       }).filter(r => r.pA && r.pB);
     }
