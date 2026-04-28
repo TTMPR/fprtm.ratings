@@ -3979,12 +3979,22 @@ function subirLoadFile(file) {
       const iLos  = col('loserMembershipIds');
 
       subirCsvRows = [];
+      const skippedRows = [];
+      const iDesc = col('description');
       for (let i = 1; i < lines.length; i++) {
         const parts = parseLine(lines[i]);
-        // Extract 5-digit member ID from "fptm|65333"
-        const membW = (parts[iWin] || '').split('|').pop()?.trim();
-        const membL = (parts[iLos] || '').split('|').pop()?.trim();
-        if (!membW || !membL || isNaN(Number(membW)) || isNaN(Number(membL))) continue;
+        const rawW = (parts[iWin] || '').trim();
+        const rawL = (parts[iLos] || '').trim();
+        const membW = rawW.split('|').pop()?.trim();
+        const membL = rawL.split('|').pop()?.trim();
+        if (!membW || !membL || isNaN(Number(membW)) || isNaN(Number(membL))) {
+          // Only track skips that look like real matches (both sides have something)
+          if (rawW && rawL && !rawW.startsWith('DRAW_SOURCE') && !rawL.startsWith('DRAW_SOURCE')) {
+            const desc = iDesc >= 0 ? (parts[iDesc] || '') : '';
+            skippedRows.push(`Línea ${i + 1}${desc ? ` (${desc})` : ''}: winner="${rawW}" loser="${rawL}"`);
+          }
+          continue;
+        }
         // Winner is always pA so win='A'
         subirCsvRows.push({ pA: `#${membW}`, pB: `#${membL}`, win: 'A' });
       }
@@ -4006,7 +4016,13 @@ function subirLoadFile(file) {
       document.getElementById('subirProcesarBtn').style.display = 'none';
     } else {
       st.style.cssText += ';background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:var(--green)';
-      st.textContent = `✓ ${subirCsvRows.length} partido${subirCsvRows.length !== 1 ? 's' : ''} detectado${subirCsvRows.length !== 1 ? 's' : ''} en "${file.name}"${isStadium ? ' (formato Stadium Compete)' : ''}`;
+      const skippedHtml = (isStadium && skippedRows && skippedRows.length)
+        ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:6px;color:#ef4444;font-size:12px;">
+            <strong>${skippedRows.length} partido${skippedRows.length !== 1 ? 's' : ''} omitido${skippedRows.length !== 1 ? 's' : ''} (IDs no reconocidos):</strong>
+            ${skippedRows.map(r => `<div style="margin-top:4px;font-family:'DM Mono';">${r}</div>`).join('')}
+           </div>`
+        : '';
+      st.innerHTML = `✓ ${subirCsvRows.length} partido${subirCsvRows.length !== 1 ? 's' : ''} detectado${subirCsvRows.length !== 1 ? 's' : ''} en "${file.name}"${isStadium ? ' (formato Stadium Compete)' : ''}${skippedHtml}`;
       document.getElementById('subirProcesarBtn').style.display = '';
     }
     document.getElementById('subirDropLabel').textContent = file.name;
