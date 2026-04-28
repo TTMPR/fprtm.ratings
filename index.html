@@ -3946,26 +3946,52 @@ function subirHandleDrop(event) {
 function subirLoadFile(file) {
   const reader = new FileReader();
   reader.onload = e => {
-    const lines = e.target.result.trim().split(/\r?\n/);
-    const dataLines = lines.filter((l, i) => {
-      if (i === 0 && /jugador|player|ganador|winner/i.test(l)) return false;
-      return l.trim().length > 0;
-    });
-
-    subirCsvRows = dataLines.map(l => {
-      const parts = l.split(',').map(s => s.trim());
-      return { pA: parts[0] || '', pB: parts[1] || '', win: (parts[2] || 'A').toUpperCase() };
-    }).filter(r => r.pA && r.pB);
-
-    const st = document.getElementById('subirCsvStatus');
+    const text  = e.target.result.trim();
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    const st    = document.getElementById('subirCsvStatus');
     st.style.display = 'block';
+
+    // ── Detect Stadium Compete export (tab-separated, has header with 'entryAMembershipIds') ──
+    const firstLine = lines[0] || '';
+    const isStadium = firstLine.includes('\t') && /entryAMembershipIds/i.test(firstLine);
+
+    if (isStadium) {
+      const headers = firstLine.split('\t').map(h => h.trim());
+      const col = name => headers.indexOf(name);
+      const iWinMembId = col('winnerMembershipIds');
+      const iLosMembId = col('loserMembershipIds');
+      const iEntAMembId = col('entryAMembershipIds');
+      const iEntBMembId = col('entryBMembershipIds');
+
+      subirCsvRows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split('\t');
+        const membA = (parts[iEntAMembId] || '').split('|')[1]?.trim();
+        const membB = (parts[iEntBMembId] || '').split('|')[1]?.trim();
+        const membW = (parts[iWinMembId]  || '').split('|')[1]?.trim();
+        if (!membA || !membB || !membW) continue;
+        const win = membW === membA ? 'A' : 'B';
+        subirCsvRows.push({ pA: `#${membA}`, pB: `#${membB}`, win });
+      }
+    } else {
+      // ── Legacy simple format: playerA, playerB, A/B ──
+      const dataLines = lines.filter((l, i) => {
+        if (i === 0 && /jugador|player|ganador|winner/i.test(l)) return false;
+        return true;
+      });
+      subirCsvRows = dataLines.map(l => {
+        const parts = l.split(',').map(s => s.trim());
+        return { pA: parts[0] || '', pB: parts[1] || '', win: (parts[2] || 'A').toUpperCase() };
+      }).filter(r => r.pA && r.pB);
+    }
+
     if (subirCsvRows.length === 0) {
       st.style.cssText += ';background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red)';
       st.textContent = 'No se encontraron partidos válidos en el archivo.';
       document.getElementById('subirProcesarBtn').style.display = 'none';
     } else {
       st.style.cssText += ';background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:var(--green)';
-      st.textContent = `✓ ${subirCsvRows.length} partido${subirCsvRows.length !== 1 ? 's' : ''} detectado${subirCsvRows.length !== 1 ? 's' : ''} en "${file.name}"`;
+      st.textContent = `✓ ${subirCsvRows.length} partido${subirCsvRows.length !== 1 ? 's' : ''} detectado${subirCsvRows.length !== 1 ? 's' : ''} en "${file.name}"${isStadium ? ' (formato Stadium Compete)' : ''}`;
       document.getElementById('subirProcesarBtn').style.display = '';
     }
     document.getElementById('subirDropLabel').textContent = file.name;
@@ -3981,7 +4007,7 @@ function subirProcesarCsv() {
 
   const findPlayer = q => q.startsWith('#')
     ? ALL_PLAYERS.find(p => String(p.id) === q.slice(1))
-    : ALL_PLAYERS.find(p => p.name.toLowerCase() === q.toLowerCase());
+    : ALL_PLAYERS.find(p => (p.name || '').toLowerCase() === q.toLowerCase());
 
   for (const row of subirCsvRows) {
     const pA = findPlayer(row.pA);
