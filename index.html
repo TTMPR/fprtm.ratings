@@ -1318,9 +1318,9 @@
 
       <div class="profile-quick-stats">
         <div class="qs"><strong id="pMatches">—</strong>Partidos</div>
-        <div class="qs" style="display:none"><strong id="pWins" style="color:var(--green)">—</strong>Victorias</div>
-        <div class="qs" style="display:none"><strong id="pLosses" style="color:var(--red)">—</strong>Derrotas</div>
-        <div class="qs" style="display:none"><strong id="pPct" style="color:var(--accent)">—</strong>Win %</div>
+        <div class="qs"><strong id="pWins" style="color:var(--green)">—</strong>Victorias</div>
+        <div class="qs"><strong id="pLosses" style="color:var(--red)">—</strong>Derrotas</div>
+        <div class="qs"><strong id="pPct" style="color:var(--accent)">—</strong>Win %</div>
       </div>
     </div>
 
@@ -3476,6 +3476,7 @@ async function showProfile(player) {
   document.getElementById('pWins').textContent         = '…';
   document.getElementById('pLosses').textContent       = '…';
   document.getElementById('pPct').textContent          = '…';
+  document.querySelector('.winpct-row').style.display  = 'none';
   document.getElementById('ovTourneys').textContent    = '…';
   document.getElementById('tournList').innerHTML       = '<div style="color:var(--muted);padding:20px">Cargando historial...</div>';
   document.getElementById('matchList').innerHTML       = '<div style="color:var(--muted);padding:20px">Cargando partidos...</div>';
@@ -3534,6 +3535,7 @@ async function showProfile(player) {
     document.getElementById('pPct').textContent     = pct + '%';
     document.getElementById('winPct').textContent   = pct + '%';
     document.getElementById('winCircle').style.strokeDashoffset = 213.6 * (1 - pct / 100);
+    document.querySelector('.winpct-row').style.display = '';
 
     // Render match list
     const ml = document.getElementById('matchList');
@@ -5183,13 +5185,14 @@ function renderEventoRows(rows) {
   grid.innerHTML = rows.map((r, i) => {
     const deltaClass = r.delta > 0 ? 'gain' : r.delta < 0 ? 'loss' : 'tie';
     const deltaSign  = r.delta > 0 ? '▲ +' : r.delta < 0 ? '▼ ' : '= ';
-    const total      = r.ganados + r.perdidos;
+    const hasRecord  = r.ganados > 0 || r.perdidos > 0;
     return `<div class="evento-row">
       <div class="evento-rank">${i + 1}</div>
       <div class="evento-player">
         <div class="evento-player-name clickable" onclick="showPlayerMatches(${r.id_jugador},'${r.nombre.replace(/'/g,"\\'")}',${r.ratingInicio})">${r.nombre}</div>
         <div class="evento-player-meta">${r.club}</div>
       </div>
+      ${hasRecord ? `<div class="evento-record"><span class="w">${r.ganados}G</span> · <span class="l">${r.perdidos}P</span></div>` : ''}
       <div class="evento-rating-flow">
         <span class="evento-rating-val" style="color:var(--muted)">${r.ratingInicio}</span>
         <span class="evento-arrow">→</span>
