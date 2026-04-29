@@ -3973,14 +3973,14 @@ function subirLoadFile(file) {
     // ── Detect Stadium Compete export (has these columns) ──
     const isStadium = headers.some(h => /winnerMembershipIds|loserMembershipIds/i.test(h));
 
+    const skippedRows = [];
     if (isStadium) {
       const col = name => headers.findIndex(h => h.trim().toLowerCase() === name.toLowerCase());
       const iWin  = col('winnerMembershipIds');
       const iLos  = col('loserMembershipIds');
+      const iDesc = col('description');
 
       subirCsvRows = [];
-      const skippedRows = [];
-      const iDesc = col('description');
       for (let i = 1; i < lines.length; i++) {
         const parts = parseLine(lines[i]);
         const rawW = (parts[iWin] || '').trim();
