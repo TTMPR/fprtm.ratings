@@ -4394,7 +4394,6 @@ async function showResyncPartidosModal() {
   msg.textContent = '';
 
   try {
-    // Fetch all published drafts that have partidos data
     const { data: drafts, error } = await _supabase
       .from('resultados_draft')
       .select('id,torneo_nombre,torneo_fecha,partidos,created_at')
@@ -4408,19 +4407,32 @@ async function showResyncPartidosModal() {
       return;
     }
 
-    // For each draft, check how many partidos exist in the torneos table
     const rows = await Promise.all(validDrafts.map(async d => {
-      const { data: torneoData } = await _supabase
-        .from('torneos').select('id').eq('nombre', d.torneo_nombre).limit(1).maybeSingle();
-      const torneoId = torneoData?.id || null;
+      // Find torneos whose name contains the draft name (covers per-category variants)
+      const { data: torneos } = await _supabase
+        .from('torneos').select('id,nombre')
+        .ilike('nombre', `%${d.torneo_nombre}%`);
+      const torneoIds = (torneos || []).map(t => t.id);
+
+      // Count existing partidos across all matching torneoIds
       let existing = 0;
-      if (torneoId) {
+      if (torneoIds.length) {
         const { count } = await _supabase
           .from('partidos').select('id', { count: 'exact', head: true })
-          .eq('torneo_id', torneoId);
+          .in('torneo_id', torneoIds);
         existing = count || 0;
       }
-      return { ...d, torneoId, existing };
+
+      // Use the torneoId that resultados_evento already references (source of truth)
+      let primaryTorneoId = null;
+      if (torneoIds.length) {
+        const { data: re } = await _supabase
+          .from('resultados_evento').select('id_torneo')
+          .in('id_torneo', torneoIds).limit(1).maybeSingle();
+        primaryTorneoId = re?.id_torneo || torneoIds[0];
+      }
+
+      return { ...d, torneoIds, primaryTorneoId, existing };
     }));
 
     body.innerHTML = rows.map(r => {
@@ -4429,20 +4441,20 @@ async function showResyncPartidosModal() {
       const status   = missing <= 0
         ? `<span style="color:var(--green);font-weight:600;">✓ ${r.existing} partidos OK</span>`
         : `<span style="color:var(--red);font-weight:600;">⚠ ${missing} faltantes (${r.existing}/${expected})</span>`;
-      const btnHtml  = missing > 0 && r.torneoId
-        ? `<button onclick="resyncPartidosDraft('${r.id}', ${r.torneoId}, this)"
+      const canRecover = missing > 0 && r.primaryTorneoId;
+      const btnHtml = canRecover
+        ? `<button onclick="resyncPartidosDraft('${r.id}', '${r.torneoIds.join(',')}', this)"
              style="padding:7px 16px;background:rgba(232,184,75,0.12);border:1px solid rgba(232,184,75,0.4);
                     color:var(--accent);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">
              Recuperar
            </button>`
-        : (missing > 0 && !r.torneoId
+        : (missing > 0
           ? `<span style="font-size:12px;color:var(--red);">Torneo no encontrado en BD</span>`
           : '');
-      const fecha = r.torneo_fecha || '';
       return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);">
         <div style="flex:1;min-width:0;">
           <div style="font-weight:600;font-size:14px;">${r.torneo_nombre}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${fecha}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${r.torneo_fecha || ''} · IDs torneos: ${r.torneoIds.join(', ') || '—'}</div>
         </div>
         <div style="text-align:right;flex-shrink:0;">${status}</div>
         <div style="flex-shrink:0;">${btnHtml}</div>
@@ -4453,7 +4465,7 @@ async function showResyncPartidosModal() {
   }
 }
 
-async function resyncPartidosDraft(draftId, torneoId, btn) {
+async function resyncPartidosDraft(draftId, torneoIdsStr, btn) {
   const msg = document.getElementById('resyncPartidosMsg');
   btn.disabled = true;
   btn.textContent = '⏳';
@@ -4461,37 +4473,57 @@ async function resyncPartidosDraft(draftId, torneoId, btn) {
   try {
     const { data: draft, error } = await _supabase
       .from('resultados_draft')
-      .select('torneo_nombre,torneo_fecha,partidos')
+      .select('torneo_nombre,torneo_fecha,partidos,snapshot_map')
       .eq('id', draftId).single();
     if (error || !draft) throw new Error('No se pudo cargar el borrador.');
 
-    const partidoRows = draft.partidos.map(r => ({
-      torneo_id:        torneoId,
-      jugador_a_id:     r.idA,
-      jugador_b_id:     r.idB,
-      ganador_id:       r.winner === r.pA ? r.idA : r.idB,
-      rating_a_antes:   r.rA,
-      rating_b_antes:   r.rB,
-      rating_a_despues: r.rA + r.aGain,
-      rating_b_despues: r.rB + r.bGain,
-      fecha:            draft.torneo_fecha,
-      nombre_a:         r.pA,
-      nombre_b:         r.pB
-    }));
+    // Use the torneoId that resultados_evento already references for this event
+    const torneoIds = torneoIdsStr.split(',').map(Number).filter(Boolean);
+    const { data: re } = await _supabase
+      .from('resultados_evento').select('id_torneo')
+      .in('id_torneo', torneoIds).limit(1).maybeSingle();
+    const torneoId = re?.id_torneo || torneoIds[0];
+    if (!torneoId) throw new Error('No se encontró torneoId válido en resultados_evento.');
+
+    // Build player ID → snapshot map for winner resolution
+    const snapMap = {};
+    (draft.snapshot_map || []).forEach(s => { snapMap[s.nombre] = s.id_jugador; });
+
+    const partidoRows = draft.partidos.map(r => {
+      const winnerIsA = r.winner === r.pA;
+      const winnerId  = winnerIsA ? r.idA : r.idB;
+      return {
+        torneo_id:        torneoId,
+        jugador_a_id:     r.idA   || null,
+        jugador_b_id:     r.idB   || null,
+        ganador_id:       winnerId || null,
+        rating_a_antes:   r.rA,
+        rating_b_antes:   r.rB,
+        rating_a_despues: r.rA + r.aGain,
+        rating_b_despues: r.rB + r.bGain,
+        fecha:            draft.torneo_fecha,
+        nombre_a:         r.pA,
+        nombre_b:         r.pB
+      };
+    });
 
     let inserted = 0;
     for (let i = 0; i < partidoRows.length; i += 100) {
       const { error: insErr } = await _supabase.from('partidos').insert(partidoRows.slice(i, i + 100));
-      if (insErr) throw new Error(insErr.message);
+      if (insErr) throw new Error(`Batch ${Math.floor(i/100)+1}: ${insErr.message}`);
       inserted += Math.min(100, partidoRows.length - i);
     }
+
+    // Verify
+    const { count: verified } = await _supabase
+      .from('partidos').select('id', { count: 'exact', head: true })
+      .eq('torneo_id', torneoId);
 
     btn.textContent = '✓';
     btn.style.color = 'var(--green)';
     msg.style.color = 'var(--green)';
-    msg.textContent = `✓ ${inserted} partidos recuperados para "${draft.torneo_nombre}".`;
-    // Refresh the list
-    setTimeout(() => showResyncPartidosModal(), 1500);
+    msg.textContent = `✓ ${inserted} partidos insertados · ${verified} en BD · torneoId=${torneoId}`;
+    setTimeout(() => showResyncPartidosModal(), 2000);
   } catch(e) {
     btn.disabled = false;
     btn.textContent = 'Recuperar';
