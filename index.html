@@ -4283,38 +4283,47 @@ async function draftPublicar() {
 
   const colName = draft?.col_name || null;
 
-  // Apply New Rating + per-tournament column to Base de Datos
+  // Apply New Rating + per-tournament column to Base de Datos (authenticated)
   for (const snap of _currentDraftSnapshot) {
     try {
       const patch = { 'New Rating': snap.rating_fin };
       if (colName) patch[colName] = snap.rating_fin;
-      await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${snap.id_jugador}`, patch);
+      const { error } = await _supabase
+        .from('Base de Datos')
+        .update(patch)
+        .eq('Member ID', snap.id_jugador);
+      if (error) throw new Error(error.message);
       const p = ALL_PLAYERS.find(x => x.id === snap.id_jugador);
       if (p) p.rating = snap.rating_fin;
       applied++;
     } catch(e) { errors.push(`${snap.nombre}: ${e.message}`); }
   }
 
-  // Save partidos + resultados_evento
+  // Save torneos + partidos + resultados_evento (authenticated)
   try {
     if (draft) {
       let torneoId = null;
-      try { const [t] = await sbPost('torneos', { nombre: draft.torneo_nombre, fecha: draft.torneo_fecha }); torneoId = t?.id; } catch(e) {}
+      const { data: tData } = await _supabase
+        .from('torneos')
+        .insert({ nombre: draft.torneo_nombre, fecha: draft.torneo_fecha })
+        .select('id').single();
+      torneoId = tData?.id || null;
+
       if (torneoId && Array.isArray(draft.partidos)) {
-        for (const r of draft.partidos) {
-          try {
-            await sbPost('partidos', {
-              torneo_id: torneoId, jugador_a_id: r.idA, jugador_b_id: r.idB,
-              ganador: r.winner === r.pA ? 'A' : 'B',
-              rating_a_antes: r.rA, rating_b_antes: r.rB,
-              rating_a_despues: r.rA + r.aGain, rating_b_despues: r.rB + r.bGain,
-              fecha: draft.torneo_fecha, nombre_a: r.pA, nombre_b: r.pB
-            });
-          } catch(e) {}
+        const partidoRows = draft.partidos.map(r => ({
+          torneo_id: torneoId, jugador_a_id: r.idA, jugador_b_id: r.idB,
+          ganador: r.winner === r.pA ? 'A' : 'B',
+          rating_a_antes: r.rA, rating_b_antes: r.rB,
+          rating_a_despues: r.rA + r.aGain, rating_b_despues: r.rB + r.bGain,
+          fecha: draft.torneo_fecha, nombre_a: r.pA, nombre_b: r.pB
+        }));
+        // Insert in batches of 100
+        for (let i = 0; i < partidoRows.length; i += 100) {
+          await _supabase.from('partidos').insert(partidoRows.slice(i, i + 100));
         }
-        const rows = _currentDraftSnapshot.map(s => ({ ...s, id_torneo: torneoId }));
-        for (let i = 0; i < rows.length; i += 50) {
-          try { await sbPost('resultados_evento', rows.slice(i, i + 50)); } catch(e) {}
+        const snapRows = _currentDraftSnapshot.map(s => ({ ...s, id_torneo: torneoId }));
+        for (let i = 0; i < snapRows.length; i += 50) {
+          await _supabase.from('resultados_evento').insert(snapRows.slice(i, i + 50));
         }
       }
     }
