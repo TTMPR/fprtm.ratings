@@ -5183,13 +5183,14 @@ function renderEventoRows(rows) {
   grid.innerHTML = rows.map((r, i) => {
     const deltaClass = r.delta > 0 ? 'gain' : r.delta < 0 ? 'loss' : 'tie';
     const deltaSign  = r.delta > 0 ? '▲ +' : r.delta < 0 ? '▼ ' : '= ';
-    const total      = r.ganados + r.perdidos;
+    const hasRecord  = r.ganados > 0 || r.perdidos > 0;
     return `<div class="evento-row">
       <div class="evento-rank">${i + 1}</div>
       <div class="evento-player">
         <div class="evento-player-name clickable" onclick="showPlayerMatches(${r.id_jugador},'${r.nombre.replace(/'/g,"\\'")}',${r.ratingInicio})">${r.nombre}</div>
         <div class="evento-player-meta">${r.club}</div>
       </div>
+      ${hasRecord ? `<div class="evento-record"><span class="w">${r.ganados}G</span> · <span class="l">${r.perdidos}P</span></div>` : ''}
       <div class="evento-rating-flow">
         <span class="evento-rating-val" style="color:var(--muted)">${r.ratingInicio}</span>
         <span class="evento-arrow">→</span>
