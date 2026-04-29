@@ -4336,7 +4336,7 @@ async function draftPublicar() {
       if (torneoId && Array.isArray(draft.partidos)) {
         const partidoRows = draft.partidos.map(r => ({
           torneo_id: torneoId, jugador_a_id: r.idA, jugador_b_id: r.idB,
-          ganador: r.winner === r.pA ? 'A' : 'B',
+          ganador_id: r.winner === r.pA ? r.idA : r.idB,
           rating_a_antes: r.rA, rating_b_antes: r.rB,
           rating_a_despues: r.rA + r.aGain, rating_b_despues: r.rB + r.bGain,
           fecha: draft.torneo_fecha, nombre_a: r.pA, nombre_b: r.pB
@@ -4469,7 +4469,7 @@ async function resyncPartidosDraft(draftId, torneoId, btn) {
       torneo_id:        torneoId,
       jugador_a_id:     r.idA,
       jugador_b_id:     r.idB,
-      ganador:          r.winner === r.pA ? 'A' : 'B',
+      ganador_id:       r.winner === r.pA ? r.idA : r.idB,
       rating_a_antes:   r.rA,
       rating_b_antes:   r.rB,
       rating_a_despues: r.rA + r.aGain,
@@ -4553,7 +4553,7 @@ async function subirApplyRatings() {
           torneo_id:        torneoId,
           jugador_a_id:     r.idA,
           jugador_b_id:     r.idB,
-          ganador:          r.winner === r.pA ? 'A' : 'B',
+          ganador_id:       r.winner === r.pA ? r.idA : r.idB,
           rating_a_antes:   r.rA,
           rating_b_antes:   r.rB,
           rating_a_despues: r.rA + r.aGain,
