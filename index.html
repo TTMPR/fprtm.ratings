@@ -4411,7 +4411,7 @@ async function showResyncPartidosModal() {
     // For each draft, check how many partidos exist in the torneos table
     const rows = await Promise.all(validDrafts.map(async d => {
       const { data: torneoData } = await _supabase
-        .from('torneos').select('id').eq('nombre', d.torneo_nombre).limit(1).single();
+        .from('torneos').select('id').eq('nombre', d.torneo_nombre).limit(1).maybeSingle();
       const torneoId = torneoData?.id || null;
       let existing = 0;
       if (torneoId) {
@@ -4430,7 +4430,7 @@ async function showResyncPartidosModal() {
         ? `<span style="color:var(--green);font-weight:600;">✓ ${r.existing} partidos OK</span>`
         : `<span style="color:var(--red);font-weight:600;">⚠ ${missing} faltantes (${r.existing}/${expected})</span>`;
       const btnHtml  = missing > 0 && r.torneoId
-        ? `<button onclick="resyncPartidosDraft(${r.id}, ${r.torneoId}, this)"
+        ? `<button onclick="resyncPartidosDraft('${r.id}', ${r.torneoId}, this)"
              style="padding:7px 16px;background:rgba(232,184,75,0.12);border:1px solid rgba(232,184,75,0.4);
                     color:var(--accent);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">
              Recuperar
