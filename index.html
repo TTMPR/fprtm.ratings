@@ -1728,6 +1728,11 @@ Maria Lopez,Ana Torres,B</code>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Revisar y publicar ratings del torneo</div>
         <span id="draftResultsBadge" style="position:absolute;top:12px;right:12px;background:var(--accent);color:var(--navy);border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">!</span>
       </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showResyncPartidosModal()">
+        <div style="font-size:32px;margin-bottom:12px">🔧</div>
+        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Reparar Partidos</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Recuperar partidos faltantes de torneos publicados</div>
+      </div>
     </div>
 
     <!-- ── Jugadores ── -->
@@ -1837,6 +1842,23 @@ Maria Lopez,Ana Torres,B</code>
       </button>
     </div>
     <div id="draftModalMsg" style="margin-top:12px;font-size:13px;text-align:center;"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     RESYNC PARTIDOS MODAL (admin)
+═══════════════════════════════════════════ -->
+<div id="resyncPartidosModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:700px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;">Reparar Partidos</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Recupera registros individuales de partidos de torneos ya publicados</div>
+      </div>
+      <button onclick="document.getElementById('resyncPartidosModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+    <div id="resyncPartidosBody" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando borradores publicados...</div>
+    <div id="resyncPartidosMsg" style="margin-top:12px;font-size:13px;text-align:center;"></div>
   </div>
 </div>
 
@@ -4359,6 +4381,123 @@ async function draftDescartar() {
   await _supabase.from('resultados_draft').update({ status: 'discarded' }).eq('id', _currentDraftId);
   await loadDraftResultsBadge();
   closeDraftResultsModal();
+}
+
+// ── Resync Partidos ──────────────────────────────────────────────────────
+async function showResyncPartidosModal() {
+  if (!currentUser) { showLogin(); return; }
+  const modal = document.getElementById('resyncPartidosModal');
+  const body  = document.getElementById('resyncPartidosBody');
+  const msg   = document.getElementById('resyncPartidosMsg');
+  modal.style.display = '';
+  body.innerHTML = '<div style="text-align:center;padding:40px 0;">Cargando...</div>';
+  msg.textContent = '';
+
+  try {
+    // Fetch all published drafts that have partidos data
+    const { data: drafts, error } = await _supabase
+      .from('resultados_draft')
+      .select('id,torneo_nombre,torneo_fecha,partidos,created_at')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+
+    const validDrafts = (drafts || []).filter(d => Array.isArray(d.partidos) && d.partidos.length > 0);
+    if (!validDrafts.length) {
+      body.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);">No hay borradores publicados con datos de partidos.</div>';
+      return;
+    }
+
+    // For each draft, check how many partidos exist in the torneos table
+    const rows = await Promise.all(validDrafts.map(async d => {
+      const { data: torneoData } = await _supabase
+        .from('torneos').select('id').eq('nombre', d.torneo_nombre).limit(1).single();
+      const torneoId = torneoData?.id || null;
+      let existing = 0;
+      if (torneoId) {
+        const { count } = await _supabase
+          .from('partidos').select('id', { count: 'exact', head: true })
+          .eq('torneo_id', torneoId);
+        existing = count || 0;
+      }
+      return { ...d, torneoId, existing };
+    }));
+
+    body.innerHTML = rows.map(r => {
+      const expected = r.partidos.length;
+      const missing  = expected - r.existing;
+      const status   = missing <= 0
+        ? `<span style="color:var(--green);font-weight:600;">✓ ${r.existing} partidos OK</span>`
+        : `<span style="color:var(--red);font-weight:600;">⚠ ${missing} faltantes (${r.existing}/${expected})</span>`;
+      const btnHtml  = missing > 0 && r.torneoId
+        ? `<button onclick="resyncPartidosDraft(${r.id}, ${r.torneoId}, this)"
+             style="padding:7px 16px;background:rgba(232,184,75,0.12);border:1px solid rgba(232,184,75,0.4);
+                    color:var(--accent);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">
+             Recuperar
+           </button>`
+        : (missing > 0 && !r.torneoId
+          ? `<span style="font-size:12px;color:var(--red);">Torneo no encontrado en BD</span>`
+          : '');
+      const fecha = r.torneo_fecha || '';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:14px;">${r.torneo_nombre}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${fecha}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">${status}</div>
+        <div style="flex-shrink:0;">${btnHtml}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    body.innerHTML = `<div style="color:var(--red);padding:20px;">Error: ${e.message}</div>`;
+  }
+}
+
+async function resyncPartidosDraft(draftId, torneoId, btn) {
+  const msg = document.getElementById('resyncPartidosMsg');
+  btn.disabled = true;
+  btn.textContent = '⏳';
+  msg.textContent = '';
+  try {
+    const { data: draft, error } = await _supabase
+      .from('resultados_draft')
+      .select('torneo_nombre,torneo_fecha,partidos')
+      .eq('id', draftId).single();
+    if (error || !draft) throw new Error('No se pudo cargar el borrador.');
+
+    const partidoRows = draft.partidos.map(r => ({
+      torneo_id:        torneoId,
+      jugador_a_id:     r.idA,
+      jugador_b_id:     r.idB,
+      ganador:          r.winner === r.pA ? 'A' : 'B',
+      rating_a_antes:   r.rA,
+      rating_b_antes:   r.rB,
+      rating_a_despues: r.rA + r.aGain,
+      rating_b_despues: r.rB + r.bGain,
+      fecha:            draft.torneo_fecha,
+      nombre_a:         r.pA,
+      nombre_b:         r.pB
+    }));
+
+    let inserted = 0;
+    for (let i = 0; i < partidoRows.length; i += 100) {
+      const { error: insErr } = await _supabase.from('partidos').insert(partidoRows.slice(i, i + 100));
+      if (insErr) throw new Error(insErr.message);
+      inserted += Math.min(100, partidoRows.length - i);
+    }
+
+    btn.textContent = '✓';
+    btn.style.color = 'var(--green)';
+    msg.style.color = 'var(--green)';
+    msg.textContent = `✓ ${inserted} partidos recuperados para "${draft.torneo_nombre}".`;
+    // Refresh the list
+    setTimeout(() => showResyncPartidosModal(), 1500);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Recuperar';
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Error: ' + e.message;
+  }
 }
 
 async function subirApplyRatings() {
