@@ -4339,7 +4339,7 @@ async function draftPublicar() {
           ganador_id: r.winner === r.pA ? r.idA : r.idB,
           rating_a_antes: r.rA, rating_b_antes: r.rB,
           rating_a_despues: r.rA + r.aGain, rating_b_despues: r.rB + r.bGain,
-          fecha: draft.torneo_fecha, nombre_a: r.pA, nombre_b: r.pB
+          fecha: draft.torneo_fecha
         }));
         // Insert in batches of 100
         for (let i = 0; i < partidoRows.length; i += 100) {
@@ -4502,8 +4502,6 @@ async function resyncPartidosDraft(draftId, torneoIdsStr, btn) {
         rating_a_despues: r.rA + r.aGain,
         rating_b_despues: r.rB + r.bGain,
         fecha:            draft.torneo_fecha,
-        nombre_a:         r.pA,
-        nombre_b:         r.pB
       };
     });
 
@@ -4590,9 +4588,7 @@ async function subirApplyRatings() {
           rating_b_antes:   r.rB,
           rating_a_despues: r.rA + r.aGain,
           rating_b_despues: r.rB + r.bGain,
-          fecha,
-          nombre_a: r.pA,
-          nombre_b: r.pB
+          fecha
         });
       } catch(e) { console.warn('Error guardando partido:', e.message); }
     }
