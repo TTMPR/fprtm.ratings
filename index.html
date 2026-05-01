@@ -5,21 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ratings — FPTM</title>
 <link rel="icon" type="image/png" href="ttm_pr_favicon_32x32.png">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --navy: #0a1628;
-    --navy2: #0f2040;
-    --blue: #1a3a6e;
-    --accent: #e8b84b;
-    --accent2: #f4d078;
+    --dark: #0a0a0f;
+    --dark2: #111118;
+    --dark3: #1a1a24;
+    --cyan: #00d4ff;
+    --purple: #7c3aed;
+    --grad: linear-gradient(135deg, #00d4ff, #7c3aed);
+    /* backward-compat aliases */
+    --navy: #0a0a0f;
+    --navy2: #111118;
+    --blue: #1a1a24;
+    --accent: #00d4ff;
+    --accent2: #33ddff;
     --green: #22c55e;
     --red: #ef4444;
     --orange: #f97316;
-    --text: #f0f4ff;
-    --muted: #8899bb;
+    --text: #e8e8f0;
+    --muted: #888899;
     --border: rgba(255,255,255,0.08);
     --card: rgba(255,255,255,0.04);
     --card2: rgba(255,255,255,0.07);
@@ -28,9 +35,9 @@
   * { margin:0; padding:0; box-sizing:border-box; }
 
   body {
-    background: var(--navy);
+    background: var(--dark);
     color: var(--text);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
   }
@@ -39,17 +46,17 @@
   body::before {
     content: '';
     position: fixed; inset: 0;
-    background: 
-      radial-gradient(ellipse 80% 50% at 10% 0%, rgba(26,58,110,0.4) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 90% 100%, rgba(232,184,75,0.06) 0%, transparent 50%);
+    background:
+      radial-gradient(ellipse 80% 50% at 10% 0%, rgba(0,212,255,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 100%, rgba(124,58,237,0.08) 0%, transparent 50%);
     pointer-events: none; z-index: 0;
   }
 
   /* ─── HEADER ─── */
   header {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(10,22,40,0.95);
-    backdrop-filter: blur(16px);
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
     padding: 0 32px;
     display: flex; align-items: center; justify-content: space-between;
@@ -71,19 +78,19 @@
   nav button {
     background: none; border: none; color: var(--muted);
     padding: 8px 16px; border-radius: 8px; cursor: pointer;
-    font-family: 'DM Sans'; font-size: 14px; font-weight: 500;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
     transition: all 0.2s;
   }
   nav button:hover { color: var(--text); background: var(--card2); }
-  nav button.active { color: var(--accent); background: rgba(232,184,75,0.1); }
+  nav button.active { color: var(--cyan); background: rgba(0,212,255,0.08); }
 
   .admin-btn {
-    background: var(--accent) !important;
-    color: var(--navy) !important;
+    background: var(--grad) !important;
+    color: #fff !important;
     font-weight: 700 !important;
     padding: 8px 20px !important;
   }
-  .admin-btn:hover { background: var(--accent2) !important; }
+  .admin-btn:hover { opacity: 0.88; }
 
   /* ─── PAGES ─── */
   .page { display: none; position: relative; z-index: 1; }
@@ -102,12 +109,12 @@
     max-width: 1200px; margin: 0 auto;
   }
   .page-hero .overline {
-    font-family: 'DM Mono'; font-size: 11px; letter-spacing: 3px;
-    color: var(--accent); text-transform: uppercase; margin-bottom: 8px;
+    font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 3px;
+    color: var(--cyan); text-transform: uppercase; margin-bottom: 8px;
   }
   .page-hero h1 {
-    font-family: 'Bebas Neue'; font-size: 56px; letter-spacing: 3px;
-    line-height: 1; color: var(--text);
+    font-family: 'Orbitron', monospace; font-size: 48px; letter-spacing: 2px;
+    line-height: 1.1; color: var(--text);
   }
   .page-hero p { color: var(--muted); margin-top: 8px; font-size: 15px; }
 
@@ -122,10 +129,10 @@
     border-radius: 12px; padding: 12px 20px;
     transition: border-color 0.2s;
   }
-  .search-box:focus-within { border-color: var(--accent); }
+  .search-box:focus-within { border-color: var(--cyan); }
   .search-box input {
     background: none; border: none; outline: none;
-    color: var(--text); font-family: 'DM Sans'; font-size: 15px;
+    color: var(--text); font-family: 'Inter'; font-size: 15px;
     flex: 1;
   }
   .search-box input::placeholder { color: var(--muted); }
@@ -143,8 +150,8 @@
     cursor: pointer; font-size: 13px; font-weight: 500;
     transition: all 0.2s;
   }
-  .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
-  .filter-chip.on { background: rgba(232,184,75,0.15); border-color: var(--accent); color: var(--accent); }
+  .filter-chip:hover { border-color: var(--cyan); color: var(--cyan); }
+  .filter-chip.on { background: rgba(0,212,255,0.12); border-color: var(--cyan); color: var(--cyan); }
 
   /* ─── STATS ROW ─── */
   .stats-row {
@@ -155,12 +162,17 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 12px; padding: 20px 24px;
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; background: var(--grad);
   }
   .stat-card .label { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-  .stat-card .value { font-family: 'Bebas Neue'; font-size: 36px; color: var(--text); line-height: 1; }
+  .stat-card .value { font-family: 'Orbitron', monospace; font-size: 36px; color: var(--text); line-height: 1; }
   .stat-card .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .stat-card.gold { border-color: rgba(232,184,75,0.3); }
-  .stat-card.gold .value { color: var(--accent); }
+  .stat-card.gold { border-color: rgba(0,212,255,0.25); }
+  .stat-card.gold .value { color: var(--cyan); }
 
   /* ─── PLAYER GRID ─── */
   .player-grid {
@@ -169,7 +181,7 @@
   }
 
   .player-card {
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+    background: var(--card);
     border: 1px solid var(--border);
     border-radius: 14px; padding: 0;
     display: grid; grid-template-columns: 86px 1fr auto; gap: 16px;
@@ -181,41 +193,41 @@
     content: ''; position: absolute; left: 0; top: 0; bottom: 0;
     width: 3px; background: transparent; transition: background 0.2s;
   }
-  .player-card:hover { background: var(--card2); border-color: rgba(255,255,255,0.18); transform: translateY(-1px); }
-  .player-card:hover::before { background: var(--accent); }
+  .player-card:hover { background: var(--card2); border-color: rgba(0,212,255,0.25); transform: translateY(-1px); }
+  .player-card:hover::before { background: var(--grad); }
 
   .rank-num {
-    font-family: 'Bebas Neue'; font-size: 30px; color: var(--muted);
+    font-family: 'Orbitron', monospace; font-size: 30px; color: var(--muted);
     min-width: 36px; text-align: left; line-height: 1; margin-bottom: 4px;
   }
   .rank-num.top3 { color: var(--accent); }
 
   .avatar-wrap {
     height: 100%; min-height: 112px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.06));
+    background: linear-gradient(135deg, rgba(0,212,255,0.04), rgba(124,58,237,0.06));
     border-right: 1px solid var(--border);
     display: flex; align-items: center; justify-content: center;
   }
   .avatar {
     width: 54px; height: 54px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--blue), var(--navy2));
-    border: 2px solid var(--border);
+    background: linear-gradient(135deg, var(--dark3), var(--dark2));
+    border: 2px solid rgba(0,212,255,0.2);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue'; font-size: 20px; color: var(--accent);
+    font-family: 'Orbitron', monospace; font-size: 20px; color: var(--cyan);
     flex-shrink: 0;
   }
 
   .player-info { flex: 1; min-width: 0; padding: 14px 0; }
-  .player-name { font-weight: 700; font-size: 30px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Bebas Neue'; letter-spacing: 1px; }
+  .player-name { font-weight: 700; font-size: 30px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Orbitron', monospace; letter-spacing: 1px; }
   .player-meta { font-size: 12px; color: var(--muted); margin-top: 6px; }
 
   .player-right { text-align: right; flex-shrink: 0; padding: 14px 20px 14px 0; }
   .rating-num {
-    font-family: 'Bebas Neue'; font-size: 28px; color: var(--text);
+    font-family: 'Orbitron', monospace; font-size: 28px; color: var(--text);
     display: flex; align-items: center; gap: 6px; justify-content: flex-end;
   }
   .star { color: var(--accent); font-size: 16px; }
-  .player-stats { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono'; }
+  .player-stats { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'Orbitron', monospace; }
 
   .badge {
     display: inline-flex; align-items: center;
@@ -239,23 +251,28 @@
   }
   .profile-avatar {
     width: 100px; height: 100px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--blue), var(--accent));
+    background: var(--grad);
     margin: 0 auto 16px;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue'; font-size: 36px; color: white;
-    border: 3px solid var(--accent);
+    font-family: 'Orbitron', monospace; font-size: 36px; color: #fff;
+    border: 3px solid rgba(0,212,255,0.4);
   }
-  .profile-name { font-family: 'Bebas Neue'; font-size: 32px; letter-spacing: 1px; line-height: 1.1; }
-  .profile-id { font-family: 'DM Mono'; font-size: 13px; color: var(--accent); margin-top: 4px; }
+  .profile-name { font-family: 'Orbitron', monospace; font-size: 32px; letter-spacing: 1px; line-height: 1.1; }
+  .profile-id { font-family: 'Orbitron', monospace; font-size: 13px; color: var(--accent); margin-top: 4px; }
   .profile-club { font-size: 13px; color: var(--muted); margin-top: 6px; }
 
   .profile-rating-box {
     margin: 24px 0; padding: 20px;
-    background: var(--navy);
-    border-radius: 12px; border: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(0,212,255,0.06), rgba(124,58,237,0.08));
+    border-radius: 12px; border: 1px solid rgba(0,212,255,0.2);
+    position: relative; overflow: hidden;
+  }
+  .profile-rating-box::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; background: var(--grad);
   }
   .profile-rating-box .big-rating {
-    font-family: 'Bebas Neue'; font-size: 64px; color: var(--text); line-height: 1;
+    font-family: 'Orbitron', monospace; font-size: 60px; color: var(--text); line-height: 1;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   .profile-rating-box .rating-label { font-size: 12px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
@@ -263,9 +280,9 @@
   .profile-quick-stats {
     display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px;
   }
-  .qs { background: var(--navy); border-radius: 8px; padding: 12px;
+  .qs { background: var(--dark2); border-radius: 8px; padding: 12px;
     font-size: 13px; color: var(--muted); }
-  .qs strong { display: block; font-family: 'Bebas Neue'; font-size: 24px; color: var(--text); }
+  .qs strong { display: block; font-family: 'Orbitron', monospace; font-size: 24px; color: var(--text); }
 
   .profile-right { }
   .profile-tabs {
@@ -275,11 +292,11 @@
   .ptab {
     background: none; border: none; color: var(--muted);
     padding: 10px 20px 14px; cursor: pointer;
-    font-family: 'DM Sans'; font-size: 14px; font-weight: 500;
+    font-family: 'Inter'; font-size: 14px; font-weight: 500;
     border-bottom: 2px solid transparent; margin-bottom: -1px;
     transition: all 0.2s;
   }
-  .ptab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .ptab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
 
   .ptab-content { display: none; }
   .ptab-content.active { display: block; }
@@ -293,7 +310,7 @@
     border-radius: 12px; padding: 16px 20px; text-align: center;
   }
   .ov-card .lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
-  .ov-card .val { font-family: 'Bebas Neue'; font-size: 36px; margin-top: 4px; }
+  .ov-card .val { font-family: 'Orbitron', monospace; font-size: 36px; margin-top: 4px; }
   .val.green { color: var(--green); }
   .val.red { color: var(--red); }
   .val.gold { color: var(--accent); }
@@ -305,7 +322,7 @@
   .circle-val {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue'; font-size: 18px; color: var(--accent);
+    font-family: 'Orbitron', monospace; font-size: 18px; color: var(--cyan);
   }
 
   /* tournament history */
@@ -319,7 +336,7 @@
   .tourn-date { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .tourn-right { text-align: right; }
   .rating-change {
-    font-family: 'DM Mono'; font-size: 14px; font-weight: 600;
+    font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 600;
   }
   .rating-change.up { color: var(--green); }
   .rating-change.dn { color: var(--red); }
@@ -334,13 +351,13 @@
   }
   .match-player { }
   .match-player .name { font-size: 13px; font-weight: 600; }
-  .match-player .rating-tag { font-size: 11px; color: var(--muted); font-family: 'DM Mono'; }
-  .match-player .pts-change { font-family: 'DM Mono'; font-size: 12px; font-weight: 700; }
+  .match-player .rating-tag { font-size: 11px; color: var(--muted); font-family: 'Orbitron', monospace; }
+  .match-player .pts-change { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; }
   .match-player.winner .name { color: var(--accent); }
   .match-player.winner .pts-change { color: var(--green); }
   .match-player.loser .pts-change { color: var(--red); }
   .match-center { text-align: center; }
-  .match-score { font-family: 'Bebas Neue'; font-size: 18px; color: var(--text); letter-spacing: 2px; }
+  .match-score { font-family: 'Orbitron', monospace; font-size: 18px; color: var(--text); letter-spacing: 2px; }
   .match-date { font-size: 11px; color: var(--muted); margin-top: 4px; }
   .match-player.right { text-align: right; }
 
@@ -353,7 +370,7 @@
     background: var(--card); border: 1px solid var(--border);
     border-radius: 16px; padding: 28px;
   }
-  .manual-entry h3 { font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 2px; margin-bottom: 20px; }
+  .manual-entry h3 { font-family: 'Orbitron', monospace; font-size: 22px; letter-spacing: 2px; margin-bottom: 20px; }
 
   /* Simulator anchor (top "Tu Perfil" row) */
   .sim-anchor {
@@ -378,14 +395,14 @@
   .sim-gp-btn {
     flex: 1; padding: 9px 0; border-radius: 6px;
     border: 1px solid var(--border); background: none;
-    color: var(--muted); font-family: 'DM Mono'; font-size: 13px; font-weight: 700;
+    color: var(--muted); font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700;
     cursor: pointer; transition: all 0.15s;
   }
   .sim-gp-btn.won.active  { background: rgba(34,197,94,0.18); border-color: var(--green); color: var(--green); }
   .sim-gp-btn.lost.active { background: rgba(239,68,68,0.18); border-color: var(--red);   color: var(--red); }
 
   /* Per-row points column */
-  .sim-pts { font-family: 'DM Mono'; font-size: 14px; font-weight: 700; text-align: right; color: var(--muted); }
+  .sim-pts { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; text-align: right; color: var(--muted); }
 
   /* Delete row button */
   .sim-del-btn {
@@ -405,7 +422,7 @@
   .field-group input, .field-group select {
     width: 100%; background: var(--navy); border: 1px solid var(--border);
     border-radius: 8px; padding: 10px 12px; color: var(--text);
-    font-family: 'DM Sans'; font-size: 14px; outline: none;
+    font-family: 'Inter'; font-size: 14px; outline: none;
     transition: border-color 0.2s;
   }
   .field-group input:focus, .field-group select:focus { border-color: var(--accent); }
@@ -413,53 +430,53 @@
 
   .calc-result {
     margin-top: 20px; padding: 20px 24px;
-    background: rgba(232,184,75,0.08); border: 1px solid rgba(232,184,75,0.3);
+    background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.2);
     border-radius: 12px; display: none;
   }
   .calc-result.show { display: block; }
-  .calc-result h4 { font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 2px; color: var(--accent); margin-bottom: 12px; }
+  .calc-result h4 { font-family: 'Orbitron', monospace; font-size: 20px; letter-spacing: 2px; color: var(--cyan); margin-bottom: 12px; }
   .result-row {
     display: flex; justify-content: space-between; align-items: center;
     padding: 8px 0; border-bottom: 1px solid var(--border);
   }
   .result-row:last-child { border-bottom: none; }
   .result-player { font-size: 14px; }
-  .result-pts { font-family: 'DM Mono'; font-size: 16px; font-weight: 700; }
+  .result-pts { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; }
   .result-pts.gain { color: var(--green); }
   .result-pts.loss { color: var(--red); }
 
   .btn-primary {
-    background: var(--accent); color: var(--navy);
+    background: var(--grad); color: #fff;
     border: none; border-radius: 10px; padding: 12px 28px;
-    font-family: 'DM Sans'; font-size: 15px; font-weight: 700;
+    font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
     cursor: pointer; transition: all 0.2s; margin-top: 16px;
   }
-  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
   .btn-secondary {
     background: var(--card2); color: var(--text);
     border: 1px solid var(--border); border-radius: 10px; padding: 12px 28px;
-    font-family: 'DM Sans'; font-size: 15px; font-weight: 600;
+    font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
     cursor: pointer; transition: all 0.2s; margin-top: 16px; margin-left: 8px;
   }
-  .btn-secondary:hover { border-color: var(--accent); }
+  .btn-secondary:hover { border-color: var(--cyan); }
 
   /* ─── CALC TABS ─── */
   .calc-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
   .calc-tab {
     background: var(--card2); color: var(--muted);
     border: 1px solid var(--border); border-radius: 10px; padding: 10px 22px;
-    font-family: 'DM Sans'; font-size: 14px; font-weight: 600;
+    font-family: 'Inter'; font-size: 14px; font-weight: 600;
     cursor: pointer; transition: all 0.2s;
   }
-  .calc-tab.active { background: rgba(232,184,75,0.1); color: var(--accent); border-color: rgba(232,184,75,0.4); }
-  .calc-tab:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+  .calc-tab.active { background: rgba(0,212,255,0.1); color: var(--cyan); border-color: rgba(0,212,255,0.3); }
+  .calc-tab:hover:not(.active) { border-color: var(--cyan); color: var(--text); }
 
   /* ─── CSV UPLOAD ─── */
   .csv-drop-area {
     border: 2px dashed var(--border); border-radius: 12px; padding: 40px 20px;
     text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
   }
-  .csv-drop-area:hover, .csv-drop-area.drag-over { border-color: var(--accent); background: rgba(232,184,75,0.04); }
+  .csv-drop-area:hover, .csv-drop-area.drag-over { border-color: var(--accent); background: rgba(0,212,255,0.04); }
   .csv-drop-area .upload-icon { font-size: 40px; margin-bottom: 12px; }
   .csv-drop-area .upload-label { color: var(--text); font-size: 15px; margin-bottom: 6px; font-weight: 500; }
   .csv-drop-area .upload-hint { color: var(--muted); font-size: 13px; }
@@ -470,7 +487,7 @@
     width: 100%; max-width: 360px; box-sizing: border-box;
     background: var(--card2); border: 1px solid var(--border);
     border-radius: 10px; padding: 10px 16px; color: var(--text);
-    font-family: 'DM Sans'; font-size: 14px; outline: none;
+    font-family: 'Inter'; font-size: 14px; outline: none;
   }
   .memb-search-wrap input:focus { border-color: var(--accent); }
 
@@ -499,13 +516,13 @@
   .wl-chip.w { background: rgba(34,197,94,0.15); color: var(--green); }
   .wl-chip.l { background: rgba(239,68,68,0.15); color: var(--red); }
   .hist-delta {
-    font-family: 'DM Mono'; font-size: 12px; font-weight: 700;
+    font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700;
     padding: 2px 8px; border-radius: 5px;
   }
   .hist-delta.gain { color: var(--green); background: rgba(34,197,94,0.12); }
   .hist-delta.loss { color: var(--red);   background: rgba(239,68,68,0.12); }
   .hist-delta.tie  { color: var(--muted); }
-  .hist-rating-post { font-family: 'DM Mono'; font-size: 14px; font-weight: 700; }
+  .hist-rating-post { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; }
   .progress-chart-wrap {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 12px; padding: 16px 16px 12px; margin-bottom: 16px;
@@ -521,7 +538,7 @@
     padding: 4px 9px; cursor: pointer; font-size: 14px; line-height: 1;
     transition: background 0.2s, border-color 0.2s;
   }
-  .torneo-admin-btn.edit:hover { background: rgba(232,184,75,0.15); border-color: var(--accent); }
+  .torneo-admin-btn.edit:hover { background: rgba(0,212,255,0.12); border-color: var(--accent); }
   .torneo-admin-btn.del:hover  { background: rgba(239,68,68,0.15);  border-color: var(--red); }
 
   /* ─── TORNEOS LIST PAGE ─── */
@@ -536,12 +553,12 @@
     cursor: pointer; transition: border-color 0.2s, background 0.2s;
     gap: 16px;
   }
-  .torneo-card:hover { border-color: var(--accent); background: rgba(232,184,75,0.04); }
+  .torneo-card:hover { border-color: var(--cyan); background: rgba(0,212,255,0.04); }
   .torneo-card-left { flex: 1; min-width: 0; }
-  .torneo-card-name { font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 2px; }
+  .torneo-card-name { font-family: 'Orbitron', monospace; font-size: 20px; letter-spacing: 2px; }
   .torneo-card-date { font-size: 13px; color: var(--muted); margin-top: 4px; }
   .torneo-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-  .torneo-card-count { font-family: 'DM Mono'; font-size: 22px; font-weight: 700; color: var(--accent); }
+  .torneo-card-count { font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 700; color: var(--accent); }
   .torneo-card-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
 
   /* ─── TORNEO EVENTO PAGE ─── */
@@ -555,7 +572,7 @@
     width: 100%; box-sizing: border-box;
     background: var(--card2); border: 1px solid var(--border);
     border-radius: 10px; padding: 10px 16px; color: var(--text);
-    font-family: 'DM Sans'; font-size: 14px; outline: none;
+    font-family: 'Inter'; font-size: 14px; outline: none;
   }
   .evento-search-wrap input:focus { border-color: var(--accent); }
   .evento-grid {
@@ -568,17 +585,17 @@
     display: flex; align-items: center; gap: 16px;
   }
   .evento-rank {
-    font-family: 'DM Mono'; font-size: 13px; color: var(--muted);
+    font-family: 'Orbitron', monospace; font-size: 13px; color: var(--muted);
     width: 28px; text-align: center; flex-shrink: 0;
   }
   .evento-player { flex: 1; min-width: 0; }
   .evento-player-name { font-weight: 600; font-size: 15px; }
   .evento-player-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .evento-rating-flow { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .evento-rating-val { font-family: 'DM Mono'; font-size: 14px; }
+  .evento-rating-val { font-family: 'Orbitron', monospace; font-size: 14px; }
   .evento-arrow { color: var(--muted); font-size: 14px; }
   .evento-delta {
-    font-family: 'DM Mono'; font-size: 14px; font-weight: 700;
+    font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700;
     padding: 3px 8px; border-radius: 6px; flex-shrink: 0;
   }
   .evento-delta.gain { color: var(--green); background: rgba(34,197,94,0.12); }
@@ -600,13 +617,14 @@
   }
   .memb-avatar {
     width: 40px; height: 40px; border-radius: 50%;
-    background: var(--blue);
+    background: linear-gradient(135deg, var(--dark3), var(--dark2));
+    border: 1px solid rgba(0,212,255,0.15);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue'; font-size: 16px; color: var(--accent);
+    font-family: 'Orbitron', monospace; font-size: 16px; color: var(--cyan);
   }
   .memb-name { font-weight: 600; font-size: 14px; }
   .memb-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .memb-date { font-family: 'DM Mono'; font-size: 13px; color: var(--muted); text-align: right; }
+  .memb-date { font-family: 'Orbitron', monospace; font-size: 13px; color: var(--muted); text-align: right; }
   .memb-date .date { font-size: 12px; }
 
   /* ── Photo upload modal ── */
@@ -627,7 +645,7 @@
     display: flex; align-items: center; justify-content: center;
   }
   .photo-preview-wrap img { width: 100%; height: 100%; object-fit: cover; }
-  .photo-preview-initials { font-size: 34px; font-family: 'Bebas Neue'; color: var(--muted); }
+  .photo-preview-initials { font-size: 34px; font-family: 'Orbitron', monospace; color: var(--muted); }
 
   /* ── Admin pending photos modal ── */
   .pending-photo-item {
@@ -664,7 +682,7 @@
   .edit-btn {
     background: none; border: 1px solid var(--border);
     border-radius: 6px; padding: 5px 12px;
-    color: var(--muted); font-family: 'DM Sans'; font-size: 12px;
+    color: var(--muted); font-family: 'Inter'; font-size: 12px;
     cursor: pointer; transition: border-color 0.2s, color 0.2s; white-space: nowrap;
   }
   .edit-btn:hover { border-color: var(--accent); color: var(--accent); }
@@ -687,7 +705,7 @@
   .match-detail-row.win-row  { border-left-color: var(--green); background: rgba(34,197,94,0.04); }
   .match-detail-row.loss-row { border-left-color: var(--red);   background: rgba(239,68,68,0.04); }
   .match-detail-row:last-child { border-bottom: none; }
-  .pm-match-num { font-family:'DM Mono'; font-size:11px; color:var(--muted); min-width:18px; }
+  .pm-match-num { font-family:'Orbitron',monospace; font-size:11px; color:var(--muted); min-width:18px; }
   .match-opp { font-size: 14px; font-weight: 500; }
   .match-opp-rating { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .match-result-badge {
@@ -697,10 +715,10 @@
   .match-result-badge.win  { background: rgba(34,197,94,0.15);  color: var(--green); }
   .match-result-badge.loss { background: rgba(239,68,68,0.15);  color: var(--red);   }
   .pm-pts-col { text-align: right; min-width: 56px; flex-shrink: 0; }
-  .match-pts { font-family: 'DM Mono'; font-size: 15px; font-weight: 700; }
+  .match-pts { font-family: 'Orbitron', monospace; font-size: 15px; font-weight: 700; }
   .match-pts.gain { color: var(--green); }
   .match-pts.loss { color: var(--red); }
-  .pm-running-rat { font-family:'DM Mono'; font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .pm-running-rat { font-family:'Orbitron',monospace; font-size: 11px; color: var(--muted); margin-top: 2px; }
   .evento-player-name.clickable {
     cursor: pointer; text-decoration: underline dotted;
     transition: color 0.15s;
@@ -710,7 +728,7 @@
     width: 100%; box-sizing: border-box;
     background: var(--blue); border: 1px solid var(--border);
     border-radius: 8px; padding: 10px 14px;
-    color: var(--text); font-family: 'DM Sans'; font-size: 14px;
+    color: var(--text); font-family: 'Inter'; font-size: 14px;
   }
   .edit-field select:focus { outline: none; border-color: var(--accent); }
   .config-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
@@ -724,7 +742,7 @@
     background: var(--card); border: 1px solid var(--border);
     border-radius: 16px; padding: 32px; width: 400px; max-width: 92vw;
   }
-  .edit-memb-title { font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 2px; margin-bottom: 4px; }
+  .edit-memb-title { font-family: 'Orbitron', monospace; font-size: 22px; letter-spacing: 2px; margin-bottom: 4px; }
   .edit-memb-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
   .edit-field { margin-bottom: 16px; }
   .edit-field label {
@@ -735,7 +753,7 @@
     width: 100%; box-sizing: border-box;
     background: var(--blue); border: 1px solid var(--border);
     border-radius: 8px; padding: 10px 14px;
-    color: var(--text); font-family: 'DM Sans'; font-size: 14px;
+    color: var(--text); font-family: 'Inter'; font-size: 14px;
   }
   .edit-field input:focus { outline: none; border-color: var(--accent); }
   .edit-field input[readonly] { opacity: 0.5; cursor: default; }
@@ -746,7 +764,7 @@
   /* ─── BACK BUTTON ─── */
   .back-btn {
     background: none; border: none; color: var(--muted);
-    cursor: pointer; font-family: 'DM Sans'; font-size: 14px;
+    cursor: pointer; font-family: 'Inter'; font-size: 14px;
     display: flex; align-items: center; gap: 8px;
     padding: 0; margin-bottom: 8px; transition: color 0.2s;
   }
@@ -773,7 +791,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.04);
   }
   tr:hover td { background: var(--card); }
-  tr td:first-child { font-family: 'Bebas Neue'; font-size: 20px; color: var(--muted); }
+  tr td:first-child { font-family: 'Orbitron', monospace; font-size: 20px; color: var(--muted); }
 
   .scrollhint { text-align: center; color: var(--muted); font-size: 13px; margin: 24px 0; background: none; border: none; width: 100%; touch-action: manipulation; cursor: pointer; font-family: inherit; }
 
@@ -781,7 +799,7 @@
   .bottom-nav {
     display: none;
     position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(10,22,40,0.97);
+    background: rgba(10,10,15,0.97);
     backdrop-filter: blur(16px);
     border-top: 1px solid var(--border);
     z-index: 100;
@@ -794,7 +812,7 @@
     padding: 8px 4px;
     color: var(--muted); font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;
     cursor: pointer; transition: color 0.2s; gap: 3px;
-    min-height: 56px; font-family: 'DM Sans'; font-weight: 600;
+    min-height: 56px; font-family: 'Inter'; font-weight: 600;
   }
   .bottom-nav-btn .bn-icon { font-size: 20px; line-height: 1; }
   .bottom-nav-btn.active { color: var(--accent); }
@@ -928,20 +946,20 @@
   /* ─── LOGIN MODAL ─── */
   #loginModal {
     position: fixed; inset: 0; z-index: 9999;
-    background: rgba(10,22,40,0.96);
+    background: rgba(10,10,15,0.96);
     backdrop-filter: blur(10px);
     display: none; align-items: center; justify-content: center;
   }
   #loginModal.open { display: flex; }
   .login-box {
-    background: var(--navy2);
-    border: 1px solid var(--border);
+    background: var(--dark2);
+    border: 1px solid rgba(0,212,255,0.15);
     border-radius: 20px; padding: 40px;
     width: 100%; max-width: 420px; margin: 20px;
   }
   .login-box .login-header { text-align: center; margin-bottom: 32px; }
   .login-box .login-header .login-logo {
-    font-family: 'Bebas Neue'; font-size: 36px; letter-spacing: 4px; color: var(--accent);
+    font-family: 'Orbitron', monospace; font-size: 36px; letter-spacing: 4px; color: var(--accent);
   }
   .login-box .login-header p { font-size: 13px; color: var(--muted); margin-top: 4px; }
   .login-field { margin-bottom: 16px; }
@@ -952,7 +970,7 @@
   .login-field input {
     width: 100%; background: var(--navy); border: 1px solid var(--border);
     border-radius: 8px; padding: 12px 16px; color: var(--text);
-    font-family: 'DM Sans'; font-size: 14px; outline: none;
+    font-family: 'Inter'; font-size: 14px; outline: none;
     transition: border-color 0.2s;
   }
   .login-field input:focus { border-color: var(--accent); }
@@ -962,7 +980,7 @@
   }
   .btn-cancel {
     width: 100%; margin-top: 8px; background: none; border: none;
-    color: var(--muted); cursor: pointer; font-family: 'DM Sans';
+    color: var(--muted); cursor: pointer; font-family: 'Inter';
     font-size: 14px; padding: 8px; transition: color 0.2s;
   }
   .btn-cancel:hover { color: var(--text); }
@@ -989,14 +1007,14 @@
     background: none !important; border: 1px solid var(--border) !important;
     color: var(--text) !important; font-weight: 500 !important;
     padding: 8px 18px !important; border-radius: 8px !important;
-    cursor: pointer; font-family: 'DM Sans'; font-size: 14px;
+    cursor: pointer; font-family: 'Inter'; font-size: 14px;
     transition: all 0.2s; white-space: nowrap;
   }
-  .login-btn:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+  .login-btn:hover { border-color: var(--cyan) !important; color: var(--cyan) !important; }
   .login-btn.signed-in {
-    background: rgba(232,184,75,0.1) !important;
-    border-color: rgba(232,184,75,0.3) !important;
-    color: var(--accent) !important;
+    background: rgba(0,212,255,0.1) !important;
+    border-color: rgba(0,212,255,0.25) !important;
+    color: var(--cyan) !important;
   }
 
   /* ─── JOIN BANNER ─── */
@@ -1004,20 +1022,20 @@
     max-width: 1200px; margin: 0 auto; padding: 0 32px 20px;
   }
   .join-banner-inner {
-    background: linear-gradient(135deg, rgba(232,184,75,0.08), rgba(26,58,110,0.3));
-    border: 1px solid rgba(232,184,75,0.22);
+    background: linear-gradient(135deg, rgba(0,212,255,0.06), rgba(124,58,237,0.1));
+    border: 1px solid rgba(0,212,255,0.18);
     border-radius: 14px; padding: 14px 24px;
     display: flex; align-items: center; justify-content: space-between; gap: 16px;
   }
   .join-banner-text { font-size: 13px; color: var(--muted); }
   .join-banner-text strong { color: var(--text); display: block; font-size: 14px; margin-bottom: 2px; }
   .btn-join {
-    background: var(--accent); color: var(--navy);
+    background: var(--grad); color: #fff;
     border: none; border-radius: 10px; padding: 10px 22px;
-    font-family: 'DM Sans'; font-size: 14px; font-weight: 700;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700;
     cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
   }
-  .btn-join:hover { background: var(--accent2); transform: translateY(-1px); }
+  .btn-join:hover { opacity: 0.88; transform: translateY(-1px); }
 
   /* ─── MEMBER BADGE (player card) ─── */
   .memb-pill {
@@ -1054,13 +1072,13 @@
   .memb-page-tab {
     background: none; border: none; color: var(--muted);
     padding: 10px 20px 14px; cursor: pointer;
-    font-family: 'DM Sans'; font-size: 14px; font-weight: 500;
+    font-family: 'Inter'; font-size: 14px; font-weight: 500;
     border-bottom: 2px solid transparent; margin-bottom: -1px;
     transition: all 0.2s;
   }
-  .memb-page-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .memb-page-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
   .memb-tab-badge {
-    background: var(--accent); color: var(--navy);
+    background: var(--grad); color: #fff;
     font-size: 10px; font-weight: 700; padding: 1px 6px;
     border-radius: 99px; margin-left: 6px; display: inline-block; vertical-align: middle;
   }
@@ -1078,13 +1096,13 @@
     display: flex; justify-content: space-between; align-items: flex-start;
     gap: 16px; margin-bottom: 12px;
   }
-  .request-card-name  { font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 1px; }
+  .request-card-name  { font-family: 'Orbitron', monospace; font-size: 20px; letter-spacing: 1px; }
   .request-card-meta  { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
   .request-card-type  {
     font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; flex-shrink: 0;
   }
   .request-card-type.new     { background: rgba(34,197,94,0.15);  color: var(--green); }
-  .request-card-type.renewal { background: rgba(232,184,75,0.15); color: var(--accent); }
+  .request-card-type.renewal { background: rgba(0,212,255,0.12); color: var(--accent); }
   .request-card-details {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
     margin-bottom: 16px; font-size: 12px;
@@ -1095,16 +1113,16 @@
   .btn-approve {
     background: rgba(34,197,94,0.15); color: var(--green);
     border: 1px solid rgba(34,197,94,0.3); border-radius: 8px;
-    padding: 8px 20px; cursor: pointer; font-family: 'DM Sans'; font-size: 13px; font-weight: 700; transition: all 0.2s;
+    padding: 8px 20px; cursor: pointer; font-family: 'Inter'; font-size: 13px; font-weight: 700; transition: all 0.2s;
   }
   .btn-approve:hover { background: rgba(34,197,94,0.28); }
   .btn-reject {
     background: rgba(239,68,68,0.1); color: var(--red);
     border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;
-    padding: 8px 20px; cursor: pointer; font-family: 'DM Sans'; font-size: 13px; font-weight: 700; transition: all 0.2s;
+    padding: 8px 20px; cursor: pointer; font-family: 'Inter'; font-size: 13px; font-weight: 700; transition: all 0.2s;
   }
   .btn-reject:hover { background: rgba(239,68,68,0.22); }
-  .req-ath { font-family: 'DM Mono'; font-size: 14px; font-weight: 700; color: var(--accent); }
+  .req-ath { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; color: var(--accent); }
 
   /* ─── MEMBERSHIP FORM PAGE ─── */
   .memb-form-wrap { max-width: 760px; margin: 0 auto; padding: 0 32px 60px; }
@@ -1113,8 +1131,8 @@
     border-radius: 16px; padding: 28px; margin-bottom: 20px;
   }
   .mfs-title {
-    font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 2px;
-    color: var(--accent); margin-bottom: 20px;
+    font-family: 'Orbitron', monospace; font-size: 18px; letter-spacing: 1px;
+    color: var(--cyan); margin-bottom: 20px;
   }
   .mfs-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .mfs-full  { grid-column: 1 / -1; }
@@ -1122,11 +1140,11 @@
   .memb-type-btn {
     padding: 20px 16px; border-radius: 12px; border: 2px solid var(--border);
     background: var(--card2); color: var(--text); cursor: pointer;
-    font-family: 'DM Sans'; font-size: 15px; font-weight: 600;
+    font-family: 'Inter'; font-size: 15px; font-weight: 600;
     transition: all 0.2s; text-align: center;
   }
-  .memb-type-btn:hover  { border-color: var(--accent); color: var(--accent); }
-  .memb-type-btn.selected { border-color: var(--accent); background: rgba(232,184,75,0.1); color: var(--accent); }
+  .memb-type-btn:hover  { border-color: var(--cyan); color: var(--cyan); }
+  .memb-type-btn.selected { border-color: var(--cyan); background: rgba(0,212,255,0.1); color: var(--cyan); }
   .memb-type-btn .btn-icon { font-size: 28px; display: block; margin-bottom: 8px; }
   .memb-search-results {
     margin-top: 12px; display: flex; flex-direction: column; gap: 8px;
@@ -1140,12 +1158,12 @@
   .memb-search-result-item:hover   { border-color: var(--accent); }
   .memb-search-result-item.selected { border-color: var(--green); background: rgba(34,197,94,0.08); }
   .memb-payment-box {
-    background: rgba(232,184,75,0.06); border: 1px solid rgba(232,184,75,0.25);
+    background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.18);
     border-radius: 12px; padding: 24px;
   }
-  .memb-payment-amount { font-family: 'Bebas Neue'; font-size: 52px; color: var(--accent); line-height: 1; margin-bottom: 8px; }
+  .memb-payment-amount { font-family: 'Orbitron', monospace; font-size: 52px; color: var(--cyan); line-height: 1; margin-bottom: 8px; }
   .memb-payment-instructions { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
-  .memb-payment-ath { font-family: 'DM Mono'; font-size: 20px; color: var(--green); font-weight: 700; letter-spacing: 1px; }
+  .memb-payment-ath { font-family: 'Orbitron', monospace; font-size: 20px; color: var(--green); font-weight: 700; letter-spacing: 1px; }
   .minor-section { display: none; margin-top: 16px; padding: 16px; background: rgba(249,115,22,0.06); border: 1px solid rgba(249,115,22,0.25); border-radius: 10px; }
   .minor-section.visible { display: block; }
 
@@ -1352,7 +1370,7 @@
           <div class="circle-wrap">
             <svg width="80" height="80" viewBox="0 0 80 80">
               <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8"/>
-              <circle cx="40" cy="40" r="34" fill="none" stroke="#e8b84b" stroke-width="8"
+              <circle cx="40" cy="40" r="34" fill="none" stroke="#00d4ff" stroke-width="8"
                 stroke-dasharray="213.6" id="winCircle" stroke-dashoffset="64" stroke-linecap="round"/>
             </svg>
             <div class="circle-val" id="winPct">70%</div>
@@ -1423,7 +1441,7 @@
           <label>Tu Nombre</label>
           <input type="text" id="simMyName" list="playerList"
             oninput="simAutoFill()" placeholder="Busca tu nombre...">
-          <div id="simMyId" style="font-family:'DM Mono';font-size:11px;color:var(--muted);margin-top:4px;min-height:14px"></div>
+          <div id="simMyId" style="font-family:'Orbitron',monospace;font-size:11px;color:var(--muted);margin-top:4px;min-height:14px"></div>
         </div>
         <div class="field-group" style="min-width:110px">
           <label>Tu Rating Actual</label>
@@ -1475,9 +1493,9 @@
     <!-- Paso 1: Torneo -->
     <div id="subirStep1">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
-        <div style="background:var(--accent);color:var(--navy);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">1</div>
+        <div style="background:var(--grad);color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">1</div>
         <div>
-          <div style="font-family:'Bebas Neue';font-size:18px;letter-spacing:2px">Datos del Torneo</div>
+          <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:2px">Datos del Torneo</div>
           <div style="font-size:12px;color:var(--muted)">Paso 1 de 2</div>
         </div>
         <div style="flex:1;height:2px;background:var(--border);margin-left:8px"></div>
@@ -1508,15 +1526,15 @@
         <div style="background:var(--card2);color:var(--muted);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">1</div>
         <div style="font-size:12px;color:var(--muted)">Torneo</div>
         <div style="flex:1;height:2px;background:var(--accent);margin:0 8px"></div>
-        <div style="background:var(--accent);color:var(--navy);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">2</div>
+        <div style="background:var(--grad);color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">2</div>
         <div>
-          <div style="font-family:'Bebas Neue';font-size:18px;letter-spacing:2px">Partidos</div>
+          <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:2px">Partidos</div>
           <div style="font-size:12px;color:var(--muted)">Paso 2 de 2</div>
         </div>
       </div>
 
       <!-- Torneo info badge -->
-      <div id="subirTorneoInfo" style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:14px">
+      <div id="subirTorneoInfo" style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:14px">
       </div>
 
       <div class="manual-entry">
@@ -1539,7 +1557,7 @@
         <!-- Format reference -->
         <div style="margin-top:16px;padding:14px;background:var(--navy);border:1px solid var(--border);border-radius:8px">
           <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Formato del CSV</div>
-          <code style="display:block;font-family:'DM Mono';font-size:12px;background:rgba(0,0,0,0.3);padding:8px 10px;border-radius:6px;color:var(--accent);white-space:pre">Jugador A,Jugador B,Ganador
+          <code style="display:block;font-family:'Orbitron',monospace;font-size:12px;background:rgba(0,0,0,0.3);padding:8px 10px;border-radius:6px;color:var(--accent);white-space:pre">Jugador A,Jugador B,Ganador
 Juan García,Pedro Rodríguez,A
 Maria Lopez,Ana Torres,B</code>
           <button class="btn-secondary" style="padding:7px 14px;font-size:12px;margin-top:10px;margin-left:0" onclick="downloadCsvTemplate()">⬇ Descargar plantilla</button>
@@ -1594,8 +1612,8 @@ Maria Lopez,Ana Torres,B</code>
   <div class="evento-header">
     <button class="btn-secondary" style="margin:0;padding:8px 16px;font-size:13px" onclick="showPage('torneosList')">← Volver a Torneos</button>
     <div style="display:flex;gap:12px;align-items:center">
-      <div id="eventoStatBadge" style="background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.3);border-radius:8px;padding:8px 16px;text-align:center">
-        <div style="font-family:'DM Mono';font-size:22px;font-weight:700;color:var(--accent)" id="eventoParticipantCount">—</div>
+      <div id="eventoStatBadge" style="background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);border-radius:8px;padding:8px 16px;text-align:center">
+        <div style="font-family:'Orbitron',monospace;font-size:22px;font-weight:700;color:var(--accent)" id="eventoParticipantCount">—</div>
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Participantes</div>
       </div>
     </div>
@@ -1699,38 +1717,38 @@ Maria Lopez,Ana Torres,B</code>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;">
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPage('subir')">
         <div style="font-size:32px;margin-bottom:12px">📸</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Subir Resultados</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Subir Resultados</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV de partidos → actualizar ratings oficiales</div>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportRankings()">
         <div style="font-size:32px;margin-bottom:12px">📊</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Exportar Rankings</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Exportar Rankings</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Descargar Excel actualizado</div>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportStadiumCompete()">
         <div style="font-size:32px;margin-bottom:12px">🏟</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Exportar Stadium</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Exportar Stadium</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV para importar en Stadium Compete</div>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showConfigModal()">
         <div style="font-size:32px;margin-bottom:12px">⚙</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Configuración</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Configuración</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Tabla de puntos, categorías</div>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="sincronizarInscripcionesDB()">
         <div style="font-size:32px;margin-bottom:12px">🔄</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Sincronizar Datos</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Sincronizar Datos</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Actualizar Base de Datos con datos de inscripciones</div>
       </div>
-      <div id="adminCardDraftResults" style="display:none;background:var(--card2);border:1px solid rgba(232,184,75,0.4);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showDraftResultsModal()">
+      <div id="adminCardDraftResults" style="display:none;background:var(--card2);border:1px solid rgba(0,212,255,0.3);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showDraftResultsModal()">
         <div style="font-size:32px;margin-bottom:12px">📬</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Resultados Pendientes</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Resultados Pendientes</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Revisar y publicar ratings del torneo</div>
-        <span id="draftResultsBadge" style="position:absolute;top:12px;right:12px;background:var(--accent);color:var(--navy);border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">!</span>
+        <span id="draftResultsBadge" style="position:absolute;top:12px;right:12px;background:var(--grad);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">!</span>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showResyncPartidosModal()">
         <div style="font-size:32px;margin-bottom:12px">🔧</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Reparar Partidos</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Reparar Partidos</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Recuperar partidos faltantes de torneos publicados</div>
       </div>
     </div>
@@ -1740,34 +1758,34 @@ Maria Lopez,Ana Torres,B</code>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;">
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showNewPlayerModal()">
         <div style="font-size:32px;margin-bottom:12px">➕</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Nuevo Jugador</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Nuevo Jugador</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Registrar jugador en el sistema</div>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPage('membresia')">
         <div style="font-size:32px;margin-bottom:12px">🪪</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Gestionar Membresías</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Gestionar Membresías</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Activar, vencer, alertas</div>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showPendingPhotosModal()">
         <div style="font-size:32px;margin-bottom:12px">🖼</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Fotos Pendientes</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Fotos Pendientes</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar fotos de jugadores</div>
         <span id="pendingPhotoBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showPendingClubChangesModal()">
         <div style="font-size:32px;margin-bottom:12px">🏛</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Cambios de Club</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Cambios de Club</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar solicitudes de cambio de club</div>
         <span id="pendingClubBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showRegTokenModal()">
         <div style="font-size:32px;margin-bottom:12px">🔗</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Generar Enlace</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Generar Enlace</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Registro para no miembros</div>
       </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showRegSubmissionsModal()">
         <div style="font-size:32px;margin-bottom:12px">📥</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Solicitudes</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Solicitudes</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Revisar registros de no miembros</div>
         <span id="pendingRegBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
@@ -1778,38 +1796,38 @@ Maria Lopez,Ana Torres,B</code>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;">
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showNewTournamentModal()">
         <div style="font-size:32px;margin-bottom:12px">🏓</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Crear Torneo</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Crear Torneo</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Nuevo evento en calendario</div>
       </div>
       <div id="adminCardGestionar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscAdminModal()">
         <div style="font-size:32px;margin-bottom:12px">📋</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Gestionar Inscritos</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Gestionar Inscritos</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Editar y eliminar inscripciones</div>
       </div>
       <div id="adminCardExportar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportInscripcionesStadium()">
         <div style="font-size:32px;margin-bottom:12px">📤</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Exportar Inscritos</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Exportar Inscritos</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV para Stadium Compete</div>
       </div>
       <div id="adminCardReporte" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscReporteModal()">
         <div style="font-size:32px;margin-bottom:12px">📊</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Reporte por Categoría</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Reporte por Categoría</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Jugadores inscritos con rating y club</div>
       </div>
       <div id="inscAdminCard" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative;transition:border-color 0.2s" onclick="toggleInscripciones()">
         <div id="inscAdminIcon" style="font-size:32px;margin-bottom:12px">📋</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Inscripciones</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Inscripciones</div>
         <div id="inscAdminStatus" style="color:var(--muted);font-size:13px;margin-top:6px">Cargando...</div>
         <div id="inscAdminSync" style="font-size:11px;margin-top:4px;color:var(--muted)"></div>
       </div>
       <div id="adminCardArchivar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;transition:border-color 0.2s;" onclick="toggleTorneoArchivado()">
         <div id="adminCardArchivarIcon" style="font-size:32px;margin-bottom:12px">🗃️</div>
-        <div id="adminCardArchivarTitle" style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Archivar Torneo</div>
+        <div id="adminCardArchivarTitle" style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Archivar Torneo</div>
         <div id="adminCardArchivarDesc" style="color:var(--muted);font-size:13px;margin-top:6px">Mover inscripciones a historial</div>
       </div>
       <div id="adminCardPastTorneos" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPastTorneosModal()">
         <div style="font-size:32px;margin-bottom:12px">🏆</div>
-        <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:2px">Past Tournaments</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Past Tournaments</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Ver historial de torneos archivados</div>
       </div>
     </div>
@@ -1824,7 +1842,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:700px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;">Resultados Pendientes de Publicación</div>
+        <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Resultados Pendientes de Publicación</div>
         <div id="draftModalSub" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeDraftResultsModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -1832,12 +1850,12 @@ Maria Lopez,Ana Torres,B</code>
     <div id="draftModalBody" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
     <div id="draftModalActions" style="display:none;margin-top:20px;display:none;gap:10px;flex-wrap:wrap;">
       <button id="draftPublishBtn" onclick="draftPublicar()"
-        style="flex:1;padding:14px;background:var(--accent);color:var(--navy);border:none;border-radius:10px;font-family:'Bebas Neue';font-size:18px;letter-spacing:1.5px;cursor:pointer;transition:opacity 0.15s;"
+        style="flex:1;padding:14px;background:var(--grad);color:#fff;border:none;border-radius:10px;font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1.5px;cursor:pointer;transition:opacity 0.15s;"
         onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
         ✓ Publicar Ratings
       </button>
       <button onclick="draftDescartar()"
-        style="padding:14px 20px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:10px;font-family:'DM Sans';font-size:14px;font-weight:600;cursor:pointer;">
+        style="padding:14px 20px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
         Descartar
       </button>
     </div>
@@ -1852,7 +1870,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:700px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;">Reparar Partidos</div>
+        <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Reparar Partidos</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;">Recupera registros individuales de partidos de torneos ya publicados</div>
       </div>
       <button onclick="document.getElementById('resyncPartidosModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -1868,7 +1886,7 @@ Maria Lopez,Ana Torres,B</code>
 <div id="pastTorneosModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
   <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px;">
-      <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;">Past Tournaments</div>
+      <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Past Tournaments</div>
       <button onclick="closePastTorneosModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
     </div>
     <div id="pastTorneoslist" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
@@ -1880,7 +1898,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:900px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div id="pastTorneoDetailTitle" style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;"></div>
+        <div id="pastTorneoDetailTitle" style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;"></div>
         <div id="pastTorneoDetailSub" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closePastTorneoDetailModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -1888,11 +1906,11 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Sub-tabs -->
     <div style="display:flex;gap:6px;margin-bottom:20px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:4px;">
       <button id="pastDetailTabGestionar" onclick="pastDetailSwitchTab('gestionar')"
-        style="flex:1;padding:9px 0;border-radius:9px;border:none;font-family:'DM Sans';font-size:14px;font-weight:700;cursor:pointer;transition:all 0.18s;background:var(--accent);color:var(--navy);">
+        style="flex:1;padding:9px 0;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.18s;background:var(--grad);color:#fff;">
         Gestionar Inscritos
       </button>
       <button id="pastDetailTabReporte" onclick="pastDetailSwitchTab('reporte')"
-        style="flex:1;padding:9px 0;border-radius:9px;border:none;font-family:'DM Sans';font-size:14px;font-weight:600;cursor:pointer;transition:all 0.18s;background:transparent;color:var(--muted);">
+        style="flex:1;padding:9px 0;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.18s;background:transparent;color:var(--muted);">
         Reporte por Categoría
       </button>
     </div>
@@ -1902,11 +1920,11 @@ Maria Lopez,Ana Torres,B</code>
         <input id="pastDetailSearchInput" type="text" placeholder="🔍 Buscar por nombre o ID…"
           oninput="pastDetailSearch(this.value)"
           style="flex:1;min-width:180px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;
-                 padding:9px 14px;font-family:'DM Sans';font-size:13px;color:var(--text);outline:none;"
+                 padding:9px 14px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;"
           onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
         <select id="pastDetailStatusFilter" onchange="pastDetailSearch(document.getElementById('pastDetailSearchInput').value)"
           style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:9px 12px;
-                 font-family:'DM Sans';font-size:13px;color:var(--text);outline:none;cursor:pointer;">
+                 font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;cursor:pointer;">
           <option value="">Todos</option>
           <option value="pagado">✓ Pagados</option>
           <option value="pendiente">● Pendientes</option>
@@ -1929,7 +1947,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;">Reporte por Categoría — Morovis Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Reporte por Categoría — Morovis Open 2026</div>
         <div id="inscReporteTotalEl" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscReporteModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -1950,7 +1968,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;">Gestionar Inscritos — Morovis Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Gestionar Inscritos — Morovis Open 2026</div>
         <div id="inscAdminModalTotal" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscAdminModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -1961,11 +1979,11 @@ Maria Lopez,Ana Torres,B</code>
       <input id="inscAdminSearchInput" type="text" placeholder="🔍 Buscar por nombre o ID…"
         oninput="inscAdminSearchFilter(this.value)"
         style="flex:1;min-width:180px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;
-               padding:9px 14px;font-family:'DM Sans';font-size:13px;color:var(--text);outline:none;"
+               padding:9px 14px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;"
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
       <select id="inscAdminStatusFilter" onchange="inscAdminSearchFilter(document.getElementById('inscAdminSearchInput').value)"
         style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:9px 12px;
-               font-family:'DM Sans';font-size:13px;color:var(--text);outline:none;cursor:pointer;">
+               font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;cursor:pointer;">
         <option value="">Todos</option>
         <option value="pagado">✓ Pagados</option>
         <option value="pendiente">● Pendientes</option>
@@ -1980,7 +1998,7 @@ Maria Lopez,Ana Torres,B</code>
 <!-- Edit inscription sub-modal -->
 <div id="inscEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1100;overflow-y:auto;padding:16px;">
   <div style="max-width:560px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px;">
-    <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;margin-bottom:4px;">Editar Inscripción</div>
+    <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:2px;margin-bottom:4px;">Editar Inscripción</div>
     <div id="inscEditSubtitle" style="font-size:12px;color:var(--muted);margin-bottom:20px;"></div>
 
     <input type="hidden" id="inscEditId">
@@ -1989,7 +2007,7 @@ Maria Lopez,Ana Torres,B</code>
     <div style="margin-bottom:16px;">
       <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Nombre</label>
       <input id="inscEditNombre" type="text"
-        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans';font-size:14px;color:var(--text);outline:none;"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;"
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
     </div>
 
@@ -1997,7 +2015,7 @@ Maria Lopez,Ana Torres,B</code>
     <div style="margin-bottom:16px;">
       <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Referencia de pago</label>
       <input id="inscEditRef" type="text"
-        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Mono';font-size:14px;color:var(--text);outline:none;"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Orbitron',monospace;font-size:14px;color:var(--text);outline:none;"
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
     </div>
 
@@ -2008,7 +2026,7 @@ Maria Lopez,Ana Torres,B</code>
     </div>
 
     <!-- Total preview -->
-    <div style="background:rgba(232,184,75,0.06);border:1px solid rgba(232,184,75,0.18);border-radius:10px;padding:14px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:10px;padding:14px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:13px;color:var(--muted);">Total calculado</span>
       <span id="inscEditTotal" style="font-size:18px;font-weight:700;color:var(--accent);">$0.00</span>
     </div>
@@ -2016,7 +2034,7 @@ Maria Lopez,Ana Torres,B</code>
     <div id="inscEditMsg" style="font-size:13px;color:#ef4444;min-height:18px;margin-bottom:12px;"></div>
     <div style="display:flex;gap:10px;">
       <button onclick="closeInscEditModal()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Cancelar</button>
-      <button onclick="saveEditInscripcion()" style="flex:2;background:var(--accent);color:var(--navy);padding:12px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;">Guardar cambios</button>
+      <button onclick="saveEditInscripcion()" style="flex:2;background:var(--grad);color:#fff;padding:12px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;">Guardar cambios</button>
     </div>
   </div>
 </div>
@@ -2384,16 +2402,16 @@ Maria Lopez,Ana Torres,B</code>
             de la transacción e ingrésalo abajo. Tu solicitud será procesada una vez
             el administrador confirme el pago.
           </div>
-          <div style="background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.35);border-radius:10px;padding:14px 16px;margin-bottom:18px;">
+          <div style="background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);border-radius:10px;padding:14px 16px;margin-bottom:18px;">
             <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">💬 Escribe esto en la nota del pago</div>
-            <div id="membPaymentNota" style="font-family:'DM Mono';font-size:17px;font-weight:700;color:var(--accent);letter-spacing:0.04em;">Membresía / [Tu nombre]</div>
+            <div id="membPaymentNota" style="font-family:'Orbitron',monospace;font-size:17px;font-weight:700;color:var(--accent);letter-spacing:0.04em;">Membresía / [Tu nombre]</div>
           </div>
           <a href="https://wa.me/19392104299" target="_blank" style="text-decoration:none;display:block;margin:14px 0 4px;">
             <div style="display:flex;align-items:center;gap:12px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:10px;padding:12px 16px;">
               <span style="font-size:22px;">📲</span>
               <div>
                 <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">Envía también la captura del recibo por WhatsApp</div>
-                <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:0.06em;color:var(--green);">939-210-4299</div>
+                <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:0.06em;color:var(--green);">939-210-4299</div>
               </div>
             </div>
           </a>
@@ -2478,7 +2496,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Próximamente placeholder (shown when torneo is archived) -->
     <div id="inscArchivedPlaceholder" style="display:none;text-align:center;padding:40px 16px;">
       <img src="fprtm logo.jpg" alt="FPTM" style="width:100px;height:100px;object-fit:cover;border-radius:50%;margin-bottom:24px;opacity:0.85;" onerror="this.style.display='none'">
-      <div style="font-family:'Bebas Neue';font-size:32px;letter-spacing:2px;margin-bottom:16px;">Próximamente</div>
+      <div style="font-family:'Orbitron',monospace;font-size:32px;letter-spacing:2px;margin-bottom:16px;">Próximamente</div>
       <p style="font-size:14px;color:var(--muted);line-height:1.75;max-width:420px;margin:0 auto 28px;">
         Únete a nuestro canal de WhatsApp para recibir información sobre logística, sorteos y cambios de último momento en nuestros eventos federativos. Este es un medio de apoyo diseñado para facilitar el flujo de información técnica de manera rápida y organizada.
       </p>
@@ -2495,7 +2513,7 @@ Maria Lopez,Ana Torres,B</code>
     </div>
 
     <!-- Torneo activo — siempre visible -->
-    <div id="inscTorneoCard" style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+    <div id="inscTorneoCard" style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
       <img src="Morovis Open.jpg" alt="Morovis Open 2026" style="width:72px;height:72px;object-fit:cover;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
       <span style="font-size:28px;display:none;">🏓</span>
       <div>
@@ -2509,11 +2527,11 @@ Maria Lopez,Ana Torres,B</code>
     <div id="inscActiveTorneoUI">
     <div style="display:flex;gap:6px;margin-bottom:24px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:4px;">
       <button id="inscSubTabForm" onclick="inscSwitchTab('form')"
-        style="flex:1;padding:10px 0;border-radius:9px;border:none;font-family:'DM Sans';font-size:14px;font-weight:700;cursor:pointer;transition:all 0.18s;background:var(--accent);color:var(--navy);">
+        style="flex:1;padding:10px 0;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.18s;background:var(--grad);color:#fff;">
         Inscribirse
       </button>
       <button id="inscSubTabInscritos" onclick="inscSwitchTab('inscritos')"
-        style="flex:1;padding:10px 0;border-radius:9px;border:none;font-family:'DM Sans';font-size:14px;font-weight:600;cursor:pointer;transition:all 0.18s;background:transparent;color:var(--muted);">
+        style="flex:1;padding:10px 0;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.18s;background:transparent;color:var(--muted);">
         Ver Inscritos
       </button>
     </div>
@@ -2524,12 +2542,12 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Inscripciones cerradas banner (público) -->
     <div id="inscCerradasBanner" style="display:none;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:32px 24px;text-align:center;margin-bottom:24px;">
       <div style="font-size:40px;margin-bottom:12px;">🔒</div>
-      <div style="font-family:'Bebas Neue';font-size:30px;letter-spacing:0.08em;color:#ef4444;margin-bottom:10px;">Inscripciones Cerradas</div>
+      <div style="font-family:'Orbitron',monospace;font-size:30px;letter-spacing:0.08em;color:#ef4444;margin-bottom:10px;">Inscripciones Cerradas</div>
       <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0;">El periodo de inscripción para este torneo ha finalizado.<br>Para información contacta a la FPTM.</p>
     </div>
 
     <!-- Vista previa admin (solo visible cuando está logueado y las inscripciones están cerradas) -->
-    <div id="inscPreviewBanner" style="display:none;background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.35);border-radius:10px;padding:12px 16px;margin-bottom:20px;display:none;align-items:center;gap:10px;">
+    <div id="inscPreviewBanner" style="display:none;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);border-radius:10px;padding:12px 16px;margin-bottom:20px;display:none;align-items:center;gap:10px;">
       <span style="font-size:18px;">🔒</span>
       <span style="font-size:13px;color:var(--accent);font-weight:600;">Vista previa — Inscripciones cerradas para el público</span>
     </div>
@@ -2549,7 +2567,7 @@ Maria Lopez,Ana Torres,B</code>
         <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Esto determina tu cargo base y tu número de participante.</p>
 
         <div style="display:flex;flex-direction:column;gap:10px;">
-          <button onclick="inscSelectOpcion('miembro')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'DM Sans';" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <button onclick="inscSelectOpcion('miembro')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'Inter',sans-serif;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
             <span style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">🪪</span>
             <div style="flex:1;">
               <div style="font-size:15px;font-weight:600;margin-bottom:3px;">Soy miembro de la FPTM</div>
@@ -2557,7 +2575,7 @@ Maria Lopez,Ana Torres,B</code>
             </div>
             <span style="color:var(--muted);font-size:18px;">→</span>
           </button>
-          <button onclick="inscSelectOpcion('rating')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'DM Sans';" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <button onclick="inscSelectOpcion('rating')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'Inter',sans-serif;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
             <span style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">📊</span>
             <div style="flex:1;">
               <div style="font-size:15px;font-weight:600;margin-bottom:3px;">Tengo rating pero no soy miembro</div>
@@ -2565,7 +2583,7 @@ Maria Lopez,Ana Torres,B</code>
             </div>
             <span style="color:var(--muted);font-size:18px;">→</span>
           </button>
-          <button onclick="inscSelectOpcion('nuevo')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'DM Sans';" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <button onclick="inscSelectOpcion('nuevo')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'Inter',sans-serif;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
             <span style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">✨</span>
             <div style="flex:1;">
               <div style="font-size:15px;font-weight:600;margin-bottom:3px;">Nunca he participado</div>
@@ -2577,7 +2595,7 @@ Maria Lopez,Ana Torres,B</code>
       </div>
 
       <!-- Bloque nuevo jugador -->
-      <div id="inscNuevoBlock" style="display:none;background:var(--card2);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:24px;margin-bottom:16px;">
+      <div id="inscNuevoBlock" style="display:none;background:var(--card2);border:1px solid rgba(0,212,255,0.2);border-radius:14px;padding:24px;margin-bottom:16px;">
         <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Primera vez en la FPTM</div>
         <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Comunícate con Joel Vega</h2>
         <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:16px;">Para registrarte por primera vez en la FPTM debes coordinar tu inscripción directamente.</p>
@@ -2586,7 +2604,7 @@ Maria Lopez,Ana Torres,B</code>
             <span style="font-size:28px;">📲</span>
             <div>
               <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">WhatsApp</div>
-              <div style="font-family:'Bebas Neue';font-size:28px;letter-spacing:0.06em;color:var(--green);">(787) 248-3994</div>
+              <div style="font-family:'Orbitron',monospace;font-size:28px;letter-spacing:0.06em;color:var(--green);">(787) 248-3994</div>
             </div>
           </div>
         </a>
@@ -2602,7 +2620,7 @@ Maria Lopez,Ana Torres,B</code>
         <div style="position:relative;margin-bottom:14px;">
           <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px;">⌕</span>
           <input type="text" id="inscSearchInput" placeholder="Ej: Juan García..." oninput="inscHandleSearch()" autocomplete="off"
-            style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:13px 16px 13px 44px;font-family:'DM Sans';font-size:15px;color:var(--text);outline:none;transition:border 0.2s;"
+            style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:13px 16px 13px 44px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;transition:border 0.2s;"
             onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
         </div>
 
@@ -2626,7 +2644,7 @@ Maria Lopez,Ana Torres,B</code>
         <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Tu cargo base</h2>
         <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Calculado según tu estatus de membresía en la FPTM.</p>
 
-        <div style="background:rgba(232,184,75,0.06);border:1px solid rgba(232,184,75,0.18);border-radius:12px;padding:20px;">
+        <div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:12px;padding:20px;">
           <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px;">
             <span>Cargo de inscripción base</span>
             <span id="inscBaseAmtLabel">$10.00</span>
@@ -2650,14 +2668,14 @@ Maria Lopez,Ana Torres,B</code>
           <div>
             <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Fecha de Nacimiento *</label>
             <input type="date" id="inscDobInput" max="2026-12-31"
-              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'DM Sans';font-size:15px;color:var(--text);outline:none;"
+              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;"
               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
             <div id="inscDobNote" style="margin-top:5px;font-size:11px;color:var(--muted);min-height:14px;"></div>
           </div>
           <div>
             <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Sexo *</label>
             <select id="inscSexInput"
-              style="width:100%;box-sizing:border-box;background:rgba(30,40,60,1);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'DM Sans';font-size:15px;color:var(--text);outline:none;"
+              style="width:100%;box-sizing:border-box;background:rgba(17,17,24,1);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;"
               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
               <option value="" style="background:#1e283c">Selecciona...</option>
               <option value="M" style="background:#1e283c">Masculino (M)</option>
@@ -2668,14 +2686,14 @@ Maria Lopez,Ana Torres,B</code>
           <div>
             <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Club / Pueblo</label>
             <input type="text" id="inscClubInput" placeholder="Ej: Club Morovis, Bayamón..."
-              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'DM Sans';font-size:15px;color:var(--text);outline:none;"
+              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;"
               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
             <div id="inscClubNote" style="margin-top:5px;font-size:11px;color:var(--muted);min-height:14px;"></div>
           </div>
         </div>
       </div>
 
-      <button onclick="inscConfirmStep2()" style="background:var(--accent);color:var(--navy);width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;transition:all 0.18s;" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">Continuar → Categorías</button>
+      <button onclick="inscConfirmStep2()" style="background:var(--grad);color:#fff;width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;transition:all 0.18s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Continuar → Categorías</button>
     </div>
 
     <!-- ═══ PANTALLA 3: Categorías & Pago ═══ -->
@@ -2687,7 +2705,7 @@ Maria Lopez,Ana Torres,B</code>
 
         <div id="inscCatList" style="display:flex;flex-direction:column;gap:10px;"></div>
 
-        <div style="background:rgba(232,184,75,0.06);border:1px solid rgba(232,184,75,0.18);border-radius:12px;padding:20px;margin-top:16px;">
+        <div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:12px;padding:20px;margin-top:16px;">
           <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px;">
             <span>Cargo base</span><span id="inscCheckoutBase">$10.00</span>
           </div>
@@ -2736,7 +2754,7 @@ Maria Lopez,Ana Torres,B</code>
               <a href="https://wa.me/19392104299" target="_blank" style="text-decoration:none;margin-left:30px;">
                 <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;">
                   <span style="font-size:16px;">📲</span>
-                  <span style="font-family:'Bebas Neue';font-size:22px;letter-spacing:0.06em;color:var(--green);">939-210-4299</span>
+                  <span style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:0.06em;color:var(--green);">939-210-4299</span>
                 </div>
               </a>
               <div style="margin-top:6px;">
@@ -2773,10 +2791,10 @@ Maria Lopez,Ana Torres,B</code>
     <div id="inscTabInscritos" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;">
         <div>
-          <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;color:var(--text);">INSCRITOS</div>
+          <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;color:var(--text);">INSCRITOS</div>
           <div style="font-size:12px;color:var(--muted);margin-top:1px;">Morovis Open 2026</div>
         </div>
-        <div id="inscritosSectionBadge" style="display:none;background:rgba(232,184,75,0.12);border:1px solid rgba(232,184,75,0.3);color:var(--accent);font-family:'Bebas Neue';font-size:17px;letter-spacing:1px;padding:5px 14px;border-radius:20px;white-space:nowrap;"></div>
+        <div id="inscritosSectionBadge" style="display:none;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--accent);font-family:'Orbitron',monospace;font-size:17px;letter-spacing:1px;padding:5px 14px;border-radius:20px;white-space:nowrap;"></div>
       </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
         <div id="inscritosTabs" style="display:flex;border-bottom:1px solid var(--border);min-width:max-content;"></div>
@@ -2795,23 +2813,23 @@ Maria Lopez,Ana Torres,B</code>
 <div id="regTokenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
   <div style="max-width:520px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-      <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;">Generar Enlace de Registro</div>
+      <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:2px;">Generar Enlace de Registro</div>
       <button onclick="document.getElementById('regTokenModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);padding:7px 13px;border-radius:8px;cursor:pointer;">✕</button>
     </div>
     <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.55;">Genera un enlace de un solo uso que le envías directamente al jugador. Al abrir el enlace, el jugador completa su propia información sin necesidad de que la ingreses tú.</p>
     <div style="margin-bottom:16px;">
       <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Nota (opcional — para tu referencia)</label>
       <input id="regTokenLabel" type="text" placeholder="Ej: Para Juan Pérez"
-        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans';font-size:14px;color:var(--text);outline:none;"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;"
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
     </div>
-    <button onclick="generateRegToken()" style="width:100%;background:var(--accent);color:var(--navy);padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;margin-bottom:20px;">🔗 Generar enlace</button>
+    <button onclick="generateRegToken()" style="width:100%;background:var(--grad);color:#fff;padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;margin-bottom:20px;">🔗 Generar enlace</button>
 
     <!-- Generated link display -->
     <div id="regTokenResult" style="display:none;">
       <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:16px;margin-bottom:16px;">
         <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Enlace generado — copia y envía</div>
-        <div id="regTokenUrl" style="font-family:'DM Mono';font-size:12px;color:#4ade80;word-break:break-all;line-height:1.5;"></div>
+        <div id="regTokenUrl" style="font-family:'Orbitron',monospace;font-size:12px;color:#4ade80;word-break:break-all;line-height:1.5;"></div>
       </div>
       <button onclick="copyRegTokenUrl()" style="width:100%;background:none;border:1px solid var(--border);color:var(--text);padding:11px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📋 Copiar enlace</button>
     </div>
@@ -2831,7 +2849,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div>
-        <div style="font-family:'Bebas Neue';font-size:24px;letter-spacing:2px;">Solicitudes de Registro</div>
+        <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Solicitudes de Registro</div>
         <div id="regSubmissionsTotal" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="document.getElementById('regSubmissionsModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -2843,7 +2861,7 @@ Maria Lopez,Ana Torres,B</code>
 <!-- Detail drawer for a single submission -->
 <div id="regSubmissionDetail" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1100;overflow-y:auto;padding:16px;">
   <div style="max-width:560px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px;">
-    <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;margin-bottom:4px;">Detalle de Solicitud</div>
+    <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:2px;margin-bottom:4px;">Detalle de Solicitud</div>
     <div id="regDetailSubtitle" style="font-size:12px;color:var(--muted);margin-bottom:20px;"></div>
     <div id="regDetailBody" style="font-size:14px;color:var(--text);line-height:1.7;"></div>
     <div id="regDetailMsg" style="font-size:13px;color:#ef4444;min-height:18px;margin:12px 0;"></div>
@@ -2859,7 +2877,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:600px;margin:0 auto;padding:32px 16px 64px;">
     <!-- FPTM header -->
     <div style="text-align:center;margin-bottom:32px;">
-      <div style="font-family:'Bebas Neue';font-size:36px;letter-spacing:4px;color:var(--accent);">FPTM</div>
+      <div style="font-family:'Orbitron',monospace;font-size:36px;letter-spacing:4px;color:var(--accent);">FPTM</div>
       <div style="font-size:13px;color:var(--muted);">Federación Puertorriqueña de Tenis de Mesa</div>
     </div>
 
@@ -2868,7 +2886,7 @@ Maria Lopez,Ana Torres,B</code>
 
     <!-- Actual form (hidden until token validated) -->
     <div id="regFormBody" style="display:none;">
-      <div style="background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.25);border-radius:14px;padding:20px 24px;margin-bottom:28px;">
+      <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:14px;padding:20px 24px;margin-bottom:28px;">
         <div style="font-size:11px;color:var(--accent);font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Registro de Participante</div>
         <div style="font-size:18px;font-weight:700;color:var(--text);">Morovis Open 2026</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;">Sáb 25 &amp; Dom 26 de abril · Morovis, PR</div>
@@ -2961,7 +2979,7 @@ Maria Lopez,Ana Torres,B</code>
 
       <div id="regFormMsg" style="font-size:13px;color:#ef4444;min-height:18px;margin:8px 0 16px;"></div>
       <button onclick="submitPublicReg()" id="regSubmitBtn"
-        style="width:100%;background:var(--accent);color:var(--navy);padding:16px;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;border:none;">
+        style="width:100%;background:var(--grad);color:#fff;padding:16px;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;border:none;">
         Enviar Solicitud de Registro
       </button>
       <p style="font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.5;">Tu información será revisada por el administrador de la FPTM. Una vez aprobada recibirás tu número de participante.</p>
@@ -2970,7 +2988,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Success state -->
     <div id="regFormSuccess" style="display:none;text-align:center;padding:40px 0;">
       <div style="font-size:56px;margin-bottom:16px;">✅</div>
-      <div style="font-family:'Bebas Neue';font-size:28px;letter-spacing:2px;color:#4ade80;margin-bottom:12px;">¡Solicitud Enviada!</div>
+      <div style="font-family:'Orbitron',monospace;font-size:28px;letter-spacing:2px;color:#4ade80;margin-bottom:12px;">¡Solicitud Enviada!</div>
       <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el Morovis Open 2026.</p>
     </div>
   </div>
@@ -3183,8 +3201,8 @@ function showLoading(show) {
     el.id = 'loadingOverlay';
     el.style.cssText = 'position:fixed;inset:0;background:rgba(10,22,40,0.9);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px';
     el.innerHTML = `
-      <div style="width:48px;height:48px;border:3px solid rgba(232,184,75,0.2);border-top-color:#e8b84b;border-radius:50%;animation:spin 0.8s linear infinite"></div>
-      <div style="font-family:Bebas Neue;font-size:20px;letter-spacing:3px;color:#e8b84b">CARGANDO...</div>
+      <div style="width:48px;height:48px;border:3px solid rgba(0,212,255,0.2);border-top-color:#00d4ff;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+      <div style="font-family:'Orbitron',monospace;font-size:16px;letter-spacing:3px;color:#00d4ff">CARGANDO...</div>
       <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
     document.body.appendChild(el);
   }
@@ -3195,7 +3213,7 @@ function showError(msg) {
   document.getElementById('playerGrid').innerHTML = `
     <div style="grid-column:1/-1;text-align:center;padding:40px 20px">
       <div style="font-size:36px;margin-bottom:12px">⚠️</div>
-      <div style="color:var(--red);font-family:'Bebas Neue';font-size:22px;letter-spacing:2px">Error de Conexión</div>
+      <div style="color:var(--red);font-family:'Orbitron',monospace;font-size:22px;letter-spacing:2px">Error de Conexión</div>
       <div style="color:var(--muted);font-size:13px;margin-top:8px;max-width:400px;margin-left:auto;margin-right:auto">${msg}</div>
       <button onclick="location.reload()" class="btn-primary" style="margin-top:16px;font-size:13px;padding:8px 20px">↺ Reintentar</button>
     </div>`;
@@ -3415,7 +3433,7 @@ function renderPlayers(list, append = false) {
       <div class="player-info">
         <div class="rank-num ${p.rank <= 3 ? 'top3' : ''}">#${p.rank}</div>
         <div class="player-name">${p.name}</div>
-        <div style="font-family:'DM Mono';font-size:11px;color:var(--muted);letter-spacing:0.5px;margin-bottom:2px">ID ${String(p.id).padStart(5,'0')}</div>
+        <div style="font-family:'Orbitron',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;margin-bottom:2px">ID ${String(p.id).padStart(5,'0')}</div>
         <div class="player-meta">${p.cat || '—'} · ${p.club || 'Sin club'} · ${p.sex || '—'}</div>
       </div>
       <div class="player-right">
@@ -3594,7 +3612,7 @@ async function showProfile(player) {
       });
       const totalSign = totalPts >= 0 ? `+${totalPts}` : `${totalPts}`;
       const totalColor = totalPts >= 0 ? 'var(--green)' : 'var(--red)';
-      ml.innerHTML = rows.join('') + `<div style="text-align:center;padding:16px 0;font-family:'DM Mono';font-size:15px;color:${totalColor};border-top:1px solid var(--border);margin-top:8px">TOTAL: ${totalSign} pts</div>`;
+      ml.innerHTML = rows.join('') + `<div style="text-align:center;padding:16px 0;font-family:'Orbitron',monospace;font-size:15px;color:${totalColor};border-top:1px solid var(--border);margin-top:8px">TOTAL: ${totalSign} pts</div>`;
     } else {
       ml.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Sin partidos registrados aún.</div>';
     }
@@ -3700,12 +3718,12 @@ function updateProgressChart(parts, torneoMeta) {
       labels,
       datasets: [{
         data,
-        borderColor: '#e8b84b',
-        backgroundColor: 'rgba(232,184,75,0.08)',
+        borderColor: '#00d4ff',
+        backgroundColor: 'rgba(0,212,255,0.08)',
         fill: true,
         tension: 0.35,
-        pointBackgroundColor: '#e8b84b',
-        pointBorderColor: '#0a1628',
+        pointBackgroundColor: '#00d4ff',
+        pointBorderColor: '#0a0a0f',
         pointBorderWidth: 2,
         pointRadius: 5,
         pointHoverRadius: 7
@@ -3716,8 +3734,8 @@ function updateProgressChart(parts, torneoMeta) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#0f2040',
-          borderColor: 'rgba(232,184,75,0.3)',
+          backgroundColor: '#0a0a0f',
+          borderColor: 'rgba(0,212,255,0.25)',
           borderWidth: 1,
           callbacks: {
             label: ctx => `Rating: ${ctx.raw}`
@@ -3804,14 +3822,14 @@ function simAddOpponent() {
     <div style="position:relative">
       <input type="text" class="field-group" id="simOppName${id}" list="playerList"
         style="background:var(--navy);border:1px solid var(--border);border-radius:8px;
-               padding:9px 12px;color:var(--text);font-family:'DM Sans';font-size:14px;
+               padding:9px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;
                outline:none;width:100%;box-sizing:border-box"
         placeholder="Nombre del oponente" oninput="simAutoFillOpp(${id})">
-      <div id="simOppId${id}" style="font-family:'DM Mono';font-size:11px;color:var(--muted);padding:2px 2px 0;min-height:14px"></div>
+      <div id="simOppId${id}" style="font-family:'Orbitron',monospace;font-size:11px;color:var(--muted);padding:2px 2px 0;min-height:14px"></div>
     </div>
     <input type="number" id="simOppRating${id}"
       style="background:var(--navy);border:1px solid var(--border);border-radius:8px;
-             padding:9px 12px;color:var(--text);font-family:'DM Sans';font-size:14px;
+             padding:9px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;
              outline:none;width:100%;box-sizing:border-box"
       placeholder="Rating" oninput="simCalc()">
     <div class="sim-gp-wrap">
@@ -3883,9 +3901,9 @@ function simCalc() {
     <div class="result-row">
       <span>Partidos jugados</span>
       <span>
-        <span style="color:var(--green);font-family:'DM Mono';font-weight:700">${wins}G</span>
+        <span style="color:var(--green);font-family:'Orbitron',monospace;font-weight:700">${wins}G</span>
         &nbsp;/&nbsp;
-        <span style="color:var(--red);font-family:'DM Mono';font-weight:700">${losses}P</span>
+        <span style="color:var(--red);font-family:'Orbitron',monospace;font-weight:700">${losses}P</span>
       </span>
     </div>
     <div class="result-row">
@@ -3894,7 +3912,7 @@ function simCalc() {
     </div>
     <div class="result-row" style="font-size:17px;padding:12px 0">
       <strong>Nuevo Rating Proyectado</strong>
-      <strong style="color:var(--accent);font-family:'DM Mono'">${newRating}</strong>
+      <strong style="color:var(--accent);font-family:'Orbitron',monospace">${newRating}</strong>
     </div>`;
 }
 
@@ -4043,7 +4061,7 @@ function subirLoadFile(file) {
       const skippedHtml = (isStadium && skippedRows && skippedRows.length)
         ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:6px;color:#ef4444;font-size:12px;">
             <strong>${skippedRows.length} partido${skippedRows.length !== 1 ? 's' : ''} omitido${skippedRows.length !== 1 ? 's' : ''} (IDs no reconocidos):</strong>
-            ${skippedRows.map(r => `<div style="margin-top:4px;font-family:'DM Mono';">${r}</div>`).join('')}
+            ${skippedRows.map(r => `<div style="margin-top:4px;font-family:'Orbitron',monospace;">${r}</div>`).join('')}
            </div>`
         : '';
       st.innerHTML = `✓ ${subirCsvRows.length} partido${subirCsvRows.length !== 1 ? 's' : ''} detectado${subirCsvRows.length !== 1 ? 's' : ''} en "${file.name}"${isStadium ? ' (formato Stadium Compete)' : ''}${skippedHtml}`;
@@ -4173,10 +4191,10 @@ async function subirGuardarBorrador() {
       <div style="margin-bottom:8px;">✓ Borrador guardado. Antes de publicar, corre este SQL en Supabase:</div>
       <div style="display:flex;align-items:center;gap:8px;">
         <code style="flex:1;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;
-                     padding:10px 12px;font-size:12px;font-family:'DM Mono';color:var(--accent);
+                     padding:10px 12px;font-size:12px;font-family:'Orbitron',monospace;color:var(--accent);
                      display:block;word-break:break-all;">${sql}</code>
         <button onclick="navigator.clipboard.writeText('${sql.replace(/'/g,"\\'")}').then(()=>this.textContent='✓').catch(()=>{})"
-          style="flex-shrink:0;padding:8px 12px;background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.3);
+          style="flex-shrink:0;padding:8px 12px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);
                  color:var(--accent);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">
           Copiar
         </button>
@@ -4245,8 +4263,8 @@ async function showDraftResultsModal() {
         const delta = s.rating_fin - s.rating_inicio;
         return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
           <td style="padding:10px;">${s.nombre}</td>
-          <td style="padding:10px;font-family:'DM Mono';font-size:12px;color:var(--muted);">${s.rating_inicio}</td>
-          <td style="padding:10px;font-family:'DM Mono';font-size:12px;font-weight:700;color:var(--accent);">${s.rating_fin}</td>
+          <td style="padding:10px;font-family:'Orbitron',monospace;font-size:12px;color:var(--muted);">${s.rating_inicio}</td>
+          <td style="padding:10px;font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--accent);">${s.rating_fin}</td>
           <td style="padding:10px;font-weight:700;color:${delta >= 0 ? 'var(--green)' : '#ef4444'};">${delta >= 0 ? '+' : ''}${delta}</td>
           <td style="padding:10px;color:var(--muted);font-size:12px;">${s.ganados}G · ${s.perdidos}P</td>
         </tr>`;
@@ -4256,12 +4274,12 @@ async function showDraftResultsModal() {
       <div style="margin-bottom:12px;font-size:13px;color:var(--muted);">
         ${partidos.length} partido${partidos.length !== 1 ? 's' : ''} · ${_currentDraftSnapshot.length} jugador${_currentDraftSnapshot.length !== 1 ? 'es' : ''} afectados
         ${colName ? `
-        <div style="margin-top:10px;padding:10px 14px;background:rgba(232,184,75,0.07);border:1px solid rgba(232,184,75,0.25);border-radius:8px;">
+        <div style="margin-top:10px;padding:10px 14px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:8px;">
           <span style="font-size:11px;color:var(--accent);font-weight:700;letter-spacing:0.08em;">COLUMNA A CREAR:</span>
           <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
-            <code style="font-family:'DM Mono';font-size:12px;color:var(--text);flex:1;">ALTER TABLE public."Base de Datos" ADD COLUMN IF NOT EXISTS "${colName}" INTEGER;</code>
+            <code style="font-family:'Orbitron',monospace;font-size:12px;color:var(--text);flex:1;">ALTER TABLE public."Base de Datos" ADD COLUMN IF NOT EXISTS "${colName}" INTEGER;</code>
             <button onclick="navigator.clipboard.writeText('ALTER TABLE public.&quot;Base de Datos&quot; ADD COLUMN IF NOT EXISTS &quot;${colName}&quot; INTEGER;').then(()=>this.textContent='✓')"
-              style="flex-shrink:0;padding:5px 10px;background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.3);color:var(--accent);border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;">Copiar</button>
+              style="flex-shrink:0;padding:5px 10px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--accent);border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;">Copiar</button>
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:4px;">Corre esto en Supabase SQL Editor antes de publicar.</div>
         </div>` : ''}
@@ -4444,7 +4462,7 @@ async function showResyncPartidosModal() {
       const canRecover = missing > 0 && r.primaryTorneoId;
       const btnHtml = canRecover
         ? `<button onclick="resyncPartidosDraft('${r.id}', '${r.torneoIds.join(',')}', this)"
-             style="padding:7px 16px;background:rgba(232,184,75,0.12);border:1px solid rgba(232,184,75,0.4);
+             style="padding:7px 16px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);
                     color:var(--accent);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">
              Recuperar
            </button>`
@@ -4855,7 +4873,7 @@ async function exportStadiumCompete() {
 
   const btn = event?.currentTarget;
   const origHTML = btn ? btn.innerHTML : null;
-  if (btn) btn.innerHTML = '<div style="font-size:32px;margin-bottom:12px">⏳</div><div style="font-family:\'Bebas Neue\';font-size:20px;letter-spacing:2px">Exportar Stadium</div><div style="color:var(--muted);font-size:13px;margin-top:6px">Descargando datos...</div>';
+  if (btn) btn.innerHTML = '<div style="font-size:32px;margin-bottom:12px">⏳</div><div style="font-family:\'Orbitron\',monospace;font-size:18px;letter-spacing:2px">Exportar Stadium</div><div style="color:var(--muted);font-size:13px;margin-top:6px">Descargando datos...</div>';
 
   try {
     // Fetch full player data including sensitive fields (admin-only via JWT)
@@ -5253,7 +5271,7 @@ async function loadTorneosList() {
         ? new Date(g.fecha + 'T12:00:00').toLocaleDateString('es-PR', { year:'numeric', month:'long', day:'numeric' })
         : '—';
       const catBadge   = g.ids.length > 1
-        ? ` &nbsp;·&nbsp; <span style="font-size:11px;color:var(--muted);font-family:'DM Mono'">${g.ids.length} categorías</span>` : '';
+        ? ` &nbsp;·&nbsp; <span style="font-size:11px;color:var(--muted);font-family:'Orbitron',monospace">${g.ids.length} categorías</span>` : '';
       const adminBtns = isAdmin() && g.ids.length === 1 ? `
         <div class="torneo-admin-actions" onclick="event.stopPropagation()">
           <button class="torneo-admin-btn edit" title="Editar torneo"
@@ -5445,11 +5463,11 @@ async function showPlayerMatches(playerId, playerName, ratingInicio) {
     document.getElementById('pmSub').textContent = `${wins}W · ${losses}L · ${data.length} partidos · ${totalSign} pts`;
     document.getElementById('pmBody').innerHTML  =
       `<div style="margin-bottom:12px;padding:12px;background:var(--card2);border-radius:10px;display:flex;gap:24px;justify-content:center;text-align:center">
-        <div><div style="font-family:'DM Mono';font-size:16px;color:var(--muted)">${startRating}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Rating Inicio</div></div>
-        <div><div style="font-family:'DM Mono';font-size:22px;color:var(--green)">${wins}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Ganados</div></div>
-        <div><div style="font-family:'DM Mono';font-size:22px;color:var(--red)">${losses}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Perdidos</div></div>
-        <div><div style="font-family:'DM Mono';font-size:22px;color:${totalPts>=0?'var(--green)':'var(--red)'}">${totalSign}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Puntos</div></div>
-        <div><div style="font-family:'DM Mono';font-size:22px;color:var(--accent)">${startRating + totalPts}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Rating Final</div></div>
+        <div><div style="font-family:'Orbitron',monospace;font-size:16px;color:var(--muted)">${startRating}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Rating Inicio</div></div>
+        <div><div style="font-family:'Orbitron',monospace;font-size:22px;color:var(--green)">${wins}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Ganados</div></div>
+        <div><div style="font-family:'Orbitron',monospace;font-size:22px;color:var(--red)">${losses}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Perdidos</div></div>
+        <div><div style="font-family:'Orbitron',monospace;font-size:22px;color:${totalPts>=0?'var(--green)':'var(--red)'}">${totalSign}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Puntos</div></div>
+        <div><div style="font-family:'Orbitron',monospace;font-size:22px;color:var(--accent)">${startRating + totalPts}</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase">Rating Final</div></div>
       </div>
       ${rows.join('')}`;
   } catch(e) {
@@ -6560,7 +6578,7 @@ function inscUpdateProgress(step) {
   for (let i = 1; i <= 3; i++) {
     const seg = document.getElementById('inscSeg' + i);
     if (!seg) continue;
-    if (i < step)       seg.style.background = 'rgba(232,184,75,0.5)';
+    if (i < step)       seg.style.background = 'rgba(0,212,255,0.4)';
     else if (i === step) seg.style.background = 'var(--accent)';
     else                 seg.style.background = 'var(--border)';
   }
@@ -6868,7 +6886,7 @@ function pastDetailSwitchTab(tab) {
   const rPanel = document.getElementById('pastDetailReportePanel');
   const gBtn   = document.getElementById('pastDetailTabGestionar');
   const rBtn   = document.getElementById('pastDetailTabReporte');
-  const activeStyle   = { background: 'var(--accent)', color: 'var(--navy)', fontWeight: '700' };
+  const activeStyle   = { background: 'var(--grad)', color: '#fff', fontWeight: '700' };
   const inactiveStyle = { background: 'transparent',   color: 'var(--muted)', fontWeight: '600' };
   if (tab === 'gestionar') {
     gPanel.style.display = ''; rPanel.style.display = 'none';
@@ -6981,7 +6999,7 @@ function renderPastDetailReporte() {
   tabsEl.innerHTML = cats.map(c => `
     <button id="pastReporteTab_${c.id}" onclick="renderPastDetailReporteTab('${c.id}')"
       style="padding:7px 16px;border-radius:20px;border:1px solid var(--border);
-             background:transparent;color:var(--muted);font-family:'DM Sans';
+             background:transparent;color:var(--muted);font-family:'Inter',sans-serif;
              font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap;">
       ${c.name}
     </button>`).join('');
@@ -7029,7 +7047,7 @@ function renderPastDetailReporteTab(catId) {
 
   let html = `
     <div style="margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:1.5px;">${cat.name}</div>
+      <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:1.5px;">${cat.name}</div>
       ${cat.desc ? `<div style="font-size:12px;color:var(--muted);">${cat.desc}</div>` : ''}
       <div style="margin-left:auto;font-size:13px;font-weight:700;color:var(--accent);">${entries.length} jugador${entries.length !== 1 ? 'es' : ''}</div>
     </div>
@@ -7048,7 +7066,7 @@ function renderPastDetailReporteTab(catId) {
         <div style="font-weight:600;color:var(--text);">${e.nombre}</div>
         <div style="font-size:11px;color:var(--muted);">${e.fptmId}</div>
       </td>
-      <td style="padding:10px;text-align:right;font-family:'DM Mono';font-size:13px;font-weight:700;color:var(--accent);">
+      <td style="padding:10px;text-align:right;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--accent);">
         ${e.rating !== null ? e.rating : '<span style="color:var(--muted);font-weight:400;">—</span>'}
       </td>
       <td style="padding:10px;color:var(--muted);">${e.club}</td>
@@ -7237,7 +7255,7 @@ function inscHandleSearch() {
         ? '<span style="color:var(--green);font-size:11px;font-weight:600">● Activo</span>'
         : '<span style="color:var(--red);font-size:11px;font-weight:600">● Inactivo</span>';
       const rating = p.rating ? `<span style="color:var(--muted);font-size:12px"> · ${p.rating}</span>` : '';
-      return `<div onclick="inscSelectPlayer(${p.id})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;transition:background 0.15s" onmouseover="this.style.background='rgba(232,184,75,0.06)'" onmouseout="this.style.background='transparent'">
+      return `<div onclick="inscSelectPlayer(${p.id})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;transition:background 0.15s" onmouseover="this.style.background='rgba(0,212,255,0.06)'" onmouseout="this.style.background='transparent'">
         <div>
           <div style="font-size:14px;font-weight:500">${p.name}</div>
           <div style="margin-top:2px">${badge}${rating}</div>
@@ -7328,7 +7346,7 @@ function renderInscPlayerCard(p) {
   am.innerHTML = `${statusHtml} &nbsp;·&nbsp; Cargo base: <strong>${baseCharge}</strong>
     ${p.rating ? `<br><span style="color:var(--muted);font-size:12px">Rating: ${p.rating} · FPTM-${String(p.id)}</span>` : ''}
     ${existingHtml}
-    <br><button onclick="inscGoToStep(2)" style="background:var(--accent);color:var(--navy);border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:4px;">${btnLabel}</button>`;
+    <br><button onclick="inscGoToStep(2)" style="background:var(--grad);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:4px;">${btnLabel}</button>`;
 }
 
 // ══════════════════════════════════════════
@@ -7470,7 +7488,7 @@ function inscRenderCategories() {
       const disabled   = isExisting || !elig.ok;
 
       const border = isExisting ? '#22c55e' : sel ? 'var(--accent)' : !elig.ok ? 'rgba(255,255,255,0.05)' : 'var(--border)';
-      const bg     = isExisting ? 'rgba(34,197,94,0.07)' : sel ? 'rgba(232,184,75,0.08)' : !elig.ok ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)';
+      const bg     = isExisting ? 'rgba(34,197,94,0.07)' : sel ? 'rgba(0,212,255,0.08)' : !elig.ok ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)';
       const cursor = disabled ? 'default' : 'pointer';
       const opacity = !elig.ok && !isExisting ? '0.45' : '1';
 
@@ -7479,7 +7497,7 @@ function inscRenderCategories() {
         checkEl = `<span style="font-size:16px;flex-shrink:0;">✅</span>`;
       } else {
         checkEl = `<div style="width:20px;height:20px;border-radius:5px;border:1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'};background:${sel ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          ${sel ? '<span style="color:#0a1628;font-size:13px;font-weight:700">✓</span>' : ''}
+          ${sel ? '<span style="color:#fff;font-size:13px;font-weight:700">✓</span>' : ''}
         </div>`;
       }
 
@@ -7667,7 +7685,7 @@ async function inscSometerInscripcion() {
     if (despues) despues.innerHTML = `
       <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:24px;text-align:center;">
         <div style="font-size:36px;margin-bottom:10px;">✅</div>
-        <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:1px;color:#4ade80;margin-bottom:8px;">${isAddition ? '¡Categorías Añadidas!' : '¡Inscripción Sometida!'}</div>
+        <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:1px;color:#4ade80;margin-bottom:8px;">${isAddition ? '¡Categorías Añadidas!' : '¡Inscripción Sometida!'}</div>
         ${isAddition ? `<p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Añadidas: <strong style="color:var(--text);">${addedNames}</strong></p>` : ''}
         <p style="font-size:14px;color:var(--muted);line-height:1.6;">
           ${isAddition ? 'Tus categorías adicionales fueron registradas.' : 'Tu inscripción fue registrada exitosamente.'}
@@ -7696,13 +7714,13 @@ function inscSwitchTab(tab) {
   if (formEl) formEl.style.display = isForm ? '' : 'none';
   if (listEl) listEl.style.display = isForm ? 'none' : '';
   if (btnForm) {
-    btnForm.style.background = isForm ? 'var(--accent)' : 'transparent';
-    btnForm.style.color      = isForm ? 'var(--navy)' : 'var(--muted)';
+    btnForm.style.background = isForm ? 'var(--grad)' : 'transparent';
+    btnForm.style.color      = isForm ? '#fff' : 'var(--muted)';
     btnForm.style.fontWeight = isForm ? '700' : '600';
   }
   if (btnList) {
-    btnList.style.background = !isForm ? 'var(--accent)' : 'transparent';
-    btnList.style.color      = !isForm ? 'var(--navy)' : 'var(--muted)';
+    btnList.style.background = !isForm ? 'var(--grad)' : 'transparent';
+    btnList.style.color      = !isForm ? '#fff' : 'var(--muted)';
     btnList.style.fontWeight = !isForm ? '700' : '600';
   }
   if (!isForm) loadInscritosSection();
@@ -7755,7 +7773,7 @@ async function loadInscritosSection() {
     tabsEl.innerHTML = activeCats.map(cat => `
       <button id="inscTab_${cat.id}" onclick="inscritoSelectTab('${cat.id}')"
         style="padding:11px 16px;border:none;background:none;cursor:pointer;
-               font-family:'DM Sans';font-size:13px;font-weight:600;color:var(--muted);
+               font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--muted);
                border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;
                transition:color 0.15s,border-color 0.15s;">
         ${cat.name}
@@ -7804,7 +7822,7 @@ function inscritoSelectTab(catId) {
       <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;
                   ${i > 0 ? 'border-top:1px solid var(--border);' : ''}
                   background:${i % 2 === 0 ? 'rgba(255,255,255,0.025)' : 'transparent'}">
-        <div style="width:26px;height:26px;border-radius:50%;background:rgba(232,184,75,0.1);
+        <div style="width:26px;height:26px;border-radius:50%;background:rgba(0,212,255,0.1);
                     color:var(--accent);font-size:11px;font-weight:700;
                     display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i + 1}</div>
         <div style="flex:1;">
@@ -8076,7 +8094,7 @@ async function showInscReporteModal() {
       <button id="inscReporteTab_${c.id}"
         onclick="renderInscReporte('${c.id}')"
         style="padding:7px 16px;border-radius:20px;border:1px solid var(--border);
-               background:transparent;color:var(--muted);font-family:'DM Sans';
+               background:transparent;color:var(--muted);font-family:'Inter',sans-serif;
                font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap;">
         ${c.name}
       </button>`).join('');
@@ -8143,7 +8161,7 @@ function renderInscReporte(catId) {
 
   let html = `
     <div style="margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <div style="font-family:'Bebas Neue';font-size:20px;letter-spacing:1.5px;">${cat?.name || catId}</div>
+      <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:1.5px;">${cat?.name || catId}</div>
       <div style="font-size:12px;color:var(--muted);">${cat?.desc || ''}</div>
       <div style="font-size:12px;color:var(--muted);">· ${cat?.slot || ''}</div>
       <div style="margin-left:auto;font-size:13px;font-weight:700;color:${spotsColor};">
@@ -8166,14 +8184,14 @@ function renderInscReporte(catId) {
   entries.forEach((e, i) => {
     html += `
       <tr style="border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;"
-          onmouseover="this.style.background='rgba(232,184,75,0.04)'"
+          onmouseover="this.style.background='rgba(0,212,255,0.04)'"
           onmouseout="this.style.background='transparent'">
         <td style="padding:10px 10px;color:var(--muted);font-weight:600;">${i + 1}</td>
         <td style="padding:10px 10px;">
           <div style="font-weight:600;color:var(--text);">${e.nombre}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:1px;">${e.fptmId}</div>
         </td>
-        <td style="padding:10px 10px;text-align:right;font-family:'DM Mono';font-size:13px;font-weight:700;color:var(--accent);">
+        <td style="padding:10px 10px;text-align:right;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--accent);">
           ${e.rating !== null ? e.rating : '<span style="color:var(--muted);font-weight:400;">—</span>'}
         </td>
         <td style="padding:10px 10px;color:var(--muted);">${e.club}</td>
@@ -8313,7 +8331,7 @@ function renderInscAdminTable() {
       : '—';
     html += `
       <tr style="border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;"
-          onmouseover="this.style.background='rgba(232,184,75,0.04)'"
+          onmouseover="this.style.background='rgba(0,212,255,0.04)'"
           onmouseout="this.style.background='transparent'">
         <td style="padding:10px 10px;color:var(--muted);">${i + 1}</td>
         <td style="padding:10px 10px;">
@@ -8323,7 +8341,7 @@ function renderInscAdminTable() {
         <td style="padding:10px 10px;color:var(--muted);max-width:220px;">
           <div style="white-space:normal;line-height:1.5;">${catNames}</div>
         </td>
-        <td style="padding:10px 10px;font-family:'DM Mono';font-size:12px;color:var(--accent);">${row.referencia || '—'}</td>
+        <td style="padding:10px 10px;font-family:'Orbitron',monospace;font-size:12px;color:var(--accent);">${row.referencia || '—'}</td>
         <td style="padding:10px 10px;text-align:right;font-weight:600;color:var(--text);">$${(row.total || 0).toFixed(2)}</td>
         <td style="padding:10px 10px;text-align:center;">
           <button onclick="togglePagado(${row.id}, ${!!row.pagado})"
@@ -8338,7 +8356,7 @@ function renderInscAdminTable() {
         <td style="padding:10px 10px;text-align:right;color:var(--muted);white-space:nowrap;">${fecha}</td>
         <td style="padding:10px 10px;text-align:right;white-space:nowrap;">
           <button onclick="openEditInscripcion(${row.id})"
-            style="background:rgba(232,184,75,0.1);border:1px solid rgba(232,184,75,0.3);color:var(--accent);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;margin-right:6px;">
+            style="background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);color:var(--accent);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;margin-right:6px;">
             Editar
           </button>
           <button onclick="confirmDeleteInscripcion(${row.id}, '${(row.nombre || '').replace(/'/g, "\\'")}')"
@@ -8386,7 +8404,7 @@ function openEditInscripcion(id) {
     const checked = selectedIds.has(cat.id) ? 'checked' : '';
     return `
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.02);transition:background 0.15s;"
-             onmouseover="this.style.background='rgba(232,184,75,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+             onmouseover="this.style.background='rgba(0,212,255,0.04)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
         <input type="checkbox" value="${cat.id}" ${checked}
           onchange="recalcInscEditTotal()"
           style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;">
@@ -8597,7 +8615,7 @@ async function loadRegSubmissions() {
       const sl = statusLabel[r.status] || r.status;
       return `
         <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.15s;"
-             onclick="openRegSubmissionDetail(${r.id})" onmouseover="this.style.background='rgba(232,184,75,0.04)'" onmouseout="this.style.background='transparent'">
+             onclick="openRegSubmissionDetail(${r.id})" onmouseover="this.style.background='rgba(0,212,255,0.04)'" onmouseout="this.style.background='transparent'">
           <div style="flex:1;">
             <div style="font-weight:600;color:var(--text);font-size:14px;">${r.nombre} ${r.apellidos}</div>
             <div style="font-size:12px;color:var(--muted);margin-top:2px;">${r.email || '—'} · ${fecha}</div>
@@ -8651,7 +8669,7 @@ async function openRegSubmissionDetail(id) {
         <div style="width:100%;margin-bottom:4px;">
           <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Rating inicial (0 = sin rating)</label>
           <input id="regApproveRating" type="number" min="0" max="3000" step="1" value="0" placeholder="0"
-            style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Mono';font-size:16px;color:var(--text);outline:none;"
+            style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Orbitron',monospace;font-size:16px;color:var(--text);outline:none;"
             onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
         </div>
         <button onclick="approveRegSubmission(${r.id})"
@@ -8852,7 +8870,7 @@ async function submitPublicReg() {
 ═══════════════════════════════════════════ -->
 <div id="photoUploadModal">
   <div class="photo-modal-box">
-    <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px;margin-bottom:4px">PROPONER FOTO</div>
+    <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:2px;margin-bottom:4px">PROPONER FOTO</div>
     <div style="font-size:13px;color:var(--muted)" id="photoModalSubtitle">La foto será revisada antes de publicarse</div>
     <div class="photo-preview-wrap" id="photoPreviewWrap">
       <div class="photo-preview-initials" id="photoPreviewInitials">??</div>
@@ -8895,7 +8913,7 @@ async function submitPublicReg() {
      style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;align-items:center;justify-content:center">
   <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:90%;max-width:420px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px">CAMBIAR CLUB</div>
+      <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:2px">CAMBIAR CLUB</div>
       <button class="btn-cancel" style="padding:6px 12px" onclick="closeClubChangeModal()">✕</button>
     </div>
     <div id="clubChangeSubtitle" style="font-size:13px;color:var(--muted);margin-bottom:20px">—</div>
@@ -8926,7 +8944,7 @@ async function submitPublicReg() {
      style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;align-items:center;justify-content:center">
   <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:90%;max-width:520px;max-height:80vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px">FOTOS PENDIENTES</div>
+      <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:2px">FOTOS PENDIENTES</div>
       <button class="btn-cancel" style="padding:6px 12px" onclick="closePendingPhotosModal()">✕</button>
     </div>
     <div id="pendingPhotosList"></div>
@@ -8940,7 +8958,7 @@ async function submitPublicReg() {
      style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;align-items:center;justify-content:center">
   <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:90%;max-width:540px;max-height:80vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div style="font-family:'Bebas Neue';font-size:22px;letter-spacing:2px">CAMBIOS DE CLUB PENDIENTES</div>
+      <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:2px">CAMBIOS DE CLUB PENDIENTES</div>
       <button class="btn-cancel" style="padding:6px 12px" onclick="closePendingClubChangesModal()">✕</button>
     </div>
     <div id="pendingClubChangesList"></div>
