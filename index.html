@@ -1537,6 +1537,62 @@
         </div>
       </div>
     </div>
+
+    <!-- Tabla de puntos por diferencia de rating -->
+    <div style="margin-top:20px;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad)"></div>
+      <div style="padding:16px 20px 12px;display:flex;align-items:center;gap:10px;">
+        <span style="font-family:'Orbitron',monospace;font-size:13px;letter-spacing:0.5px;color:var(--text);">TABLA DE PUNTOS</span>
+        <span style="font-size:11px;color:var(--muted)">según diferencia de rating</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="border-top:1px solid var(--border);">
+            <th style="padding:9px 20px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600;font-family:'Inter',sans-serif;">Diferencia</th>
+            <th style="padding:9px 16px;text-align:center;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--green);font-weight:600;font-family:'Inter',sans-serif;">Favorito gana</th>
+            <th style="padding:9px 20px 9px 16px;text-align:center;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);font-weight:600;font-family:'Inter',sans-serif;">Underdog gana</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-top:1px solid var(--border);">
+            <td style="padding:10px 20px;color:var(--muted);font-size:12px;">0 – 24 pts</td>
+            <td style="padding:10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--green);">+8</td>
+            <td style="padding:10px 20px 10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--cyan);">+8</td>
+          </tr>
+          <tr style="border-top:1px solid var(--border);">
+            <td style="padding:10px 20px;color:var(--muted);font-size:12px;">25 – 49 pts</td>
+            <td style="padding:10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--green);">+7</td>
+            <td style="padding:10px 20px 10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--cyan);">+10</td>
+          </tr>
+          <tr style="border-top:1px solid var(--border);">
+            <td style="padding:10px 20px;color:var(--muted);font-size:12px;">50 – 99 pts</td>
+            <td style="padding:10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--green);">+5</td>
+            <td style="padding:10px 20px 10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--cyan);">+12</td>
+          </tr>
+          <tr style="border-top:1px solid var(--border);">
+            <td style="padding:10px 20px;color:var(--muted);font-size:12px;">100 – 149 pts</td>
+            <td style="padding:10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--green);">+3</td>
+            <td style="padding:10px 20px 10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--cyan);">+15</td>
+          </tr>
+          <tr style="border-top:1px solid var(--border);">
+            <td style="padding:10px 20px;color:var(--muted);font-size:12px;">150 – 199 pts</td>
+            <td style="padding:10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--green);">+2</td>
+            <td style="padding:10px 20px 10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--cyan);">+20</td>
+          </tr>
+          <tr style="border-top:1px solid var(--border);">
+            <td style="padding:10px 20px;color:var(--muted);font-size:12px;">200 – 249 pts</td>
+            <td style="padding:10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--green);">+1</td>
+            <td style="padding:10px 20px 10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--cyan);">+26</td>
+          </tr>
+          <tr style="border-top:1px solid var(--border);">
+            <td style="padding:10px 20px;color:var(--muted);font-size:12px;">250+ pts</td>
+            <td style="padding:10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--muted);">+0</td>
+            <td style="padding:10px 20px 10px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;color:var(--cyan);">+32</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
 </div>
 
