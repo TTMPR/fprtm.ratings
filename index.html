@@ -148,18 +148,18 @@
 
   /* ─── PAGE HERO ─── */
   .page-hero {
-    padding: 48px 32px 32px;
+    padding: 28px 32px 20px;
     max-width: 1200px; margin: 0 auto;
   }
   .page-hero .overline {
-    font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 3px;
-    color: var(--cyan); text-transform: uppercase; margin-bottom: 8px;
+    font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 3px;
+    color: var(--cyan); text-transform: uppercase; margin-bottom: 6px;
   }
   .page-hero h1 {
-    font-family: 'Orbitron', monospace; font-size: 48px; letter-spacing: 2px;
+    font-family: 'Orbitron', monospace; font-size: 36px; letter-spacing: 1px;
     line-height: 1.1; color: var(--text);
   }
-  .page-hero p { color: var(--muted); margin-top: 8px; font-size: 15px; }
+  .page-hero p { color: var(--muted); margin-top: 6px; font-size: 14px; }
 
   /* ─── SEARCH BAR ─── */
   .search-wrap {
@@ -212,7 +212,7 @@
     height: 2px; background: var(--grad);
   }
   .stat-card .label { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-  .stat-card .value { font-family: 'Orbitron', monospace; font-size: 36px; color: var(--text); line-height: 1; }
+  .stat-card .value { font-family: 'Orbitron', monospace; font-size: 28px; color: var(--text); line-height: 1; }
   .stat-card .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
   .stat-card.gold { border-color: rgba(56,189,248,0.25); }
   .stat-card.gold .value { color: var(--cyan); }
@@ -240,8 +240,8 @@
   .player-card:hover::before { background: var(--grad); }
 
   .rank-num {
-    font-family: 'Orbitron', monospace; font-size: 30px; color: var(--muted);
-    min-width: 36px; text-align: left; line-height: 1; margin-bottom: 4px;
+    font-family: 'Orbitron', monospace; font-size: 20px; color: var(--muted);
+    min-width: 28px; text-align: left; line-height: 1; margin-bottom: 4px;
   }
   .rank-num.top3 { color: var(--accent); }
 
@@ -261,12 +261,12 @@
   }
 
   .player-info { flex: 1; min-width: 0; padding: 14px 0; }
-  .player-name { font-weight: 700; font-size: 30px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Orbitron', monospace; letter-spacing: 1px; }
+  .player-name { font-weight: 700; font-size: 20px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Orbitron', monospace; letter-spacing: 0.5px; }
   .player-meta { font-size: 12px; color: var(--muted); margin-top: 6px; }
 
   .player-right { text-align: right; flex-shrink: 0; padding: 14px 20px 14px 0; }
   .rating-num {
-    font-family: 'Orbitron', monospace; font-size: 28px; color: var(--text);
+    font-family: 'Orbitron', monospace; font-size: 20px; color: var(--text);
     display: flex; align-items: center; gap: 6px; justify-content: flex-end;
   }
   .star { color: var(--accent); font-size: 16px; }
@@ -294,14 +294,14 @@
     border-radius: 16px; padding: 32px 24px; text-align: center;
   }
   .profile-avatar {
-    width: 100px; height: 100px; border-radius: 50%;
+    width: 84px; height: 84px; border-radius: 50%;
     background: var(--grad);
-    margin: 0 auto 16px;
+    margin: 0 auto 14px;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Orbitron', monospace; font-size: 36px; color: #fff;
+    font-family: 'Orbitron', monospace; font-size: 28px; color: #fff;
     border: 3px solid rgba(56,189,248,0.4);
   }
-  .profile-name { font-family: 'Orbitron', monospace; font-size: 32px; letter-spacing: 1px; line-height: 1.1; }
+  .profile-name { font-family: 'Orbitron', monospace; font-size: 24px; letter-spacing: 0.5px; line-height: 1.2; }
   .profile-id { font-family: 'Orbitron', monospace; font-size: 13px; color: var(--accent); margin-top: 4px; }
   .profile-club { font-size: 13px; color: var(--muted); margin-top: 6px; }
 
@@ -316,7 +316,7 @@
     height: 2px; background: var(--grad);
   }
   .profile-rating-box .big-rating {
-    font-family: 'Orbitron', monospace; font-size: 60px; color: var(--text); line-height: 1;
+    font-family: 'Orbitron', monospace; font-size: 48px; color: var(--text); line-height: 1;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   .profile-rating-box .rating-label { font-size: 12px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
@@ -326,7 +326,7 @@
   }
   .qs { background: var(--dark2); border-radius: 8px; padding: 12px;
     font-size: 13px; color: var(--muted); }
-  .qs strong { display: block; font-family: 'Orbitron', monospace; font-size: 24px; color: var(--text); }
+  .qs strong { display: block; font-family: 'Orbitron', monospace; font-size: 20px; color: var(--text); }
 
   .profile-right { }
   .profile-tabs {
@@ -354,7 +354,7 @@
     border-radius: 12px; padding: 16px 20px; text-align: center;
   }
   .ov-card .lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
-  .ov-card .val { font-family: 'Orbitron', monospace; font-size: 36px; margin-top: 4px; }
+  .ov-card .val { font-family: 'Orbitron', monospace; font-size: 28px; margin-top: 4px; }
   .val.green { color: var(--green); }
   .val.red { color: var(--red); }
   .val.gold { color: var(--accent); }
@@ -414,7 +414,7 @@
     background: var(--card); border: 1px solid var(--border);
     border-radius: 16px; padding: 28px;
   }
-  .manual-entry h3 { font-family: 'Orbitron', monospace; font-size: 22px; letter-spacing: 2px; margin-bottom: 20px; }
+  .manual-entry h3 { font-family: 'Orbitron', monospace; font-size: 17px; letter-spacing: 1px; margin-bottom: 20px; }
 
   /* Simulator anchor (top "Tu Perfil" row) */
   .sim-anchor {
@@ -478,7 +478,7 @@
     border-radius: 12px; display: none;
   }
   .calc-result.show { display: block; }
-  .calc-result h4 { font-family: 'Orbitron', monospace; font-size: 20px; letter-spacing: 2px; color: var(--cyan); margin-bottom: 12px; }
+  .calc-result h4 { font-family: 'Orbitron', monospace; font-size: 16px; letter-spacing: 1px; color: var(--cyan); margin-bottom: 12px; }
   .result-row {
     display: flex; justify-content: space-between; align-items: center;
     padding: 8px 0; border-bottom: 1px solid var(--border);
@@ -599,10 +599,10 @@
   }
   .torneo-card:hover { border-color: var(--cyan); background: rgba(56,189,248,0.04); }
   .torneo-card-left { flex: 1; min-width: 0; }
-  .torneo-card-name { font-family: 'Orbitron', monospace; font-size: 20px; letter-spacing: 2px; }
+  .torneo-card-name { font-family: 'Orbitron', monospace; font-size: 16px; letter-spacing: 1px; }
   .torneo-card-date { font-size: 13px; color: var(--muted); margin-top: 4px; }
   .torneo-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-  .torneo-card-count { font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 700; color: var(--accent); }
+  .torneo-card-count { font-family: 'Orbitron', monospace; font-size: 18px; font-weight: 700; color: var(--accent); }
   .torneo-card-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
 
   /* ─── TORNEO EVENTO PAGE ─── */
@@ -786,7 +786,7 @@
     background: var(--card); border: 1px solid var(--border);
     border-radius: 16px; padding: 32px; width: 400px; max-width: 92vw;
   }
-  .edit-memb-title { font-family: 'Orbitron', monospace; font-size: 22px; letter-spacing: 2px; margin-bottom: 4px; }
+  .edit-memb-title { font-family: 'Orbitron', monospace; font-size: 18px; letter-spacing: 1px; margin-bottom: 4px; }
   .edit-memb-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
   .edit-field { margin-bottom: 16px; }
   .edit-field label {
@@ -888,7 +888,8 @@
 
   /* ─── RESPONSIVE: 480px — small phones ─── */
   @media (max-width: 480px) {
-    .page-hero h1 { font-size: 38px; }
+    .page-hero h1 { font-size: 26px; }
+    .page-hero { padding: 20px 12px 14px; }
     .page-hero { padding: 20px 12px 12px; }
     .container, .calc-wrap, .memb-form-wrap { padding-left: 12px; padding-right: 12px; }
     .search-wrap, .filters, .stats-row, .player-grid,
@@ -1020,7 +1021,7 @@
   }
   .login-box .login-header { text-align: center; margin-bottom: 32px; }
   .login-box .login-header .login-logo {
-    font-family: 'Orbitron', monospace; font-size: 36px; letter-spacing: 4px; color: var(--accent);
+    font-family: 'Orbitron', monospace; font-size: 26px; letter-spacing: 3px; color: var(--accent);
   }
   .login-box .login-header p { font-size: 13px; color: var(--muted); margin-top: 4px; }
   .login-field { margin-bottom: 16px; }
@@ -1157,7 +1158,7 @@
     display: flex; justify-content: space-between; align-items: flex-start;
     gap: 16px; margin-bottom: 12px;
   }
-  .request-card-name  { font-family: 'Orbitron', monospace; font-size: 20px; letter-spacing: 1px; }
+  .request-card-name  { font-family: 'Orbitron', monospace; font-size: 16px; letter-spacing: 0.5px; }
   .request-card-meta  { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
   .request-card-type  {
     font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; flex-shrink: 0;
@@ -1222,7 +1223,7 @@
     background: rgba(56,189,248,0.05); border: 1px solid rgba(56,189,248,0.18);
     border-radius: 12px; padding: 24px;
   }
-  .memb-payment-amount { font-family: 'Orbitron', monospace; font-size: 52px; color: var(--cyan); line-height: 1; margin-bottom: 8px; }
+  .memb-payment-amount { font-family: 'Orbitron', monospace; font-size: 40px; color: var(--cyan); line-height: 1; margin-bottom: 8px; }
   .memb-payment-instructions { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
   .memb-payment-ath { font-family: 'Orbitron', monospace; font-size: 20px; color: var(--green); font-weight: 700; letter-spacing: 1px; }
   .minor-section { display: none; margin-top: 16px; padding: 16px; background: rgba(249,115,22,0.06); border: 1px solid rgba(249,115,22,0.25); border-radius: 10px; }
@@ -1903,7 +1904,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:700px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Resultados Pendientes de Publicación</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Resultados Pendientes de Publicación</div>
         <div id="draftModalSub" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeDraftResultsModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -1931,7 +1932,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:700px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Reparar Partidos</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Reparar Partidos</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;">Recupera registros individuales de partidos de torneos ya publicados</div>
       </div>
       <button onclick="document.getElementById('resyncPartidosModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -1947,7 +1948,7 @@ Maria Lopez,Ana Torres,B</code>
 <div id="pastTorneosModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
   <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px;">
-      <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Past Tournaments</div>
+      <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Past Tournaments</div>
       <button onclick="closePastTorneosModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
     </div>
     <div id="pastTorneoslist" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
@@ -1959,7 +1960,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:900px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div id="pastTorneoDetailTitle" style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;"></div>
+        <div id="pastTorneoDetailTitle" style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;"></div>
         <div id="pastTorneoDetailSub" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closePastTorneoDetailModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -2008,7 +2009,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Reporte por Categoría — Morovis Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Reporte por Categoría — Morovis Open 2026</div>
         <div id="inscReporteTotalEl" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscReporteModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -2029,7 +2030,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Gestionar Inscritos — Morovis Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Gestionar Inscritos — Morovis Open 2026</div>
         <div id="inscAdminModalTotal" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscAdminModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -2557,7 +2558,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Próximamente placeholder (shown when torneo is archived) -->
     <div id="inscArchivedPlaceholder" style="display:none;text-align:center;padding:40px 16px;">
       <img src="fprtm logo.jpg" alt="FPTM" style="width:100px;height:100px;object-fit:cover;border-radius:50%;margin-bottom:24px;opacity:0.85;" onerror="this.style.display='none'">
-      <div style="font-family:'Orbitron',monospace;font-size:32px;letter-spacing:2px;margin-bottom:16px;">Próximamente</div>
+      <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:1px;margin-bottom:16px;">Próximamente</div>
       <p style="font-size:14px;color:var(--muted);line-height:1.75;max-width:420px;margin:0 auto 28px;">
         Únete a nuestro canal de WhatsApp para recibir información sobre logística, sorteos y cambios de último momento en nuestros eventos federativos. Este es un medio de apoyo diseñado para facilitar el flujo de información técnica de manera rápida y organizada.
       </p>
@@ -2603,7 +2604,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Inscripciones cerradas banner (público) -->
     <div id="inscCerradasBanner" style="display:none;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:32px 24px;text-align:center;margin-bottom:24px;">
       <div style="font-size:40px;margin-bottom:12px;">🔒</div>
-      <div style="font-family:'Orbitron',monospace;font-size:30px;letter-spacing:0.08em;color:#ef4444;margin-bottom:10px;">Inscripciones Cerradas</div>
+      <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:0.04em;color:#ef4444;margin-bottom:10px;">Inscripciones Cerradas</div>
       <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0;">El periodo de inscripción para este torneo ha finalizado.<br>Para información contacta a la FPTM.</p>
     </div>
 
@@ -2665,7 +2666,7 @@ Maria Lopez,Ana Torres,B</code>
             <span style="font-size:28px;">📲</span>
             <div>
               <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">WhatsApp</div>
-              <div style="font-family:'Orbitron',monospace;font-size:28px;letter-spacing:0.06em;color:var(--green);">(787) 248-3994</div>
+              <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:0.04em;color:var(--green);">(787) 248-3994</div>
             </div>
           </div>
         </a>
@@ -2852,7 +2853,7 @@ Maria Lopez,Ana Torres,B</code>
     <div id="inscTabInscritos" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;">
         <div>
-          <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;color:var(--text);">INSCRITOS</div>
+          <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">INSCRITOS</div>
           <div style="font-size:12px;color:var(--muted);margin-top:1px;">Morovis Open 2026</div>
         </div>
         <div id="inscritosSectionBadge" style="display:none;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);font-family:'Orbitron',monospace;font-size:17px;letter-spacing:1px;padding:5px 14px;border-radius:20px;white-space:nowrap;"></div>
@@ -2910,7 +2911,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:24px;letter-spacing:2px;">Solicitudes de Registro</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Solicitudes de Registro</div>
         <div id="regSubmissionsTotal" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="document.getElementById('regSubmissionsModal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -3049,7 +3050,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Success state -->
     <div id="regFormSuccess" style="display:none;text-align:center;padding:40px 0;">
       <div style="font-size:56px;margin-bottom:16px;">✅</div>
-      <div style="font-family:'Orbitron',monospace;font-size:28px;letter-spacing:2px;color:#4ade80;margin-bottom:12px;">¡Solicitud Enviada!</div>
+      <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:1px;color:#4ade80;margin-bottom:12px;">¡Solicitud Enviada!</div>
       <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el Morovis Open 2026.</p>
     </div>
   </div>
