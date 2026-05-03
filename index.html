@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Ratings — FPTM</title>
 <link rel="icon" type="image/png" href="ttm_pr_favicon_32x32.png">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -32,14 +32,37 @@
     --card2: rgba(255,255,255,0.07);
   }
 
-  * { margin:0; padding:0; box-sizing:border-box; }
+  /* ─── TAREA 2: Reset global — App Feel ─── */
+  * {
+    margin: 0; padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Permitir selección en inputs */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
+  }
+
+  /* Canvas principal inamovible */
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
 
   body {
     background: var(--dark);
     color: var(--text);
-    font-family: 'Inter', sans-serif, sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
+    font-family: 'Inter', sans-serif;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    position: relative;
   }
 
   /* BG texture */
@@ -94,7 +117,27 @@
 
   /* ─── PAGES ─── */
   .page { display: none; position: relative; z-index: 1; }
-  .page.active { display: block; animation: fadeUp 0.3s ease; }
+
+  /* ─── TAREA 3: Contenedor de scroll interno — el body NO scrollea ─── */
+  .page.active {
+    display: block;
+    animation: fadeUp 0.3s ease;
+    /* Ocupa el espacio restante bajo el header */
+    height: calc(100dvh - 64px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Inercia nativa en iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Contiene el rubber-band dentro del elemento, no propaga al body */
+    overscroll-behavior-y: contain;
+  }
+
+  /* En móvil: header 52px + safe-area-top + bottom-nav 56px + safe-area-bottom */
+  @media (max-width: 768px) {
+    .page.active {
+      height: calc(100dvh - 52px - env(safe-area-inset-top, 0px) - 56px - env(safe-area-inset-bottom, 0px));
+    }
+  }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(12px); }
@@ -237,6 +280,7 @@
 
   /* ─── PLAYER PROFILE ─── */
   #profilePage { display: none; }
+  /* .page.active ya maneja overflow-y y height */
   #profilePage.active { display: block; }
 
   .profile-hero {
@@ -882,9 +926,8 @@
     .ttmpr-badge { display: none; }
     .login-btn { padding: 6px 14px !important; font-size: 13px !important; }
 
-    /* Show bottom nav, reserve space */
+    /* Show bottom nav — el espacio ya lo maneja .page.active height */
     .bottom-nav { display: flex; }
-    body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
 
     /* Touch targets ≥ 44px */
     .filter-chip { min-height: 44px; padding: 0 16px; display: inline-flex; align-items: center; }
