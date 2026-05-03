@@ -75,7 +75,7 @@
     pointer-events: none; z-index: 0;
   }
 
-  /* ─── HEADER ─── */
+  /* ─── HEADER (desktop: offset by sidebar) ─── */
   header {
     position: sticky; top: 0; z-index: 100;
     background: rgba(10,10,15,0.95);
@@ -84,6 +84,105 @@
     padding: 0 32px;
     display: flex; align-items: center; justify-content: space-between;
     height: 64px;
+    margin-left: var(--sidebar-w, 0px);
+    transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ─── SIDEBAR ─── */
+  #sidebar {
+    position: fixed; top: 0; left: 0; height: 100dvh;
+    width: var(--sidebar-w-full, 240px);
+    background: rgba(10,10,15,0.98);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border);
+    z-index: 200;
+    display: none; /* shown via media query */
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .sidebar-head {
+    height: 64px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .sidebar-logo-img {
+    height: 36px; width: auto; flex-shrink: 0; object-fit: contain;
+  }
+  .sidebar-logo-text {
+    font-size: 9px; letter-spacing: 2px; color: var(--muted);
+    text-transform: uppercase; font-weight: 600; white-space: nowrap;
+    opacity: 1; transition: opacity 0.2s;
+  }
+
+  .sidebar-nav {
+    flex: 1; padding: 10px 8px;
+    display: flex; flex-direction: column; gap: 2px;
+    overflow-y: auto; overflow-x: hidden;
+  }
+
+  .sb-btn {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 10px;
+    border: none; background: none;
+    color: var(--muted); cursor: pointer;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+    white-space: nowrap; width: 100%; text-align: left;
+    transition: background 0.15s, color 0.15s;
+    -webkit-user-select: none; user-select: none;
+  }
+  .sb-btn .sb-icon {
+    font-size: 18px; width: 28px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .sb-btn .sb-label {
+    opacity: 1; transition: opacity 0.15s; flex: 1;
+  }
+  .sb-btn:hover { background: var(--card2); color: var(--text); }
+  .sb-btn.active {
+    background: rgba(56,189,248,0.12);
+    color: var(--cyan);
+  }
+
+  .sidebar-footer {
+    padding: 10px 8px 16px; border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* Sidebar toggle button */
+  .sb-toggle {
+    position: absolute; top: 68px; right: -13px;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--dark3); border: 1px solid var(--border);
+    color: var(--muted); cursor: pointer; z-index: 201;
+    display: none; align-items: center; justify-content: center;
+    font-size: 11px; transition: all 0.2s;
+    -webkit-user-select: none; user-select: none;
+  }
+  .sb-toggle:hover { background: var(--card2); color: var(--text); }
+
+  /* Collapsed state via body class */
+  body.sb-collapsed {
+    --sidebar-w: 72px;
+  }
+  body.sb-collapsed #sidebar {
+    width: 72px;
+  }
+  body.sb-collapsed .sb-label,
+  body.sb-collapsed .sidebar-logo-text {
+    opacity: 0; pointer-events: none;
+  }
+  body.sb-collapsed .sb-toggle { transform: rotate(180deg); }
+
+  /* ─── PAGES offset by sidebar on desktop ─── */
+  .page {
+    display: none; position: relative; z-index: 1;
+    margin-left: var(--sidebar-w, 0px);
+    transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
   }
 
   .logo {
@@ -97,15 +196,8 @@
     text-transform: uppercase; font-weight: 600;
   }
 
-  nav { display: flex; gap: 4px; }
-  nav button {
-    background: none; border: none; color: var(--muted);
-    padding: 8px 16px; border-radius: 8px; cursor: pointer;
-    font-family: 'Inter', sans-serif, sans-serif; font-size: 14px; font-weight: 500;
-    transition: all 0.2s;
-  }
-  nav button:hover { color: var(--text); background: var(--card2); }
-  nav button.active { color: var(--cyan); background: rgba(56,189,248,0.08); }
+  /* Desktop top nav hidden — replaced by sidebar */
+  header nav { display: none; }
 
   .admin-btn {
     background: var(--grad) !important;
@@ -114,9 +206,6 @@
     padding: 8px 20px !important;
   }
   .admin-btn:hover { opacity: 0.88; }
-
-  /* ─── PAGES ─── */
-  .page { display: none; position: relative; z-index: 1; }
 
   /* ─── TAREA 3: Contenedor de scroll interno — el body NO scrollea ─── */
   .page.active {
@@ -861,22 +950,37 @@
   .bottom-nav {
     display: none;
     position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(10,10,15,0.97);
-    backdrop-filter: blur(16px);
-    border-top: 1px solid var(--border);
-    z-index: 100;
+    /* iOS/Android glass effect */
+    background: rgba(12,12,18,0.82);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    z-index: 300;
     padding-bottom: env(safe-area-inset-bottom);
+    /* Auto-hide transition */
+    transition: transform 0.3s ease-in-out;
   }
+  .bottom-nav.hidden { transform: translateY(100%); }
+
   .bottom-nav-btn {
     flex: 1;
     background: none; border: none;
     display: flex; flex-direction: column; align-items: center;
-    padding: 8px 4px;
-    color: var(--muted); font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;
-    cursor: pointer; transition: color 0.2s; gap: 3px;
-    min-height: 56px; font-family: 'Inter', sans-serif, sans-serif; font-weight: 600;
+    padding: 8px 4px 6px;
+    color: var(--muted); font-size: 10px; letter-spacing: 0.3px; text-transform: uppercase;
+    cursor: pointer; transition: color 0.2s; gap: 2px;
+    min-height: 52px; font-family: 'Inter', sans-serif; font-weight: 600;
   }
-  .bottom-nav-btn .bn-icon { font-size: 20px; line-height: 1; }
+  /* Pill wrapper for active highlight */
+  .bn-pill {
+    width: 48px; height: 28px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .bottom-nav-btn .bn-icon { font-size: 18px; line-height: 1; }
+  .bottom-nav-btn.active { color: var(--cyan); }
+  .bottom-nav-btn.active .bn-pill { background: rgba(56,189,248,0.14); }
+  .bn-label { font-size: 10px; }
   .bottom-nav-btn.active { color: var(--accent); }
   .bottom-nav-btn:hover { color: var(--text); }
 
@@ -988,6 +1092,21 @@
     }
   }
 
+  /* ─── DESKTOP: show sidebar, offset layout ─── */
+  @media (min-width: 769px) {
+    :root {
+      --sidebar-w-full: 240px;
+      --sidebar-w: 240px;
+    }
+    body.sb-collapsed {
+      --sidebar-w: 72px;
+    }
+    #sidebar { display: flex; }
+    .sb-toggle { display: flex; }
+    /* Mobile bottom nav stays hidden on desktop */
+    .bottom-nav { display: none !important; }
+  }
+
   /* ─── RESPONSIVE: 1024px — tablets landscape / laptops ─── */
   @media (min-width: 769px) and (max-width: 1024px) {
     .container { padding: 40px 24px; }
@@ -1063,6 +1182,11 @@
     object-fit: contain; display: block;
   }
   .header-right { display: flex; align-items: center; gap: 10px; }
+
+  /* On desktop: header login button hidden (sidebar has it) */
+  @media (min-width: 769px) {
+    #loginBtn, .ttmpr-badge { display: none !important; }
+  }
 
   /* login/user button in header */
   .login-btn {
@@ -1278,26 +1402,79 @@
 </header>
 
 <!-- ══════════════════════════════════════════
+     DESKTOP SIDEBAR
+═══════════════════════════════════════════ -->
+<aside id="sidebar">
+  <div class="sidebar-head">
+    <img src="fprtm-logo.jpg" alt="FPTM" class="sidebar-logo-img">
+    <span class="sidebar-logo-text">SISTEMA DE RATINGS</span>
+  </div>
+
+  <nav class="sidebar-nav" id="sidebarNav">
+    <button class="sb-btn active" id="sbRankings" onclick="showPage('rankings')">
+      <span class="sb-icon">🏆</span>
+      <span class="sb-label">Rankings</span>
+    </button>
+    <button class="sb-btn" id="sbCalculator" onclick="showPage('calculator')">
+      <span class="sb-icon">⚡</span>
+      <span class="sb-label">Calcular Rating</span>
+    </button>
+    <button class="sb-btn" id="sbTorneos" onclick="showPage('torneosList')">
+      <span class="sb-icon">🏓</span>
+      <span class="sb-label">Torneos</span>
+    </button>
+    <button class="sb-btn" id="sbInscripciones" onclick="showPage('inscripciones')">
+      <span class="sb-icon">📋</span>
+      <span class="sb-label">Inscripciones</span>
+    </button>
+    <button class="sb-btn" id="sbMembresia" style="display:none" onclick="showPage('membresia')">
+      <span class="sb-icon">🪪</span>
+      <span class="sb-label">Membresía</span>
+    </button>
+    <button class="sb-btn" id="sbAdmin" style="display:none" onclick="showPage('admin')">
+      <span class="sb-icon">⚙</span>
+      <span class="sb-label">Admin</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="sb-btn" id="sbLoginBtn" onclick="showLogin()" style="width:100%">
+      <span class="sb-icon">🔐</span>
+      <span class="sb-label" id="sbLoginLabel">Iniciar Sesión</span>
+    </button>
+  </div>
+
+  <!-- Collapse toggle -->
+  <button class="sb-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Colapsar menú">‹</button>
+</aside>
+
+<!-- ══════════════════════════════════════════
      MOBILE BOTTOM NAV
 ═══════════════════════════════════════════ -->
 <nav class="bottom-nav" id="bottomNav">
   <button class="bottom-nav-btn active" id="bnRankings" onclick="showPage('rankings')">
-    <span class="bn-icon">🏆</span>Rankings
+    <span class="bn-pill"><span class="bn-icon">🏆</span></span>
+    <span class="bn-label">Rankings</span>
   </button>
   <button class="bottom-nav-btn" id="bnCalculator" onclick="showPage('calculator')">
-    <span class="bn-icon">⚡</span>Calcular
+    <span class="bn-pill"><span class="bn-icon">⚡</span></span>
+    <span class="bn-label">Calcular</span>
   </button>
   <button class="bottom-nav-btn" id="bnTorneos" onclick="showPage('torneosList')">
-    <span class="bn-icon">🏓</span>Torneos
+    <span class="bn-pill"><span class="bn-icon">🏓</span></span>
+    <span class="bn-label">Torneos</span>
   </button>
   <button class="bottom-nav-btn" id="bnInscripciones" onclick="showPage('inscripciones')">
-    <span class="bn-icon">📋</span>Inscripción
+    <span class="bn-pill"><span class="bn-icon">📋</span></span>
+    <span class="bn-label">Inscripción</span>
   </button>
   <button class="bottom-nav-btn" id="bnMembresia" style="display:none" onclick="showPage('membresia')">
-    <span class="bn-icon">🪪</span>Membresía
+    <span class="bn-pill"><span class="bn-icon">🪪</span></span>
+    <span class="bn-label">Membresía</span>
   </button>
   <button class="bottom-nav-btn" id="bnAdmin" style="display:none" onclick="showPage('admin')">
-    <span class="bn-icon">⚙</span>Admin
+    <span class="bn-pill"><span class="bn-icon">⚙</span></span>
+    <span class="bn-label">Admin</span>
   </button>
 </nav>
 
@@ -3211,21 +3388,47 @@ async function sbPost(table, body) {
 // ══════════════════════════════════════════
 function updateAuthUI() {
   const isLoggedIn = !!currentUser;
+
+  // Header nav (hidden on desktop, kept for compatibility)
   const el_memb  = document.getElementById('navMembresia');
   const el_admin = document.getElementById('navAdmin');
   if (el_memb)  el_memb.style.display  = isLoggedIn ? '' : 'none';
   if (el_admin) el_admin.style.display = isAdmin()   ? '' : 'none';
 
-  // Sync bottom nav visibility
+  // Bottom nav
   const bn_memb  = document.getElementById('bnMembresia');
   const bn_admin = document.getElementById('bnAdmin');
   if (bn_memb)  bn_memb.style.display  = isLoggedIn ? '' : 'none';
   if (bn_admin) bn_admin.style.display = isAdmin()   ? '' : 'none';
+
+  // Sidebar
+  const sb_memb  = document.getElementById('sbMembresia');
+  const sb_admin = document.getElementById('sbAdmin');
+  if (sb_memb)  sb_memb.style.display  = isLoggedIn ? '' : 'none';
+  if (sb_admin) sb_admin.style.display = isAdmin()   ? '' : 'none';
+
+  // Sidebar login/user button
+  const sbLoginBtn   = document.getElementById('sbLoginBtn');
+  const sbLoginLabel = document.getElementById('sbLoginLabel');
+  if (sbLoginBtn && sbLoginLabel) {
+    if (isLoggedIn) {
+      sbLoginLabel.textContent = currentUser.email.split('@')[0] + ' · Salir';
+      sbLoginBtn.querySelector('.sb-icon').textContent = '👤';
+      sbLoginBtn.onclick = signOut;
+    } else {
+      sbLoginLabel.textContent = 'Iniciar Sesión';
+      sbLoginBtn.querySelector('.sb-icon').textContent = '🔐';
+      sbLoginBtn.onclick = showLogin;
+    }
+  }
+
   // Apply-to-DB buttons only visible for admins
   const el_calcApply  = document.getElementById('calcApplyBtn');
   const el_subirApply = document.getElementById('subirApplyBtn');
   if (el_calcApply)  el_calcApply.style.display  = isAdmin() ? '' : 'none';
   if (el_subirApply) el_subirApply.style.display = isAdmin() ? '' : 'none';
+
+  // Header login button (shown on mobile)
   const btn = document.getElementById('loginBtn');
   if (!btn) return;
   if (isLoggedIn) {
@@ -3464,12 +3667,20 @@ const pages = {
   membresiaForm:  'membresiaFormPage'
 };
 
+// Sidebar + bottom nav ID maps (shared)
+const navIdMap = {
+  rankings:     { sb: 'sbRankings',      bn: 'bnRankings' },
+  calculator:   { sb: 'sbCalculator',    bn: 'bnCalculator' },
+  torneosList:  { sb: 'sbTorneos',       bn: 'bnTorneos' },
+  torneoEvento: { sb: 'sbTorneos',       bn: 'bnTorneos' },
+  inscripciones:{ sb: 'sbInscripciones', bn: 'bnInscripciones' },
+  membresia:    { sb: 'sbMembresia',     bn: 'bnMembresia' },
+  admin:        { sb: 'sbAdmin',         bn: 'bnAdmin' },
+};
+
 function showPage(key) {
   const PROTECTED = ['membresia', 'admin', 'subir'];
-  if (PROTECTED.includes(key) && !currentUser) {
-    showLogin();
-    return;
-  }
+  if (PROTECTED.includes(key) && !currentUser) { showLogin(); return; }
 
   Object.values(pages).forEach(id => {
     const el = document.getElementById(id);
@@ -3478,14 +3689,19 @@ function showPage(key) {
   const target = document.getElementById(pages[key]);
   if (target) { target.style.display = 'block'; setTimeout(() => target.classList.add('active'), 10); }
 
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  const navMap = { rankings: 0, calculator: 1, torneosList: 2, torneoEvento: 2, inscripciones: 3, membresia: 4, admin: 5 };
-  if (navMap[key] !== undefined) document.querySelectorAll('nav button')[navMap[key]]?.classList.add('active');
+  // Sync sidebar
+  document.querySelectorAll('.sb-btn').forEach(b => b.classList.remove('active'));
+  const sbId = navIdMap[key]?.sb;
+  if (sbId) document.getElementById(sbId)?.classList.add('active');
 
   // Sync bottom nav
-  const bnMap = { rankings: 'bnRankings', calculator: 'bnCalculator', torneosList: 'bnTorneos', torneoEvento: 'bnTorneos', inscripciones: 'bnInscripciones', membresia: 'bnMembresia', admin: 'bnAdmin' };
   document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
-  if (bnMap[key]) document.getElementById(bnMap[key])?.classList.add('active');
+  const bnId = navIdMap[key]?.bn;
+  if (bnId) document.getElementById(bnId)?.classList.add('active');
+
+  // Reset auto-hide on page change
+  showBottomNav();
+  setupAutoHide();
 
   // Reset subir page to step 1 every time it's opened
   if (key === 'subir') {
@@ -3500,6 +3716,44 @@ function showPage(key) {
   if (key === 'torneosList') loadTorneosList();
   // Load pending requests when admin opens membresia tab
   if (key === 'membresia' && currentUser) loadPendingRequestsCount();
+}
+
+// ── Sidebar toggle ──────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const collapsed = document.body.classList.toggle('sb-collapsed');
+  localStorage.setItem('sidebarCollapsed', collapsed);
+  document.getElementById('sidebarToggle').textContent = collapsed ? '›' : '‹';
+}
+
+// ── Bottom nav auto-hide on scroll ─────────────────────────────────────────
+let _lastScrollY = 0;
+let _autoHideCleanup = null;
+
+function showBottomNav() {
+  document.getElementById('bottomNav')?.classList.remove('hidden');
+}
+
+function setupAutoHide() {
+  if (_autoHideCleanup) _autoHideCleanup();
+  const nav = document.getElementById('bottomNav');
+  if (!nav) return;
+
+  // Only auto-hide on mobile
+  const activePage = document.querySelector('.page.active');
+  if (!activePage || window.innerWidth > 768) return;
+
+  _lastScrollY = activePage.scrollTop;
+
+  const onScroll = () => {
+    const y = activePage.scrollTop;
+    const delta = y - _lastScrollY;
+    if (delta > 8)       nav.classList.add('hidden');
+    else if (delta < -5) nav.classList.remove('hidden');
+    _lastScrollY = y;
+  };
+
+  activePage.addEventListener('scroll', onScroll, { passive: true });
+  _autoHideCleanup = () => activePage.removeEventListener('scroll', onScroll);
 }
 
 // ══════════════════════════════════════════
@@ -6535,6 +6789,15 @@ async function rejectClubChange(id) {
 // INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+  // ── Restore sidebar collapsed state ──
+  if (localStorage.getItem('sidebarCollapsed') === 'true') {
+    document.body.classList.add('sb-collapsed');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    if (toggleBtn) toggleBtn.textContent = '›';
+  }
+  // Start auto-hide for initial page
+  setupAutoHide();
+
   // Restore auth session if user was previously signed in
   const { data: { session } } = await _supabase.auth.getSession();
   currentUser = session?.user || null;
