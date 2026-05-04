@@ -4258,24 +4258,24 @@ function backToRankings() { showPage('ratings'); }
 // HALL OF FAME — Rankings by Category
 // ══════════════════════════════════════════
 const RANKING_CATS = [
-  { id: 'absoluto', label: 'Nacional Absoluto', gendered: true },
-  { id: 'sub21',    label: 'Sub-21',            gendered: true },
-  { id: 'sub17',    label: 'Sub-17',            gendered: true },
-  { id: 'sub15',    label: 'Sub-15',            gendered: true },
-  { id: 'sub13',    label: 'Sub-13',            gendered: true },
-  { id: 'sub11',    label: 'Sub-11',            gendered: true },
-  { id: 'sub7',     label: 'Sub-7 Open',        gendered: false },
-  { id: 'sen40',    label: 'Seniors 40+',       gendered: false },
+  { id: 'absoluto', label: 'Nacional',     gendered: true  },
+  { id: 'u19',      label: '19U',          gendered: true  },
+  { id: 'u15',      label: '15U',          gendered: true  },
+  { id: 'u13',      label: '13U',          gendered: true  },
+  { id: 'u11',      label: '11U',          gendered: true  },
+  { id: 'u9',       label: '9U',           gendered: true  },
+  { id: 'u7',       label: '7U Open',      gendered: false },
+  { id: 'sen40',    label: 'Seniors 40+',  gendered: false },
 ];
 
 const CAT_AGE_RANGES = {
   absoluto: [0, 999],
-  sub21:    [0, 20],
-  sub17:    [0, 16],
-  sub15:    [0, 14],
-  sub13:    [0, 12],
-  sub11:    [0, 10],
-  sub7:     [0, 6],
+  u19:      [0, 18],
+  u15:      [0, 14],
+  u13:      [0, 12],
+  u11:      [0, 10],
+  u9:       [0, 8],
+  u7:       [0, 6],
   sen40:    [40, 999],
 };
 
