@@ -4357,7 +4357,7 @@ function getTop10(catId, sex) {
   const [minAge, maxAge] = CAT_AGE_RANGES[catId] || [0, 999];
   return _rankingsData
     .filter(p => {
-      const inAge = p.age !== null && p.age >= minAge && p.age <= maxAge;
+      const inAge = catId === 'absoluto' ? true : (p.age !== null && p.age >= minAge && p.age <= maxAge);
       const inSex = sex ? p.sex === sex : true;
       return inAge && inSex;
     })
