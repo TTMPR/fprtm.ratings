@@ -4332,14 +4332,22 @@ async function loadRankingsData() {
   const data = await sbGet('Base%20de%20Datos', params);
   const now = new Date();
   _rankingsData = data
-    .filter(p => p['Expiration Date'] && new Date(p['Expiration Date']) > now)
+    .filter(p => {
+      if (!p['Expiration Date']) return false;
+      const expIso = _parseDOBStr(String(p['Expiration Date']));
+      const exp = expIso ? new Date(expIso) : new Date(p['Expiration Date']);
+      return !isNaN(exp) && exp > now;
+    })
     .map(p => {
-      const dob = p['Date of Birth'] ? new Date(p['Date of Birth']) : null;
+      // Use robust parser so old DB formats (M/D/YY, D-Mon-YY, etc.) are normalized
+      const dobIso = p['Date of Birth'] ? _parseDOBStr(String(p['Date of Birth'])) : null;
+      const dob    = dobIso ? new Date(dobIso) : null;
       let age = null;
-      if (dob) {
+      if (dob && dob.getFullYear() > 1919 && dob.getFullYear() < now.getFullYear()) {
         age = now.getFullYear() - dob.getFullYear();
         const mDiff = now.getMonth() - dob.getMonth();
         if (mDiff < 0 || (mDiff === 0 && now.getDate() < dob.getDate())) age--;
+        if (age < 0 || age > 100) age = null; // reject impossible values
       }
       return {
         id:     p['Member ID'],
