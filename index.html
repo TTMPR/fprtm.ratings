@@ -1646,11 +1646,12 @@
   <div class="page-hero">
     <div class="overline">Federación Puertorriqueña de Tenis de Mesa</div>
     <h1>RANKINGS 2026</h1>
-    <p>Top 10 por categoría · Hall of Fame Nacional</p>
+    <p>Top 10 por categoría · Temporada activa</p>
   </div>
 
-  <div class="rank-pills-wrap" id="rankCatPills">
-    <!-- Filled by JS -->
+  <div style="display:flex;align-items:center;gap:8px;max-width:1100px;margin:0 auto;padding:0 24px 4px">
+    <div class="rank-pills-wrap" id="rankCatPills" style="flex:1;padding:0 0 4px;margin:0"></div>
+    <button onclick="_rankingsData=null;openRankings()" title="Refrescar datos" style="flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:99px;padding:7px 14px;color:var(--muted);font-size:13px;cursor:pointer;white-space:nowrap">↻ Refrescar</button>
   </div>
 
   <div class="rankings-content-wrap">
@@ -5656,7 +5657,7 @@ async function applyCsvMembresia() {
   btn.disabled = false;
   btn.textContent = 'Aplicar Cambios a la Base de Datos';
   alert(`Completado: ${ok} registros actualizados${fail ? `, ${fail} errores (ver consola)` : ''}.`);
-  if (ok > 0) { closeCsvMembresiaModal(); loadPlayers(); }
+  if (ok > 0) { closeCsvMembresiaModal(); _rankingsData = null; loadPlayers(); }
 }
 
 // ══════════════════════════════════════════
