@@ -8635,9 +8635,11 @@ async function inscSometerInscripcion() {
         sex:        sexVal || p.sex || null,
         dob:        dobVal || null,
         club:       clubVal || null,
-        categorias: mergedCats.map(c => ({ id: c.id, name: c.name, price: c.price })),
+        categorias: [
+          ...mergedCats.map(c => ({ id: c.id, name: c.name, price: c.price })),
+          ...(multaMonto > 0 ? [{ id: 'multa', name: inscState.multa.razon, price: multaMonto }] : []),
+        ],
         base:       existing?.base ?? base,
-        multa:      existing ? (existing.multa ?? null) : (inscState.multa ?? null),
         total:      accTotal,
         updated_at: new Date().toISOString()
       })
