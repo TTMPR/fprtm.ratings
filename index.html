@@ -2368,7 +2368,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Reporte por Categoría — Morovis Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Reporte por Categoría — Ceiba Open 2026</div>
         <div id="inscReporteTotalEl" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscReporteModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -2389,7 +2389,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Gestionar Inscritos — Morovis Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Gestionar Inscritos — Ceiba Open 2026</div>
         <div id="inscAdminModalTotal" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscAdminModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -2974,12 +2974,12 @@ Maria Lopez,Ana Torres,B</code>
 
     <!-- Torneo activo — siempre visible -->
     <div id="inscTorneoCard" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
-      <img src="Morovis Open.jpg" alt="Morovis Open 2026" style="width:72px;height:72px;object-fit:cover;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
+      <img src="Ceiba Open.jpg" alt="Ceiba Open 2026" style="width:72px;height:72px;object-fit:cover;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
       <span style="font-size:28px;display:none;">🏓</span>
       <div>
         <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:2px;">Torneo Activo</div>
-        <div style="font-size:18px;font-weight:700;color:var(--text);" id="inscTorneoNombre">Morovis Open 2026</div>
-        <div style="font-size:12px;color:var(--muted);">Sáb 25 &amp; Dom 26 de abril · Morovis, PR</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);" id="inscTorneoNombre">Ceiba Open 2026</div>
+        <div style="font-size:12px;color:var(--muted);">Sáb 16 &amp; Dom 17 de mayo · Ceiba, PR</div>
       </div>
     </div>
 
@@ -3019,230 +3019,184 @@ Maria Lopez,Ana Torres,B</code>
       <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg3"></div>
     </div>
 
-    <!-- ═══ PANTALLA 1: Verificación ═══ -->
-    <div id="inscScreen1" style="display:block;">
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 1 de 3 — Verificación</div>
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">¿Cuál es tu situación en la FPTM?</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Esto determina tu cargo base y tu número de participante.</p>
+    <!-- ═══ PANTALLA 0: Reglamento ═══ -->
+    <div id="inscScreen0" style="display:block;">
+      <div style="background:var(--card2);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:24px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Antes de inscribirte</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Reglamento del Torneo</h2>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Debes leer y aceptar el reglamento del Ceiba Open 2026 para proceder con tu inscripción.</p>
 
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <button onclick="inscSelectOpcion('miembro')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'Inter',sans-serif;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <span style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">🪪</span>
-            <div style="flex:1;">
-              <div style="font-size:15px;font-weight:600;margin-bottom:3px;">Soy miembro de la FPTM</div>
-              <div style="font-size:12px;color:var(--muted);line-height:1.4;">Tengo membresía activa o la tuve · cargo base $0</div>
-            </div>
-            <span style="color:var(--muted);font-size:18px;">→</span>
-          </button>
-          <button onclick="inscSelectOpcion('rating')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'Inter',sans-serif;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <span style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">📊</span>
-            <div style="flex:1;">
-              <div style="font-size:15px;font-weight:600;margin-bottom:3px;">Tengo rating pero no soy miembro</div>
-              <div style="font-size:12px;color:var(--muted);line-height:1.4;">Aparezco en ratings.ttmpr.xyz · cargo base $10</div>
-            </div>
-            <span style="color:var(--muted);font-size:18px;">→</span>
-          </button>
-          <button onclick="inscSelectOpcion('nuevo')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:border-color 0.2s;width:100%;color:var(--text);font-family:'Inter',sans-serif;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <span style="font-size:24px;flex-shrink:0;width:36px;text-align:center;">✨</span>
-            <div style="flex:1;">
-              <div style="font-size:15px;font-weight:600;margin-bottom:3px;">Nunca he participado</div>
-              <div style="font-size:12px;color:var(--muted);line-height:1.4;">Primera vez en un torneo FPTM · cargo base $10</div>
-            </div>
-            <span style="color:var(--muted);font-size:18px;">→</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Bloque nuevo jugador -->
-      <div id="inscNuevoBlock" style="display:none;background:var(--card2);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:24px;margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Primera vez en la FPTM</div>
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Comunícate con Joel Vega</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:16px;">Para registrarte por primera vez en la FPTM debes coordinar tu inscripción directamente.</p>
-        <a href="https://wa.me/17872483994" target="_blank" style="text-decoration:none;display:block;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;justify-content:center;gap:12px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:18px;">
-            <span style="font-size:28px;">📲</span>
-            <div>
-              <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">WhatsApp</div>
-              <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:0.04em;color:var(--green);">(787) 248-3994</div>
-            </div>
+        <button onclick="openReglamentoModal()"
+          style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:14px 16px;cursor:pointer;text-align:left;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:20px;transition:border-color 0.15s;"
+          onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(56,189,248,0.25)'">
+          <span style="font-size:22px;flex-shrink:0;">📋</span>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Ver Reglamento Ceiba Open 2026</div>
+            <div style="font-size:12px;color:var(--muted);">Fecha límite: Miércoles 13 de mayo · ATH Business /fprtm</div>
           </div>
-        </a>
-        <button onclick="document.getElementById('inscNuevoBlock').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);padding:10px 16px;border-radius:8px;cursor:pointer;font-size:14px;width:100%;">← Volver</button>
-      </div>
+          <span style="color:var(--accent);font-size:16px;">→</span>
+        </button>
 
-      <!-- Buscador -->
-      <div id="inscSearchCard" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;" id="inscSearchLabel">Buscar en sistema FPTM</div>
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Busca tu nombre</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:16px;" id="inscSearchSub">Ingresa tu nombre para encontrar tu perfil en el sistema oficial.</p>
+        <label id="inscReglamentoLabel" style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;transition:border-color 0.15s;margin-bottom:20px;">
+          <input type="checkbox" id="inscReglamentoCheck" onchange="inscUpdateReglamentoBtn()"
+            style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:var(--accent);cursor:pointer;">
+          <span style="font-size:13px;color:var(--text);line-height:1.5;">
+            He leído y <strong style="color:var(--text);">acepto el reglamento</strong> del Ceiba Open 2026, incluyendo las reglas de participación, políticas de pago y responsabilidad personal.
+          </span>
+        </label>
 
-        <div style="position:relative;margin-bottom:14px;">
-          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px;">⌕</span>
-          <input type="text" id="inscSearchInput" placeholder="Ej: Juan García..." oninput="inscHandleSearch()" autocomplete="off"
-            style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:13px 16px 13px 44px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;transition:border 0.2s;"
-            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-        </div>
-
-        <div id="inscResultsList" style="display:none;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;"></div>
-
-        <div id="inscAlertBox" style="display:none;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:14px;margin-bottom:12px;">
-          <div style="font-weight:700;margin-bottom:4px;font-size:15px;" id="inscAlertTitle"></div>
-          <p style="font-size:13px;color:#ccc;line-height:1.5;" id="inscAlertMsg"></p>
-        </div>
-
-        <div id="inscNotFound" style="display:none;font-size:13px;color:var(--muted);text-align:center;margin-top:8px;">
-          No encontrado. Verifica tu nombre o contáctanos para registrarte.
-        </div>
+        <button id="inscReglamentoNext" onclick="inscProceedFromReglamento()" disabled
+          style="background:var(--grad);color:#fff;width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:not-allowed;border:none;opacity:0.4;transition:all 0.18s;">
+          Comenzar Inscripción →
+        </button>
       </div>
     </div>
 
-    <!-- ═══ PANTALLA 2: Cargo base ═══ -->
-    <div id="inscScreen2" style="display:none;">
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 2 de 3 — Balance</div>
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Tu cargo base</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Calculado según tu estatus de membresía en la FPTM.</p>
+    <!-- ═══ FORMULARIO ÚNICO ═══ -->
+    <div id="inscFormPanel" style="display:none;">
 
-        <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.15);border-radius:12px;padding:20px;">
-          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px;">
-            <span>Cargo de inscripción base</span>
-            <span id="inscBaseAmtLabel">$10.00</span>
+      <!-- ── Buscador de jugador ── -->
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;">
+        <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:10px;">Busca tu nombre en el sistema FPTM</label>
+        <div style="position:relative;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px;pointer-events:none;">⌕</span>
+          <input type="text" id="inscSearchInput" placeholder="Escribe tu nombre..." oninput="inscHandleSearch()" autocomplete="off"
+            style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px 12px 42px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;transition:border 0.2s;"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div id="inscResultsList" style="display:none;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:8px;"></div>
+
+        <!-- Player info card (shown after selection) -->
+        <div id="inscPlayerCard" style="display:none;margin-top:12px;padding:14px 16px;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:10px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;" id="inscCardName">—</div>
+              <div style="font-size:12px;color:var(--muted);" id="inscCardMeta">—</div>
+            </div>
+            <div id="inscCardStatus" style="font-size:12px;font-weight:600;white-space:nowrap;margin-top:2px;"></div>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:12px;">
-            <span>Estatus</span>
-            <span id="inscEstatusLabel" style="color:var(--accent);">No federado</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:22px;font-weight:700;color:var(--text);padding-top:12px;border-top:1px solid var(--border);">
-            <span>Base total</span>
-            <span id="inscBaseTotalDisplay" style="color:var(--accent);">$10.00</span>
-          </div>
+          <div id="inscYaInscritoAlert" style="display:none;margin-top:10px;padding:9px 12px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:8px;font-size:12px;color:#4ade80;font-weight:600;"></div>
+          <button onclick="inscLimpiarJugador()" style="margin-top:10px;background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;">✕ Cambiar jugador</button>
+        </div>
+
+        <!-- No encontrado -->
+        <div id="inscNotFoundBlock" style="display:none;margin-top:12px;padding:14px 16px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:10px;">
+          <p style="font-size:13px;color:#f59e0b;margin-bottom:12px;">¿No te encuentras? Si es tu primera vez contacta a Joel Vega para registrarte.</p>
+          <a href="https://wa.me/17872483994" target="_blank" style="text-decoration:none;display:flex;align-items:center;gap:10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:10px 14px;">
+            <span style="font-size:20px;">📲</span>
+            <div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1px;">WhatsApp</div>
+              <div style="font-family:'Orbitron',monospace;font-size:16px;color:var(--green);">(787) 248-3994</div>
+            </div>
+          </a>
         </div>
       </div>
 
-      <!-- Fecha de nacimiento y sexo -->
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
-        <h3 style="font-size:15px;font-weight:600;margin-bottom:4px;color:var(--text);">Datos de validación</h3>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;">Determinan qué categorías puedes jugar. Si tu información está en el sistema se pre-llena automáticamente — <strong style="color:var(--text);">verifica que sea correcta.</strong></p>
-        <div style="display:flex;flex-direction:column;gap:14px;">
+      <!-- ── Datos de validación ── -->
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:14px;letter-spacing:0.04em;">Confirma tu identidad — si el sistema tiene tu información la pre-llena; <strong style="color:var(--text);">verifica que sea correcta.</strong></div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
           <div>
-            <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Fecha de Nacimiento *</label>
-            <input type="date" id="inscDobInput" max="2026-12-31"
-              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;"
+            <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:5px;">Fecha de Nacimiento *</label>
+            <input type="date" id="inscDobInput" max="2026-12-31" oninput="inscFormChanged()"
+              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;"
               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-            <div id="inscDobNote" style="margin-top:5px;font-size:11px;color:var(--muted);min-height:14px;"></div>
           </div>
           <div>
-            <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Sexo *</label>
-            <select id="inscSexInput"
-              style="width:100%;box-sizing:border-box;background:rgba(17,17,24,1);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;"
+            <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:5px;">Sexo *</label>
+            <select id="inscSexInput" onchange="inscFormChanged()"
+              style="width:100%;box-sizing:border-box;background:rgba(17,17,24,1);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;"
               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
               <option value="" style="background:#1e283c">Selecciona...</option>
               <option value="M" style="background:#1e283c">Masculino (M)</option>
               <option value="F" style="background:#1e283c">Femenino (F)</option>
             </select>
-            <div id="inscSexNote" style="margin-top:5px;font-size:11px;color:var(--muted);min-height:14px;"></div>
           </div>
           <div>
-            <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Club / Pueblo</label>
-            <input type="text" id="inscClubInput" placeholder="Ej: Club Morovis, Bayamón..."
-              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;"
+            <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:5px;">Club / Pueblo</label>
+            <input type="text" id="inscClubInput" placeholder="Ej: Ceiba Marlins, Bayamón..."
+              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;"
               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-            <div id="inscClubNote" style="margin-top:5px;font-size:11px;color:var(--muted);min-height:14px;"></div>
           </div>
         </div>
       </div>
 
-      <button onclick="inscConfirmStep2()" style="background:var(--grad);color:#fff;width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;transition:all 0.18s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Continuar → Categorías</button>
+      <!-- ── Categorías ── -->
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
+          <div style="font-size:15px;font-weight:700;color:var(--text);">Categorías</div>
+          <div style="font-size:11px;color:var(--muted);">Límite: 13 mayo</div>
+        </div>
+        <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:14px;">1 categoría por día · 1 de Rating por torneo · Cupo máx. 30 por Rating.</p>
+        <div id="inscCatList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- ── Resumen & Someter ── -->
+      <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.15);border-radius:14px;padding:18px 20px;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px;">
+          <span>Cargo base</span><span id="inscCheckoutBase">$10.00</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:12px;">
+          <span>Categorías (<span id="inscCatCount">0</span>)</span><span id="inscCatTotal">$0.00</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:700;color:var(--text);padding-top:12px;border-top:1px solid var(--border);">
+          <span>Total</span><span id="inscGrandTotal" style="color:var(--accent);">$10.00</span>
+        </div>
+      </div>
+
+      <div id="inscFormMsg" style="font-size:13px;color:#ef4444;min-height:18px;margin-bottom:10px;text-align:center;"></div>
+
+      <button id="inscSubmitBtn" onclick="inscSometerInscripcion()"
+        style="background:var(--grad);color:#fff;width:100%;padding:16px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;transition:opacity 0.2s;margin-bottom:16px;"
+        onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+        Someter Inscripción →
+      </button>
+
+      <p style="font-size:12px;color:var(--muted);text-align:center;">¿Dudas? Escríbele a Joel Vega al <a href="tel:9392104299" style="color:var(--accent);">939-210-4299</a></p>
     </div>
 
-    <!-- ═══ PANTALLA 3: Categorías & Pago ═══ -->
-    <div id="inscScreen3" style="display:none;">
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 3 de 3 — Categorías &amp; Pago</div>
-        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Selecciona tus categorías</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:10px;">No puedes inscribirte en dos eventos del mismo horario. Cupo máximo 32 por categoría de Rating.</p>
+    <!-- ═══ ÉXITO — INSCRIPCIÓN RECIBIDA ═══ -->
+    <div id="inscSuccessPanel" style="display:none;">
+      <div style="text-align:center;padding:28px 0 20px;">
+        <div style="font-size:52px;margin-bottom:12px;">✅</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:1px;color:#4ade80;margin-bottom:6px;">¡Inscripción Recibida!</div>
+        <div id="inscSuccessName" style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;"></div>
+        <div id="inscSuccessCats" style="font-size:13px;color:var(--muted);line-height:1.6;"></div>
+      </div>
 
-        <div id="inscCatList" style="display:flex;flex-direction:column;gap:10px;"></div>
+      <!-- Pending payment card -->
+      <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:16px;padding:22px 20px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <span style="font-size:22px;">⏳</span>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#f59e0b;">Pendiente de Pago</div>
+            <div style="font-size:12px;color:var(--muted);">Tu inscripción está registrada — falta completar el pago para participar.</div>
+          </div>
+        </div>
 
-        <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.15);border-radius:12px;padding:20px;margin-top:16px;">
-          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px;">
-            <span>Cargo base</span><span id="inscCheckoutBase">$10.00</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:12px;">
-            <span>Categorías seleccionadas (<span id="inscCatCount">0</span>)</span><span id="inscCatTotal">$0.00</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:22px;font-weight:700;color:var(--text);padding-top:12px;border-top:1px solid var(--border);">
-            <span>Total a pagar</span><span id="inscGrandTotal" style="color:var(--accent);">$10.00</span>
-          </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:14px;color:var(--muted);">Total a pagar</span>
+          <span id="inscSuccessTotal" style="font-family:'Orbitron',monospace;font-size:22px;font-weight:700;color:var(--accent);">$0.00</span>
+        </div>
+
+        <a id="inscAthMovilBtn" href="https://pagos.athmovilapp.com/pagoPorCodigo.html?id=686cd0cb-1395-4ebb-96b1-96719cd6f5e9" target="_blank" rel="noopener"
+          style="display:flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;text-decoration:none;padding:16px;border-radius:12px;font-weight:700;font-size:16px;margin-bottom:14px;transition:opacity 0.15s;box-shadow:0 4px 16px rgba(37,211,102,0.25);"
+          onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+          💚 Pagar <span id="inscSuccessTotalBtn" style="margin-left:4px;">$0.00</span> con ATH Móvil
+        </a>
+
+        <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--muted);line-height:1.6;">
+          Después de pagar, envía la <strong style="color:var(--text);">captura del recibo</strong> junto con tu nombre a:<br>
+          <a href="https://wa.me/19392104299" target="_blank" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--green);font-weight:700;margin-top:6px;">
+            📲 939-210-4299
+          </a>
         </div>
       </div>
 
-      <!-- Pago -->
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
-        <h3 style="font-size:16px;font-weight:600;margin-bottom:4px;color:var(--text);">💳 Pago</h3>
-        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;margin:14px 0;">
-          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px;">
-            <span>ID de participante</span>
-            <span style="font-family:monospace;font-size:14px;color:var(--accent);" id="inscConfirmId">—</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;">
-            <span style="font-size:13px;color:var(--muted);">Total a pagar</span>
-            <span style="font-size:20px;font-weight:700;color:var(--accent);" id="inscConfirmTotal">$10.00</span>
-          </div>
-        </div>
-
-        <!-- PASO A: Botón ATH Móvil (visible antes de pagar) -->
-        <div id="inscPagoAntes">
-          <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:20px;text-align:center;margin-bottom:12px;">
-            <div style="font-size:11px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Plataforma de pago oficial</div>
-            <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:16px;">ATH Móvil Business · <span style="color:var(--green);">fprtm</span></div>
-            <button onclick="inscIniciarPago()" style="background:var(--green);color:#000;width:100%;padding:17px;border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;border:none;">💚 Pagar con ATH Móvil</button>
-          </div>
-          <p style="font-size:12px;color:var(--muted);text-align:center;line-height:1.5;">Al presionar el botón se abrirá ATH Móvil. Luego de pagar, regresa aquí para completar tu inscripción.</p>
-        </div>
-
-        <!-- PASO B: Confirmación post-pago (oculto hasta que paguen) -->
-        <div id="inscPagoDespues" style="display:none;">
-          <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:18px;margin-bottom:14px;">
-            <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:12px;">✓ ¿Ya realizaste el pago?</div>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-              <div style="display:flex;gap:10px;align-items:flex-start;">
-                <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.2);color:#4ade80;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">1</div>
-                <div style="font-size:13px;color:var(--muted);line-height:1.5;">Envía una <strong style="color:var(--text);">captura del recibo</strong> junto con tu <strong style="color:var(--text);">nombre completo</strong> al WhatsApp:</div>
-              </div>
-              <a href="https://wa.me/19392104299" target="_blank" style="text-decoration:none;margin-left:30px;">
-                <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;">
-                  <span style="font-size:16px;">📲</span>
-                  <span style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:0.06em;color:var(--green);">939-210-4299</span>
-                </div>
-              </a>
-              <div style="margin-top:6px;">
-                <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;transition:border-color 0.15s;"
-                       id="inscConfirmCheckLabel">
-                  <input type="checkbox" id="inscConfirmCheck" onchange="inscToggleSubmit()"
-                    style="width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:var(--green);cursor:pointer;">
-                  <span style="font-size:13px;color:var(--text);line-height:1.5;">
-                    Ya envié la captura del recibo al <strong style="color:var(--green);">939-210-4299</strong>
-                  </span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <button id="inscSubmitBtn" onclick="inscSometerInscripcion()" disabled
-            style="background:var(--green);color:#000;width:100%;padding:16px;border-radius:10px;font-size:16px;font-weight:700;cursor:not-allowed;border:none;opacity:0.4;margin-bottom:10px;transition:opacity 0.2s;">
-            Someter Inscripción
-          </button>
-
-          <button onclick="inscIniciarPago()" style="background:none;border:1px solid var(--border);color:var(--muted);width:100%;padding:11px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
-            ← Volver a abrir ATH Móvil
-          </button>
-        </div>
-      </div>
-
-      <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px;">¿Dudas? Escríbele a Joel Vega al <a href="tel:9392104299" style="color:var(--accent);">939-210-4299</a></p>
-      <button onclick="inscGoToStep(2)" style="background:none;border:1px solid var(--border);color:var(--muted);width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;">← Volver al Paso 2</button>
+      <button onclick="inscIniciarOtro()"
+        style="background:none;border:1px solid var(--border);color:var(--muted);width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">
+        ← Inscribir otro jugador
+      </button>
     </div>
 
     </div><!-- /inscTabFormContent -->
@@ -3252,7 +3206,7 @@ Maria Lopez,Ana Torres,B</code>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;">
         <div>
           <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">INSCRITOS</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:1px;">Morovis Open 2026</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:1px;">Ceiba Open 2026</div>
         </div>
         <div id="inscritosSectionBadge" style="display:none;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);font-family:'Orbitron',monospace;font-size:17px;letter-spacing:1px;padding:5px 14px;border-radius:20px;white-space:nowrap;"></div>
       </div>
@@ -3348,8 +3302,8 @@ Maria Lopez,Ana Torres,B</code>
     <div id="regFormBody" style="display:none;">
       <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:20px 24px;margin-bottom:28px;">
         <div style="font-size:11px;color:var(--accent);font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Registro de Participante</div>
-        <div style="font-size:18px;font-weight:700;color:var(--text);">Morovis Open 2026</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Sáb 25 &amp; Dom 26 de abril · Morovis, PR</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);">Ceiba Open 2026</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Sáb 16 &amp; Dom 17 de mayo · Ceiba, PR</div>
       </div>
 
       <input type="hidden" id="regFormToken">
@@ -3449,7 +3403,7 @@ Maria Lopez,Ana Torres,B</code>
     <div id="regFormSuccess" style="display:none;text-align:center;padding:40px 0;">
       <div style="font-size:56px;margin-bottom:16px;">✅</div>
       <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:1px;color:#4ade80;margin-bottom:12px;">¡Solicitud Enviada!</div>
-      <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el Morovis Open 2026.</p>
+      <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el Ceiba Open 2026.</p>
     </div>
   </div>
 </div>
@@ -3490,6 +3444,124 @@ Maria Lopez,Ana Torres,B</code>
       </div>
       <button id="csvMembresiaApplyBtn" class="btn-primary" style="padding:12px 32px;font-size:14px" onclick="applyCsvMembresia()">Aplicar Cambios a la Base de Datos</button>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     REGLAMENTO MODAL — CEIBA OPEN 2026
+═══════════════════════════════════════════ -->
+<div id="reglamentoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1200;overflow-y:auto;padding:16px;">
+  <div style="max-width:680px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:28px 28px 36px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">REGLAMENTO</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Ceiba Open 2026 · Sáb 16 &amp; Dom 17 de mayo</div>
+      </div>
+      <button onclick="closeReglamentoModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+
+    <div style="font-size:14px;color:var(--text);line-height:1.75;">
+
+      <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">Federación Puertorriqueña de Tenis de Mesa · Ceiba Marlins Table Tennis Club</p>
+
+      <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.15);border-radius:10px;padding:16px 18px;margin-bottom:24px;">
+        <strong style="color:var(--accent);">1. FECHA</strong><br>
+        16 y 17 de mayo 2026.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">2. ORGANIZA</strong><br>
+        Federación Puertorriqueña de Tenis de Mesa y Ceiba Marlins Table Tennis Club.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">3. SEDE</strong><br>
+        Ceiba Marlins Table Tennis Club – Antigua Armería Guardia Nacional, PR-3, Ceiba, 00735 · 10 mesas.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">4. ELEGIBILIDAD</strong><br>
+        La participación está abierta a toda persona miembro de la FPTM y jugadores invitados.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">5. EVENTOS</strong>
+        <div style="margin-top:12px;">
+          <div style="font-weight:600;color:var(--text);margin-bottom:8px;">Sábado 16 de mayo</div>
+          <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
+            <li>1900 puntos o menos – 9:00 a.m.</li>
+            <li>11 años o menos Masculino – 11:00 a.m. | menores de 12 años al 31 de dic 2026</li>
+            <li>11 años o menos Femenino – 11:00 a.m. | menores de 12 años al 31 de dic 2026</li>
+            <li>13 años o menos Masculino – 11:00 a.m. | menores de 14 años al 31 de dic 2026</li>
+            <li>13 años o menos Femenino – 11:00 a.m. | menores de 14 años al 31 de dic 2026</li>
+            <li>15 años o menos Masculino – 12:30 p.m. | menores de 16 años al 31 de dic 2026</li>
+            <li>15 años o menos Femenino – 12:30 p.m. | menores de 16 años al 31 de dic 2026</li>
+            <li>Special Olympics – 2:00 p.m. | Evento gratuito ($0)</li>
+          </ol>
+          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 17 de mayo</div>
+          <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
+            <li>1750 puntos o menos – 9:00 a.m.</li>
+            <li>7 años o menos Abierto – 11:00 a.m. | menores de 8 años al 31 de dic 2026</li>
+            <li>9 años o menos Masculino – 11:00 a.m. | menores de 10 años al 31 de dic 2026</li>
+            <li>9 años o menos Femenino – 11:00 a.m. | menores de 10 años al 31 de dic 2026</li>
+            <li>Seniors: 40 años o más (Mixto) – 11:00 a.m.</li>
+            <li>1600 puntos o menos – 12:30 p.m.</li>
+          </ol>
+          <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#f59e0b;margin-top:12px;">
+            ⚠ Categorías de Rating: máx. 30 jugadores por evento · Solo 1 categoría por día · Solo 1 categoría de Rating por torneo (1900, 1750 y 1600 son excluyentes entre sí).
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">6. REGLAS</strong><br>
+        Los jugadores asumirán la responsabilidad de inscribirse en el evento apropiado a su edad. Jugadores sobre el límite de edad serán reubicados automáticamente al evento correcto. El evento se conducirá bajo el reglamento vigente de la Federación Internacional de Tenis de Mesa. Toda decisión del Comité Técnico será final.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">7. ITINERARIO</strong><br>
+        Los jugadores deben estar <strong>45 minutos antes</strong> para verificación y registro, y <strong>20 minutos antes</strong> listos para jugar.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">8. INSCRIPCIONES</strong><br>
+        La hoja de inscripción será aceptada solo si está debidamente cumplimentada, incluyendo el pago de inscripción.
+      </div>
+
+      <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
+        <strong style="color:#ef4444;">9. FECHA LÍMITE</strong><br>
+        <strong style="color:var(--text);font-size:15px;">Miércoles 13 de mayo de 2026.</strong>
+      </div>
+
+      <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
+        <strong style="color:var(--green);">10. MÉTODO DE PAGO</strong><br>
+        Las inscripciones serán aceptadas exclusivamente a través de <strong>ATH Business /fprtm</strong>.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">11. RESPONSABILIDAD</strong><br>
+        Cada jugador asumirá todo riesgo personal por lesión o daño en relación al torneo. La FPTM, el Comité Organizador, el Ceiba Marlins TTC y las empresas auspiciadoras quedan liberados de toda indemnización.
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <strong style="color:var(--accent);">12. IMPREVISTOS</strong><br>
+        La FPTM se reserva la facultad de realizar modificaciones necesarias según el criterio del Comité Organizador.
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:13px;color:var(--muted);line-height:1.9;">
+        <strong style="color:var(--text);display:block;margin-bottom:8px;">Notas adicionales</strong>
+        <ul style="padding-left:18px;margin:0;">
+          <li>Participantes deben estar al corriente con la cuota anual de membresía ($20.00). De lo contrario, se aplicará un cargo adicional de $10.00.</li>
+          <li>El pago de inscripción solo se acepta a través de ATH Business /fprtm.</li>
+          <li>No se jugarán partidos para definir 3er y 4to lugar — se premiarán dos terceros lugares.</li>
+          <li>Habrá premiación con trofeos para los primeros cuatro lugares en 7 años o menos, 9 años o menos y Special Olympics (medallas).</li>
+          <li>Jugadores que les corresponda arbitrar y se nieguen deben conseguir sustituto o pagar $2.00. Quienes abandonen sin arbitrar ni conseguir sustituto recibirán una multa de $5.00 y no podrán participar en futuros torneos hasta pagar.</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <button onclick="closeReglamentoModal()" style="margin-top:24px;width:100%;background:var(--grad);color:#fff;padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;">← Volver</button>
   </div>
 </div>
 
@@ -4900,7 +4972,7 @@ async function subirGuardarBorrador() {
     }
   }
 
-  // Generate column name for this tournament: "Morovis Open 2026" → "rating_morovis_open_2026"
+  // Generate column name for this tournament: "Ceiba Open 2026" → "rating_ceiba_open_2026"
   const colName = 'rating_' + nombre.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 
   try {
@@ -7359,31 +7431,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ══════════════════════════════════════════
 // INSCRIPCIONES — CONSTANTS
 // ══════════════════════════════════════════
+// Ceiba Open 2026 — Sáb 16 & Dom 17 de mayo
+// Rule: max 1 category per day · max 1 rating category per tournament
+// All SAB events share slot 'SAB'; all DOM events share slot 'DOM' (enforces 1-per-day)
+// ratingGroup: 'rating' enforces cross-day rating conflict (1900 vs 1750 vs 1600)
 const INSC_CATEGORIES = [
-  { id: 'ev1',  name: '7 o Menos Abierto',       desc: 'Trofeos y medallas',                  price: 11, slot: 'SAB-900',  maxAge: 7 },
-  { id: 'ev2',  name: '9 o Menos Masculino',      desc: 'Trofeos y medallas',                  price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'M' },
-  { id: 'ev3',  name: '9 o Menos Femenino',       desc: 'Trofeos y medallas',                  price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'F' },
-  { id: 'ev4',  name: '13 o Menos Masculino',     desc: '1ro $35 · 2do $30 · 3/4 $25',        price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'M' },
-  { id: 'ev5',  name: '13 o Menos Femenino',      desc: '1ro $35 · 2do $30 · 3/4 $25',        price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'F' },
-  { id: 'ev6',  name: 'Abierto',                  desc: '1ro $250 · 2do $125 · 3/4 $70',      price: 25, slot: 'SAB-900',  maxPlayers: 32 },
-  { id: 'ev7',  name: '1500 o Menos',             desc: '1ro $45 · 2do $35 · 3/4 $30',        price: 20, slot: 'SAB-1100', maxRating: 1500, maxPlayers: 32 },
-  { id: 'ev8',  name: '1900 o Menos',             desc: '1ro $150 · 2do $100 · 3/4 $55',      price: 20, slot: 'SAB-1230', maxRating: 1900, maxPlayers: 32 },
-  { id: 'ev9',  name: '1700 o Menos',             desc: '1ro $75 · 2do $50 · 3/4 $45',        price: 20, slot: 'SAB-1230', maxRating: 1700, maxPlayers: 32 },
-  { id: 'ev10', name: '11 o Menos Masculino',     desc: '1ro $30 · 2do $25 · 3/4 $20',        price: 20, slot: 'DOM-900',  maxAge: 11, sex: 'M' },
-  { id: 'ev11', name: '11 o Menos Femenino',      desc: '1ro $30 · 2do $25 · 3/4 $20',        price: 20, slot: 'DOM-900',  maxAge: 11, sex: 'F' },
-  { id: 'ev12', name: '15 o Menos Masculino',     desc: '1ro $40 · 2do $35 · 3/4 $30',        price: 20, slot: 'DOM-900',  maxAge: 15, sex: 'M' },
-  { id: 'ev13', name: '15 o Menos Femenino',      desc: '1ro $40 · 2do $35 · 3/4 $30',        price: 20, slot: 'DOM-900',  maxAge: 15, sex: 'F' },
-  { id: 'ev14', name: 'Seniors – 40 años o más',  desc: '1ro $75 · 2do $50 · 3/4 $25',        price: 20, slot: 'DOM-1100', minAge: 40 },
-  { id: 'ev15', name: '1600 o Menos',             desc: '1ro $50 · 2do $45 · 3/4 $40',        price: 20, slot: 'DOM-1230', maxRating: 1600, maxPlayers: 32 },
-  { id: 'ev16', name: '1800 o Menos',             desc: '1ro $100 · 2do $75 · 3/4 $50',       price: 20, slot: 'DOM-1230', maxRating: 1800, maxPlayers: 32 },
+  // ── Sábado 16 de mayo ──
+  { id: 'ev1',  name: '1900 o Menos',              desc: '9:00 a.m. · máx. 30 jugadores',           price: 20, slot: 'SAB', maxRating: 1900, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev2',  name: '11 años o Menos Masculino', desc: '11:00 a.m. · nacido en 2015 o después',   price: 20, slot: 'SAB', maxAge: 11, sex: 'M' },
+  { id: 'ev3',  name: '11 años o Menos Femenino',  desc: '11:00 a.m. · nacido en 2015 o después',   price: 20, slot: 'SAB', maxAge: 11, sex: 'F' },
+  { id: 'ev4',  name: '13 años o Menos Masculino', desc: '11:00 a.m. · nacido en 2013 o después',   price: 20, slot: 'SAB', maxAge: 13, sex: 'M' },
+  { id: 'ev5',  name: '13 años o Menos Femenino',  desc: '11:00 a.m. · nacido en 2013 o después',   price: 20, slot: 'SAB', maxAge: 13, sex: 'F' },
+  { id: 'ev6',  name: '15 años o Menos Masculino', desc: '12:30 p.m. · nacido en 2011 o después',   price: 20, slot: 'SAB', maxAge: 15, sex: 'M' },
+  { id: 'ev7',  name: '15 años o Menos Femenino',  desc: '12:30 p.m. · nacido en 2011 o después',   price: 20, slot: 'SAB', maxAge: 15, sex: 'F' },
+  { id: 'ev8',  name: 'Special Olympics',           desc: '2:00 p.m. · evento gratuito',             price: 0,  slot: 'SAB' },
+  // ── Domingo 17 de mayo ──
+  { id: 'ev9',  name: '1750 o Menos',              desc: '9:00 a.m. · máx. 30 jugadores',           price: 20, slot: 'DOM', maxRating: 1750, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev10', name: '7 años o Menos Abierto',    desc: '11:00 a.m. · nacido en 2019 o después',   price: 20, slot: 'DOM', maxAge: 7 },
+  { id: 'ev11', name: '9 años o Menos Masculino',  desc: '11:00 a.m. · nacido en 2017 o después',   price: 20, slot: 'DOM', maxAge: 9, sex: 'M' },
+  { id: 'ev12', name: '9 años o Menos Femenino',   desc: '11:00 a.m. · nacido en 2017 o después',   price: 20, slot: 'DOM', maxAge: 9, sex: 'F' },
+  { id: 'ev13', name: 'Seniors 40+ (Mixto)',        desc: '11:00 a.m. · nacido en 1986 o antes',     price: 20, slot: 'DOM', minAge: 40 },
+  { id: 'ev14', name: '1600 o Menos',              desc: '12:30 p.m. · máx. 30 jugadores',          price: 20, slot: 'DOM', maxRating: 1600, maxPlayers: 30, ratingGroup: 'rating' },
 ];
 const INSC_SLOT_LABELS = {
-  'SAB-900':  'Sáb 25-abr · 9:00 a.m.',
-  'SAB-1100': 'Sáb 25-abr · 11:00 a.m.',
-  'SAB-1230': 'Sáb 25-abr · 12:30 p.m.',
-  'DOM-900':  'Dom 26-abr · 9:00 a.m.',
-  'DOM-1100': 'Dom 26-abr · 11:00 a.m.',
-  'DOM-1230': 'Dom 26-abr · 12:30 p.m.',
+  'SAB': 'Sábado 16 de mayo',
+  'DOM': 'Domingo 17 de mayo',
 };
 
 // Normalize sex from DB (may be 'Male', 'Female', 'Masculino', etc.) → 'M' | 'F' | ''
@@ -7403,42 +7475,12 @@ function normDobForInput(raw) {
   return null;
 }
 // Update the small note lines under DOB and Sex fields
-function inscUpdateFieldNotes() {
-  const dobNote = document.getElementById('inscDobNote');
-  const sexNote = document.getElementById('inscSexNote');
-  if (dobNote) {
-    if (inscState._dobFromDb) {
-      dobNote.innerHTML = '<span style="color:#4ade80;">✓ Obtenido del sistema — verifica que sea correcto</span>';
-    } else if (inscState.dob) {
-      dobNote.innerHTML = '<span style="color:var(--muted);">Ingresado manualmente</span>';
-    } else {
-      dobNote.innerHTML = '<span style="color:var(--muted);">No encontrado en el sistema — ingresa tu fecha</span>';
-    }
-  }
-  if (sexNote) {
-    if (inscState._sexFromDb) {
-      sexNote.innerHTML = '<span style="color:#4ade80;">✓ Obtenido del sistema — verifica que sea correcto</span>';
-    } else if (inscState.sex) {
-      sexNote.innerHTML = '<span style="color:var(--muted);">Ingresado manualmente</span>';
-    } else {
-      sexNote.innerHTML = '<span style="color:var(--muted);">No encontrado en el sistema — selecciona tu sexo</span>';
-    }
-  }
-  const clubNote = document.getElementById('inscClubNote');
-  if (clubNote) {
-    if (inscState._clubFromDb) {
-      clubNote.innerHTML = '<span style="color:#4ade80;">✓ Obtenido del sistema — verifica que sea correcto</span>';
-    } else {
-      clubNote.innerHTML = '<span style="color:var(--muted);">Opcional — actualiza si es incorrecto o estaba vacío</span>';
-    }
-  }
-}
 
 // ══════════════════════════════════════════
 // INSCRIPCIONES — STATE
 // ══════════════════════════════════════════
+let inscReglamentoAceptado = false; // true once player accepts reglamento this session
 const inscState = {
-  opcion: null,       // 'miembro' | 'rating' | 'nuevo'
   player: null,       // selected player object from ALL_PLAYERS
   selectedCats: new Set(),
   searchTimer: null,
@@ -7455,6 +7497,9 @@ const inscState = {
 // INSCRIPCIONES — PROGRESS BAR
 // ══════════════════════════════════════════
 function inscUpdateProgress(step) {
+  // step 0 = reglamento (pre-step, hide progress bar)
+  const pb = document.getElementById('inscProgressBar');
+  if (pb) pb.style.display = step === 0 ? 'none' : '';
   for (let i = 1; i <= 3; i++) {
     const seg = document.getElementById('inscSeg' + i);
     if (!seg) continue;
@@ -7467,7 +7512,7 @@ function inscUpdateProgress(step) {
 // ══════════════════════════════════════════
 // INSCRIPCIONES — OPEN / CLOSED SETTING
 // ══════════════════════════════════════════
-let inscripcionesOpen = true;
+let inscripcionesOpen = false;
 let inscSbSynced = false;   // true once a successful Supabase round-trip happens
 
 async function loadInscripcionesConfig() {
@@ -7513,8 +7558,8 @@ function applyInscripcionesState() {
     if (torneoCard)    torneoCard.style.display      = '';
     if (banner)        banner.style.display         = 'none';
     if (previewBanner) previewBanner.style.display  = 'none';
-    if (progress)      progress.style.display       = '';
-    inscGoToStep(1);
+    if (progress)      progress.style.display       = 'none'; // single-page — no progress bar
+    if (inscReglamentoAceptado) { inscShowForm(); } else { inscGoToStep(0); }
   } else if (isAdmin()) {
     // Closed but admin is logged in — show preview with the form accessible
     if (placeholder)   placeholder.style.display   = 'none';
@@ -7522,8 +7567,8 @@ function applyInscripcionesState() {
     if (torneoCard)    torneoCard.style.display      = '';
     if (banner)        banner.style.display         = 'none';
     if (previewBanner) previewBanner.style.display  = 'flex';
-    if (progress)      progress.style.display       = '';
-    inscGoToStep(1);
+    if (progress)      progress.style.display       = 'none';
+    if (inscReglamentoAceptado) { inscShowForm(); } else { inscGoToStep(0); }
   } else {
     // Closed for the public — form hidden but "Ver Inscritos" button stays visible
     if (placeholder)   placeholder.style.display   = 'none';
@@ -7532,10 +7577,14 @@ function applyInscripcionesState() {
     if (banner)        banner.style.display         = '';
     if (previewBanner) previewBanner.style.display  = 'none';
     if (progress)      progress.style.display       = 'none';
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 0; i <= 3; i++) {
       const el = document.getElementById('inscScreen' + i);
       if (el) el.style.display = 'none';
     }
+    const fp = document.getElementById('inscFormPanel');
+    if (fp) fp.style.display = 'none';
+    const sp = document.getElementById('inscSuccessPanel');
+    if (sp) sp.style.display = 'none';
   }
 
   // Keep admin card in sync
@@ -7961,158 +8010,34 @@ function renderPastDetailReporteTab(catId) {
 // INSCRIPCIONES — STEP NAVIGATION
 // ══════════════════════════════════════════
 function inscGoToStep(step) {
-  for (let i = 1; i <= 3; i++) {
+  // Only step 0 (reglamento) is used now; steps 1-3 replaced by inscShowForm()
+  for (let i = 0; i <= 3; i++) {
     const el = document.getElementById('inscScreen' + i);
     if (el) el.style.display = 'none';
   }
+  const fp = document.getElementById('inscFormPanel');
+  const sp = document.getElementById('inscSuccessPanel');
+  if (fp) fp.style.display = 'none';
+  if (sp) sp.style.display = 'none';
   const target = document.getElementById('inscScreen' + step);
   if (target) target.style.display = '';
   inscUpdateProgress(step);
-
-  if (step === 1) {
-    inscState.opcion = null;
-    inscState.player = null;
-    inscState.dob = null;
-    inscState.sex = '';
-    inscState.existingInsc = null;
-    inscState.selectedCats = new Set();
-    const si = document.getElementById('inscSearchInput');
-    if (si) si.value = '';
-    const rl = document.getElementById('inscResultsList');
-    if (rl) { rl.innerHTML = ''; rl.style.display = 'none'; }
-    const ab = document.getElementById('inscAlertBox');
-    if (ab) ab.style.display = 'none';
-    const nb = document.getElementById('inscNuevoBlock');
-    if (nb) nb.style.display = 'none';
-    const msg = document.getElementById('inscNuevoMsg');
-    if (msg) msg.textContent = '';
-  }
-
-  if (step === 2) {
-    const p = inscState.player;
-    const isMember = p && p.member;
-    const base = isMember ? 0 : 10;
-    const estatusText = isMember ? 'Miembro activo' : (inscState.opcion === 'nuevo' ? 'Jugador nuevo' : 'No federado / vencido');
-    const baseEl  = document.getElementById('inscBaseAmtLabel');
-    const estEl   = document.getElementById('inscEstatusLabel');
-    const totalEl = document.getElementById('inscBaseTotalDisplay');
-    if (baseEl)  baseEl.textContent  = '$' + base.toFixed(2);
-    if (estEl)   estEl.textContent   = estatusText;
-    if (totalEl) totalEl.textContent = '$' + base.toFixed(2);
-    if (estEl)   estEl.style.color   = isMember ? 'var(--green)' : 'var(--accent)';
-    // Pre-fill DOB, Sex, and Club from inscState (values from DB)
-    const dobIn  = document.getElementById('inscDobInput');
-    const sexIn  = document.getElementById('inscSexInput');
-    const clubIn = document.getElementById('inscClubInput');
-    if (dobIn)  dobIn.value  = inscState.dob  || '';
-    if (sexIn)  sexIn.value  = inscState.sex  || '';
-    if (clubIn) clubIn.value = inscState.club || '';
-    // Reset border colors (may have been marked red on previous failed attempt)
-    if (dobIn) dobIn.style.borderColor = 'var(--border)';
-    if (sexIn) sexIn.style.borderColor = 'var(--border)';
-    inscUpdateFieldNotes();
-  }
-
-  if (step === 3) {
-    inscRenderCategories();
-    inscUpdateTotals();
-    // Reset payment state: show ATH Móvil button, hide post-payment section
-    const antes   = document.getElementById('inscPagoAntes');
-    const despues = document.getElementById('inscPagoDespues');
-    if (antes)   antes.style.display   = '';
-    if (despues) despues.style.display = 'none';
-    const chk = document.getElementById('inscConfirmCheck');
-    if (chk) { chk.checked = false; inscToggleSubmit(); }
-    // Fetch live capacity counts then re-render
-    loadCatCounts().then(() => { inscRenderCategories(); inscUpdateTotals(); });
-  }
 }
 
-// ══════════════════════════════════════════
-// INSCRIPCIONES — CONFIRM STEP 2
-// ══════════════════════════════════════════
-function inscConfirmStep2() {
-  const dobEl = document.getElementById('inscDobInput');
-  const sexEl = document.getElementById('inscSexInput');
-  const dob = (dobEl?.value || '').trim();
-  const sex = (sexEl?.value || '').trim();
-  if (!dob) {
-    if (dobEl) dobEl.style.borderColor = '#ef4444';
-    const note = document.getElementById('inscDobNote');
-    if (note) note.innerHTML = '<span style="color:#ef4444;">Requerido — ingresa tu fecha de nacimiento</span>';
-    return;
-  }
-  if (!sex) {
-    if (sexEl) sexEl.style.borderColor = '#ef4444';
-    const note = document.getElementById('inscSexNote');
-    if (note) note.innerHTML = '<span style="color:#ef4444;">Requerido — selecciona tu sexo</span>';
-    return;
-  }
-  const clubEl = document.getElementById('inscClubInput');
-  const club = (clubEl?.value || '').trim();
-  // If the value changed from what the DB had, mark as manual
-  if (dob  !== inscState.dob)  inscState._dobFromDb  = false;
-  if (sex  !== inscState.sex)  inscState._sexFromDb  = false;
-  if (club !== inscState.club) inscState._clubFromDb = false;
-  inscState.dob  = dob;
-  inscState.sex  = sex;
-  inscState.club = club;
-  inscGoToStep(3);
-}
-
-// ══════════════════════════════════════════
-// INSCRIPCIONES — OPTION SELECTOR (Step 1)
-// ══════════════════════════════════════════
-function inscSelectOpcion(type) {
-  inscState.opcion = type;
-  inscState.player = null;
-  inscState.dob = null;
-  inscState.sex = '';
-  inscState.club = '';
-  inscState.existingInsc = null;
-  inscState._dobFromDb = false;
-  inscState._sexFromDb = false;
-  inscState._clubFromDb = false;
-
-  const sc = document.getElementById('inscSearchCard');
-  const nb = document.getElementById('inscNuevoBlock');
-  const ab = document.getElementById('inscAlertBox');
-  const rl = document.getElementById('inscResultsList');
-  const nf = document.getElementById('inscNotFound');
-  const si = document.getElementById('inscSearchInput');
-  const lbl = document.getElementById('inscSearchLabel');
-  const sub = document.getElementById('inscSearchSub');
-
-  if (ab) ab.style.display = 'none';
-  if (rl) { rl.innerHTML = ''; rl.style.display = 'none'; }
-  if (nf) nf.style.display = 'none';
-  if (si) si.value = '';
-
-  if (type === 'nuevo') {
-    if (sc) sc.style.display = 'none';
-    if (nb) nb.style.display = '';
-  } else {
-    if (nb) nb.style.display = 'none';
-    if (sc) sc.style.display = '';
-    if (type === 'miembro') {
-      if (lbl) lbl.textContent = 'Verificar membresía FPTM';
-      if (sub) sub.textContent = 'Ingresa tu nombre para verificar tu membresía activa.';
-    } else {
-      if (lbl) lbl.textContent = 'Buscar en sistema FPTM';
-      if (sub) sub.textContent = 'Ingresa tu nombre para encontrar tu perfil con rating.';
-    }
-  }
-}
 
 // ══════════════════════════════════════════
 // INSCRIPCIONES — PLAYER SEARCH
 // ══════════════════════════════════════════
 function inscHandleSearch() {
+  // If player already selected and user edits the field, clear the selection
+  if (inscState.player) {
+    inscLimpiarJugador();
+  }
   clearTimeout(inscState.searchTimer);
   inscState.searchTimer = setTimeout(() => {
     const q = (document.getElementById('inscSearchInput')?.value || '').trim().toLowerCase();
     const rl = document.getElementById('inscResultsList');
-    const nf = document.getElementById('inscNotFound');
+    const nf = document.getElementById('inscNotFoundBlock');
     if (!rl) return;
 
     if (q.length < 2) {
@@ -8123,8 +8048,8 @@ function inscHandleSearch() {
 
     const matches = ALL_PLAYERS.filter(p => p.name.toLowerCase().includes(q)).slice(0, 8);
     if (!matches.length) {
-      rl.innerHTML = '<div style="padding:10px 14px;color:var(--muted);font-size:13px">No se encontraron resultados.</div>';
-      rl.style.display = '';
+      rl.innerHTML = '';
+      rl.style.display = 'none';
       if (nf) nf.style.display = '';
       return;
     }
@@ -8132,18 +8057,18 @@ function inscHandleSearch() {
     rl.style.display = '';
     rl.innerHTML = matches.map(p => {
       const badge = p.member
-        ? '<span style="color:var(--green);font-size:11px;font-weight:600">● Activo</span>'
-        : '<span style="color:var(--red);font-size:11px;font-weight:600">● Inactivo</span>';
-      const rating = p.rating ? `<span style="color:var(--muted);font-size:12px"> · ${p.rating}</span>` : '';
-      return `<div onclick="inscSelectPlayer(${p.id})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;transition:background 0.15s" onmouseover="this.style.background='rgba(56,189,248,0.06)'" onmouseout="this.style.background='transparent'">
+        ? '<span style="color:var(--green);font-size:11px;font-weight:600">● Miembro</span>'
+        : '<span style="color:var(--muted);font-size:11px;">● Sin membresía</span>';
+      const rating = p.rating ? `<span style="color:var(--muted);font-size:12px;margin-left:6px;">· ${p.rating}</span>` : '';
+      return `<div onclick="inscSelectPlayer(${p.id})" style="padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;transition:background 0.15s" onmouseover="this.style.background='rgba(56,189,248,0.06)'" onmouseout="this.style.background='transparent'">
         <div>
-          <div style="font-size:14px;font-weight:500">${p.name}</div>
-          <div style="margin-top:2px">${badge}${rating}</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);">${p.name}</div>
+          <div style="margin-top:3px;">${badge}${rating}</div>
         </div>
-        <div style="color:var(--muted);font-size:12px;white-space:nowrap">FPTM-${String(p.id)}</div>
+        <div style="color:var(--muted);font-size:11px;white-space:nowrap;margin-left:8px;">FPTM-${String(p.id)}</div>
       </div>`;
     }).join('');
-  }, 250);
+  }, 220);
 }
 
 // ══════════════════════════════════════════
@@ -8163,15 +8088,32 @@ function inscSelectPlayer(id) {
   inscState.club = clubVal;
   inscState._clubFromDb = !!clubVal;
 
+  // Pre-fill sex and club immediately
+  const sexIn = document.getElementById('inscSexInput');
+  if (sexIn) sexIn.value = inscState.sex;
+  const clubIn = document.getElementById('inscClubInput');
+  if (clubIn) clubIn.value = inscState.club;
+
+  // Collapse search results, show player card
+  const si = document.getElementById('inscSearchInput');
+  if (si) si.value = p.name;
+  const rl = document.getElementById('inscResultsList');
+  if (rl) { rl.innerHTML = ''; rl.style.display = 'none'; }
+  const nf = document.getElementById('inscNotFoundBlock');
+  if (nf) nf.style.display = 'none';
+  renderInscPlayerCard(p);
+
+  // Fetch DOB from DB
   fetchPlayerDob(p.id).then(rawDob => {
     const dob = normDobForInput(rawDob);
     inscState.dob = dob;
     inscState._dobFromDb = !!dob;
     const dobIn = document.getElementById('inscDobInput');
-    if (dobIn && !dobIn.value && dob) { dobIn.value = dob; inscUpdateFieldNotes(); }
-    inscRenderCategories();
+    if (dobIn) { dobIn.value = dob || ''; }
+    inscFormChanged();
   });
 
+  // Check for existing inscription
   fetchExistingInscripcion(p.id).then(existing => {
     inscState.existingInsc = existing;
     renderInscPlayerCard(p);
@@ -8179,54 +8121,50 @@ function inscSelectPlayer(id) {
     inscUpdateTotals();
   });
 
-  const si = document.getElementById('inscSearchInput');
-  if (si) si.value = p.name;
-  const rl = document.getElementById('inscResultsList');
-  if (rl) { rl.innerHTML = ''; rl.style.display = 'none'; }
-
-  const ab = document.getElementById('inscAlertBox');
-  const at = document.getElementById('inscAlertTitle');
-  if (ab) ab.style.display = '';
-  if (at) at.textContent = p.name;
-  renderInscPlayerCard(p);
+  inscRenderCategories();
+  inscUpdateTotals();
 }
 
 function renderInscPlayerCard(p) {
-  const am = document.getElementById('inscAlertMsg');
-  if (!am) return;
+  const card   = document.getElementById('inscPlayerCard');
+  const nameEl = document.getElementById('inscCardName');
+  const metaEl = document.getElementById('inscCardMeta');
+  const statEl = document.getElementById('inscCardStatus');
+  const yainEl = document.getElementById('inscYaInscritoAlert');
+  if (!card) return;
+
+  card.style.display = '';
+
+  if (nameEl) nameEl.textContent = p.name;
+
+  const metaParts = [`FPTM-${p.id}`];
+  if (p.rating) metaParts.push(`Rating: ${p.rating}`);
+  if (metaEl) metaEl.textContent = metaParts.join(' · ');
 
   const isMember = p.member;
+  if (statEl) {
+    if (isMember) {
+      statEl.innerHTML = '<span style="color:var(--green);font-weight:700;">● Miembro activo</span><span style="color:var(--green);font-size:11px;display:block;text-align:right;">Cargo base: $0</span>';
+    } else {
+      statEl.innerHTML = '<span style="color:#f59e0b;font-weight:700;">● Sin membresía</span><span style="color:var(--muted);font-size:11px;display:block;text-align:right;">Cargo base: $10</span>';
+    }
+  }
+
   const existing = inscState.existingInsc;
-
-  let statusHtml;
-  if (isMember) {
-    statusHtml = `<span style="color:var(--green)">✓ Membresía activa</span>`;
-  } else if (p.rating) {
-    statusHtml = `<span style="color:var(--accent)">⚠ Sin membresía activa</span>`;
-  } else {
-    statusHtml = `<span style="color:var(--muted)">Sin membresía / sin rating</span>`;
+  if (yainEl) {
+    if (existing === null) {
+      yainEl.style.display = '';
+      yainEl.textContent = 'Verificando inscripción existente...';
+      yainEl.style.color = 'var(--muted)';
+    } else if (existing) {
+      yainEl.style.display = '';
+      const catNames = (existing.categorias || []).map(c => c.name).join(', ');
+      yainEl.innerHTML = `✅ Ya inscrito — puedes añadir más categorías<span style="display:block;font-weight:400;color:var(--muted);margin-top:2px;">${catNames}</span>`;
+      yainEl.style.color = '#4ade80';
+    } else {
+      yainEl.style.display = 'none';
+    }
   }
-
-  let existingHtml = '';
-  if (existing === null) {
-    // Still loading
-    existingHtml = `<div style="font-size:12px;color:var(--muted);margin-top:8px;">Verificando inscripción existente...</div>`;
-  } else if (existing) {
-    const catNames = (existing.categorias || []).map(c => c.name).join(', ');
-    existingHtml = `<div style="margin-top:10px;padding:10px 12px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:8px;font-size:13px;">
-      <span style="color:#4ade80;font-weight:700;">✅ Ya inscrito</span>
-      <span style="color:var(--muted);margin-left:6px;">— puedes añadir más categorías</span>
-      <div style="color:var(--muted);font-size:12px;margin-top:4px;">${catNames}</div>
-    </div>`;
-  }
-
-  const baseCharge = (existing || isMember) ? '$0.00' : '$10.00';
-  const btnLabel = existing ? 'Añadir categorías →' : 'Continuar →';
-
-  am.innerHTML = `${statusHtml} &nbsp;·&nbsp; Cargo base: <strong>${baseCharge}</strong>
-    ${p.rating ? `<br><span style="color:var(--muted);font-size:12px">Rating: ${p.rating} · FPTM-${String(p.id)}</span>` : ''}
-    ${existingHtml}
-    <br><button onclick="inscGoToStep(2)" style="background:var(--grad);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:4px;">${btnLabel}</button>`;
 }
 
 // ══════════════════════════════════════════
@@ -8247,7 +8185,7 @@ async function fetchPlayerDob(memberId) {
 async function fetchExistingInscripcion(memberId) {
   try {
     const data = await sbGet('insc_registro',
-      `?torneo=eq.Morovis%20Open%202026&member_id=eq.${memberId}&limit=1`);
+      `?torneo=eq.Ceiba%20Open%202026&member_id=eq.${memberId}&limit=1`);
     return data?.[0] || null;
   } catch(e) { return null; }
 }
@@ -8260,7 +8198,7 @@ let _catCounts = {}; // catId → number of players currently registered
 async function loadCatCounts() {
   try {
     const data = await sbGet('insc_registro',
-      '?torneo=eq.Morovis%20Open%202026&select=categorias');
+      '?torneo=eq.Ceiba%20Open%202026&select=categorias');
     _catCounts = {};
     (data || []).forEach(row => {
       (Array.isArray(row.categorias) ? row.categorias : []).forEach(c => {
@@ -8275,10 +8213,10 @@ async function loadCatCounts() {
 // ══════════════════════════════════════════
 function inscCatEligible(cat) {
   const p = inscState.player;
-  if (!p) return { ok: true };
+  if (!p) return { ok: false, reason: 'Busca y selecciona tu nombre para ver elegibilidad.' };
 
   // Rating check
-  if (cat.maxRating && p.rating > cat.maxRating) {
+  if (cat.maxRating && p.rating !== null && p.rating > cat.maxRating) {
     return { ok: false, reason: `Tu rating (${p.rating}) supera el límite de ${cat.maxRating}.` };
   }
 
@@ -8421,14 +8359,27 @@ function inscToggleCat(id) {
   if (inscState.selectedCats.has(id)) {
     inscState.selectedCats.delete(id);
   } else {
+    // Check same-day conflict (slot)
     const conflictId = [...inscState.selectedCats].find(selId => {
       const s = INSC_CATEGORIES.find(c => c.id === selId);
       return s && s.slot === cat.slot;
     });
     if (conflictId) {
       const conflictCat = INSC_CATEGORIES.find(c => c.id === conflictId);
-      if (!confirm(`"${cat.name}" y "${conflictCat.name}" son en el mismo horario (${INSC_SLOT_LABELS[cat.slot]}). ¿Reemplazar?`)) return;
+      if (!confirm(`Solo puedes inscribirte en 1 categoría por día (${INSC_SLOT_LABELS[cat.slot]}). ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
       inscState.selectedCats.delete(conflictId);
+    }
+    // Check rating-group conflict (cross-day: 1900 vs 1750 vs 1600)
+    if (cat.ratingGroup) {
+      const ratingConflictId = [...inscState.selectedCats].find(selId => {
+        const s = INSC_CATEGORIES.find(c => c.id === selId);
+        return s && s.ratingGroup === cat.ratingGroup;
+      });
+      if (ratingConflictId) {
+        const rc = INSC_CATEGORIES.find(c => c.id === ratingConflictId);
+        if (!confirm(`Solo puedes inscribirte en 1 categoría de Rating por torneo. ¿Reemplazar "${rc.name}" con "${cat.name}"?`)) return;
+        inscState.selectedCats.delete(ratingConflictId);
+      }
     }
     inscState.selectedCats.add(id);
   }
@@ -8443,7 +8394,6 @@ function inscUpdateTotals() {
   const p = inscState.player;
   const isMember = p && p.member;
   const hasExisting = !!inscState.existingInsc;
-  // No base charge if player is already inscribed (already paid it)
   const base = hasExisting ? 0 : (isMember ? 0 : 10);
 
   let catTotal = 0;
@@ -8453,98 +8403,172 @@ function inscUpdateTotals() {
   });
   const grand = base + catTotal;
 
-  const fptmId = (p && p.id) ? String(p.id) : 'NUEVO';
-
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set('inscCheckoutBase', '$' + base.toFixed(2));
   set('inscCatCount', String(inscState.selectedCats.size));
   set('inscCatTotal', '$' + catTotal.toFixed(2));
   set('inscGrandTotal', '$' + grand.toFixed(2));
-  set('inscConfirmId', fptmId);
-  set('inscConfirmTotal', '$' + grand.toFixed(2));
 }
 
-// ══════════════════════════════════════════
-// INSCRIPCIONES — PAGAR (Paso A: abrir ATH Móvil)
-// ══════════════════════════════════════════
-function inscIniciarPago() {
-  if (inscState.selectedCats.size === 0) {
-    alert('Selecciona al menos una categoría antes de pagar.');
-    return;
-  }
-  window.open('https://pagos.athmovilapp.com/pagoPorCodigo.html?id=686cd0cb-1395-4ebb-96b1-96719cd6f5e9', '_blank');
-  // Reveal post-payment section
-  const antes   = document.getElementById('inscPagoAntes');
-  const despues = document.getElementById('inscPagoDespues');
-  if (antes)   antes.style.display   = 'none';
-  if (despues) despues.style.display = '';
-  const ref = document.getElementById('inscRefCode');
-  if (ref) { ref.value = ''; ref.style.borderColor = 'var(--border)'; }
-  inscToggleSubmit();
-}
 
 // ══════════════════════════════════════════
-// INSCRIPCIONES — HABILITAR BOTÓN SOMETER
+// INSCRIPCIONES — REGLAMENTO
 // ══════════════════════════════════════════
-function inscToggleSubmit() {
-  const checked = document.getElementById('inscConfirmCheck')?.checked;
-  const label   = document.getElementById('inscConfirmCheckLabel');
-  const btn     = document.getElementById('inscSubmitBtn');
+function openReglamentoModal() {
+  const m = document.getElementById('reglamentoModal');
+  if (m) m.style.display = '';
+}
+function closeReglamentoModal() {
+  const m = document.getElementById('reglamentoModal');
+  if (m) m.style.display = 'none';
+}
+function inscUpdateReglamentoBtn() {
+  const chk = document.getElementById('inscReglamentoCheck');
+  const btn = document.getElementById('inscReglamentoNext');
   if (!btn) return;
-  btn.disabled      = !checked;
-  btn.style.opacity = checked ? '1' : '0.4';
-  btn.style.cursor  = checked ? 'pointer' : 'not-allowed';
-  if (label) label.style.borderColor = checked ? 'var(--green)' : 'var(--border)';
+  const ok = chk?.checked;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.4';
+  btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
 }
+function inscProceedFromReglamento() {
+  const chk = document.getElementById('inscReglamentoCheck');
+  if (!chk?.checked) return;
+  inscReglamentoAceptado = true;
+  inscShowForm();
+}
+function inscShowForm() {
+  const s0 = document.getElementById('inscScreen0');
+  const fp = document.getElementById('inscFormPanel');
+  const sp = document.getElementById('inscSuccessPanel');
+  if (s0) s0.style.display = 'none';
+  if (fp) fp.style.display = '';
+  if (sp) sp.style.display = 'none';
+  inscResetForm();
+  loadCatCounts();
+}
+function inscResetForm() {
+  inscState.player = null;
+  inscState.dob = null;
+  inscState.sex = '';
+  inscState.club = '';
+  inscState.existingInsc = null;
+  inscState.selectedCats = new Set();
+  inscState._dobFromDb = false;
+  inscState._sexFromDb = false;
+  inscState._clubFromDb = false;
+  const si = document.getElementById('inscSearchInput');
+  if (si) si.value = '';
+  const rl = document.getElementById('inscResultsList');
+  if (rl) { rl.innerHTML = ''; rl.style.display = 'none'; }
+  const pc = document.getElementById('inscPlayerCard');
+  if (pc) pc.style.display = 'none';
+  const nf = document.getElementById('inscNotFoundBlock');
+  if (nf) nf.style.display = 'none';
+  const dob = document.getElementById('inscDobInput');
+  if (dob) { dob.value = ''; dob.style.borderColor = 'var(--border)'; }
+  const sex = document.getElementById('inscSexInput');
+  if (sex) { sex.value = ''; sex.style.borderColor = 'var(--border)'; }
+  const club = document.getElementById('inscClubInput');
+  if (club) club.value = '';
+  const msg = document.getElementById('inscFormMsg');
+  if (msg) msg.textContent = '';
+  inscRenderCategories();
+  inscUpdateTotals();
+}
+function inscFormChanged() {
+  const dob = document.getElementById('inscDobInput')?.value || null;
+  const sex = document.getElementById('inscSexInput')?.value || '';
+  inscState.dob = dob;
+  inscState.sex = sex;
+  inscRenderCategories();
+  inscUpdateTotals();
+}
+function inscLimpiarJugador() {
+  inscResetForm();
+}
+function inscIniciarOtro() {
+  const fp = document.getElementById('inscFormPanel');
+  const sp = document.getElementById('inscSuccessPanel');
+  if (sp) sp.style.display = 'none';
+  if (fp) fp.style.display = '';
+  inscResetForm();
+}
+
 
 // ══════════════════════════════════════════
 // INSCRIPCIONES — SOMETER INSCRIPCIÓN (Paso B)
 // ══════════════════════════════════════════
 async function inscSometerInscripcion() {
-  const p          = inscState.player;
-  const existing   = inscState.existingInsc;
-  const newCats    = [...inscState.selectedCats].map(id => INSC_CATEGORIES.find(c => c.id === id)).filter(Boolean);
+  const p        = inscState.player;
+  const existing = inscState.existingInsc;
+  const msg      = document.getElementById('inscFormMsg');
 
-  if (newCats.length === 0) {
-    alert(existing
-      ? 'No seleccionaste categorías adicionales. Elige al menos una para continuar.'
-      : 'Selecciona al menos una categoría antes de continuar.');
+  // Validate player
+  if (!p) {
+    if (msg) msg.textContent = 'Busca y selecciona tu nombre antes de continuar.';
+    document.getElementById('inscSearchInput')?.focus();
     return;
   }
 
-  const isMember = p && p.member;
-  const base  = existing ? 0 : (isMember ? 0 : 10);
+  // Validate DOB
+  const dobVal = (document.getElementById('inscDobInput')?.value || '').trim();
+  if (!dobVal) {
+    if (msg) msg.textContent = 'Ingresa tu fecha de nacimiento para continuar.';
+    const el = document.getElementById('inscDobInput');
+    if (el) { el.style.borderColor = '#ef4444'; el.focus(); }
+    return;
+  }
+
+  // Validate sex
+  const sexVal = (document.getElementById('inscSexInput')?.value || '').trim();
+  if (!sexVal) {
+    if (msg) msg.textContent = 'Selecciona tu sexo para continuar.';
+    const el = document.getElementById('inscSexInput');
+    if (el) { el.style.borderColor = '#ef4444'; el.focus(); }
+    return;
+  }
+
+  // Validate categories
+  const newCats = [...inscState.selectedCats].map(id => INSC_CATEGORIES.find(c => c.id === id)).filter(Boolean);
+  if (newCats.length === 0) {
+    if (msg) msg.textContent = existing
+      ? 'Selecciona al menos una categoría adicional para continuar.'
+      : 'Selecciona al menos una categoría para continuar.';
+    return;
+  }
+
+  if (msg) msg.textContent = '';
+
+  const clubVal  = (document.getElementById('inscClubInput')?.value || '').trim();
+  const isMember = p.member;
+  const base     = existing ? 0 : (isMember ? 0 : 10);
   const newTotal = base + newCats.reduce((s, c) => s + c.price, 0);
 
-  // Merge existing + new categories (avoid duplicates)
-  const existingCats = existing?.categorias || [];
+  // Merge with existing categories
+  const existingCats  = existing?.categorias || [];
   const existingIdSet = new Set(existingCats.map(c => c.id));
-  const mergedCats = [...existingCats, ...newCats.filter(c => !existingIdSet.has(c.id))];
-
-  // Accumulated total
-  const accTotal = (existing?.total ?? 0) + newTotal;
+  const mergedCats    = [...existingCats, ...newCats.filter(c => !existingIdSet.has(c.id))];
+  const accTotal      = (existing?.total ?? 0) + newTotal;
 
   const btn = document.getElementById('inscSubmitBtn');
-  const origText = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'Guardando...';
-  btn.style.opacity = '0.7';
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; btn.style.opacity = '0.6'; }
 
   try {
-    const memberId = p?.id || null;
+    const memberId = p.id || null;
     const fptmId   = memberId ? String(memberId) : 'NUEVO';
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/insc_registro`, {
       method:  'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
-        torneo:     'Morovis Open 2026',
+        torneo:     'Ceiba Open 2026',
         member_id:  memberId,
-        nombre:     p?.name || 'Jugador nuevo',
+        nombre:     p.name,
         fptm_id:    fptmId,
-        sex:        inscState.sex || p?.sex || null,
-        dob:        inscState.dob || null,
-        club:       inscState.club || null,
+        sex:        sexVal || p.sex || null,
+        dob:        dobVal || null,
+        club:       clubVal || null,
         categorias: mergedCats.map(c => ({ id: c.id, name: c.name, price: c.price })),
         base:       existing?.base ?? base,
         total:      accTotal,
@@ -8557,26 +8581,38 @@ async function inscSometerInscripcion() {
       throw new Error(err.message || res.statusText);
     }
 
-    const isAddition = !!existing;
-    const addedNames = newCats.map(c => c.name).join(', ');
+    // Show success panel
+    const fp = document.getElementById('inscFormPanel');
+    const sp = document.getElementById('inscSuccessPanel');
+    if (fp) fp.style.display = 'none';
+    if (sp) sp.style.display = '';
 
-    // Show success state
-    const despues = document.getElementById('inscPagoDespues');
-    if (despues) despues.innerHTML = `
-      <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:24px;text-align:center;">
-        <div style="font-size:36px;margin-bottom:10px;">✅</div>
-        <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:1px;color:#4ade80;margin-bottom:8px;">${isAddition ? '¡Categorías Añadidas!' : '¡Inscripción Sometida!'}</div>
-        ${isAddition ? `<p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Añadidas: <strong style="color:var(--text);">${addedNames}</strong></p>` : ''}
-        <p style="font-size:14px;color:var(--muted);line-height:1.6;">
-          ${isAddition ? 'Tus categorías adicionales fueron registradas.' : 'Tu inscripción fue registrada exitosamente.'}
-          ${isAddition ? '' : '<br>Si aún no has enviado la captura del recibo, hazlo al <a href="https://wa.me/19392104299" target="_blank" style="color:var(--green);">939-210-4299</a>.'}
-        </p>
-      </div>`;
+    const nameEl  = document.getElementById('inscSuccessName');
+    const catsEl  = document.getElementById('inscSuccessCats');
+    const totalEl = document.getElementById('inscSuccessTotal');
+    const totalBtnEl = document.getElementById('inscSuccessTotalBtn');
+    const athBtn  = document.getElementById('inscAthMovilBtn');
+
+    if (nameEl) nameEl.textContent = `${p.name} · FPTM-${fptmId}`;
+
+    const allCatNames = mergedCats.map(c => c.name).join(' · ');
+    if (catsEl) catsEl.innerHTML = allCatNames
+      ? `<span style="color:var(--accent);">${allCatNames}</span>`
+      : '';
+
+    const totalFmt = '$' + accTotal.toFixed(2);
+    if (totalEl) totalEl.textContent = totalFmt;
+    if (totalBtnEl) totalBtnEl.textContent = totalFmt;
+
+    // Update ATH Móvil link with amount (static link — amount is informational)
+    if (athBtn) athBtn.setAttribute('href', 'https://pagos.athmovilapp.com/pagoPorCodigo.html?id=686cd0cb-1395-4ebb-96b1-96719cd6f5e9');
+
+    // Scroll to top of success panel
+    sp?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
   } catch(e) {
-    btn.textContent  = origText;
-    btn.disabled     = false;
-    btn.style.opacity = '1';
-    alert('Error al guardar la inscripción: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = 'Someter Inscripción →'; btn.style.opacity = '1'; }
+    if (msg) msg.textContent = 'Error al guardar: ' + e.message;
   }
 }
 
@@ -8619,7 +8655,7 @@ async function loadInscritosSection() {
   if (badge) badge.style.display = 'none';
 
   try {
-    const data = await sbGet('insc_registro', '?torneo=eq.Morovis%20Open%202026&order=created_at.asc');
+    const data = await sbGet('insc_registro', '?torneo=eq.Ceiba%20Open%202026&order=created_at.asc');
     if (!data || !data.length) {
       content.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--muted);font-size:14px;">Aún no hay inscritos.</div>';
       return;
@@ -8790,7 +8826,7 @@ async function exportInscripcionesStadium() {
     const { data: inscs, error: inscsErr } = await _supabase
       .from('insc_registro')
       .select('*')
-      .eq('torneo', 'Morovis Open 2026')
+      .eq('torneo', 'Ceiba Open 2026')
       .order('created_at', { ascending: true });
     if (inscsErr) throw new Error(inscsErr.message);
     if (!inscs || !inscs.length) { alert('No hay inscritos para exportar.'); return; }
@@ -8871,7 +8907,7 @@ async function exportInscripcionesStadium() {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url;
-    a.download = `inscritos_morovis_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `inscritos_ceiba_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -8892,7 +8928,7 @@ async function sincronizarInscripcionesDB() {
     const { data: inscs, error } = await _supabase
       .from('insc_registro')
       .select('member_id, dob, sex, club')
-      .eq('torneo', 'Morovis Open 2026')
+      .eq('torneo', 'Ceiba Open 2026')
       .not('member_id', 'is', null);
     if (error) throw new Error(error.message);
 
@@ -8945,7 +8981,7 @@ async function showInscReporteModal() {
   try {
     const { data: inscs, error: e1 } = await _supabase
       .from('insc_registro').select('*')
-      .eq('torneo', 'Morovis Open 2026').order('created_at', { ascending: true });
+      .eq('torneo', 'Ceiba Open 2026').order('created_at', { ascending: true });
     if (e1) throw new Error(e1.message);
     _inscReporteData = inscs || [];
 
@@ -9108,7 +9144,7 @@ async function loadInscAdminTable() {
     const { data, error } = await _supabase
       .from('insc_registro')
       .select('*')
-      .eq('torneo', 'Morovis Open 2026')
+      .eq('torneo', 'Ceiba Open 2026')
       .order('created_at', { ascending: true });
     if (error) throw new Error(error.message);
     _inscAdminData = data || [];
