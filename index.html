@@ -2368,7 +2368,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Reporte por Categoría — Morovis Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Reporte por Categoría — Ceiba Open 2026</div>
         <div id="inscReporteTotalEl" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscReporteModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -2389,7 +2389,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Gestionar Inscritos — Morovis Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Gestionar Inscritos — Ceiba Open 2026</div>
         <div id="inscAdminModalTotal" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscAdminModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -2974,12 +2974,12 @@ Maria Lopez,Ana Torres,B</code>
 
     <!-- Torneo activo — siempre visible -->
     <div id="inscTorneoCard" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
-      <img src="Morovis Open.jpg" alt="Morovis Open 2026" style="width:72px;height:72px;object-fit:cover;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
+      <img src="Ceiba Open.jpg" alt="Ceiba Open 2026" style="width:72px;height:72px;object-fit:cover;flex-shrink:0;border-radius:8px;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
       <span style="font-size:28px;display:none;">🏓</span>
       <div>
         <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:2px;">Torneo Activo</div>
-        <div style="font-size:18px;font-weight:700;color:var(--text);" id="inscTorneoNombre">Morovis Open 2026</div>
-        <div style="font-size:12px;color:var(--muted);">Sáb 25 &amp; Dom 26 de abril · Morovis, PR</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);" id="inscTorneoNombre">Ceiba Open 2026</div>
+        <div style="font-size:12px;color:var(--muted);">Sáb 16 &amp; Dom 17 de mayo · Ceiba, PR</div>
       </div>
     </div>
 
@@ -3019,8 +3019,41 @@ Maria Lopez,Ana Torres,B</code>
       <div style="flex:1;height:3px;background:var(--border);border-radius:10px;transition:background 0.4s;" id="inscSeg3"></div>
     </div>
 
+    <!-- ═══ PANTALLA 0: Reglamento ═══ -->
+    <div id="inscScreen0" style="display:block;">
+      <div style="background:var(--card2);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:24px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Antes de inscribirte</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Reglamento del Torneo</h2>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Debes leer y aceptar el reglamento del Ceiba Open 2026 para proceder con tu inscripción.</p>
+
+        <button onclick="openReglamentoModal()"
+          style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:14px 16px;cursor:pointer;text-align:left;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:20px;transition:border-color 0.15s;"
+          onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(56,189,248,0.25)'">
+          <span style="font-size:22px;flex-shrink:0;">📋</span>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Ver Reglamento Ceiba Open 2026</div>
+            <div style="font-size:12px;color:var(--muted);">Fecha límite: Miércoles 13 de mayo · ATH Business /fprtm</div>
+          </div>
+          <span style="color:var(--accent);font-size:16px;">→</span>
+        </button>
+
+        <label id="inscReglamentoLabel" style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;transition:border-color 0.15s;margin-bottom:20px;">
+          <input type="checkbox" id="inscReglamentoCheck" onchange="inscUpdateReglamentoBtn()"
+            style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:var(--accent);cursor:pointer;">
+          <span style="font-size:13px;color:var(--text);line-height:1.5;">
+            He leído y <strong style="color:var(--text);">acepto el reglamento</strong> del Ceiba Open 2026, incluyendo las reglas de participación, políticas de pago y responsabilidad personal.
+          </span>
+        </label>
+
+        <button id="inscReglamentoNext" onclick="inscProceedFromReglamento()" disabled
+          style="background:var(--grad);color:#fff;width:100%;padding:15px;border-radius:10px;font-size:16px;font-weight:700;cursor:not-allowed;border:none;opacity:0.4;transition:all 0.18s;">
+          Comenzar Inscripción →
+        </button>
+      </div>
+    </div>
+
     <!-- ═══ PANTALLA 1: Verificación ═══ -->
-    <div id="inscScreen1" style="display:block;">
+    <div id="inscScreen1" style="display:none;">
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
         <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 1 de 3 — Verificación</div>
         <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">¿Cuál es tu situación en la FPTM?</h2>
@@ -3161,7 +3194,7 @@ Maria Lopez,Ana Torres,B</code>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;">
         <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Paso 3 de 3 — Categorías &amp; Pago</div>
         <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Selecciona tus categorías</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:10px;">No puedes inscribirte en dos eventos del mismo horario. Cupo máximo 32 por categoría de Rating.</p>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:10px;">Solo 1 categoría por día · 1 categoría de Rating por torneo · Cupo máx. 30 por categoría de Rating · Fecha límite: <strong style="color:var(--text);">Miércoles 13 de mayo 2026</strong>.</p>
 
         <div id="inscCatList" style="display:flex;flex-direction:column;gap:10px;"></div>
 
@@ -3252,7 +3285,7 @@ Maria Lopez,Ana Torres,B</code>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;">
         <div>
           <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">INSCRITOS</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:1px;">Morovis Open 2026</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:1px;">Ceiba Open 2026</div>
         </div>
         <div id="inscritosSectionBadge" style="display:none;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);font-family:'Orbitron',monospace;font-size:17px;letter-spacing:1px;padding:5px 14px;border-radius:20px;white-space:nowrap;"></div>
       </div>
@@ -3348,8 +3381,8 @@ Maria Lopez,Ana Torres,B</code>
     <div id="regFormBody" style="display:none;">
       <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:20px 24px;margin-bottom:28px;">
         <div style="font-size:11px;color:var(--accent);font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Registro de Participante</div>
-        <div style="font-size:18px;font-weight:700;color:var(--text);">Morovis Open 2026</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Sáb 25 &amp; Dom 26 de abril · Morovis, PR</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);">Ceiba Open 2026</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Sáb 16 &amp; Dom 17 de mayo · Ceiba, PR</div>
       </div>
 
       <input type="hidden" id="regFormToken">
@@ -3449,7 +3482,7 @@ Maria Lopez,Ana Torres,B</code>
     <div id="regFormSuccess" style="display:none;text-align:center;padding:40px 0;">
       <div style="font-size:56px;margin-bottom:16px;">✅</div>
       <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:1px;color:#4ade80;margin-bottom:12px;">¡Solicitud Enviada!</div>
-      <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el Morovis Open 2026.</p>
+      <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el Ceiba Open 2026.</p>
     </div>
   </div>
 </div>
@@ -3490,6 +3523,124 @@ Maria Lopez,Ana Torres,B</code>
       </div>
       <button id="csvMembresiaApplyBtn" class="btn-primary" style="padding:12px 32px;font-size:14px" onclick="applyCsvMembresia()">Aplicar Cambios a la Base de Datos</button>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     REGLAMENTO MODAL — CEIBA OPEN 2026
+═══════════════════════════════════════════ -->
+<div id="reglamentoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1200;overflow-y:auto;padding:16px;">
+  <div style="max-width:680px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:28px 28px 36px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">REGLAMENTO</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Ceiba Open 2026 · Sáb 16 &amp; Dom 17 de mayo</div>
+      </div>
+      <button onclick="closeReglamentoModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+
+    <div style="font-size:14px;color:var(--text);line-height:1.75;">
+
+      <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">Federación Puertorriqueña de Tenis de Mesa · Ceiba Marlins Table Tennis Club</p>
+
+      <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.15);border-radius:10px;padding:16px 18px;margin-bottom:24px;">
+        <strong style="color:var(--accent);">1. FECHA</strong><br>
+        16 y 17 de mayo 2026.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">2. ORGANIZA</strong><br>
+        Federación Puertorriqueña de Tenis de Mesa y Ceiba Marlins Table Tennis Club.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">3. SEDE</strong><br>
+        Ceiba Marlins Table Tennis Club – Antigua Armería Guardia Nacional, PR-3, Ceiba, 00735 · 10 mesas.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">4. ELEGIBILIDAD</strong><br>
+        La participación está abierta a toda persona miembro de la FPTM y jugadores invitados.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">5. EVENTOS</strong>
+        <div style="margin-top:12px;">
+          <div style="font-weight:600;color:var(--text);margin-bottom:8px;">Sábado 16 de mayo</div>
+          <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
+            <li>1900 puntos o menos – 9:00 a.m.</li>
+            <li>11 años o menos Masculino – 11:00 a.m. | menores de 12 años al 31 de dic 2026</li>
+            <li>11 años o menos Femenino – 11:00 a.m. | menores de 12 años al 31 de dic 2026</li>
+            <li>13 años o menos Masculino – 11:00 a.m. | menores de 14 años al 31 de dic 2026</li>
+            <li>13 años o menos Femenino – 11:00 a.m. | menores de 14 años al 31 de dic 2026</li>
+            <li>15 años o menos Masculino – 12:30 p.m. | menores de 16 años al 31 de dic 2026</li>
+            <li>15 años o menos Femenino – 12:30 p.m. | menores de 16 años al 31 de dic 2026</li>
+            <li>Special Olympics – 2:00 p.m. | Evento gratuito ($0)</li>
+          </ol>
+          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 17 de mayo</div>
+          <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
+            <li>1750 puntos o menos – 9:00 a.m.</li>
+            <li>7 años o menos Abierto – 11:00 a.m. | menores de 8 años al 31 de dic 2026</li>
+            <li>9 años o menos Masculino – 11:00 a.m. | menores de 10 años al 31 de dic 2026</li>
+            <li>9 años o menos Femenino – 11:00 a.m. | menores de 10 años al 31 de dic 2026</li>
+            <li>Seniors: 40 años o más (Mixto) – 11:00 a.m.</li>
+            <li>1600 puntos o menos – 12:30 p.m.</li>
+          </ol>
+          <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#f59e0b;margin-top:12px;">
+            ⚠ Categorías de Rating: máx. 30 jugadores por evento · Solo 1 categoría por día · Solo 1 categoría de Rating por torneo (1900, 1750 y 1600 son excluyentes entre sí).
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">6. REGLAS</strong><br>
+        Los jugadores asumirán la responsabilidad de inscribirse en el evento apropiado a su edad. Jugadores sobre el límite de edad serán reubicados automáticamente al evento correcto. El evento se conducirá bajo el reglamento vigente de la Federación Internacional de Tenis de Mesa. Toda decisión del Comité Técnico será final.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">7. ITINERARIO</strong><br>
+        Los jugadores deben estar <strong>45 minutos antes</strong> para verificación y registro, y <strong>20 minutos antes</strong> listos para jugar.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">8. INSCRIPCIONES</strong><br>
+        La hoja de inscripción será aceptada solo si está debidamente cumplimentada, incluyendo el pago de inscripción.
+      </div>
+
+      <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
+        <strong style="color:#ef4444;">9. FECHA LÍMITE</strong><br>
+        <strong style="color:var(--text);font-size:15px;">Miércoles 13 de mayo de 2026.</strong>
+      </div>
+
+      <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
+        <strong style="color:var(--green);">10. MÉTODO DE PAGO</strong><br>
+        Las inscripciones serán aceptadas exclusivamente a través de <strong>ATH Business /fprtm</strong>.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">11. RESPONSABILIDAD</strong><br>
+        Cada jugador asumirá todo riesgo personal por lesión o daño en relación al torneo. La FPTM, el Comité Organizador, el Ceiba Marlins TTC y las empresas auspiciadoras quedan liberados de toda indemnización.
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <strong style="color:var(--accent);">12. IMPREVISTOS</strong><br>
+        La FPTM se reserva la facultad de realizar modificaciones necesarias según el criterio del Comité Organizador.
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:13px;color:var(--muted);line-height:1.9;">
+        <strong style="color:var(--text);display:block;margin-bottom:8px;">Notas adicionales</strong>
+        <ul style="padding-left:18px;margin:0;">
+          <li>Participantes deben estar al corriente con la cuota anual de membresía ($20.00). De lo contrario, se aplicará un cargo adicional de $10.00.</li>
+          <li>El pago de inscripción solo se acepta a través de ATH Business /fprtm.</li>
+          <li>No se jugarán partidos para definir 3er y 4to lugar — se premiarán dos terceros lugares.</li>
+          <li>Habrá premiación con trofeos para los primeros cuatro lugares en 7 años o menos, 9 años o menos y Special Olympics (medallas).</li>
+          <li>Jugadores que les corresponda arbitrar y se nieguen deben conseguir sustituto o pagar $2.00. Quienes abandonen sin arbitrar ni conseguir sustituto recibirán una multa de $5.00 y no podrán participar en futuros torneos hasta pagar.</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <button onclick="closeReglamentoModal()" style="margin-top:24px;width:100%;background:var(--grad);color:#fff;padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;">← Volver</button>
   </div>
 </div>
 
@@ -4900,7 +5051,7 @@ async function subirGuardarBorrador() {
     }
   }
 
-  // Generate column name for this tournament: "Morovis Open 2026" → "rating_morovis_open_2026"
+  // Generate column name for this tournament: "Ceiba Open 2026" → "rating_ceiba_open_2026"
   const colName = 'rating_' + nombre.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 
   try {
@@ -7359,31 +7510,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ══════════════════════════════════════════
 // INSCRIPCIONES — CONSTANTS
 // ══════════════════════════════════════════
+// Ceiba Open 2026 — Sáb 16 & Dom 17 de mayo
+// Rule: max 1 category per day · max 1 rating category per tournament
+// All SAB events share slot 'SAB'; all DOM events share slot 'DOM' (enforces 1-per-day)
+// ratingGroup: 'rating' enforces cross-day rating conflict (1900 vs 1750 vs 1600)
 const INSC_CATEGORIES = [
-  { id: 'ev1',  name: '7 o Menos Abierto',       desc: 'Trofeos y medallas',                  price: 11, slot: 'SAB-900',  maxAge: 7 },
-  { id: 'ev2',  name: '9 o Menos Masculino',      desc: 'Trofeos y medallas',                  price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'M' },
-  { id: 'ev3',  name: '9 o Menos Femenino',       desc: 'Trofeos y medallas',                  price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'F' },
-  { id: 'ev4',  name: '13 o Menos Masculino',     desc: '1ro $35 · 2do $30 · 3/4 $25',        price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'M' },
-  { id: 'ev5',  name: '13 o Menos Femenino',      desc: '1ro $35 · 2do $30 · 3/4 $25',        price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'F' },
-  { id: 'ev6',  name: 'Abierto',                  desc: '1ro $250 · 2do $125 · 3/4 $70',      price: 25, slot: 'SAB-900',  maxPlayers: 32 },
-  { id: 'ev7',  name: '1500 o Menos',             desc: '1ro $45 · 2do $35 · 3/4 $30',        price: 20, slot: 'SAB-1100', maxRating: 1500, maxPlayers: 32 },
-  { id: 'ev8',  name: '1900 o Menos',             desc: '1ro $150 · 2do $100 · 3/4 $55',      price: 20, slot: 'SAB-1230', maxRating: 1900, maxPlayers: 32 },
-  { id: 'ev9',  name: '1700 o Menos',             desc: '1ro $75 · 2do $50 · 3/4 $45',        price: 20, slot: 'SAB-1230', maxRating: 1700, maxPlayers: 32 },
-  { id: 'ev10', name: '11 o Menos Masculino',     desc: '1ro $30 · 2do $25 · 3/4 $20',        price: 20, slot: 'DOM-900',  maxAge: 11, sex: 'M' },
-  { id: 'ev11', name: '11 o Menos Femenino',      desc: '1ro $30 · 2do $25 · 3/4 $20',        price: 20, slot: 'DOM-900',  maxAge: 11, sex: 'F' },
-  { id: 'ev12', name: '15 o Menos Masculino',     desc: '1ro $40 · 2do $35 · 3/4 $30',        price: 20, slot: 'DOM-900',  maxAge: 15, sex: 'M' },
-  { id: 'ev13', name: '15 o Menos Femenino',      desc: '1ro $40 · 2do $35 · 3/4 $30',        price: 20, slot: 'DOM-900',  maxAge: 15, sex: 'F' },
-  { id: 'ev14', name: 'Seniors – 40 años o más',  desc: '1ro $75 · 2do $50 · 3/4 $25',        price: 20, slot: 'DOM-1100', minAge: 40 },
-  { id: 'ev15', name: '1600 o Menos',             desc: '1ro $50 · 2do $45 · 3/4 $40',        price: 20, slot: 'DOM-1230', maxRating: 1600, maxPlayers: 32 },
-  { id: 'ev16', name: '1800 o Menos',             desc: '1ro $100 · 2do $75 · 3/4 $50',       price: 20, slot: 'DOM-1230', maxRating: 1800, maxPlayers: 32 },
+  // ── Sábado 16 de mayo ──
+  { id: 'ev1',  name: '1900 o Menos',              desc: '9:00 a.m. · máx. 30 jugadores',           price: 20, slot: 'SAB', maxRating: 1900, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev2',  name: '11 años o Menos Masculino', desc: '11:00 a.m. · nacido en 2015 o después',   price: 20, slot: 'SAB', maxAge: 11, sex: 'M' },
+  { id: 'ev3',  name: '11 años o Menos Femenino',  desc: '11:00 a.m. · nacido en 2015 o después',   price: 20, slot: 'SAB', maxAge: 11, sex: 'F' },
+  { id: 'ev4',  name: '13 años o Menos Masculino', desc: '11:00 a.m. · nacido en 2013 o después',   price: 20, slot: 'SAB', maxAge: 13, sex: 'M' },
+  { id: 'ev5',  name: '13 años o Menos Femenino',  desc: '11:00 a.m. · nacido en 2013 o después',   price: 20, slot: 'SAB', maxAge: 13, sex: 'F' },
+  { id: 'ev6',  name: '15 años o Menos Masculino', desc: '12:30 p.m. · nacido en 2011 o después',   price: 20, slot: 'SAB', maxAge: 15, sex: 'M' },
+  { id: 'ev7',  name: '15 años o Menos Femenino',  desc: '12:30 p.m. · nacido en 2011 o después',   price: 20, slot: 'SAB', maxAge: 15, sex: 'F' },
+  { id: 'ev8',  name: 'Special Olympics',           desc: '2:00 p.m. · evento gratuito',             price: 0,  slot: 'SAB' },
+  // ── Domingo 17 de mayo ──
+  { id: 'ev9',  name: '1750 o Menos',              desc: '9:00 a.m. · máx. 30 jugadores',           price: 20, slot: 'DOM', maxRating: 1750, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev10', name: '7 años o Menos Abierto',    desc: '11:00 a.m. · nacido en 2019 o después',   price: 20, slot: 'DOM', maxAge: 7 },
+  { id: 'ev11', name: '9 años o Menos Masculino',  desc: '11:00 a.m. · nacido en 2017 o después',   price: 20, slot: 'DOM', maxAge: 9, sex: 'M' },
+  { id: 'ev12', name: '9 años o Menos Femenino',   desc: '11:00 a.m. · nacido en 2017 o después',   price: 20, slot: 'DOM', maxAge: 9, sex: 'F' },
+  { id: 'ev13', name: 'Seniors 40+ (Mixto)',        desc: '11:00 a.m. · nacido en 1986 o antes',     price: 20, slot: 'DOM', minAge: 40 },
+  { id: 'ev14', name: '1600 o Menos',              desc: '12:30 p.m. · máx. 30 jugadores',          price: 20, slot: 'DOM', maxRating: 1600, maxPlayers: 30, ratingGroup: 'rating' },
 ];
 const INSC_SLOT_LABELS = {
-  'SAB-900':  'Sáb 25-abr · 9:00 a.m.',
-  'SAB-1100': 'Sáb 25-abr · 11:00 a.m.',
-  'SAB-1230': 'Sáb 25-abr · 12:30 p.m.',
-  'DOM-900':  'Dom 26-abr · 9:00 a.m.',
-  'DOM-1100': 'Dom 26-abr · 11:00 a.m.',
-  'DOM-1230': 'Dom 26-abr · 12:30 p.m.',
+  'SAB': 'Sábado 16 de mayo',
+  'DOM': 'Domingo 17 de mayo',
 };
 
 // Normalize sex from DB (may be 'Male', 'Female', 'Masculino', etc.) → 'M' | 'F' | ''
@@ -7437,6 +7588,7 @@ function inscUpdateFieldNotes() {
 // ══════════════════════════════════════════
 // INSCRIPCIONES — STATE
 // ══════════════════════════════════════════
+let inscReglamentoAceptado = false; // true once player accepts reglamento this session
 const inscState = {
   opcion: null,       // 'miembro' | 'rating' | 'nuevo'
   player: null,       // selected player object from ALL_PLAYERS
@@ -7455,6 +7607,9 @@ const inscState = {
 // INSCRIPCIONES — PROGRESS BAR
 // ══════════════════════════════════════════
 function inscUpdateProgress(step) {
+  // step 0 = reglamento (pre-step, hide progress bar)
+  const pb = document.getElementById('inscProgressBar');
+  if (pb) pb.style.display = step === 0 ? 'none' : '';
   for (let i = 1; i <= 3; i++) {
     const seg = document.getElementById('inscSeg' + i);
     if (!seg) continue;
@@ -7467,7 +7622,7 @@ function inscUpdateProgress(step) {
 // ══════════════════════════════════════════
 // INSCRIPCIONES — OPEN / CLOSED SETTING
 // ══════════════════════════════════════════
-let inscripcionesOpen = true;
+let inscripcionesOpen = false;
 let inscSbSynced = false;   // true once a successful Supabase round-trip happens
 
 async function loadInscripcionesConfig() {
@@ -7514,7 +7669,7 @@ function applyInscripcionesState() {
     if (banner)        banner.style.display         = 'none';
     if (previewBanner) previewBanner.style.display  = 'none';
     if (progress)      progress.style.display       = '';
-    inscGoToStep(1);
+    inscGoToStep(inscReglamentoAceptado ? 1 : 0);
   } else if (isAdmin()) {
     // Closed but admin is logged in — show preview with the form accessible
     if (placeholder)   placeholder.style.display   = 'none';
@@ -7523,7 +7678,7 @@ function applyInscripcionesState() {
     if (banner)        banner.style.display         = 'none';
     if (previewBanner) previewBanner.style.display  = 'flex';
     if (progress)      progress.style.display       = '';
-    inscGoToStep(1);
+    inscGoToStep(inscReglamentoAceptado ? 1 : 0);
   } else {
     // Closed for the public — form hidden but "Ver Inscritos" button stays visible
     if (placeholder)   placeholder.style.display   = 'none';
@@ -7532,7 +7687,7 @@ function applyInscripcionesState() {
     if (banner)        banner.style.display         = '';
     if (previewBanner) previewBanner.style.display  = 'none';
     if (progress)      progress.style.display       = 'none';
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 0; i <= 3; i++) {
       const el = document.getElementById('inscScreen' + i);
       if (el) el.style.display = 'none';
     }
@@ -7961,7 +8116,7 @@ function renderPastDetailReporteTab(catId) {
 // INSCRIPCIONES — STEP NAVIGATION
 // ══════════════════════════════════════════
 function inscGoToStep(step) {
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 0; i <= 3; i++) {
     const el = document.getElementById('inscScreen' + i);
     if (el) el.style.display = 'none';
   }
@@ -8247,7 +8402,7 @@ async function fetchPlayerDob(memberId) {
 async function fetchExistingInscripcion(memberId) {
   try {
     const data = await sbGet('insc_registro',
-      `?torneo=eq.Morovis%20Open%202026&member_id=eq.${memberId}&limit=1`);
+      `?torneo=eq.Ceiba%20Open%202026&member_id=eq.${memberId}&limit=1`);
     return data?.[0] || null;
   } catch(e) { return null; }
 }
@@ -8260,7 +8415,7 @@ let _catCounts = {}; // catId → number of players currently registered
 async function loadCatCounts() {
   try {
     const data = await sbGet('insc_registro',
-      '?torneo=eq.Morovis%20Open%202026&select=categorias');
+      '?torneo=eq.Ceiba%20Open%202026&select=categorias');
     _catCounts = {};
     (data || []).forEach(row => {
       (Array.isArray(row.categorias) ? row.categorias : []).forEach(c => {
@@ -8421,14 +8576,27 @@ function inscToggleCat(id) {
   if (inscState.selectedCats.has(id)) {
     inscState.selectedCats.delete(id);
   } else {
+    // Check same-day conflict (slot)
     const conflictId = [...inscState.selectedCats].find(selId => {
       const s = INSC_CATEGORIES.find(c => c.id === selId);
       return s && s.slot === cat.slot;
     });
     if (conflictId) {
       const conflictCat = INSC_CATEGORIES.find(c => c.id === conflictId);
-      if (!confirm(`"${cat.name}" y "${conflictCat.name}" son en el mismo horario (${INSC_SLOT_LABELS[cat.slot]}). ¿Reemplazar?`)) return;
+      if (!confirm(`Solo puedes inscribirte en 1 categoría por día (${INSC_SLOT_LABELS[cat.slot]}). ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
       inscState.selectedCats.delete(conflictId);
+    }
+    // Check rating-group conflict (cross-day: 1900 vs 1750 vs 1600)
+    if (cat.ratingGroup) {
+      const ratingConflictId = [...inscState.selectedCats].find(selId => {
+        const s = INSC_CATEGORIES.find(c => c.id === selId);
+        return s && s.ratingGroup === cat.ratingGroup;
+      });
+      if (ratingConflictId) {
+        const rc = INSC_CATEGORIES.find(c => c.id === ratingConflictId);
+        if (!confirm(`Solo puedes inscribirte en 1 categoría de Rating por torneo. ¿Reemplazar "${rc.name}" con "${cat.name}"?`)) return;
+        inscState.selectedCats.delete(ratingConflictId);
+      }
     }
     inscState.selectedCats.add(id);
   }
@@ -8481,6 +8649,33 @@ function inscIniciarPago() {
   const ref = document.getElementById('inscRefCode');
   if (ref) { ref.value = ''; ref.style.borderColor = 'var(--border)'; }
   inscToggleSubmit();
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — REGLAMENTO
+// ══════════════════════════════════════════
+function openReglamentoModal() {
+  const m = document.getElementById('reglamentoModal');
+  if (m) m.style.display = '';
+}
+function closeReglamentoModal() {
+  const m = document.getElementById('reglamentoModal');
+  if (m) m.style.display = 'none';
+}
+function inscUpdateReglamentoBtn() {
+  const chk = document.getElementById('inscReglamentoCheck');
+  const btn = document.getElementById('inscReglamentoNext');
+  if (!btn) return;
+  const ok = chk?.checked;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '0.4';
+  btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+}
+function inscProceedFromReglamento() {
+  const chk = document.getElementById('inscReglamentoCheck');
+  if (!chk?.checked) return;
+  inscReglamentoAceptado = true;
+  inscGoToStep(1);
 }
 
 // ══════════════════════════════════════════
@@ -8538,7 +8733,7 @@ async function inscSometerInscripcion() {
       method:  'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
-        torneo:     'Morovis Open 2026',
+        torneo:     'Ceiba Open 2026',
         member_id:  memberId,
         nombre:     p?.name || 'Jugador nuevo',
         fptm_id:    fptmId,
@@ -8619,7 +8814,7 @@ async function loadInscritosSection() {
   if (badge) badge.style.display = 'none';
 
   try {
-    const data = await sbGet('insc_registro', '?torneo=eq.Morovis%20Open%202026&order=created_at.asc');
+    const data = await sbGet('insc_registro', '?torneo=eq.Ceiba%20Open%202026&order=created_at.asc');
     if (!data || !data.length) {
       content.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--muted);font-size:14px;">Aún no hay inscritos.</div>';
       return;
@@ -8790,7 +8985,7 @@ async function exportInscripcionesStadium() {
     const { data: inscs, error: inscsErr } = await _supabase
       .from('insc_registro')
       .select('*')
-      .eq('torneo', 'Morovis Open 2026')
+      .eq('torneo', 'Ceiba Open 2026')
       .order('created_at', { ascending: true });
     if (inscsErr) throw new Error(inscsErr.message);
     if (!inscs || !inscs.length) { alert('No hay inscritos para exportar.'); return; }
@@ -8871,7 +9066,7 @@ async function exportInscripcionesStadium() {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url;
-    a.download = `inscritos_morovis_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `inscritos_ceiba_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -8892,7 +9087,7 @@ async function sincronizarInscripcionesDB() {
     const { data: inscs, error } = await _supabase
       .from('insc_registro')
       .select('member_id, dob, sex, club')
-      .eq('torneo', 'Morovis Open 2026')
+      .eq('torneo', 'Ceiba Open 2026')
       .not('member_id', 'is', null);
     if (error) throw new Error(error.message);
 
@@ -8945,7 +9140,7 @@ async function showInscReporteModal() {
   try {
     const { data: inscs, error: e1 } = await _supabase
       .from('insc_registro').select('*')
-      .eq('torneo', 'Morovis Open 2026').order('created_at', { ascending: true });
+      .eq('torneo', 'Ceiba Open 2026').order('created_at', { ascending: true });
     if (e1) throw new Error(e1.message);
     _inscReporteData = inscs || [];
 
@@ -9108,7 +9303,7 @@ async function loadInscAdminTable() {
     const { data, error } = await _supabase
       .from('insc_registro')
       .select('*')
-      .eq('torneo', 'Morovis Open 2026')
+      .eq('torneo', 'Ceiba Open 2026')
       .order('created_at', { ascending: true });
     if (error) throw new Error(error.message);
     _inscAdminData = data || [];
