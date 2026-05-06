@@ -2235,6 +2235,11 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Reporte por Categoría</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Jugadores inscritos con rating y club</div>
       </div>
+      <div id="adminCardLogistica" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscLogisticaModal()">
+        <div style="font-size:32px;margin-bottom:12px">📅</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Logística</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Planificación de horarios y conflictos</div>
+      </div>
       <div id="inscAdminCard" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative;transition:border-color 0.2s" onclick="toggleInscripciones()">
         <div id="inscAdminIcon" style="font-size:32px;margin-bottom:12px">📋</div>
         <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Inscripciones</div>
@@ -2377,6 +2382,29 @@ Maria Lopez,Ana Torres,B</code>
     <div id="inscReporteTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;"></div>
     <!-- Content -->
     <div id="inscReporteContent" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LOGÍSTICA MODAL (admin)
+═══════════════════════════════════════════ -->
+<div id="inscLogisticaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:1000px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Logística — Elegibilidad por Categoría</div>
+        <div id="inscLogisticaTotalEl" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <button onclick="exportInscLogisticaCSV()" style="background:var(--accent);color:#1a1f2e;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;">⬇ Exportar CSV</button>
+        <button onclick="closeInscLogisticaModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+      </div>
+    </div>
+    <!-- Filter by category tabs -->
+    <div style="margin-bottom:12px;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;">Filtrar por categoría</div>
+    <div id="inscLogisticaTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;"></div>
+    <!-- Content table -->
+    <div id="inscLogisticaContent" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
   </div>
 </div>
 
@@ -3493,26 +3521,27 @@ Maria Lopez,Ana Torres,B</code>
         <div style="margin-top:12px;">
           <div style="font-weight:600;color:var(--text);margin-bottom:8px;">Sábado 16 de mayo</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
-            <li>1900 puntos o menos – 9:00 a.m.</li>
+            <li>1600 puntos o menos – 9:00 a.m.</li>
             <li>11 años o menos Masculino – 11:00 a.m. | menores de 12 años al 31 de dic 2026</li>
             <li>11 años o menos Femenino – 11:00 a.m. | menores de 12 años al 31 de dic 2026</li>
             <li>13 años o menos Masculino – 11:00 a.m. | menores de 14 años al 31 de dic 2026</li>
             <li>13 años o menos Femenino – 11:00 a.m. | menores de 14 años al 31 de dic 2026</li>
             <li>15 años o menos Masculino – 12:30 p.m. | menores de 16 años al 31 de dic 2026</li>
             <li>15 años o menos Femenino – 12:30 p.m. | menores de 16 años al 31 de dic 2026</li>
+            <li>Seniors: 40 años o más (Mixto) – 2:00 p.m.</li>
             <li>Special Olympics – 2:00 p.m. | Evento gratuito ($0)</li>
           </ol>
           <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 17 de mayo</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
-            <li>1750 puntos o menos – 9:00 a.m.</li>
+            <li>1900 puntos o menos – 9:00 a.m.</li>
             <li>7 años o menos Abierto – 11:00 a.m. | menores de 8 años al 31 de dic 2026</li>
             <li>9 años o menos Masculino – 11:00 a.m. | menores de 10 años al 31 de dic 2026</li>
             <li>9 años o menos Femenino – 11:00 a.m. | menores de 10 años al 31 de dic 2026</li>
-            <li>Seniors: 40 años o más (Mixto) – 11:00 a.m.</li>
-            <li>1600 puntos o menos – 12:30 p.m.</li>
+            <li>Sub-21 Abierto – 11:00 a.m. | menores de 22 años al 31 de dic 2026</li>
+            <li>1750 puntos o menos – 12:30 p.m.</li>
           </ol>
           <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#f59e0b;margin-top:12px;">
-            ⚠ Categorías de Rating: máx. 30 jugadores por evento · Solo 1 categoría por día · Solo 1 categoría de Rating por torneo (1900, 1750 y 1600 son excluyentes entre sí).
+            ⚠ Categorías de Rating: máx. 30 jugadores por evento · Solo 1 categoría por día · Solo 1 categoría de Rating por torneo (1600, 1900 y 1750 son excluyentes entre sí).
           </div>
         </div>
       </div>
@@ -7441,20 +7470,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ratingGroup: 'rating' enforces cross-day rating conflict (1900 vs 1750 vs 1600)
 const INSC_CATEGORIES = [
   // ── Sábado 16 de mayo ──
-  { id: 'ev1',  name: '1900 o Menos',              desc: '9:00 a.m. · máx. 30 jugadores',           price: 20, slot: 'SAB', maxRating: 1900, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev1',  name: '1600 o Menos',              desc: '9:00 a.m. · máx. 30 jugadores',           price: 20, slot: 'SAB', maxRating: 1600, maxPlayers: 30, ratingGroup: 'rating' },
   { id: 'ev2',  name: '11 años o Menos Masculino', desc: '11:00 a.m. · nacido en 2015 o después',   price: 20, slot: 'SAB', maxAge: 11, sex: 'M' },
   { id: 'ev3',  name: '11 años o Menos Femenino',  desc: '11:00 a.m. · nacido en 2015 o después',   price: 20, slot: 'SAB', maxAge: 11, sex: 'F' },
   { id: 'ev4',  name: '13 años o Menos Masculino', desc: '11:00 a.m. · nacido en 2013 o después',   price: 20, slot: 'SAB', maxAge: 13, sex: 'M' },
   { id: 'ev5',  name: '13 años o Menos Femenino',  desc: '11:00 a.m. · nacido en 2013 o después',   price: 20, slot: 'SAB', maxAge: 13, sex: 'F' },
   { id: 'ev6',  name: '15 años o Menos Masculino', desc: '12:30 p.m. · nacido en 2011 o después',   price: 20, slot: 'SAB', maxAge: 15, sex: 'M' },
   { id: 'ev7',  name: '15 años o Menos Femenino',  desc: '12:30 p.m. · nacido en 2011 o después',   price: 20, slot: 'SAB', maxAge: 15, sex: 'F' },
+  { id: 'ev8',  name: 'Seniors 40+ (Mixto)',        desc: '2:00 p.m. · nacido en 1986 o antes',      price: 20, slot: 'SAB', minAge: 40 },
   // ── Domingo 17 de mayo ──
-  { id: 'ev9',  name: '1750 o Menos',              desc: '9:00 a.m. · máx. 30 jugadores',           price: 20, slot: 'DOM', maxRating: 1750, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev9',  name: '1900 o Menos',              desc: '9:00 a.m. · máx. 30 jugadores',           price: 20, slot: 'DOM', maxRating: 1900, maxPlayers: 30, ratingGroup: 'rating' },
   { id: 'ev10', name: '7 años o Menos Abierto',    desc: '11:00 a.m. · nacido en 2019 o después',   price: 20, slot: 'DOM', maxAge: 7 },
   { id: 'ev11', name: '9 años o Menos Masculino',  desc: '11:00 a.m. · nacido en 2017 o después',   price: 20, slot: 'DOM', maxAge: 9, sex: 'M' },
   { id: 'ev12', name: '9 años o Menos Femenino',   desc: '11:00 a.m. · nacido en 2017 o después',   price: 20, slot: 'DOM', maxAge: 9, sex: 'F' },
-  { id: 'ev13', name: 'Seniors 40+ (Mixto)',        desc: '11:00 a.m. · nacido en 1986 o antes',     price: 20, slot: 'DOM', minAge: 40 },
-  { id: 'ev14', name: '1600 o Menos',              desc: '12:30 p.m. · máx. 30 jugadores',          price: 20, slot: 'DOM', maxRating: 1600, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev15', name: 'Sub-21 Abierto',             desc: '11:00 a.m. · nacido en 2005 o después',   price: 20, slot: 'DOM', maxAge: 21 },
+  { id: 'ev14', name: '1750 o Menos',              desc: '12:30 p.m. · máx. 30 jugadores',          price: 20, slot: 'DOM', maxRating: 1750, maxPlayers: 30, ratingGroup: 'rating' },
 ];
 const INSC_SLOT_LABELS = {
   'SAB': 'Sábado 16 de mayo',
@@ -7663,6 +7693,7 @@ function applyTorneoArchivoAdminCards() {
   const cardGestionar   = document.getElementById('adminCardGestionar');
   const cardExportar    = document.getElementById('adminCardExportar');
   const cardReporte     = document.getElementById('adminCardReporte');
+  const cardLogistica   = document.getElementById('adminCardLogistica');
   const cardPast        = document.getElementById('adminCardPastTorneos');
   const cardArchivarTitle = document.getElementById('adminCardArchivarTitle');
   const cardArchivarDesc  = document.getElementById('adminCardArchivarDesc');
@@ -7670,19 +7701,21 @@ function applyTorneoArchivoAdminCards() {
   const cardArchivar      = document.getElementById('adminCardArchivar');
 
   if (torneoArchivado) {
-    if (cardGestionar) cardGestionar.style.display = 'none';
-    if (cardExportar)  cardExportar.style.display  = 'none';
-    if (cardReporte)   cardReporte.style.display   = 'none';
-    if (cardPast)      cardPast.style.display       = '';
+    if (cardGestionar)  cardGestionar.style.display  = 'none';
+    if (cardExportar)   cardExportar.style.display   = 'none';
+    if (cardReporte)    cardReporte.style.display    = 'none';
+    if (cardLogistica)  cardLogistica.style.display  = 'none';
+    if (cardPast)       cardPast.style.display        = '';
     if (cardArchivarTitle) cardArchivarTitle.textContent = 'Reactivar Torneo';
     if (cardArchivarDesc)  cardArchivarDesc.textContent  = 'Volver a abrir inscripciones';
     if (cardArchivarIcon)  cardArchivarIcon.textContent  = '🔓';
     if (cardArchivar)      cardArchivar.style.borderColor = 'rgba(34,197,94,0.4)';
   } else {
-    if (cardGestionar) cardGestionar.style.display = '';
-    if (cardExportar)  cardExportar.style.display  = '';
-    if (cardReporte)   cardReporte.style.display   = '';
-    if (cardPast)      cardPast.style.display       = 'none';
+    if (cardGestionar)  cardGestionar.style.display  = '';
+    if (cardExportar)   cardExportar.style.display   = '';
+    if (cardReporte)    cardReporte.style.display    = '';
+    if (cardLogistica)  cardLogistica.style.display  = '';
+    if (cardPast)       cardPast.style.display        = 'none';
     if (cardArchivarTitle) cardArchivarTitle.textContent = 'Archivar Torneo';
     if (cardArchivarDesc)  cardArchivarDesc.textContent  = 'Mover inscripciones a historial';
     if (cardArchivarIcon)  cardArchivarIcon.textContent  = '🗃️';
@@ -8271,6 +8304,7 @@ function inscCatEligible(cat) {
       11: '2015-01-01',
       13: '2013-01-01',
       15: '2011-01-01',
+      21: '2005-01-01',
     };
 
     if (cat.maxAge && maxAgeCutoff[cat.maxAge]) {
@@ -9153,6 +9187,233 @@ function renderInscReporte(catId) {
 
 function closeInscReporteModal() {
   document.getElementById('inscReporteModal').style.display = 'none';
+}
+
+// ─── Logística ────────────────────────────────────────────────────────────────
+let _inscLogisticaData = [];
+let _inscLogisticaActiveCat = null;
+
+// Eligibility check from raw player data — no inscState dependency
+function inscCatEligibleStatic(cat, { rating, sex, dob }) {
+  if (cat.maxRating !== undefined) {
+    if (rating === null || rating === undefined || rating > cat.maxRating) return false;
+  }
+  if (cat.sex) {
+    if (!sex || sex.toUpperCase() !== cat.sex) return false;
+  }
+  const maxAgeCutoff = { 7:'2019-01-01', 9:'2017-01-01', 11:'2015-01-01', 13:'2013-01-01', 15:'2011-01-01', 21:'2005-01-01' };
+  if (cat.maxAge || cat.minAge) {
+    if (!dob) return false;
+    const birth = new Date(`${dob}T00:00:00`);
+    if (Number.isNaN(birth.getTime())) return false;
+    if (cat.maxAge && maxAgeCutoff[cat.maxAge]) {
+      if (birth < new Date(`${maxAgeCutoff[cat.maxAge]}T00:00:00`)) return false;
+    }
+    if (cat.minAge === 40) {
+      if (birth > new Date('1986-12-31T23:59:59')) return false;
+    }
+  }
+  return true;
+}
+
+async function showInscLogisticaModal() {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('inscLogisticaModal').style.display = '';
+  document.getElementById('inscLogisticaContent').innerHTML =
+    '<div style="text-align:center;padding:40px 0;">Cargando...</div>';
+  document.getElementById('inscLogisticaTabs').innerHTML = '';
+
+  try {
+    // Pull all active members including DOB and sex from the members database
+    const { data: members, error } = await _supabase
+      .from('Base de Datos')
+      .select('"Member ID","First Name","Last Name","Sex","Date of Birth","New Rating","Rating","Club","Expiration Date"')
+      .order('"Last Name"', { ascending: true });
+    if (error) throw new Error(error.message);
+
+    const now = new Date();
+    const active = (members || []).filter(p => {
+      if (!p['Expiration Date']) return false;
+      const exp = new Date(p['Expiration Date']);
+      return !isNaN(exp) && exp > now;
+    });
+
+    _inscLogisticaData = active.map(p => {
+      const dobIso = p['Date of Birth'] ? _parseDOBStr(String(p['Date of Birth'])) : null;
+      const rating = Number(p['New Rating'] || p['Rating']) || null;
+      const sex = (p['Sex'] || '').trim().toUpperCase();
+      const eligibleCats = INSC_CATEGORIES.filter(c =>
+        inscCatEligibleStatic(c, { rating, sex, dob: dobIso })
+      );
+      return {
+        nombre: `${p['First Name'] || ''} ${p['Last Name'] || ''}`.trim() || '—',
+        fptmId: String(p['Member ID'] || ''),
+        rating,
+        dob: dobIso,
+        sex,
+        club: p['Club'] || '—',
+        eligibleSab: eligibleCats.filter(c => c.slot === 'SAB'),
+        eligibleDom: eligibleCats.filter(c => c.slot === 'DOM'),
+        eligibleIds: new Set(eligibleCats.map(c => c.id)),
+      };
+    });
+
+    const totalEl = document.getElementById('inscLogisticaTotalEl');
+    if (totalEl) totalEl.textContent = `${_inscLogisticaData.length} miembros activos`;
+
+    // Build tabs: all categories that at least 1 member qualifies for
+    const tabsEl = document.getElementById('inscLogisticaTabs');
+    tabsEl.innerHTML = `<button id="inscLogisticaTab_all"
+      onclick="renderInscLogistica(null)"
+      style="padding:7px 16px;border-radius:20px;border:1px solid var(--accent);
+             background:var(--accent);color:#1a1f2e;font-family:'Inter',sans-serif;
+             font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Todos
+    </button>` + INSC_CATEGORIES.filter(c =>
+        _inscLogisticaData.some(r => r.eligibleIds.has(c.id))
+      ).map(c => `
+      <button id="inscLogisticaTab_${c.id}"
+        onclick="renderInscLogistica('${c.id}')"
+        style="padding:7px 16px;border-radius:20px;border:1px solid var(--border);
+               background:transparent;color:var(--muted);font-family:'Inter',sans-serif;
+               font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">
+        ${c.name}
+      </button>`).join('');
+
+    renderInscLogistica(null);
+  } catch(e) {
+    document.getElementById('inscLogisticaContent').innerHTML =
+      `<div style="color:#ef4444;padding:20px;">Error: ${e.message}</div>`;
+  }
+}
+
+function renderInscLogistica(filterCatId) {
+  _inscLogisticaActiveCat = filterCatId;
+
+  const allBtn = document.getElementById('inscLogisticaTab_all');
+  if (allBtn) {
+    allBtn.style.background  = filterCatId === null ? 'var(--accent)' : 'transparent';
+    allBtn.style.color       = filterCatId === null ? '#1a1f2e' : 'var(--muted)';
+    allBtn.style.borderColor = filterCatId === null ? 'var(--accent)' : 'var(--border)';
+    allBtn.style.fontWeight  = filterCatId === null ? '700' : '600';
+  }
+  INSC_CATEGORIES.forEach(c => {
+    const btn = document.getElementById(`inscLogisticaTab_${c.id}`);
+    if (!btn) return;
+    const active = c.id === filterCatId;
+    btn.style.background  = active ? 'var(--accent)' : 'transparent';
+    btn.style.color       = active ? '#1a1f2e' : 'var(--muted)';
+    btn.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
+    btn.style.fontWeight  = active ? '700' : '600';
+  });
+
+  const contentEl = document.getElementById('inscLogisticaContent');
+  let rows = _inscLogisticaData;
+  if (filterCatId) rows = rows.filter(r => r.eligibleIds.has(filterCatId));
+  // Sort by rating desc (nulls last)
+  rows = [...rows].sort((a, b) => {
+    if (a.rating === null && b.rating === null) return 0;
+    if (a.rating === null) return 1;
+    if (b.rating === null) return -1;
+    return b.rating - a.rating;
+  });
+
+  if (!rows.length) {
+    contentEl.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);">No hay miembros para este filtro.</div>';
+    return;
+  }
+
+  const filterCat = filterCatId ? INSC_CATEGORIES.find(c => c.id === filterCatId) : null;
+  let html = filterCat
+    ? `<div style="margin-bottom:14px;font-size:13px;color:var(--muted);">
+        Elegibles para <strong style="color:var(--text);">${filterCat.name}</strong>
+        — ${INSC_SLOT_LABELS[filterCat.slot] || filterCat.slot} · ${rows.length} miembro${rows.length !== 1 ? 's' : ''}
+       </div>`
+    : `<div style="margin-bottom:14px;font-size:13px;color:var(--muted);">Todos los miembros activos · ${rows.length} jugador${rows.length !== 1 ? 'es' : ''}</div>`;
+
+  const catPill = (c, slot) => {
+    const bg    = slot === 'SAB' ? 'rgba(56,189,248,0.12)'   : 'rgba(167,139,250,0.12)';
+    const color = slot === 'SAB' ? 'var(--accent)'            : '#a78bfa';
+    const bdr   = slot === 'SAB' ? 'rgba(56,189,248,0.3)'    : 'rgba(167,139,250,0.3)';
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;margin:2px;background:${bg};color:${color};border:1px solid ${bdr};">${c.name}</span>`;
+  };
+
+  html += `<div style="overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead>
+      <tr style="border-bottom:1px solid var(--border);">
+        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">#</th>
+        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">Jugador</th>
+        <th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Rating</th>
+        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Elegibles Sábado</th>
+        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Elegibles Domingo</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  rows.forEach((r, i) => {
+    const sabPills = r.eligibleSab.map(c => catPill(c, 'SAB')).join('') || '<span style="color:var(--muted);font-size:11px;">—</span>';
+    const domPills = r.eligibleDom.map(c => catPill(c, 'DOM')).join('') || '<span style="color:var(--muted);font-size:11px;">—</span>';
+    html += `
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"
+          onmouseover="this.style.background='rgba(56,189,248,0.04)'"
+          onmouseout="this.style.background='transparent'">
+        <td style="padding:10px 10px;color:var(--muted);font-weight:600;">${i + 1}</td>
+        <td style="padding:10px 10px;">
+          <div style="font-weight:600;color:var(--text);">${r.nombre}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:1px;">${r.fptmId}</div>
+        </td>
+        <td style="padding:10px 10px;text-align:right;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap;">
+          ${r.rating !== null ? r.rating : '<span style="color:var(--muted);font-weight:400;">—</span>'}
+        </td>
+        <td style="padding:10px 10px;">${sabPills}</td>
+        <td style="padding:10px 10px;">${domPills}</td>
+      </tr>`;
+  });
+
+  html += '</tbody></table></div>';
+  contentEl.innerHTML = html;
+}
+
+function exportInscLogisticaCSV() {
+  let rows = _inscLogisticaData;
+  if (_inscLogisticaActiveCat) rows = rows.filter(r => r.eligibleIds.has(_inscLogisticaActiveCat));
+  rows = [...rows].sort((a, b) => {
+    if (a.rating === null) return 1;
+    if (b.rating === null) return -1;
+    return b.rating - a.rating;
+  });
+  if (!rows.length) { alert('No hay datos para exportar.'); return; }
+
+  const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const headers = ['Nombre','FPTM-ID','Rating','Fecha Nac.','Sexo','Elegibles SAB','Elegibles DOM'];
+  const lines = [headers.map(esc).join(',')];
+  rows.forEach(r => {
+    lines.push([
+      r.nombre,
+      r.fptmId,
+      r.rating ?? '',
+      r.dob ?? '',
+      r.sex ?? '',
+      r.eligibleSab.map(c => c.name).join(' | '),
+      r.eligibleDom.map(c => c.name).join(' | '),
+    ].map(esc).join(','));
+  });
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const suffix = _inscLogisticaActiveCat
+    ? INSC_CATEGORIES.find(c => c.id === _inscLogisticaActiveCat)?.name.replace(/\s+/g,'_') || _inscLogisticaActiveCat
+    : 'todos';
+  a.download = `logistica_ceiba2026_${suffix}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function closeInscLogisticaModal() {
+  document.getElementById('inscLogisticaModal').style.display = 'none';
+  _inscLogisticaData = [];
 }
 
 async function showInscAdminModal() {
