@@ -3211,11 +3211,25 @@ Maria Lopez,Ana Torres,B</code>
           <span id="inscSuccessTotal" style="font-family:'Orbitron',monospace;font-size:22px;font-weight:700;color:var(--accent);">$0.00</span>
         </div>
 
-        <a id="inscAthMovilBtn" href="https://pagos.athmovilapp.com/pagoPorCodigo.html?id=686cd0cb-1395-4ebb-96b1-96719cd6f5e9" target="_blank" rel="noopener"
-          style="display:flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;text-decoration:none;padding:16px;border-radius:12px;font-weight:700;font-size:16px;margin-bottom:14px;transition:opacity 0.15s;box-shadow:0 4px 16px rgba(37,211,102,0.25);"
+        <button id="inscAthMovilBtn" onclick="inscAbrirPago()"
+          style="display:flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;border:none;width:100%;padding:16px;border-radius:12px;font-weight:700;font-size:16px;margin-bottom:14px;cursor:pointer;transition:opacity 0.15s;box-shadow:0 4px 16px rgba(37,211,102,0.25);"
           onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
           💚 Pagar <span id="inscSuccessTotalBtn" style="margin-left:4px;">$0.00</span> con ATH Móvil
-        </a>
+        </button>
+
+        <!-- Shown after clicking ATH Móvil -->
+        <div id="inscAthPagoReminder" style="display:none;background:rgba(37,211,102,0.08);border:1px solid rgba(37,211,102,0.35);border-radius:12px;padding:18px 16px;margin-bottom:14px;text-align:center;">
+          <div style="font-size:26px;margin-bottom:8px;">📸</div>
+          <div style="font-size:15px;font-weight:700;color:#4ade80;margin-bottom:6px;">¿Ya pagaste?</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px;">
+            Recuerda enviar la <strong style="color:var(--text);">captura de pantalla del recibo</strong><br>junto con tu nombre completo a:
+          </div>
+          <a href="https://wa.me/19392104299" target="_blank" rel="noopener"
+            style="display:inline-flex;align-items:center;gap:8px;background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.4);border-radius:10px;padding:10px 20px;text-decoration:none;color:#4ade80;font-size:16px;font-weight:700;">
+            📲 WhatsApp · 939-210-4299
+          </a>
+          <div style="margin-top:10px;font-size:11px;color:var(--muted);">Tu inscripción se confirmará una vez recibamos el pago.</div>
+        </div>
 
         <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--muted);line-height:1.6;">
           Después de pagar, envía la <strong style="color:var(--text);">captura del recibo</strong> junto con tu nombre a:<br>
@@ -8538,6 +8552,15 @@ function inscResetForm() {
   if (club) club.value = '';
   const msg = document.getElementById('inscFormMsg');
   if (msg) msg.textContent = '';
+  const reminder = document.getElementById('inscAthPagoReminder');
+  if (reminder) reminder.style.display = 'none';
+  const athBtn = document.getElementById('inscAthMovilBtn');
+  if (athBtn) {
+    athBtn.innerHTML = '💚 Pagar <span id="inscSuccessTotalBtn" style="margin-left:4px;">$0.00</span> con ATH Móvil';
+    athBtn.style.background = '#25D366';
+    athBtn.style.cursor = 'pointer';
+    athBtn.onclick = inscAbrirPago;
+  }
   inscRenderCategories();
   inscUpdateTotals();
 }
@@ -8558,6 +8581,20 @@ function inscIniciarOtro() {
   if (sp) sp.style.display = 'none';
   if (fp) fp.style.display = '';
   inscResetForm();
+}
+
+function inscAbrirPago() {
+  window.open('https://pagos.athmovilapp.com/pagoPorCodigo.html?id=686cd0cb-1395-4ebb-96b1-96719cd6f5e9', '_blank', 'noopener');
+  const reminder = document.getElementById('inscAthPagoReminder');
+  if (reminder) reminder.style.display = '';
+  const btn = document.getElementById('inscAthMovilBtn');
+  if (btn) {
+    btn.textContent = '✓ ATH Móvil abierto — paga y envía el recibo';
+    btn.style.background = '#16a34a';
+    btn.style.opacity = '1';
+    btn.style.cursor = 'default';
+    btn.onclick = null;
+  }
 }
 
 
