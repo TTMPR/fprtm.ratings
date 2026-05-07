@@ -3132,7 +3132,8 @@ Maria Lopez,Ana Torres,B</code>
         <div style="display:flex;flex-direction:column;gap:12px;">
           <div>
             <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:5px;">Fecha de Nacimiento *</label>
-            <input type="date" id="inscDobInput" max="2026-12-31" oninput="inscFormChanged()"
+            <input type="text" id="inscDobInput" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric"
+              oninput="inscDobAutoFormat(this);inscFormChanged()"
               style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;"
               onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
           </div>
@@ -7545,7 +7546,7 @@ function normSexForForm(raw) {
   if (['F','FEMALE','FEMENINO'].includes(v)) return 'F';
   return '';
 }
-// Normalize DOB from DB to YYYY-MM-DD for <input type="date">
+// Normalize DOB from DB to YYYY-MM-DD
 function normDobForInput(raw) {
   if (!raw) return null;
   const s = String(raw).trim();
@@ -7553,6 +7554,28 @@ function normDobForInput(raw) {
   const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);     // MM/DD/YYYY
   if (m) return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
   return null;
+}
+// Parse DD/MM/AAAA text input → YYYY-MM-DD (or null if incomplete)
+function parseDobText(str) {
+  if (!str) return null;
+  const s = str.trim();
+  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  return null;
+}
+// Auto-format DOB text input as user types: inserts slashes at positions 2 and 5
+function inscDobAutoFormat(el) {
+  const pos = el.selectionStart;
+  const prev = el.value;
+  let digits = prev.replace(/\D/g, '').slice(0, 8);
+  let formatted = digits;
+  if (digits.length > 4) formatted = digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4);
+  else if (digits.length > 2) formatted = digits.slice(0,2) + '/' + digits.slice(2);
+  el.value = formatted;
+  // keep cursor after typed character
+  const diff = formatted.length - prev.length;
+  el.setSelectionRange(pos + diff, pos + diff);
 }
 // Update the small note lines under DOB and Sex fields
 
@@ -8194,7 +8217,14 @@ function inscSelectPlayer(id) {
     inscState.dob = dob;
     inscState._dobFromDb = !!dob;
     const dobIn = document.getElementById('inscDobInput');
-    if (dobIn) { dobIn.value = dob || ''; }
+    if (dobIn) {
+      if (dob) {
+        const [y, mo, d] = dob.split('-');
+        dobIn.value = `${d}/${mo}/${y}`;
+      } else {
+        dobIn.value = '';
+      }
+    }
     inscFormChanged();
   });
 
@@ -8589,7 +8619,7 @@ function inscResetForm() {
   inscUpdateTotals();
 }
 function inscFormChanged() {
-  const dob = document.getElementById('inscDobInput')?.value || null;
+  const dob = parseDobText(document.getElementById('inscDobInput')?.value || '');
   const sex = document.getElementById('inscSexInput')?.value || '';
   inscState.dob = dob;
   inscState.sex = sex;
@@ -8642,9 +8672,10 @@ async function inscSometerInscripcion() {
   }
 
   // Validate DOB
-  const dobVal = (document.getElementById('inscDobInput')?.value || '').trim();
+  const dobRaw = (document.getElementById('inscDobInput')?.value || '').trim();
+  const dobVal = parseDobText(dobRaw);
   if (!dobVal) {
-    if (msg) msg.textContent = 'Ingresa tu fecha de nacimiento para continuar.';
+    if (msg) msg.textContent = dobRaw ? 'Fecha inválida. Usa el formato DD/MM/AAAA (ej: 16/05/2001).' : 'Ingresa tu fecha de nacimiento para continuar.';
     const el = document.getElementById('inscDobInput');
     if (el) { el.style.borderColor = '#ef4444'; el.focus(); }
     return;
