@@ -1649,14 +1649,37 @@
     <p>Top 10 por categoría · Temporada activa</p>
   </div>
 
-  <div style="display:flex;align-items:center;gap:8px;max-width:1100px;margin:0 auto;padding:0 24px 4px">
-    <div class="rank-pills-wrap" id="rankCatPills" style="flex:1;padding:0 0 4px;margin:0"></div>
-    <button onclick="_rankingsData=null;openRankings()" title="Refrescar datos" style="flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:99px;padding:7px 14px;color:var(--muted);font-size:13px;cursor:pointer;white-space:nowrap">↻ Refrescar</button>
+  <div style="display:none">
+    <div class="rank-pills-wrap" id="rankCatPills"></div>
+    <button onclick="_rankingsData=null;openRankings()">↻ Refrescar</button>
   </div>
 
   <div class="rankings-content-wrap">
     <div id="rankingsContent">
-      <!-- Filled by JS -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:55vh;text-align:center;padding:40px 24px;gap:20px;">
+        <!-- Animated icon -->
+        <div style="font-size:64px;animation:rankSpin 4s linear infinite;display:inline-block;">🏓</div>
+        <!-- Title -->
+        <div style="font-family:'Orbitron',monospace;font-size:clamp(22px,6vw,38px);font-weight:900;letter-spacing:2px;background:linear-gradient(135deg,var(--accent),var(--purple,#818cf8));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;">
+          PRÓXIMAMENTE
+        </div>
+        <!-- Subtitle -->
+        <div style="font-size:15px;color:var(--muted);max-width:360px;line-height:1.7;">
+          Estamos afinando el sistema de rankings para darte los datos más precisos.<br>
+          <span style="color:var(--text);font-weight:600;">Vuelve pronto.</span>
+        </div>
+        <!-- Decorative divider -->
+        <div style="width:60px;height:3px;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--purple,#818cf8));margin:4px 0;"></div>
+        <!-- Tag -->
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.2);border-radius:99px;padding:8px 18px;font-size:12px;font-weight:600;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;animation:rankPulse 1.4s ease-in-out infinite;"></span>
+          En construcción
+        </div>
+      </div>
+      <style>
+        @keyframes rankSpin { 0%{transform:rotate(0deg) scale(1)} 25%{transform:rotate(-15deg) scale(1.1)} 75%{transform:rotate(15deg) scale(1.1)} 100%{transform:rotate(0deg) scale(1)} }
+        @keyframes rankPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
+      </style>
     </div>
   </div>
 </div>
