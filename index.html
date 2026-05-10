@@ -3703,11 +3703,11 @@ Maria Lopez,Ana Torres,B</code>
             <li>7 años o menos Abierto – 11:00 a.m. | menores de 8 años al 31 de dic 2026</li>
             <li>9 años o menos Masculino – 11:00 a.m. | menores de 10 años al 31 de dic 2026</li>
             <li>9 años o menos Femenino – 11:00 a.m. | menores de 10 años al 31 de dic 2026</li>
-            <li>Sub-21 Abierto – 11:00 a.m. | menores de 22 años al 31 de dic 2026</li>
+            <li>Sub-21 Abierto – 3:00 p.m. | menores de 22 años al 31 de dic 2026</li>
             <li>1750 puntos o menos – 12:30 p.m.</li>
           </ol>
           <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#f59e0b;margin-top:12px;">
-            ⚠ Categorías de Rating: máx. 30 jugadores por evento · Solo 1 categoría por día · Solo 1 categoría de Rating por torneo (1600, 1900 y 1750 son excluyentes entre sí).
+            ⚠ Categorías de Rating: máx. 30 jugadores por evento · Solo 1 categoría de Rating por torneo (1600, 1900 y 1750 son excluyentes entre sí) · El domingo, Sub-21 puede combinarse con una categoría de Rating o de edad del mismo día. El sábado: solo 1 categoría.
           </div>
         </div>
       </div>
@@ -7665,7 +7665,7 @@ const INSC_CATEGORIES = [
   { id: 'ev10', name: '7 años o Menos Abierto',    desc: '11:00 a.m. · nacido en 2019 o después',   price: 20, slot: 'DOM', maxAge: 7 },
   { id: 'ev11', name: '9 años o Menos Masculino',  desc: '11:00 a.m. · nacido en 2017 o después',   price: 20, slot: 'DOM', maxAge: 9, sex: 'M' },
   { id: 'ev12', name: '9 años o Menos Femenino',   desc: '11:00 a.m. · nacido en 2017 o después',   price: 20, slot: 'DOM', maxAge: 9, sex: 'F' },
-  { id: 'ev15', name: 'Sub-21 Abierto',             desc: '11:00 a.m. · nacido en 2005 o después',   price: 20, slot: 'DOM', maxAge: 21 },
+  { id: 'ev15', name: 'Sub-21 Abierto',             desc: '3:00 p.m. · nacido en 2005 o después · combinable con otra categoría del domingo',   price: 20, slot: 'DOM', maxAge: 21, sub21: true },
   { id: 'ev14', name: '1750 o Menos',              desc: '12:30 p.m. · máx. 30 jugadores',          price: 20, slot: 'DOM', maxRating: 1750, maxPlayers: 30, ratingGroup: 'rating' },
 ];
 const INSC_SLOT_LABELS = {
@@ -8631,14 +8631,41 @@ function inscToggleCat(id) {
     inscState.selectedCats.delete(id);
   } else {
     // Check same-day conflict (slot)
-    const conflictId = [...inscState.selectedCats].find(selId => {
+    const SUB21_ID = 'ev15';
+    const domSelected = [...inscState.selectedCats].filter(selId => {
       const s = INSC_CATEGORIES.find(c => c.id === selId);
-      return s && s.slot === cat.slot;
+      return s && s.slot === 'DOM';
     });
-    if (conflictId) {
-      const conflictCat = INSC_CATEGORIES.find(c => c.id === conflictId);
-      if (!confirm(`Solo puedes inscribirte en 1 categoría por día (${INSC_SLOT_LABELS[cat.slot]}). ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
-      inscState.selectedCats.delete(conflictId);
+
+    if (cat.slot === 'SAB') {
+      // Saturday: strict 1 per day
+      const conflictId = [...inscState.selectedCats].find(selId => {
+        const s = INSC_CATEGORIES.find(c => c.id === selId);
+        return s && s.slot === 'SAB';
+      });
+      if (conflictId) {
+        const conflictCat = INSC_CATEGORIES.find(c => c.id === conflictId);
+        if (!confirm(`Solo puedes inscribirte en 1 categoría el sábado. ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
+        inscState.selectedCats.delete(conflictId);
+      }
+    } else if (cat.slot === 'DOM') {
+      // Sunday: Sub-21 may combine with ONE other DOM category; all other pairs are exclusive
+      if (domSelected.length >= 2) {
+        // Already at the limit — replace the non-Sub-21 slot (or first if both non-Sub-21)
+        const toReplaceId = domSelected.find(sid => sid !== SUB21_ID) || domSelected[0];
+        const conflictCat = INSC_CATEGORIES.find(c => c.id === toReplaceId);
+        if (!confirm(`Ya tienes 2 categorías del domingo. ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
+        inscState.selectedCats.delete(toReplaceId);
+      } else if (domSelected.length === 1) {
+        const existingId = domSelected[0];
+        const comboAllowed = id === SUB21_ID || existingId === SUB21_ID;
+        if (!comboAllowed) {
+          const conflictCat = INSC_CATEGORIES.find(c => c.id === existingId);
+          if (!confirm(`Solo puedes combinar otra categoría del domingo con Sub-21. ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
+          inscState.selectedCats.delete(existingId);
+        }
+        // else: valid Sub-21 combo — allow without replacing
+      }
     }
     // Check rating-group conflict (cross-day: 1900 vs 1750 vs 1600)
     if (cat.ratingGroup) {
