@@ -4737,6 +4737,11 @@ async function openRankings() {
         <span style="width:7px;height:7px;border-radius:50%;background:#38bdf8;display:inline-block;animation:rkPulse 1.4s ease-in-out infinite;"></span>
         En construcción
       </div>
+      <button onclick="document.getElementById('qaModal').style.display='flex'"
+        style="margin-top:4px;display:inline-flex;align-items:center;gap:8px;background:rgba(129,140,248,0.1);border:1px solid rgba(129,140,248,0.3);border-radius:12px;padding:12px 22px;color:#a5b4fc;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.15s;"
+        onmouseover="this.style.background='rgba(129,140,248,0.18)'" onmouseout="this.style.background='rgba(129,140,248,0.1)'">
+        Preguntas Frecuentes
+      </button>
     </div>
     <style>
       @keyframes rkPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
@@ -10589,6 +10594,126 @@ async function submitPublicReg() {
     style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;background:#25D366;color:#fff;text-decoration:none;padding:9px 16px;border-radius:9px;font-size:13px;font-weight:700;">
     Unirme al canal de WhatsApp →
   </a>
+</div>
+
+<!-- ══════════════════════════════════════════
+     Q&A MODAL
+═══════════════════════════════════════════ -->
+<div id="qaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2000;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;">
+  <div style="width:100%;max-width:660px;margin:0 auto;background:var(--dark2,#111118);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:32px;position:relative;">
+
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:700;letter-spacing:1px;">Preguntas Frecuentes</div>
+        <div style="color:var(--muted,#888899);font-size:13px;margin-top:4px;">Federación Puertorriqueña de Tenis de Mesa</div>
+      </div>
+      <button onclick="document.getElementById('qaModal').style.display='none'"
+        style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 13px;color:var(--muted,#888899);font-size:14px;cursor:pointer;flex-shrink:0;margin-left:12px;">✕</button>
+    </div>
+
+    <!-- I. Membresía -->
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#818cf8;margin-bottom:14px;">I. Membresía y Beneficios</div>
+
+    <details style="margin-bottom:10px;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
+      <summary style="padding:14px 16px;cursor:pointer;font-size:14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+        ¿Cuánto dura la membresía y qué beneficios ofrece?
+        <span style="font-size:11px;color:var(--muted,#888899);flex-shrink:0;margin-left:8px;">▼</span>
+      </summary>
+      <div style="padding:0 16px 16px;font-size:13px;color:var(--muted,#888899);line-height:1.75;border-top:1px solid rgba(255,255,255,0.06);">
+        <p style="margin:12px 0 8px;">La membresía es válida por <strong style="color:var(--text,#e8e8f0);">12 meses (365 días)</strong> a partir de la fecha en que se emite el pago.</p>
+        <p style="margin-bottom:6px;color:var(--text,#e8e8f0);font-weight:600;">Beneficios de ser Miembro:</p>
+        <ul style="padding-left:18px;display:flex;flex-direction:column;gap:5px;">
+          <li>Acceso a todos los torneos federados.</li>
+          <li>Elegibilidad para jugar eliminatorias de Equipos Nacionales (ciertas restricciones aplican).</li>
+          <li>Participación en los Juegos Nacionales (ciertas restricciones aplican).</li>
+        </ul>
+      </div>
+    </details>
+
+    <details style="margin-bottom:10px;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
+      <summary style="padding:14px 16px;cursor:pointer;font-size:14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+        ¿Puedo jugar sin ser miembro?
+        <span style="font-size:11px;color:var(--muted,#888899);flex-shrink:0;margin-left:8px;">▼</span>
+      </summary>
+      <div style="padding:0 16px 16px;font-size:13px;color:var(--muted,#888899);line-height:1.75;border-top:1px solid rgba(255,255,255,0.06);">
+        <p style="margin-top:12px;">Sí. Los jugadores no miembros pueden participar en los torneos federados, pero deberán pagar un cargo de <strong style="color:var(--text,#e8e8f0);">$10.00 adicional</strong> por cada torneo. Además, los no miembros no podrán participar en eliminatorias ni en los Juegos Nacionales.</p>
+      </div>
+    </details>
+
+    <details style="margin-bottom:24px;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
+      <summary style="padding:14px 16px;cursor:pointer;font-size:14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+        ¿Cómo me registro o renuevo?
+        <span style="font-size:11px;color:var(--muted,#888899);flex-shrink:0;margin-left:8px;">▼</span>
+      </summary>
+      <div style="padding:0 16px 16px;font-size:13px;color:var(--muted,#888899);line-height:1.75;border-top:1px solid rgba(255,255,255,0.06);">
+        <p style="margin-top:12px;">Todo se maneja a través de la plataforma: <strong style="color:#38bdf8;">ratings.ttmpr.xyz</strong></p>
+        <ul style="padding-left:18px;margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+          <li><strong style="color:var(--text,#e8e8f0);">Nuevos jugadores:</strong> Si deseas jugar por primera vez sin ser miembro, debes solicitar un enlace único al administrador para la creación de tu perfil.</li>
+          <li><strong style="color:var(--text,#e8e8f0);">Nota para entrenadores:</strong> Se sugiere que sean los entrenadores quienes gestionen la membresía o soliciten el enlace para nuevos jugadores. Esto garantiza que se les asigne el rating inicial correcto que refleje su verdadero nivel de juego.</li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- II. Rankings vs Ratings -->
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#818cf8;margin-bottom:14px;">II. Rankings vs. Ratings</div>
+
+    <details style="margin-bottom:24px;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
+      <summary style="padding:14px 16px;cursor:pointer;font-size:14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+        ¿Cuál es la diferencia entre Ranking y Rating?
+        <span style="font-size:11px;color:var(--muted,#888899);flex-shrink:0;margin-left:8px;">▼</span>
+      </summary>
+      <div style="padding:0 16px 16px;font-size:13px;color:var(--muted,#888899);line-height:1.75;border-top:1px solid rgba(255,255,255,0.06);">
+        <p style="margin-top:12px;"><strong style="color:var(--text,#e8e8f0);">El Ranking</strong> representa tu posición numérica en una lista (p. ej. ser el #1 en la categoría U-13 masculino). Actualmente en Puerto Rico el ranking identifica quién lidera cada categoría, aunque no contamos con un sistema de premiación por posición al momento.</p>
+        <p style="margin-top:10px;"><strong style="color:var(--text,#e8e8f0);">El Rating</strong> mide tu nivel de habilidad técnica. Es un puntaje dinámico que sube o baja según tus resultados competitivos.</p>
+        <ul style="padding-left:18px;margin-top:8px;display:flex;flex-direction:column;gap:5px;">
+          <li><strong style="color:var(--text,#e8e8f0);">Principiantes:</strong> Comienzan con 1,450 puntos.</li>
+          <li><strong style="color:var(--text,#e8e8f0);">Con experiencia:</strong> Se les asignará un rating inicial más alto acorde a su nivel.</li>
+          <li><strong style="color:var(--text,#e8e8f0);">Nivel élite en PR:</strong> 2,100+ puntos.</li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- III. Categorías -->
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#818cf8;margin-bottom:14px;">III. Categorías por Rating</div>
+
+    <details style="margin-bottom:24px;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
+      <summary style="padding:14px 16px;cursor:pointer;font-size:14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+        ¿Cómo funcionan las categorías en los torneos?
+        <span style="font-size:11px;color:var(--muted,#888899);flex-shrink:0;margin-left:8px;">▼</span>
+      </summary>
+      <div style="padding:0 16px 16px;font-size:13px;color:var(--muted,#888899);line-height:1.75;border-top:1px solid rgba(255,255,255,0.06);">
+        <p style="margin-top:12px;">Ya no utilizamos categorías fijas como "Clase B" o "Clase C". Las categorías se definen por <strong style="color:var(--text,#e8e8f0);">límites de nivel de juego</strong> y pueden variar entre torneos según:</p>
+        <ul style="padding-left:18px;margin-top:8px;display:flex;flex-direction:column;gap:5px;">
+          <li>El lugar del evento y la disponibilidad de mesas.</li>
+          <li>Decisiones del Director Técnico y la Federación según la logística del torneo.</li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- IV. Plataformas -->
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#818cf8;margin-bottom:14px;">IV. Plataformas</div>
+
+    <details style="margin-bottom:24px;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;">
+      <summary style="padding:14px 16px;cursor:pointer;font-size:14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+        ¿Por qué usamos dos plataformas y para qué sirve cada una?
+        <span style="font-size:11px;color:var(--muted,#888899);flex-shrink:0;margin-left:8px;">▼</span>
+      </summary>
+      <div style="padding:0 16px 16px;font-size:13px;color:var(--muted,#888899);line-height:1.75;border-top:1px solid rgba(255,255,255,0.06);">
+        <p style="margin-top:12px;"><strong style="color:#38bdf8;">Ratings.ttmpr.xyz</strong> — Para todo el "antes y después" del evento: perfil de jugador, membresías, inscripciones e historial de rating.</p>
+        <p style="margin-top:10px;"><strong style="color:#38bdf8;">Stadium Compete</strong> — Exclusivamente durante el día del evento: grupos, brackets, mesas y resultados en tiempo real.</p>
+      </div>
+    </details>
+
+    <!-- Footer -->
+    <div style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2);border-radius:12px;padding:16px 18px;text-align:center;">
+      <div style="font-size:13px;color:var(--muted,#888899);line-height:1.7;">
+        ¿Tienes alguna pregunta que entiendes debe añadirse para el beneficio de todos?<br>
+        <a href="mailto:joel@ttmpr.xyz" style="color:#a5b4fc;font-weight:600;text-decoration:none;">joel@ttmpr.xyz</a>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 </body>
