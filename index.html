@@ -3215,7 +3215,7 @@ Maria Lopez,Ana Torres,B</code>
           <span style="font-size:11px;color:var(--muted);flex-shrink:0;">ahora</span>
         </div>
         <div style="font-size:13px;color:var(--muted);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
-          <span style="color:var(--text);font-weight:600;">Nuevo:</span> Sub-21 Abierto pasa al domingo a las 3:00 p.m. y puede combinarse con 1900 o 1750.
+          <span style="color:var(--text);font-weight:600;">Nuevo:</span> Puedes jugar múltiples categorías de Rating (1600, 1750, 1900). Sub-21 es el domingo 3:00 p.m. y combina con 1 Rating.
         </div>
       </div>
     </div>
@@ -3873,7 +3873,7 @@ Maria Lopez,Ana Torres,B</code>
             <li>1750 puntos o menos – 12:30 p.m.</li>
           </ol>
           <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#f59e0b;margin-top:12px;">
-            ⚠ Categorías de Rating: máx. 30 jugadores por evento · Solo 1 categoría de Rating por torneo (1600, 1900 y 1750 son excluyentes entre sí) · El domingo, Sub-21 puede combinarse con una categoría de Rating o de edad del mismo día. El sábado: solo 1 categoría.
+            ⚠ Categorías de Rating: máx. 30 jugadores por evento · Puedes inscribirte en múltiples categorías de Rating (1600, 1750, 1900) siempre que haya espacio · El sábado: solo 1 categoría por día · Si juegas Sub-21, solo puedes combinarla con 1 categoría de Rating adicional.
           </div>
         </div>
       </div>
@@ -7906,7 +7906,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Ceiba Open 2026 — Sáb 16 & Dom 17 de mayo
 // Rule: max 1 category per day · max 1 rating category per tournament
 // All SAB events share slot 'SAB'; all DOM events share slot 'DOM' (enforces 1-per-day)
-// ratingGroup: 'rating' enforces cross-day rating conflict (1900 vs 1750 vs 1600)
+// ratingGroup: used to identify rating categories for Sub-21 combo rule
 const INSC_CATEGORIES = [
   // ── Sábado 16 de mayo ──
   { id: 'ev1',  name: '1600 o Menos',              desc: '9:00 a.m. · máx. 30 jugadores',           price: 20, slot: 'SAB', maxRating: 1600, maxPlayers: 30, ratingGroup: 'rating' },
@@ -8889,13 +8889,9 @@ function inscToggleCat(id) {
   } else {
     // Check same-day conflict (slot)
     const SUB21_ID = 'ev15';
-    const domSelected = [...inscState.selectedCats].filter(selId => {
-      const s = INSC_CATEGORIES.find(c => c.id === selId);
-      return s && s.slot === 'DOM';
-    });
 
     if (cat.slot === 'SAB') {
-      // Saturday: strict 1 per day
+      // Saturday: strict 1 per day — unchanged
       const conflictId = [...inscState.selectedCats].find(selId => {
         const s = INSC_CATEGORIES.find(c => c.id === selId);
         return s && s.slot === 'SAB';
@@ -8906,36 +8902,47 @@ function inscToggleCat(id) {
         inscState.selectedCats.delete(conflictId);
       }
     } else if (cat.slot === 'DOM') {
-      // Sunday: Sub-21 may combine with ONE other DOM category; all other pairs are exclusive
-      if (domSelected.length >= 2) {
-        // Already at the limit — replace the non-Sub-21 slot (or first if both non-Sub-21)
-        const toReplaceId = domSelected.find(sid => sid !== SUB21_ID) || domSelected[0];
-        const conflictCat = INSC_CATEGORIES.find(c => c.id === toReplaceId);
-        if (!confirm(`Ya tienes 2 categorías del domingo. ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
-        inscState.selectedCats.delete(toReplaceId);
-      } else if (domSelected.length === 1) {
-        const existingId = domSelected[0];
-        const comboAllowed = id === SUB21_ID || existingId === SUB21_ID;
-        if (!comboAllowed) {
-          const conflictCat = INSC_CATEGORIES.find(c => c.id === existingId);
-          if (!confirm(`Solo puedes combinar otra categoría del domingo con Sub-21. ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
-          inscState.selectedCats.delete(existingId);
-        }
-        // else: valid Sub-21 combo — allow without replacing
-      }
-    }
-    // Check rating-group conflict (cross-day: 1900 vs 1750 vs 1600)
-    if (cat.ratingGroup) {
-      const ratingConflictId = [...inscState.selectedCats].find(selId => {
+      const hasSub21 = inscState.selectedCats.has(SUB21_ID);
+
+      // Rating categories already selected on Sunday (excludes Sub-21)
+      const domRatingSelected = [...inscState.selectedCats].filter(selId => {
         const s = INSC_CATEGORIES.find(c => c.id === selId);
-        return s && s.ratingGroup === cat.ratingGroup;
+        return s && s.slot === 'DOM' && s.ratingGroup;
       });
-      if (ratingConflictId) {
-        const rc = INSC_CATEGORIES.find(c => c.id === ratingConflictId);
-        if (!confirm(`Solo puedes inscribirte en 1 categoría de Rating por torneo. ¿Reemplazar "${rc.name}" con "${cat.name}"?`)) return;
-        inscState.selectedCats.delete(ratingConflictId);
+
+      if (id === SUB21_ID) {
+        // Adding Sub-21: allowed only if ≤1 rating category is already selected
+        if (domRatingSelected.length >= 2) {
+          alert('Para inscribirte en Sub-21 debes tener máximo 1 categoría de Rating el domingo. Retira una categoría de Rating primero.');
+          return;
+        }
+        // 0 or 1 rating already → OK, no replacement needed
+      } else if (cat.ratingGroup) {
+        // Adding a rating category on Sunday (1750 / 1900): max 1 per day
+        // Cross-day combos (1600 SAB + 1750 or 1900 DOM) are handled separately and remain allowed
+        if (domRatingSelected.length >= 1) {
+          const existing = INSC_CATEGORIES.find(c => c.id === domRatingSelected[0]);
+          const msg = hasSub21
+            ? `Estás inscrito en Sub-21: solo puedes combinar con 1 categoría de Rating. ¿Reemplazar "${existing.name}" con "${cat.name}"?`
+            : `Solo puedes inscribirte en 1 categoría de Rating por día (Domingo). ¿Reemplazar "${existing.name}" con "${cat.name}"?`;
+          if (!confirm(msg)) return;
+          inscState.selectedCats.delete(domRatingSelected[0]);
+        }
+      } else {
+        // Adding a non-rating, non-Sub-21 DOM category (7y, 9y, etc.)
+        // Age categories remain 1 per day
+        const domAgeSelected = [...inscState.selectedCats].filter(selId => {
+          const s = INSC_CATEGORIES.find(c => c.id === selId);
+          return s && s.slot === 'DOM' && !s.ratingGroup && selId !== SUB21_ID;
+        });
+        if (domAgeSelected.length >= 1) {
+          const conflictCat = INSC_CATEGORIES.find(c => c.id === domAgeSelected[0]);
+          if (!confirm(`Solo puedes inscribirte en 1 categoría de edad por día (Domingo). ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
+          inscState.selectedCats.delete(domAgeSelected[0]);
+        }
       }
     }
+    // Cross-day rating restriction removed: 1600 (SAB) + 1750 (DOM) + 1900 (DOM) now allowed
     inscState.selectedCats.add(id);
   }
   inscRenderCategories();
