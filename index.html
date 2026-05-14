@@ -2497,6 +2497,11 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Reporte por Categoría</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Jugadores inscritos con rating y club</div>
       </div>
+      <div id="adminCardFinanciero" style="background:var(--card2);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:24px;cursor:pointer" onclick="showReporteFinancieroModal()">
+        <div style="font-size:32px;margin-bottom:12px">💰</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Reporte Financiero</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Ingresos por categoría, totales y gráficas</div>
+      </div>
       <div id="adminCardLogistica" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscLogisticaModal()">
         <div style="font-size:32px;margin-bottom:12px">📅</div>
         <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Logística</div>
@@ -2625,6 +2630,27 @@ Maria Lopez,Ana Torres,B</code>
       <div id="pastDetailReporteTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;"></div>
       <div id="pastDetailReporteContent" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     REPORTE FINANCIERO MODAL (admin)
+═══════════════════════════════════════════ -->
+<div id="reporteFinancieroModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1100;overflow-y:auto;padding:16px;">
+  <div style="max-width:900px;margin:0 auto;background:var(--dark2,#111118);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px;">
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;font-weight:700;letter-spacing:1px;">Reporte Financiero</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:3px;" id="rfSubtitle">Ceiba Open 2026</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="exportReporteFinanciero()" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:8px 14px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer;">⬇ CSV</button>
+        <button onclick="printReporteFinanciero()" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:8px;padding:8px 14px;color:#38bdf8;font-size:13px;font-weight:600;cursor:pointer;">🖨 Imprimir</button>
+        <button onclick="document.getElementById('reporteFinancieroModal').style.display='none'" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--muted);font-size:13px;cursor:pointer;">✕</button>
+      </div>
+    </div>
+    <div id="rfContent"><div style="text-align:center;padding:60px 0;color:var(--muted);">Cargando...</div></div>
   </div>
 </div>
 
@@ -9567,6 +9593,270 @@ let _inscAdminData = [];   // cached list for the management modal
 let _inscReporteData    = [];
 let _inscReportePlayers = {};
 let _inscReporteActiveCat = null;
+
+// ══════════════════════════════════════════
+// REPORTE FINANCIERO
+// ══════════════════════════════════════════
+let _rfData = [];
+let _rfCharts = [];
+
+async function showReporteFinancieroModal() {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('reporteFinancieroModal').style.display = 'block';
+  document.getElementById('rfContent').innerHTML =
+    '<div style="text-align:center;padding:60px 0;color:var(--muted);">Cargando datos...</div>';
+
+  // Destroy previous charts
+  _rfCharts.forEach(c => c.destroy());
+  _rfCharts = [];
+
+  try {
+    const { data: rows, error } = await _supabase
+      .from('insc_registro').select('*')
+      .eq('torneo', 'Ceiba Open 2026').order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+    _rfData = rows || [];
+    _renderReporteFinanciero();
+  } catch(e) {
+    document.getElementById('rfContent').innerHTML =
+      `<div style="color:#ef4444;padding:20px;text-align:center;">Error: ${e.message}</div>`;
+  }
+}
+
+function _renderReporteFinanciero() {
+  const rows = _rfData;
+  if (!rows.length) {
+    document.getElementById('rfContent').innerHTML =
+      '<div style="text-align:center;padding:60px 0;color:var(--muted);">No hay inscripciones aún.</div>';
+    return;
+  }
+
+  // ── Aggregate data ──────────────────────────────────────────────────────
+  let totalRecaudado = 0, totalPendiente = 0, countPagado = 0, countPendiente = 0;
+  const catMap = {}; // id → { name, price, pagado, pendiente, count }
+
+  rows.forEach(r => {
+    const total = Number(r.total) || 0;
+    const paid  = !!r.pagado;
+    if (paid) { totalRecaudado += total; countPagado++; }
+    else       { totalPendiente += total; countPendiente++; }
+
+    (Array.isArray(r.categorias) ? r.categorias : []).forEach(c => {
+      if (c.id === 'multa') return; // separate
+      if (!catMap[c.id]) catMap[c.id] = { name: c.name, price: Number(c.price)||0, pagado: 0, pendiente: 0, count: 0 };
+      catMap[c.id].count++;
+      if (paid) catMap[c.id].pagado  += Number(c.price) || 0;
+      else      catMap[c.id].pendiente += Number(c.price) || 0;
+    });
+  });
+
+  // Separate entry-fee (base) revenue
+  let basePagado = 0, basePendiente = 0;
+  rows.forEach(r => {
+    const b = Number(r.base) || 0;
+    if (b > 0) {
+      if (r.pagado) basePagado += b; else basePendiente += b;
+      if (!catMap['_entry']) catMap['_entry'] = { name: 'Entry Fee (no miembro)', price: b, pagado: 0, pendiente: 0, count: 0 };
+      catMap['_entry'].count++;
+      if (r.pagado) catMap['_entry'].pagado += b; else catMap['_entry'].pendiente += b;
+    }
+  });
+
+  const totalProyectado = totalRecaudado + totalPendiente;
+  const totalJugadores  = rows.length;
+
+  // Sort categories by INSC_CATEGORIES order, then entry fee last
+  const sortedCats = [
+    ...INSC_CATEGORIES
+      .filter(c => catMap[c.id])
+      .map(c => ({ ...catMap[c.id], id: c.id, maxPlayers: c.maxPlayers || null })),
+    ...(catMap['_entry'] ? [{ ...catMap['_entry'], id: '_entry', maxPlayers: null }] : [])
+  ];
+
+  // Chart colors per category
+  const COLORS = ['#38bdf8','#818cf8','#4ade80','#fbbf24','#fb923c','#f87171','#c084fc','#34d399','#94a3b8'];
+
+  // ── Build HTML ───────────────────────────────────────────────────────────
+  const fmt = v => '$' + Number(v).toFixed(2);
+
+  const kpis = [
+    { label: 'Jugadores Inscritos', value: totalJugadores, color: '#38bdf8', sub: `${countPagado} pagados · ${countPendiente} pendientes` },
+    { label: 'Total Recaudado', value: fmt(totalRecaudado), color: '#4ade80', sub: 'Pagos confirmados' },
+    { label: 'Total Pendiente', value: fmt(totalPendiente), color: '#fbbf24', sub: 'Aún sin pagar' },
+    { label: 'Total Proyectado', value: fmt(totalProyectado), color: '#c084fc', sub: 'Si todos pagaran' },
+  ];
+
+  const kpiHtml = kpis.map(k => `
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:18px 20px;">
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">${k.label}</div>
+      <div style="font-size:clamp(22px,5vw,30px);font-weight:800;color:${k.color};font-family:'Orbitron',monospace;line-height:1;">${k.value}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;">${k.sub}</div>
+    </div>`).join('');
+
+  const catRows = sortedCats.map((c, i) => {
+    const total = c.pagado + c.pendiente;
+    const pct   = c.maxPlayers ? Math.round(c.count / c.maxPlayers * 100) : null;
+    const bar   = pct !== null ? `<div style="height:4px;background:rgba(255,255,255,0.07);border-radius:99px;margin-top:4px;"><div style="height:4px;background:${COLORS[i%COLORS.length]};border-radius:99px;width:${pct}%;"></div></div>` : '';
+    return `<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:12px 8px;">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COLORS[i%COLORS.length]};margin-right:8px;flex-shrink:0;"></span>
+        <span style="font-size:13px;font-weight:600;color:var(--text);">${c.name}</span>
+        ${bar}
+      </td>
+      <td style="padding:12px 8px;text-align:center;font-size:13px;color:var(--muted);">${c.count}${c.maxPlayers ? ' / '+c.maxPlayers : ''}</td>
+      <td style="padding:12px 8px;text-align:right;font-size:13px;color:#4ade80;font-weight:600;">${fmt(c.pagado)}</td>
+      <td style="padding:12px 8px;text-align:right;font-size:13px;color:#fbbf24;">${fmt(c.pendiente)}</td>
+      <td style="padding:12px 8px;text-align:right;font-size:14px;font-weight:700;color:var(--text);font-family:'Orbitron',monospace;">${fmt(total)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('rfContent').innerHTML = `
+    <!-- KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:28px;">
+      ${kpiHtml}
+    </div>
+
+    <!-- Charts row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;" class="rf-charts-row">
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px;">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px;">Ingresos por categoría</div>
+        <canvas id="rfBarChart" height="200"></canvas>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px;align-self:flex-start;">Pagado vs Pendiente</div>
+        <canvas id="rfDonutChart" style="max-width:200px;max-height:200px;"></canvas>
+        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;">
+          <span style="color:#4ade80;">⬤ Pagado ${fmt(totalRecaudado)}</span>
+          <span style="color:#fbbf24;">⬤ Pendiente ${fmt(totalPendiente)}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category breakdown table -->
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);">Desglose por Categoría</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:rgba(255,255,255,0.03);">
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;">Categoría</th>
+              <th style="padding:10px 8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600;">Jugadores</th>
+              <th style="padding:10px 8px;text-align:right;font-size:11px;color:#4ade80;font-weight:600;">Pagado</th>
+              <th style="padding:10px 8px;text-align:right;font-size:11px;color:#fbbf24;font-weight:600;">Pendiente</th>
+              <th style="padding:10px 8px;text-align:right;font-size:11px;color:var(--muted);font-weight:600;">Total</th>
+            </tr>
+          </thead>
+          <tbody>${catRows}</tbody>
+          <tfoot>
+            <tr style="background:rgba(255,255,255,0.04);border-top:2px solid rgba(255,255,255,0.12);">
+              <td style="padding:14px 8px;font-size:14px;font-weight:700;color:var(--text);">TOTAL</td>
+              <td style="padding:14px 8px;text-align:center;font-size:14px;font-weight:700;color:var(--text);">${totalJugadores}</td>
+              <td style="padding:14px 8px;text-align:right;font-size:14px;font-weight:700;color:#4ade80;">${fmt(totalRecaudado)}</td>
+              <td style="padding:14px 8px;text-align:right;font-size:14px;font-weight:700;color:#fbbf24;">${fmt(totalPendiente)}</td>
+              <td style="padding:14px 8px;text-align:right;font-size:16px;font-weight:900;color:var(--text);font-family:'Orbitron',monospace;">${fmt(totalProyectado)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Per-player list -->
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;">
+      <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);">Detalle por Jugador</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:rgba(255,255,255,0.03);">
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;">Jugador</th>
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;">Categorías</th>
+              <th style="padding:10px 8px;text-align:right;font-size:11px;color:var(--muted);font-weight:600;">Monto</th>
+              <th style="padding:10px 8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600;">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => {
+              const cats = (Array.isArray(r.categorias) ? r.categorias : []).filter(c => c.id !== 'multa').map(c => c.name).join(', ');
+              const multa = (Array.isArray(r.categorias) ? r.categorias : []).find(c => c.id === 'multa');
+              return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td style="padding:10px 8px;font-size:13px;font-weight:600;color:var(--text);">${r.nombre || '—'}</td>
+                <td style="padding:10px 8px;font-size:12px;color:var(--muted);">${cats || '—'}${multa ? ` <span style="color:#f87171;">+ Multa $${multa.price}</span>` : ''}</td>
+                <td style="padding:10px 8px;text-align:right;font-size:13px;font-weight:700;color:var(--text);font-family:'Orbitron',monospace;">$${Number(r.total||0).toFixed(2)}</td>
+                <td style="padding:10px 8px;text-align:center;">
+                  <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;
+                    background:${r.pagado ? 'rgba(34,197,94,0.15)' : 'rgba(251,191,36,0.12)'};
+                    color:${r.pagado ? '#4ade80' : '#fbbf24'};">
+                    ${r.pagado ? '✓ Pagado' : '● Pendiente'}
+                  </span>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // ── Render charts ──────────────────────────────────────────────────────
+  // Bar chart: revenue per category
+  const barCtx = document.getElementById('rfBarChart')?.getContext('2d');
+  if (barCtx) {
+    const ch = new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: sortedCats.map(c => c.name.length > 18 ? c.name.slice(0,16)+'…' : c.name),
+        datasets: [
+          { label: 'Pagado',    data: sortedCats.map(c => c.pagado),    backgroundColor: '#4ade80', borderRadius: 6 },
+          { label: 'Pendiente', data: sortedCats.map(c => c.pendiente), backgroundColor: '#fbbf24', borderRadius: 6 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => ' $' + ctx.raw.toFixed(2) } } },
+        scales: {
+          x: { stacked: true, ticks: { color: '#888899', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { stacked: true, ticks: { color: '#888899', callback: v => '$'+v }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        }
+      }
+    });
+    _rfCharts.push(ch);
+  }
+
+  // Donut chart: paid vs pending
+  const donutCtx = document.getElementById('rfDonutChart')?.getContext('2d');
+  if (donutCtx && (totalRecaudado + totalPendiente) > 0) {
+    const ch2 = new Chart(donutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Pagado', 'Pendiente'],
+        datasets: [{ data: [totalRecaudado, totalPendiente], backgroundColor: ['#4ade80', '#fbbf24'], borderWidth: 0, hoverOffset: 4 }]
+      },
+      options: {
+        responsive: true, cutout: '68%',
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' $' + ctx.raw.toFixed(2) } } }
+      }
+    });
+    _rfCharts.push(ch2);
+  }
+}
+
+function exportReporteFinanciero() {
+  if (!_rfData.length) return;
+  const headers = ['Jugador','Categorías','Monto Total','Estado'];
+  const rows = _rfData.map(r => {
+    const cats = (Array.isArray(r.categorias) ? r.categorias : []).map(c => c.name).join(' | ');
+    return [r.nombre || '—', cats, Number(r.total||0).toFixed(2), r.pagado ? 'Pagado' : 'Pendiente'];
+  });
+  const csv = [headers,...rows].map(r => r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
+  a.download = `reporte_financiero_ceiba_open_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function printReporteFinanciero() {
+  window.print();
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 async function showInscReporteModal() {
   if (!currentUser) { showLogin(); return; }
