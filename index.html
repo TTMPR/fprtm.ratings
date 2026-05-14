@@ -2673,6 +2673,24 @@ Maria Lopez,Ana Torres,B</code>
   </div>
 </div>
 
+<!-- Crédito mini-modal -->
+<div id="rfCreditoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1200;align-items:center;justify-content:center;">
+  <div style="background:var(--dark2,#111118);border:1px solid rgba(167,139,250,0.25);border-radius:16px;padding:28px;width:100%;max-width:380px;margin:16px;">
+    <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;margin-bottom:4px;">Aplicar Crédito</div>
+    <div style="color:var(--muted);font-size:12px;margin-bottom:20px;" id="rfCreditoNombre"></div>
+    <label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Razón del crédito</label>
+    <input id="rfCreditoRazon" type="text" placeholder="Ej: Torneo cancelado 2025, pago duplicado…"
+      style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;box-sizing:border-box;outline:none;margin-bottom:14px;">
+    <label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Monto a acreditar ($)</label>
+    <input id="rfCreditoMonto" type="number" min="0.01" step="0.01" placeholder="0.00"
+      style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;box-sizing:border-box;outline:none;margin-bottom:20px;">
+    <div style="display:flex;gap:10px;">
+      <button onclick="rfGuardarCredito()" style="flex:1;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.35);border-radius:10px;padding:11px;color:#a78bfa;font-size:13px;font-weight:700;cursor:pointer;">Aplicar</button>
+      <button onclick="document.getElementById('rfCreditoModal').style.display='none'" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px;color:var(--muted);font-size:13px;cursor:pointer;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════════
      REPORTE POR CATEGORÍA MODAL (admin)
 ═══════════════════════════════════════════ -->
@@ -9787,18 +9805,22 @@ function _renderReporteFinanciero() {
           <thead>
             <tr style="background:rgba(255,255,255,0.03);">
               <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;">Jugador</th>
-              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;">Categorías</th>
+              <th style="padding:10px 8px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;">Categorías / Créditos</th>
               <th style="padding:10px 8px;text-align:right;font-size:11px;color:var(--muted);font-weight:600;">Monto</th>
               <th style="padding:10px 8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600;">Estado</th>
+              <th style="padding:10px 8px;text-align:center;font-size:11px;color:var(--muted);font-weight:600;"></th>
             </tr>
           </thead>
           <tbody>
             ${rows.map(r => {
-              const cats = (Array.isArray(r.categorias) ? r.categorias : []).filter(c => c.id !== 'multa').map(c => c.name).join(', ');
-              const multa = (Array.isArray(r.categorias) ? r.categorias : []).find(c => c.id === 'multa');
+              const allCats = Array.isArray(r.categorias) ? r.categorias : [];
+              const cats = allCats.filter(c => c.id !== 'multa' && c.id !== 'credito').map(c => c.name).join(', ');
+              const multa = allCats.find(c => c.id === 'multa');
+              const creditos = allCats.filter(c => c.id === 'credito');
+              const creditHtml = creditos.map(c => `<span style="color:#a78bfa;font-size:11px;display:block;">- Crédito: ${c.name} (-$${Math.abs(c.price).toFixed(2)})</span>`).join('');
               return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
                 <td style="padding:10px 8px;font-size:13px;font-weight:600;color:var(--text);">${r.nombre || '—'}</td>
-                <td style="padding:10px 8px;font-size:12px;color:var(--muted);">${cats || '—'}${multa ? ` <span style="color:#f87171;">+ Multa $${multa.price}</span>` : ''}</td>
+                <td style="padding:10px 8px;font-size:12px;color:var(--muted);">${cats || '—'}${multa ? ` <span style="color:#f87171;">+ Multa $${multa.price}</span>` : ''}${creditHtml}</td>
                 <td style="padding:10px 8px;text-align:right;font-size:13px;font-weight:700;color:var(--text);font-family:'Orbitron',monospace;">$${Number(r.total||0).toFixed(2)}</td>
                 <td style="padding:10px 8px;text-align:center;">
                   <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;
@@ -9806,6 +9828,9 @@ function _renderReporteFinanciero() {
                     color:${r.pagado ? '#4ade80' : '#fbbf24'};">
                     ${r.pagado ? '✓ Pagado' : '● Pendiente'}
                   </span>
+                </td>
+                <td style="padding:10px 8px;text-align:center;">
+                  <button onclick="rfAddCredito('${r.id}')" style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);border-radius:8px;padding:4px 10px;color:#a78bfa;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">+ Crédito</button>
                 </td>
               </tr>`;
             }).join('')}
@@ -9856,6 +9881,50 @@ function _renderReporteFinanciero() {
     });
     _rfCharts.push(ch2);
   }
+}
+
+let _rfCreditoRowId = null;
+
+function rfAddCredito(rowId) {
+  _rfCreditoRowId = rowId;
+  const row = _rfData.find(r => String(r.id) === String(rowId));
+  if (!row) return;
+  document.getElementById('rfCreditoNombre').textContent = row.nombre || '—';
+  document.getElementById('rfCreditoRazon').value = '';
+  document.getElementById('rfCreditoMonto').value = '';
+  document.getElementById('rfCreditoModal').style.display = 'flex';
+}
+
+async function rfGuardarCredito() {
+  const razon = document.getElementById('rfCreditoRazon').value.trim();
+  const monto = parseFloat(document.getElementById('rfCreditoMonto').value);
+  if (!razon) { alert('Ingresa la razón del crédito.'); return; }
+  if (!monto || monto <= 0) { alert('Ingresa un monto válido mayor a $0.'); return; }
+
+  const row = _rfData.find(r => String(r.id) === String(_rfCreditoRowId));
+  if (!row) return;
+
+  const btn = document.querySelector('#rfCreditoModal button');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  const updatedCats = [...(Array.isArray(row.categorias) ? row.categorias : []),
+    { id: 'credito', name: razon, price: -Math.abs(monto) }
+  ];
+  const updatedTotal = Math.max(0, Number(row.total || 0) - Math.abs(monto));
+
+  const { error } = await _supabase.from('insc_registro')
+    .update({ categorias: updatedCats, total: updatedTotal })
+    .eq('id', row.id);
+
+  btn.disabled = false; btn.textContent = 'Aplicar';
+
+  if (error) { alert('Error al guardar: ' + error.message); return; }
+
+  // Update local cache and re-render
+  row.categorias = updatedCats;
+  row.total = updatedTotal;
+  document.getElementById('rfCreditoModal').style.display = 'none';
+  _renderReporteFinanciero();
 }
 
 function exportReporteFinanciero() {
