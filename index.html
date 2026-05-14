@@ -9706,9 +9706,20 @@ function _renderReporteFinanciero() {
   const sortedCats = [
     ...INSC_CATEGORIES
       .filter(c => catMap[c.id])
-      .map(c => ({ ...catMap[c.id], id: c.id, maxPlayers: c.maxPlayers || null })),
-    ...(catMap['_entry'] ? [{ ...catMap['_entry'], id: '_entry', maxPlayers: null }] : [])
+      .map(c => ({ ...catMap[c.id], id: c.id, maxPlayers: c.maxPlayers || null, ratingGroup: c.ratingGroup || null, isAge: !!(c.maxAge || c.minAge || c.sub21) })),
+    ...(catMap['_entry'] ? [{ ...catMap['_entry'], id: '_entry', maxPlayers: null, ratingGroup: null, isAge: false }] : [])
   ];
+
+  // Projection per category:
+  //  - Rating (has maxPlayers): maxPlayers × price (full capacity)
+  //  - Age/sub21: max(inscritos, 16) × price (minimum 16 assumed)
+  //  - Entry fee / other: actual (pagado + pendiente)
+  const catProj = c => {
+    if (c.ratingGroup && c.maxPlayers) return c.maxPlayers * c.price;
+    if (c.isAge) return Math.max(c.count, 16) * c.price;
+    return c.pagado + c.pendiente;
+  };
+  const totalProyeccionMaxima = sortedCats.reduce((s, c) => s + catProj(c), 0);
 
   // Chart colors per category
   const COLORS = ['#38bdf8','#818cf8','#4ade80','#fbbf24','#fb923c','#f87171','#c084fc','#34d399','#94a3b8'];
@@ -9720,7 +9731,7 @@ function _renderReporteFinanciero() {
     { label: 'Jugadores Inscritos', value: totalJugadores, color: '#38bdf8', sub: `${countPagado} pagados · ${countPendiente} pendientes` },
     { label: 'Total Recaudado', value: fmt(totalRecaudado), color: '#4ade80', sub: 'Pagos confirmados' },
     { label: 'Total Pendiente', value: fmt(totalPendiente), color: '#fbbf24', sub: 'Aún sin pagar' },
-    { label: 'Total Proyectado', value: fmt(totalProyectado), color: '#c084fc', sub: 'Si todos pagaran' },
+    { label: 'Proyección Máxima', value: fmt(totalProyeccionMaxima), color: '#c084fc', sub: 'Rating: cupo lleno · Edad: mín. 16' },
   ];
 
   const kpiHtml = kpis.map(k => `
@@ -9732,8 +9743,14 @@ function _renderReporteFinanciero() {
 
   const catRows = sortedCats.map((c, i) => {
     const total = c.pagado + c.pendiente;
-    const pct   = c.maxPlayers ? Math.round(c.count / c.maxPlayers * 100) : null;
-    const bar   = pct !== null ? `<div style="height:4px;background:rgba(255,255,255,0.07);border-radius:99px;margin-top:4px;"><div style="height:4px;background:${COLORS[i%COLORS.length]};border-radius:99px;width:${pct}%;"></div></div>` : '';
+    const proj  = catProj(c);
+    const pct   = c.maxPlayers ? Math.round(c.count / c.maxPlayers * 100) : (c.isAge ? Math.min(100, Math.round(c.count / 16 * 100)) : null);
+    const bar   = pct !== null ? `<div style="height:4px;background:rgba(255,255,255,0.07);border-radius:99px;margin-top:4px;"><div style="height:4px;background:${COLORS[i%COLORS.length]};border-radius:99px;width:${Math.min(pct,100)}%;"></div></div>` : '';
+    const projLabel = c.ratingGroup && c.maxPlayers
+      ? `<span style="font-size:10px;color:var(--muted);display:block;margin-top:1px;">cupo: ${c.maxPlayers}</span>`
+      : c.isAge
+        ? `<span style="font-size:10px;color:var(--muted);display:block;margin-top:1px;">mín. 16</span>`
+        : '';
     return `<tr style="border-bottom:1px solid var(--border);">
       <td style="padding:12px 8px;">
         <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COLORS[i%COLORS.length]};margin-right:8px;flex-shrink:0;"></span>
@@ -9744,6 +9761,7 @@ function _renderReporteFinanciero() {
       <td style="padding:12px 8px;text-align:right;font-size:13px;color:#4ade80;font-weight:600;">${fmt(c.pagado)}</td>
       <td style="padding:12px 8px;text-align:right;font-size:13px;color:#fbbf24;">${fmt(c.pendiente)}</td>
       <td style="padding:12px 8px;text-align:right;font-size:14px;font-weight:700;color:var(--text);font-family:'Orbitron',monospace;">${fmt(total)}</td>
+      <td style="padding:12px 8px;text-align:right;font-size:13px;color:#c084fc;font-weight:600;">${fmt(proj)}${projLabel}</td>
     </tr>`;
   }).join('');
 
@@ -9781,6 +9799,7 @@ function _renderReporteFinanciero() {
               <th style="padding:10px 8px;text-align:right;font-size:11px;color:#4ade80;font-weight:600;">Pagado</th>
               <th style="padding:10px 8px;text-align:right;font-size:11px;color:#fbbf24;font-weight:600;">Pendiente</th>
               <th style="padding:10px 8px;text-align:right;font-size:11px;color:var(--muted);font-weight:600;">Total</th>
+              <th style="padding:10px 8px;text-align:right;font-size:11px;color:#c084fc;font-weight:600;">Proyección</th>
             </tr>
           </thead>
           <tbody>${catRows}</tbody>
@@ -9790,7 +9809,8 @@ function _renderReporteFinanciero() {
               <td style="padding:14px 8px;text-align:center;font-size:14px;font-weight:700;color:var(--text);">${totalJugadores}</td>
               <td style="padding:14px 8px;text-align:right;font-size:14px;font-weight:700;color:#4ade80;">${fmt(totalRecaudado)}</td>
               <td style="padding:14px 8px;text-align:right;font-size:14px;font-weight:700;color:#fbbf24;">${fmt(totalPendiente)}</td>
-              <td style="padding:14px 8px;text-align:right;font-size:16px;font-weight:900;color:var(--text);font-family:'Orbitron',monospace;">${fmt(totalProyectado)}</td>
+              <td style="padding:14px 8px;text-align:right;font-size:16px;font-weight:900;color:var(--text);font-family:'Orbitron',monospace;">${fmt(totalRecaudado + totalPendiente)}</td>
+              <td style="padding:14px 8px;text-align:right;font-size:16px;font-weight:900;color:#c084fc;font-family:'Orbitron',monospace;">${fmt(totalProyeccionMaxima)}</td>
             </tr>
           </tfoot>
         </table>
@@ -9973,11 +9993,33 @@ function exportReporteFinanciero() {
       else catMap['_entry'].pendiente += base;
     }
   });
-  const catRows = Object.values(catMap).sort((a,b) => (b.pagado+b.pendiente)-(a.pagado+a.pendiente));
-  const catHeaders = ['Categoría','Precio Unit.','Jugadores','Pagado','Pendiente','Total'];
-  const catData = [catHeaders, ...catRows.map(c => [c.name, fmt(c.price), c.count, fmt(c.pagado), fmt(c.pendiente), fmt(c.pagado+c.pendiente)])];
+  // Use sortedCats from _rfData if available for projection data
+  const xlCatRows = (() => {
+    const cMap = {};
+    _rfData.forEach(r => {
+      (Array.isArray(r.categorias) ? r.categorias : []).forEach(c => {
+        if (c.id === 'multa' || c.id === 'credito') return;
+        if (!cMap[c.id]) {
+          const def = (typeof INSC_CATEGORIES !== 'undefined' ? INSC_CATEGORIES : []).find(x => x.id === c.id) || {};
+          cMap[c.id] = { name: c.name, price: Number(c.price)||0, pagado: 0, pendiente: 0, count: 0,
+            maxPlayers: def.maxPlayers||null, ratingGroup: def.ratingGroup||null, isAge: !!(def.maxAge||def.minAge||def.sub21) };
+        }
+        cMap[c.id].count++;
+        if (r.pagado) cMap[c.id].pagado += Number(c.price)||0;
+        else cMap[c.id].pendiente += Number(c.price)||0;
+      });
+    });
+    return Object.values(cMap).sort((a,b) => (b.pagado+b.pendiente)-(a.pagado+a.pendiente));
+  })();
+  const xlCatProj = c => {
+    if (c.ratingGroup && c.maxPlayers) return c.maxPlayers * c.price;
+    if (c.isAge) return Math.max(c.count, 16) * c.price;
+    return c.pagado + c.pendiente;
+  };
+  const catHeaders = ['Categoría','Precio Unit.','Jugadores','Pagado','Pendiente','Total','Proyección'];
+  const catData = [catHeaders, ...xlCatRows.map(c => [c.name, fmt(c.price), c.count, fmt(c.pagado), fmt(c.pendiente), fmt(c.pagado+c.pendiente), fmt(xlCatProj(c))])];
   const wsCat = XLSX.utils.aoa_to_sheet(catData);
-  wsCat['!cols'] = [{wch:35},{wch:14},{wch:12},{wch:14},{wch:14},{wch:14}];
+  wsCat['!cols'] = [{wch:35},{wch:14},{wch:12},{wch:14},{wch:14},{wch:14},{wch:14}];
   XLSX.utils.book_append_sheet(wb, wsCat, 'Por Categoría');
 
   // ── Sheet 3: Detalle Jugadores ────────────────────────────────────────
