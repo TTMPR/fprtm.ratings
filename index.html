@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root {
     --dark: #0a0a0f;
@@ -1464,6 +1465,24 @@
     animation: blink-red 1.2s ease-in-out infinite;
     flex-shrink: 0;
   }
+
+  /* ── Print styles for Reporte Financiero ── */
+  @media print {
+    body > *:not(#rfPrintRoot) { display: none !important; }
+    #rfPrintRoot {
+      display: block !important;
+      position: static !important;
+      background: #fff !important;
+      color: #000 !important;
+      padding: 20px !important;
+      width: 100% !important;
+    }
+    #rfPrintRoot * { color: inherit; }
+    #rfPrintRoot .rf-no-print { display: none !important; }
+    canvas { max-width: 100% !important; }
+    table { page-break-inside: auto; }
+    tr { page-break-inside: avoid; }
+  }
 </style>
 </head>
 <body>
@@ -2645,7 +2664,7 @@ Maria Lopez,Ana Torres,B</code>
         <div style="color:var(--muted);font-size:13px;margin-top:3px;" id="rfSubtitle">Ceiba Open 2026</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="exportReporteFinanciero()" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:8px 14px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer;">⬇ CSV</button>
+        <button onclick="exportReporteFinanciero()" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:8px 14px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer;">⬇ Excel</button>
         <button onclick="printReporteFinanciero()" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:8px;padding:8px 14px;color:#38bdf8;font-size:13px;font-weight:600;cursor:pointer;">🖨 Imprimir</button>
         <button onclick="document.getElementById('reporteFinancieroModal').style.display='none'" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--muted);font-size:13px;cursor:pointer;">✕</button>
       </div>
@@ -9840,21 +9859,144 @@ function _renderReporteFinanciero() {
 }
 
 function exportReporteFinanciero() {
-  if (!_rfData.length) return;
-  const headers = ['Jugador','Categorías','Monto Total','Estado'];
-  const rows = _rfData.map(r => {
-    const cats = (Array.isArray(r.categorias) ? r.categorias : []).map(c => c.name).join(' | ');
-    return [r.nombre || '—', cats, Number(r.total||0).toFixed(2), r.pagado ? 'Pagado' : 'Pendiente'];
+  if (!_rfData.length || typeof XLSX === 'undefined') return;
+  const wb = XLSX.utils.book_new();
+  const fmt = v => parseFloat(Number(v||0).toFixed(2));
+
+  // ── Sheet 1: Resumen ──────────────────────────────────────────────────
+  const totalRecaudado = _rfData.filter(r=>r.pagado).reduce((s,r)=>s+Number(r.total||0),0);
+  const totalPendiente = _rfData.filter(r=>!r.pagado).reduce((s,r)=>s+Number(r.total||0),0);
+  const totalJugadores = _rfData.length;
+  const pagados = _rfData.filter(r=>r.pagado).length;
+  const pendientes = _rfData.filter(r=>!r.pagado).length;
+
+  const summaryData = [
+    ['Reporte Financiero — Ceiba Open 2026'],
+    ['Generado:', new Date().toLocaleString('es-PR')],
+    [],
+    ['Métrica','Valor'],
+    ['Total Recaudado (Pagado)', fmt(totalRecaudado)],
+    ['Total Pendiente', fmt(totalPendiente)],
+    ['Total Proyectado', fmt(totalRecaudado + totalPendiente)],
+    ['Total Jugadores', totalJugadores],
+    ['Jugadores Pagados', pagados],
+    ['Jugadores Pendientes', pendientes],
+  ];
+  const wsResumen = XLSX.utils.aoa_to_sheet(summaryData);
+  wsResumen['!cols'] = [{wch:30},{wch:20}];
+  XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
+
+  // ── Sheet 2: Por Categoría ────────────────────────────────────────────
+  const catMap = {};
+  _rfData.forEach(r => {
+    (Array.isArray(r.categorias) ? r.categorias : []).forEach(c => {
+      if (c.id === 'multa') return;
+      if (!catMap[c.id]) catMap[c.id] = { name: c.name, price: c.price||0, pagado: 0, pendiente: 0, count: 0 };
+      catMap[c.id].count++;
+      if (r.pagado) catMap[c.id].pagado += c.price||0;
+      else catMap[c.id].pendiente += c.price||0;
+    });
+    const base = Number(r.base||0);
+    if (base > 0) {
+      if (!catMap['_entry']) catMap['_entry'] = { name: 'Cuota de inscripción (no-miembro)', price: base, pagado: 0, pendiente: 0, count: 0 };
+      catMap['_entry'].count++;
+      if (r.pagado) catMap['_entry'].pagado += base;
+      else catMap['_entry'].pendiente += base;
+    }
   });
-  const csv = [headers,...rows].map(r => r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
-  a.download = `reporte_financiero_ceiba_open_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
+  const catRows = Object.values(catMap).sort((a,b) => (b.pagado+b.pendiente)-(a.pagado+a.pendiente));
+  const catHeaders = ['Categoría','Precio Unit.','Jugadores','Pagado','Pendiente','Total'];
+  const catData = [catHeaders, ...catRows.map(c => [c.name, fmt(c.price), c.count, fmt(c.pagado), fmt(c.pendiente), fmt(c.pagado+c.pendiente)])];
+  const wsCat = XLSX.utils.aoa_to_sheet(catData);
+  wsCat['!cols'] = [{wch:35},{wch:14},{wch:12},{wch:14},{wch:14},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, wsCat, 'Por Categoría');
+
+  // ── Sheet 3: Detalle Jugadores ────────────────────────────────────────
+  const playerHeaders = ['Jugador','Categorías','Monto Total','Estado'];
+  const playerRows = _rfData.map(r => {
+    const cats = (Array.isArray(r.categorias) ? r.categorias : []).filter(c=>c.id!=='multa').map(c=>c.name).join(' | ');
+    return [r.nombre||'—', cats, fmt(r.total), r.pagado ? 'Pagado' : 'Pendiente'];
+  });
+  const wsPlayers = XLSX.utils.aoa_to_sheet([playerHeaders, ...playerRows]);
+  wsPlayers['!cols'] = [{wch:30},{wch:50},{wch:14},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, wsPlayers, 'Jugadores');
+
+  // ── Embed chart images if available ──────────────────────────────────
+  try {
+    const barCanvas = document.getElementById('rfBarChart');
+    const donutCanvas = document.getElementById('rfDonutChart');
+    if (barCanvas && donutCanvas) {
+      const barImg = barCanvas.toDataURL('image/png').split(',')[1];
+      const donutImg = donutCanvas.toDataURL('image/png').split(',')[1];
+      const wsCharts = XLSX.utils.aoa_to_sheet([['Gráfica: Ingresos por Categoría'],[''],[''],[''],[''],[''],[''],[''],[''],[''],[''],[''],[''],[''],[''],[''],['Gráfica: Pagado vs Pendiente']]);
+      wsCharts['!cols'] = [{wch:60}];
+      const wbImgs = wb;
+      XLSX.utils.book_append_sheet(wbImgs, wsCharts, 'Gráficas');
+      const sheetIndex = wb.SheetNames.indexOf('Gráficas');
+      if (!wb.Sheets['Gráficas']['!drawings']) wb.Sheets['Gráficas']['!drawings'] = [];
+      // SheetJS community supports base64 image embedding via writeFile options
+      if (typeof wbImgs.addImage === 'function') {
+        const barId = wbImgs.addImage({ base64: barImg, extension: 'png' });
+        const donutId = wbImgs.addImage({ base64: donutImg, extension: 'png' });
+        wsCharts.addImage(barId, { tl:{col:0,row:1}, br:{col:8,row:14} });
+        wsCharts.addImage(donutId, { tl:{col:0,row:17}, br:{col:6,row:30} });
+      }
+    }
+  } catch(e) { /* charts as data only if image embed not supported */ }
+
+  XLSX.writeFile(wb, `reporte_financiero_ceiba_open_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 function printReporteFinanciero() {
-  window.print();
+  // Clone the report content into a dedicated print-only root so @media print can isolate it
+  const src = document.getElementById('rfContent');
+  const modalEl = document.getElementById('reporteFinancieroModal');
+  if (!src || !modalEl) { window.print(); return; }
+
+  // Capture chart images before opening print window (canvas doesn't survive cloning)
+  const barCanvas = document.getElementById('rfBarChart');
+  const donutCanvas = document.getElementById('rfDonutChart');
+  const barImg = barCanvas ? barCanvas.toDataURL('image/png') : null;
+  const donutImg = donutCanvas ? donutCanvas.toDataURL('image/png') : null;
+
+  // Build a standalone print window with full content
+  const date = new Date().toLocaleString('es-PR');
+  let html = src.innerHTML;
+  // Replace canvas elements with static images
+  if (barImg) html = html.replace(/<canvas id="rfBarChart"[^>]*><\/canvas>/, `<img src="${barImg}" style="width:100%;max-height:280px;object-fit:contain;">`);
+  if (donutImg) html = html.replace(/<canvas id="rfDonutChart"[^>]*><\/canvas>/, `<img src="${donutImg}" style="max-width:200px;max-height:200px;">`);
+
+  const win = window.open('', '_blank', 'width=960,height=800');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Reporte Financiero — Ceiba Open 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: Inter, sans-serif; background: #fff; color: #111; margin: 0; padding: 24px; font-size: 13px; }
+      h1 { font-family: 'Orbitron', monospace; font-size: 18px; margin: 0 0 4px; }
+      .rf-subtitle { color: #666; font-size: 12px; margin-bottom: 24px; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+      th { background: #f3f4f6; text-align: left; padding: 8px; font-size: 11px; text-transform: uppercase; color: #555; }
+      td { padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; }
+      tfoot td { font-weight: 700; border-top: 2px solid #d1d5db; }
+      .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+      .kpi { border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; }
+      .kpi-label { font-size: 11px; color: #777; text-transform: uppercase; margin-bottom: 4px; }
+      .kpi-value { font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 700; }
+      .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+      .chart-box { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; }
+      .chart-label { font-size: 11px; color: #777; text-transform: uppercase; margin-bottom: 10px; font-weight: 600; }
+      .badge-paid { color: #16a34a; background: #dcfce7; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+      .badge-pend { color: #b45309; background: #fef3c7; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+      .donut-legend { display: flex; gap: 16px; justify-content: center; margin-top: 10px; font-size: 12px; }
+      @media print { body { padding: 12px; } }
+    </style>
+  </head><body>
+    <h1>Reporte Financiero</h1>
+    <div class="rf-subtitle">Ceiba Open 2026 &nbsp;·&nbsp; Generado: ${date}</div>
+    ${html}
+  </body></html>`);
+  win.document.close();
+  win.onload = () => { win.focus(); win.print(); };
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
