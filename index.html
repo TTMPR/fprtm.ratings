@@ -9460,24 +9460,23 @@ function matchClubId(clubName) {
   return '';
 }
 
-const STADIUM_EVENT_IDS = {
-  ev1:  '7u---abierto',
-  ev2:  '9u---masculino',
-  ev3:  '9u---femenino',
-  ev4:  '13u---masculino',
-  ev5:  '13u---femenino',
-  ev6:  'abierto',
-  ev7:  '1500-o-menos',
-  ev8:  '1900-o-menos',
-  ev9:  '1700-o-menos',
-  ev10: '11u---masculino',
-  ev11: '11u---femenino',
-  ev12: '15u---masculino',
-  ev13: '15u---femenino',
-  ev14: '1750-o-menos',
-  ev15: 'sub-21-abierto',
-  ev16: '1800-o-menos',
-};
+// Derives Stadium Compete event slug from the category name.
+// Age categories: "11 años o Menos Masculino" → "11u---masculino"
+// Rating/other:   "1600 o Menos"              → "1600-o-menos"
+function catNameToStadiumId(name) {
+  if (!name) return '';
+  let s = name.toLowerCase()
+    .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i').replace(/ó/g,'o').replace(/ú/g,'u').replace(/ñ/g,'n')
+    .replace(/\s*\([^)]*\)\s*/g,' ').trim();
+  // Age pattern: "11 anos o menos masculino" → "11u---masculino"
+  if (/\d+\s+anos\s+o\s+menos/i.test(s)) {
+    s = s.replace(/(\d+)\s+anos\s+o\s+menos\s*/i, '$1u---');
+    s = s.replace(/\s+/g, '-');
+    return s;
+  }
+  // General slugify: spaces and non-alphanumeric (except existing dashes) → dashes
+  return s.replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+}
 
 async function exportInscripcionesStadium() {
   if (!currentUser) { showLogin(); return; }
@@ -9533,10 +9532,11 @@ async function exportInscripcionesStadium() {
       const membId  = insc.member_id ? `fptm|${insc.member_id}` : '';
       const clubId  = matchClubId(insc.club || p['Club'] || '');
 
-      // Map each registered category to its Stadium event name/ID
+      // Map each registered category to its Stadium event slug
       const cats   = Array.isArray(insc.categorias) ? insc.categorias : [];
       const events = cats
-        .map(c => STADIUM_EVENT_IDS[c.id] || '')
+        .filter(c => c.id !== 'credito' && c.id !== 'multa')
+        .map(c => catNameToStadiumId(c.name))
         .filter(Boolean)
         .join(',');
 
