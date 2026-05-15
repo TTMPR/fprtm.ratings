@@ -9461,14 +9461,20 @@ function matchClubId(clubName) {
 }
 
 // Derives Stadium Compete event slug from the category name.
-// Age categories: "11 años o Menos Masculino" → "11u---masculino"
-// Rating/other:   "1600 o Menos"              → "1600-o-menos"
+// Stadium format examples:
+//   "11 años o Menos Masculino" → "11u---masculino"  (age: NU - Gender)
+//   "1600 o Menos"              → "1600-o-menos"
+//   "Seniors 40+ (Mixto)"       → "seniors"
+//   "Sub-21 Abierto"            → "sub-21-abierto"
 function catNameToStadiumId(name) {
   if (!name) return '';
   let s = name.toLowerCase()
     .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i').replace(/ó/g,'o').replace(/ú/g,'u').replace(/ñ/g,'n')
     .replace(/\s*\([^)]*\)\s*/g,' ').trim();
+  // Seniors: Stadium event is just "Seniors" regardless of age qualifier
+  if (s.startsWith('seniors')) return 'seniors';
   // Age pattern: "11 anos o menos masculino" → "11u---masculino"
+  // Stadium name is "11U - Masculino" which slugifies with triple dash
   if (/\d+\s+anos\s+o\s+menos/i.test(s)) {
     s = s.replace(/(\d+)\s+anos\s+o\s+menos\s*/i, '$1u---');
     s = s.replace(/\s+/g, '-');
