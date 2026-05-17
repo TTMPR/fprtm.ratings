@@ -7851,8 +7851,12 @@ async function approveClubChange(id, memberId, newClub) {
       .eq('status', 'pending')
       .neq('id', id);
 
-    // Apply the club change to the player record
-    await sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${memberId}`, { 'Club': newClub });
+    // Apply the club change to the player record using the authenticated session
+    const { error: updErr } = await _supabase
+      .from('Base de Datos')
+      .update({ 'Club': newClub })
+      .eq('Member ID', memberId);
+    if (updErr) throw new Error('Error actualizando club en Base de Datos: ' + updErr.message);
 
     // Update local caches
     const pi = ALL_PLAYERS.findIndex(p => p.id === memberId);
