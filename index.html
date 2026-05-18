@@ -8178,16 +8178,16 @@ async function toggleInscripciones() {
 let torneoArchivado = true; // Ceiba Open 2026 ha concluido
 
 async function loadTorneoArchivoConfig() {
-  const cached = localStorage.getItem('torneo_archivado');
-  if (cached !== null) torneoArchivado = cached === 'true';
+  // Default is true (archived) — only override if DB explicitly says false
   applyInscripcionesState();
   try {
     const data = await sbGet('app_settings', '?key=eq.torneo_archivado&select=value');
     if (data && data.length) {
       torneoArchivado = data[0].value === 'true';
-      localStorage.setItem('torneo_archivado', String(torneoArchivado));
     }
+    // else: no DB entry → keep default true
   } catch(e) { console.warn('loadTorneoArchivoConfig:', e.message); }
+  localStorage.setItem('torneo_archivado', String(torneoArchivado));
   applyInscripcionesState();
 }
 
