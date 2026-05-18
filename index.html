@@ -5256,8 +5256,10 @@ function subirLoadFile(file) {
           }
           continue;
         }
-        // Winner is always pA so win='A'
-        subirCsvRows.push({ pA: `#${membW}`, pB: `#${membL}`, win: 'A' });
+        // Winner is always pA; check description for retired/walkover
+        const desc = iDesc >= 0 ? (parts[iDesc] || '') : '';
+        const retired = /retired|retir|walkover|w\/o/i.test(desc);
+        subirCsvRows.push({ pA: `#${membW}`, pB: `#${membL}`, win: 'A', retired });
       }
     } else {
       // ── Legacy simple format: playerA, playerB, A/B ──
@@ -5306,11 +5308,14 @@ function subirProcesarCsv() {
     const pB = findPlayer(row.pB);
     if (!pA) { unknown.push(row.pA); continue; }
     if (!pB) { unknown.push(row.pB); continue; }
-    const { aGain, bGain } = getPoints(pA.rating, pB.rating, row.win === 'A');
+    const retired = !!row.retired;
+    const { aGain, bGain } = retired
+      ? { aGain: 0, bGain: 0 }
+      : getPoints(pA.rating, pB.rating, row.win === 'A');
     subirPending.push({
       pA: pA.name, pB: pB.name, rA: pA.rating, rB: pB.rating,
       aGain, bGain, winner: row.win === 'A' ? pA.name : pB.name,
-      idA: pA.id, idB: pB.id
+      idA: pA.id, idB: pB.id, retired
     });
   }
 
@@ -5330,21 +5335,27 @@ function subirProcesarCsv() {
 
   // Render preview
   const body = document.getElementById('subirResultBody');
-  body.innerHTML = subirPending.map(r => `
+  body.innerHTML = subirPending.map(r => {
+    const retiredBadge = r.retired
+      ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:rgba(148,163,184,0.12);color:#94a3b8;margin-left:6px;vertical-align:middle;">RETIRED</span>`
+      : '';
+    const noChange = `<span style="color:var(--muted);font-size:12px">sin cambio</span>`;
+    return `
     <div class="result-row">
       <div class="result-player">
-        ${r.winner === r.pA ? '👑 ' : ''}<strong>${r.pA}</strong>
-        <span style="color:var(--muted);font-size:12px">${r.rA} → ${r.rA + r.aGain}</span>
+        ${!r.retired && r.winner === r.pA ? '👑 ' : ''}<strong>${r.pA}</strong>${r.retired && r.winner === r.pB ? retiredBadge : ''}
+        <span style="color:var(--muted);font-size:12px">${r.rA}${r.retired ? '' : ` → ${r.rA + r.aGain}`}</span>
       </div>
-      <div class="result-pts ${r.aGain >= 0 ? 'gain' : 'loss'}">${r.aGain >= 0 ? '+' : ''}${r.aGain}</div>
+      ${r.retired ? noChange : `<div class="result-pts ${r.aGain >= 0 ? 'gain' : 'loss'}">${r.aGain >= 0 ? '+' : ''}${r.aGain}</div>`}
     </div>
     <div class="result-row">
       <div class="result-player">
-        ${r.winner === r.pB ? '👑 ' : ''}<strong>${r.pB}</strong>
-        <span style="color:var(--muted);font-size:12px">${r.rB} → ${r.rB + r.bGain}</span>
+        ${!r.retired && r.winner === r.pB ? '👑 ' : ''}<strong>${r.pB}</strong>${r.retired && r.winner === r.pA ? retiredBadge : ''}
+        <span style="color:var(--muted);font-size:12px">${r.rB}${r.retired ? '' : ` → ${r.rB + r.bGain}`}</span>
       </div>
-      <div class="result-pts ${r.bGain >= 0 ? 'gain' : 'loss'}">${r.bGain >= 0 ? '+' : ''}${r.bGain}</div>
-    </div>`).join('<hr style="border-color:var(--border);margin:4px 0">');
+      ${r.retired ? noChange : `<div class="result-pts ${r.bGain >= 0 ? 'gain' : 'loss'}">${r.bGain >= 0 ? '+' : ''}${r.bGain}</div>`}
+    </div>`;
+  }).join('<hr style="border-color:var(--border);margin:4px 0">');
 
   document.getElementById('subirResult').classList.add('show');
   document.getElementById('subirApplyBtn').disabled = false;
@@ -5825,7 +5836,8 @@ async function subirApplyRatings() {
           rating_b_antes:   r.rB,
           rating_a_despues: r.rA + r.aGain,
           rating_b_despues: r.rB + r.bGain,
-          fecha
+          fecha,
+          ...(r.retired ? { notas: 'retired' } : {})
         });
       } catch(e) { console.warn('Error guardando partido:', e.message); }
     }
@@ -8178,16 +8190,16 @@ async function toggleInscripciones() {
 let torneoArchivado = true; // Ceiba Open 2026 ha concluido
 
 async function loadTorneoArchivoConfig() {
-  const cached = localStorage.getItem('torneo_archivado');
-  if (cached !== null) torneoArchivado = cached === 'true';
+  // Default is true (archived) — only override if DB explicitly says false
   applyInscripcionesState();
   try {
     const data = await sbGet('app_settings', '?key=eq.torneo_archivado&select=value');
     if (data && data.length) {
       torneoArchivado = data[0].value === 'true';
-      localStorage.setItem('torneo_archivado', String(torneoArchivado));
     }
+    // else: no DB entry → keep default true
   } catch(e) { console.warn('loadTorneoArchivoConfig:', e.message); }
+  localStorage.setItem('torneo_archivado', String(torneoArchivado));
   applyInscripcionesState();
 }
 
