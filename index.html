@@ -4600,6 +4600,7 @@ async function showProfile(player) {
     let wins = 0, losses = 0;
     const isPlayerA = m => m.jugador_a_id === player.id || m.nombre_a === player.name;
     matches.forEach(m => {
+      if (m.notas === 'retired') return; // no cuenta para estadísticas
       const won = m.ganador_id != null
         ? m.ganador_id === player.id
         : m.ganador === (isPlayerA(m) ? 'A' : 'B');
@@ -4636,6 +4637,7 @@ async function showProfile(player) {
     if (matches.length) {
       let totalPts = 0;
       const rows = matches.map(m => {
+        if (m.notas === 'retired') return ''; // excluir retired del historial visible
         const isA       = isPlayerA(m);
         const myRating  = isA ? m.rating_a_antes   : m.rating_b_antes;
         const myAfter   = isA ? m.rating_a_despues  : m.rating_b_despues;
@@ -5392,11 +5394,11 @@ async function subirGuardarBorrador() {
     const winnerIsA = r.winner === r.pA;
     if (r.idA) {
       snapshotMap[r.idA].rating_fin += r.aGain;
-      if (winnerIsA) snapshotMap[r.idA].ganados++; else snapshotMap[r.idA].perdidos++;
+      if (!r.retired) { if (winnerIsA) snapshotMap[r.idA].ganados++; else snapshotMap[r.idA].perdidos++; }
     }
     if (r.idB) {
       snapshotMap[r.idB].rating_fin += r.bGain;
-      if (!winnerIsA) snapshotMap[r.idB].ganados++; else snapshotMap[r.idB].perdidos++;
+      if (!r.retired) { if (!winnerIsA) snapshotMap[r.idB].ganados++; else snapshotMap[r.idB].perdidos++; }
     }
   }
 
@@ -5812,11 +5814,11 @@ async function subirApplyRatings() {
     const winnerIsA = r.winner === r.pA;
     if (r.idA) {
       snapshotMap[r.idA].rating_fin += r.aGain;
-      if (winnerIsA) snapshotMap[r.idA].ganados++; else snapshotMap[r.idA].perdidos++;
+      if (!r.retired) { if (winnerIsA) snapshotMap[r.idA].ganados++; else snapshotMap[r.idA].perdidos++; }
     }
     if (r.idB) {
       snapshotMap[r.idB].rating_fin += r.bGain;
-      if (!winnerIsA) snapshotMap[r.idB].ganados++; else snapshotMap[r.idB].perdidos++;
+      if (!r.retired) { if (!winnerIsA) snapshotMap[r.idB].ganados++; else snapshotMap[r.idB].perdidos++; }
     }
   }
 
