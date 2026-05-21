@@ -4875,7 +4875,6 @@ async function loadRankingsData() {
         club:   p['Club'] || '—',
         rating: p['New Rating'] || p['Rating'] || 0,
         age,
-        dob:    dobIso,
       };
     });
   return _rankingsData;
@@ -7550,48 +7549,45 @@ function avatarHTML(player, size = 54) {
   return `<div class="avatar">${initials(player.name)}</div>`;
 }
 
-async function showEditarPerfilGate() {
+function showEditarPerfilGate() {
   if (!_photoUploadPlayer) return;
-  const modal = document.getElementById('editarPerfilModal');
-  // Reset to step 1
   document.getElementById('editarPerfilStep1').style.display = 'block';
   document.getElementById('editarPerfilStep2').style.display = 'none';
   document.getElementById('editarPerfilDob').value = '';
   document.getElementById('editarPerfilDobMsg').textContent = '';
   document.getElementById('editarPerfilSubtitle').textContent = _photoUploadPlayer.name;
-  modal.style.display = 'flex';
-  // Fetch DOB if not already loaded (loadPlayers omits it for privacy)
-  if (!_photoUploadPlayer.dob) {
-    try {
-      const data = await _supabase.from('Base de Datos')
-        .select('"Date of Birth"')
-        .eq('Member ID', _photoUploadPlayer.id)
-        .single();
-      if (data.data) {
-        const dobIso = data.data['Date of Birth'] ? _parseDOBStr(String(data.data['Date of Birth'])) : null;
-        _photoUploadPlayer.dob = dobIso;
-      }
-    } catch (e) {
-      console.warn('showEditarPerfilGate: could not fetch DOB', e);
-    }
-  }
+  document.getElementById('editarPerfilModal').style.display = 'flex';
 }
 
-function verificarEditarPerfil() {
+async function verificarEditarPerfil() {
+  const msgEl = document.getElementById('editarPerfilDobMsg');
+  const btn = document.querySelector('#editarPerfilStep1 button');
   const input = document.getElementById('editarPerfilDob').value;
   const entered = parseDobText(input);
-  const stored = _photoUploadPlayer?.dob;
   if (!entered) {
-    document.getElementById('editarPerfilDobMsg').textContent = 'Ingresa una fecha válida (DD/MM/AAAA).';
+    msgEl.textContent = 'Ingresa una fecha válida (DD/MM/AAAA).';
     return;
   }
-  if (!stored || entered !== stored) {
-    document.getElementById('editarPerfilDobMsg').textContent = 'La fecha no coincide con nuestros registros.';
-    return;
+  // Fetch DOB fresh from server — never cache it on the player object
+  btn.disabled = true;
+  msgEl.textContent = '';
+  try {
+    const data = await sbGet('Base%20de%20Datos',
+      `?select=%22Date%20of%20Birth%22&%22Member%20ID%22=eq.${_photoUploadPlayer.id}&limit=1`);
+    const row = Array.isArray(data) ? data[0] : data;
+    const stored = row?.['Date of Birth'] ? _parseDOBStr(String(row['Date of Birth'])) : null;
+    if (!stored || entered !== stored) {
+      msgEl.textContent = 'La fecha no coincide con nuestros registros.';
+      return;
+    }
+    document.getElementById('editarPerfilStep1').style.display = 'none';
+    document.getElementById('editarPerfilStep2').style.display = 'block';
+    document.getElementById('editarPerfilNombre').textContent = _photoUploadPlayer.name;
+  } catch (e) {
+    msgEl.textContent = 'Error de conexión. Intenta de nuevo.';
+  } finally {
+    btn.disabled = false;
   }
-  document.getElementById('editarPerfilStep1').style.display = 'none';
-  document.getElementById('editarPerfilStep2').style.display = 'block';
-  document.getElementById('editarPerfilNombre').textContent = _photoUploadPlayer.name;
 }
 
 function showPhotoUploadModal() {
