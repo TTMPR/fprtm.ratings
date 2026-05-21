@@ -1824,7 +1824,10 @@
       <div class="profile-avatar" id="profileAvatar">JM</div>
       <div class="profile-name" id="profileName">Jerall Montijo</div>
       <div class="profile-id" id="profileId">ATH# —</div>
-      <div class="profile-club" id="profileClub">Naguabo</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin:2px 0;">
+        <div class="profile-club" id="profileClub">Naguabo</div>
+        <span id="profileMembDot" style="display:none;width:8px;height:8px;border-radius:50%;flex-shrink:0;"></span>
+      </div>
       <span id="profileBadge" class="badge">Jugador activo</span>
       <div id="profileMembStatus" class="profile-memb-status none" style="display:none">
         <div class="profile-memb-dot"></div>
@@ -4547,15 +4550,22 @@ async function showProfile(player) {
   _badge.className = 'badge';
   _badge.style.display = 'none';
 
-  // Membership status
+  // Membership status — compact dot next to club name
   const _ms = getMemberInfo(player);
-  const _msEl = document.getElementById('profileMembStatus');
-  const _msTxt = document.getElementById('profileMembStatusText');
-  if (_msEl && _msTxt) {
-    _msEl.style.display = '';
-    _msEl.className = 'profile-memb-status ' + _ms.status;
-    _msTxt.innerHTML = _ms.label;
+  const _dotEl = document.getElementById('profileMembDot');
+  if (_dotEl) {
+    const dotColor = { active: 'var(--green)', warning: 'var(--orange)', expired: 'var(--red)', none: '' };
+    if (_ms.status !== 'none') {
+      _dotEl.style.background = dotColor[_ms.status];
+      _dotEl.style.display = 'inline-block';
+      _dotEl.title = _ms.label;
+    } else {
+      _dotEl.style.display = 'none';
+    }
   }
+  // Keep legacy bar hidden
+  const _msEl = document.getElementById('profileMembStatus');
+  if (_msEl) _msEl.style.display = 'none';
   document.getElementById('profileRating').textContent = player.rating;
   document.getElementById('profileCategory').textContent =
     [player.cat, player.sex, player.age ? player.age + ' años' : ''].filter(Boolean).join(' · ');
@@ -7022,13 +7032,14 @@ function showAllPlayers() {
 // MEMBER STATUS HELPERS
 // ══════════════════════════════════════════
 function getMemberInfo(player) {
-  if (!player.expDate) return { status: 'none', label: 'No Miembro', days: null };
+  if (!player.expDate) return { status: 'none', label: 'No es miembro', shortLabel: 'No miembro', days: null, expDate: null };
   const now  = new Date();
   const exp  = new Date(player.expDate);
   const days = Math.floor((exp - now) / 86400000);
-  if (days < 0)   return { status: 'expired', label: `Expirado · ${player.expDate}`, days };
-  if (days <= 30) return { status: 'warning', label: `Miembro Activo · Vence en ${days}d (${player.expDate})`, days };
-  return { status: 'active', label: `Miembro Activo · Exp. ${player.expDate}`, days };
+  const fmt  = player.expDate; // YYYY-MM-DD
+  if (days < 0)   return { status: 'expired', label: `Membresía expirada — ${fmt}`,              shortLabel: `Expiró el ${fmt}`,      days, expDate: fmt };
+  if (days <= 30) return { status: 'warning', label: `Miembro activo — Vence en ${days}d (${fmt})`, shortLabel: `Vence en ${days}d`,  days, expDate: fmt };
+  return              { status: 'active',  label: `Miembro activo — Exp. ${fmt}`,                shortLabel: `Miembro hasta ${fmt}`,  days, expDate: fmt };
 }
 
 function buildMembPill(player) {
@@ -7583,6 +7594,12 @@ async function verificarEditarPerfil() {
     document.getElementById('editarPerfilStep1').style.display = 'none';
     document.getElementById('editarPerfilStep2').style.display = 'block';
     document.getElementById('editarPerfilNombre').textContent = _photoUploadPlayer.name;
+    const _msInfo = getMemberInfo(_photoUploadPlayer);
+    const _membEl = document.getElementById('editarPerfilMemb');
+    if (_membEl) {
+      const colors = { active: 'var(--green)', warning: 'var(--orange)', expired: 'var(--red)', none: 'var(--muted)' };
+      _membEl.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${colors[_msInfo.status]};margin-right:5px;vertical-align:middle;"></span>${_msInfo.shortLabel}`;
+    }
   } catch (e) {
     msgEl.textContent = 'Error de conexión. Intenta de nuevo.';
   } finally {
@@ -11462,8 +11479,9 @@ async function submitPublicReg() {
 
     <!-- Step 2: Options after verification -->
     <div id="editarPerfilStep2" style="display:none;">
-      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Editar perfil</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:20px;" id="editarPerfilNombre"></div>
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:2px;">Editar perfil</div>
+      <div style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:2px;" id="editarPerfilNombre"></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:18px;" id="editarPerfilMemb"></div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <button onclick="document.getElementById('editarPerfilModal').style.display='none';showPhotoUploadModal();"
           style="display:flex;align-items:center;gap:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:12px;padding:14px 16px;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;text-align:left;width:100%;">
