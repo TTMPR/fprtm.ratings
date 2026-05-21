@@ -1830,9 +1830,13 @@
         <div class="profile-memb-dot"></div>
         <div id="profileMembStatusText">—</div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px">
-        <button id="propFotoBtn" class="btn-secondary" style="padding:7px 16px;font-size:13px" onclick="showPhotoUploadModal()">📷 Proponer foto</button>
-        <button id="cambiarClubBtn" class="btn-secondary" style="padding:7px 16px;font-size:13px" onclick="showClubChangeModal()">🏛 Cambiar club</button>
+      <div style="margin-top:10px;">
+        <button id="editarPerfilBtn" onclick="showEditarPerfilGate()"
+          style="background:none;border:1px solid rgba(255,255,255,0.12);border-radius:99px;padding:5px 16px;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.04em;transition:all 0.15s;"
+          onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.color='var(--text)'"
+          onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='var(--muted)'">
+          Editar perfil
+        </button>
       </div>
 
       <div class="profile-rating-box">
@@ -4871,6 +4875,7 @@ async function loadRankingsData() {
         club:   p['Club'] || '—',
         rating: p['New Rating'] || p['Rating'] || 0,
         age,
+        dob:    dobIso,
       };
     });
   return _rankingsData;
@@ -7543,6 +7548,50 @@ function avatarHTML(player, size = 54) {
   const info = PHOTO_MAP[player.id];
   if (info) return `<img src="${info.url}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid var(--border)" onerror="this.style.display='none'">`;
   return `<div class="avatar">${initials(player.name)}</div>`;
+}
+
+async function showEditarPerfilGate() {
+  if (!_photoUploadPlayer) return;
+  const modal = document.getElementById('editarPerfilModal');
+  // Reset to step 1
+  document.getElementById('editarPerfilStep1').style.display = 'block';
+  document.getElementById('editarPerfilStep2').style.display = 'none';
+  document.getElementById('editarPerfilDob').value = '';
+  document.getElementById('editarPerfilDobMsg').textContent = '';
+  document.getElementById('editarPerfilSubtitle').textContent = _photoUploadPlayer.name;
+  modal.style.display = 'flex';
+  // Fetch DOB if not already loaded (loadPlayers omits it for privacy)
+  if (!_photoUploadPlayer.dob) {
+    try {
+      const data = await _supabase.from('Base de Datos')
+        .select('"Date of Birth"')
+        .eq('Member ID', _photoUploadPlayer.id)
+        .single();
+      if (data.data) {
+        const dobIso = data.data['Date of Birth'] ? _parseDOBStr(String(data.data['Date of Birth'])) : null;
+        _photoUploadPlayer.dob = dobIso;
+      }
+    } catch (e) {
+      console.warn('showEditarPerfilGate: could not fetch DOB', e);
+    }
+  }
+}
+
+function verificarEditarPerfil() {
+  const input = document.getElementById('editarPerfilDob').value;
+  const entered = parseDobText(input);
+  const stored = _photoUploadPlayer?.dob;
+  if (!entered) {
+    document.getElementById('editarPerfilDobMsg').textContent = 'Ingresa una fecha válida (DD/MM/AAAA).';
+    return;
+  }
+  if (!stored || entered !== stored) {
+    document.getElementById('editarPerfilDobMsg').textContent = 'La fecha no coincide con nuestros registros.';
+    return;
+  }
+  document.getElementById('editarPerfilStep1').style.display = 'none';
+  document.getElementById('editarPerfilStep2').style.display = 'block';
+  document.getElementById('editarPerfilNombre').textContent = _photoUploadPlayer.name;
 }
 
 function showPhotoUploadModal() {
@@ -11385,6 +11434,62 @@ async function submitPublicReg() {
         ¿Tienes alguna pregunta que entiendes debe añadirse para el beneficio de todos?<br>
         <a href="mailto:joel@ttmpr.xyz" style="color:#a5b4fc;font-weight:600;text-decoration:none;">joel@ttmpr.xyz</a>
       </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ EDITAR PERFIL — DOB GATE ══ -->
+<div id="editarPerfilModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:1200;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--dark2,#111118);border:1px solid rgba(255,255,255,0.09);border-radius:18px;padding:28px 24px;width:100%;max-width:340px;">
+
+    <!-- Step 1: DOB validation -->
+    <div id="editarPerfilStep1">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Verificar identidad</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:20px;" id="editarPerfilSubtitle">Ingresa tu fecha de nacimiento para continuar.</div>
+      <label style="font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Fecha de nacimiento</label>
+      <input id="editarPerfilDob" type="text" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric"
+        oninput="inscDobAutoFormat(this)"
+        style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 13px;color:var(--text);font-size:15px;box-sizing:border-box;outline:none;margin-bottom:8px;letter-spacing:0.05em;">
+      <div id="editarPerfilDobMsg" style="font-size:12px;color:#ef4444;min-height:16px;margin-bottom:16px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="verificarEditarPerfil()"
+          style="flex:1;background:var(--grad);border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">
+          Continuar
+        </button>
+        <button onclick="document.getElementById('editarPerfilModal').style.display='none'"
+          style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--muted);font-size:14px;cursor:pointer;">
+          Cancelar
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Options after verification -->
+    <div id="editarPerfilStep2" style="display:none;">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Editar perfil</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:20px;" id="editarPerfilNombre"></div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button onclick="document.getElementById('editarPerfilModal').style.display='none';showPhotoUploadModal();"
+          style="display:flex;align-items:center;gap:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:12px;padding:14px 16px;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;text-align:left;width:100%;">
+          <span style="font-size:22px;">📷</span>
+          <div>
+            <div>Proponer foto</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:400;margin-top:1px;">Será revisada antes de publicarse</div>
+          </div>
+        </button>
+        <button onclick="document.getElementById('editarPerfilModal').style.display='none';showClubChangeModal();"
+          style="display:flex;align-items:center;gap:12px;background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:12px;padding:14px 16px;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;text-align:left;width:100%;">
+          <span style="font-size:22px;">🏛</span>
+          <div>
+            <div>Cambiar club</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:400;margin-top:1px;">Solicitud sujeta a aprobación</div>
+          </div>
+        </button>
+      </div>
+      <button onclick="document.getElementById('editarPerfilModal').style.display='none'"
+        style="width:100%;margin-top:14px;background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:6px;">
+        Cerrar
+      </button>
     </div>
 
   </div>
