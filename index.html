@@ -3276,46 +3276,101 @@ Maria Lopez,Ana Torres,B</code>
 
     <div id="inscArchivedPlaceholder" style="display:none;padding:12px 0 40px;">
 
-      <!-- Thank you hero card -->
-      <div style="background:linear-gradient(145deg,rgba(56,189,248,0.07),rgba(129,140,248,0.06));border:1px solid rgba(129,140,248,0.2);border-radius:20px;padding:44px 28px 40px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden;">
-        <!-- Glow -->
-        <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:260px;height:260px;background:radial-gradient(circle,rgba(129,140,248,0.1),transparent 70%);pointer-events:none;"></div>
+      <!-- ── PRÓXIMO EVENTO — countdown hero ── -->
+      <div id="nextEventCard" style="background:linear-gradient(145deg,rgba(56,189,248,0.08),rgba(129,140,248,0.07));border:1px solid rgba(129,140,248,0.22);border-radius:20px;padding:36px 28px 32px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:-50px;left:50%;transform:translateX(-50%);width:300px;height:300px;background:radial-gradient(circle,rgba(129,140,248,0.09),transparent 70%);pointer-events:none;"></div>
+        <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--purple);margin-bottom:14px;">Próximo torneo</div>
+        <div id="nextEventName" style="font-size:clamp(20px,5vw,28px);font-weight:800;color:var(--text);line-height:1.2;margin-bottom:6px;"></div>
+        <div id="nextEventDates" style="font-size:14px;color:var(--muted);margin-bottom:28px;"></div>
+        <!-- Countdown boxes -->
+        <div style="display:flex;justify-content:center;gap:12px;margin-bottom:8px;" id="countdownBoxes">
+          <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 20px;min-width:70px;">
+            <div id="cdDays" style="font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:var(--text);line-height:1;">—</div>
+            <div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">días</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 20px;min-width:70px;">
+            <div id="cdHours" style="font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:var(--text);line-height:1;">—</div>
+            <div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">horas</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 20px;min-width:70px;">
+            <div id="cdMins" style="font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:var(--text);line-height:1;">—</div>
+            <div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">min</div>
+          </div>
+        </div>
+        <div id="nextEventNote" style="font-size:12px;color:var(--muted);margin-top:8px;"></div>
+      </div>
 
-        <!-- Title -->
-        <div style="font-family:'Orbitron',monospace;font-size:clamp(11px,3vw,13px);font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--purple);margin-bottom:12px;">6to Ceiba Open 2026</div>
-        <div style="font-family:'Orbitron',monospace;font-size:clamp(22px,5.5vw,34px);font-weight:900;background:linear-gradient(135deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15;margin-bottom:10px;">Gracias a todos<br>los que nos<br>acompañaron</div>
+      <!-- ── CALENDARIO DE EVENTOS ── -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;padding:0 2px;">Calendario 2026</div>
 
-        <!-- Divider -->
-        <div style="width:48px;height:3px;background:linear-gradient(90deg,#38bdf8,#818cf8);border-radius:99px;margin:20px auto;"></div>
-
-        <!-- Next events teaser -->
-        <div style="font-size:15px;color:var(--muted);line-height:1.65;max-width:340px;margin:0 auto 28px;">
-          Pronto anunciaremos los próximos eventos. Mantente pendiente a nuestras redes sociales y al canal oficial de Dirección Técnica.
+        <!-- Junio -->
+        <div style="margin-bottom:8px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--purple);margin-bottom:8px;padding:0 4px;">Junio</div>
+          <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;opacity:0.6;">
+            <div style="font-family:'Orbitron',monospace;font-size:13px;color:var(--muted);min-width:42px;text-align:right;">—</div>
+            <div style="width:1px;height:28px;background:rgba(255,255,255,0.1);flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--muted);">Receso Torneo Federativo</div>
+              <div style="font-size:11px;color:var(--muted);opacity:0.7;margin-top:2px;">Sin torneos este mes</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Social links -->
-        <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <!-- Julio -->
+        <div style="margin-bottom:8px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--purple);margin-bottom:8px;padding:0 4px;">Julio</div>
+          <div style="background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.18);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;">
+            <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:#38bdf8;min-width:42px;text-align:right;line-height:1.1;">4–5</div>
+            <div style="width:1px;height:32px;background:rgba(56,189,248,0.3);flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:15px;font-weight:700;color:var(--text);">Trujillo Alto Open</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">Sábado 4 & Domingo 5 de julio</div>
+            </div>
+          </div>
+        </div>
 
-          <!-- Facebook FPTM -->
-          <a href="https://www.facebook.com/FPRTM" target="_blank" rel="noopener"
-            style="display:inline-flex;align-items:center;gap:10px;background:rgba(24,119,242,0.1);border:1px solid rgba(24,119,242,0.25);border-radius:12px;padding:12px 22px;text-decoration:none;color:var(--text);font-size:14px;font-weight:600;transition:opacity 0.15s;width:260px;justify-content:center;"
-            onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.269h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
-            FPRTM — Federación
-          </a>
-
-          <!-- WhatsApp Dirección Técnica -->
-          <a href="https://whatsapp.com/channel/0029VbCmA4L6rsQrAKOglc25" target="_blank" rel="noopener"
-            style="display:inline-flex;align-items:center;gap:10px;background:rgba(37,211,102,0.08);border:1px solid rgba(37,211,102,0.22);border-radius:12px;padding:12px 22px;text-decoration:none;color:var(--text);font-size:14px;font-weight:600;transition:opacity 0.15s;width:260px;justify-content:center;"
-            onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            Canal Dirección Técnica
-          </a>
-
+        <!-- Agosto -->
+        <div style="margin-bottom:8px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--purple);margin-bottom:8px;padding:0 4px;">Agosto</div>
+          <div style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.18);border-radius:14px;padding:16px 20px;display:flex;align-items:flex-start;gap:16px;">
+            <div style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#818cf8;min-width:42px;text-align:right;line-height:1.5;padding-top:2px;">15–16<br>22–23</div>
+            <div style="width:1px;min-height:48px;background:rgba(129,140,248,0.3);flex-shrink:0;margin-top:2px;"></div>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">Cidra Open</div>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:10px;font-weight:700;letter-spacing:0.08em;background:rgba(129,140,248,0.15);color:#818cf8;border-radius:6px;padding:2px 7px;">PARTE 1</span>
+                  <span style="font-size:12px;color:var(--muted);">Sáb 15 & Dom 16 de agosto</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:10px;font-weight:700;letter-spacing:0.08em;background:rgba(129,140,248,0.15);color:#818cf8;border-radius:6px;padding:2px 7px;">PARTE 2</span>
+                  <span style="font-size:12px;color:var(--muted);">Sáb 22 & Dom 23 de agosto</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <p style="font-size:11px;color:var(--muted);text-align:center;opacity:0.45;margin-top:8px;">
+      <!-- ── REDES SOCIALES ── -->
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">Síguenos para estar al tanto</div>
+        <a href="https://www.facebook.com/FPRTM" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:10px;background:rgba(24,119,242,0.1);border:1px solid rgba(24,119,242,0.25);border-radius:12px;padding:12px 22px;text-decoration:none;color:var(--text);font-size:14px;font-weight:600;transition:opacity 0.15s;width:260px;justify-content:center;box-sizing:border-box;"
+          onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.269h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+          FPRTM — Federación
+        </a>
+        <a href="https://whatsapp.com/channel/0029VbCmA4L6rsQrAKOglc25" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:10px;background:rgba(37,211,102,0.08);border:1px solid rgba(37,211,102,0.22);border-radius:12px;padding:12px 22px;text-decoration:none;color:var(--text);font-size:14px;font-weight:600;transition:opacity 0.15s;width:260px;justify-content:center;box-sizing:border-box;"
+          onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Canal Dirección Técnica
+        </a>
+      </div>
+
+      <p style="font-size:11px;color:var(--muted);text-align:center;opacity:0.45;margin-top:4px;">
         Sistema de Ratings · Federación Puertorriqueña de Tenis de Mesa
       </p>
     </div>
@@ -8223,6 +8278,55 @@ function applyInscripcionesState() {
   if (iconEl)  iconEl.textContent       = inscripcionesOpen ? '📋' : '🔒';
 
   applyTorneoArchivoAdminCards();
+
+  // Start countdown if archived view is visible
+  if (torneoArchivado) initNextEventCountdown();
+}
+
+// ── UPCOMING EVENTS COUNTDOWN ──────────────────────────────────────────────
+const UPCOMING_EVENTS = [
+  { name: 'Trujillo Alto Open', dateLabel: 'Sábado 4 & Domingo 5 de julio', target: new Date('2026-07-04T08:00:00') },
+  { name: 'Cidra Open',         dateLabel: 'Partes 1 & 2 · Agosto 2026',    target: new Date('2026-08-15T08:00:00') },
+];
+
+let _countdownTimer = null;
+
+function initNextEventCountdown() {
+  if (_countdownTimer) clearInterval(_countdownTimer);
+  const now = new Date();
+  const next = UPCOMING_EVENTS.find(e => e.target > now);
+  const nameEl  = document.getElementById('nextEventName');
+  const datesEl = document.getElementById('nextEventDates');
+  const noteEl  = document.getElementById('nextEventNote');
+  if (!nameEl) return;
+  if (!next) {
+    nameEl.textContent  = 'Temporada 2026';
+    datesEl.textContent = 'Más eventos próximamente';
+    document.getElementById('countdownBoxes').style.display = 'none';
+    return;
+  }
+  nameEl.textContent  = next.name;
+  datesEl.textContent = next.dateLabel;
+  function tick() {
+    const diff = next.target - new Date();
+    if (diff <= 0) {
+      document.getElementById('cdDays').textContent  = '0';
+      document.getElementById('cdHours').textContent = '0';
+      document.getElementById('cdMins').textContent  = '0';
+      if (noteEl) noteEl.textContent = '¡El torneo comienza hoy!';
+      clearInterval(_countdownTimer);
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    document.getElementById('cdDays').textContent  = d;
+    document.getElementById('cdHours').textContent = String(h).padStart(2,'0');
+    document.getElementById('cdMins').textContent  = String(m).padStart(2,'0');
+    if (noteEl) noteEl.textContent = d === 1 ? '¡Mañana es el torneo!' : d <= 14 ? '¡Falta poco!' : '';
+  }
+  tick();
+  _countdownTimer = setInterval(tick, 60000);
 }
 
 async function toggleInscripciones() {
