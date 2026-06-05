@@ -1668,9 +1668,10 @@
     <p>Top 10 por categoría · Temporada activa</p>
   </div>
 
-  <div style="display:none">
-    <div class="rank-pills-wrap" id="rankCatPills"></div>
-    <button onclick="_rankingsData=null;openRankings()">↻ Refrescar</button>
+  <div style="display:flex;align-items:center;gap:8px;padding:0 16px 8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+    <div class="rank-pills-wrap" id="rankCatPills" style="flex:1;min-width:0;"></div>
+    <button onclick="_rankingsData=null;openRankings()"
+      style="flex-shrink:0;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;">↻</button>
   </div>
 
   <div class="rankings-content-wrap">
@@ -3952,27 +3953,26 @@ Maria Lopez,Ana Torres,B</code>
         <div style="margin-top:12px;">
           <div style="font-weight:600;color:var(--text);margin-bottom:8px;">Sábado 16 de mayo</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
-            <li>1600 puntos o menos – 9:00 a.m.</li>
-            <li>11 años o menos Masculino – 11:00 a.m. | menores de 12 años al 31 de dic 2026</li>
-            <li>11 años o menos Femenino – 11:00 a.m. | menores de 12 años al 31 de dic 2026</li>
-            <li>13 años o menos Masculino – 11:00 a.m. | menores de 14 años al 31 de dic 2026</li>
-            <li>13 años o menos Femenino – 11:00 a.m. | menores de 14 años al 31 de dic 2026</li>
-            <li>15 años o menos Masculino – 12:30 p.m. | menores de 16 años al 31 de dic 2026</li>
-            <li>15 años o menos Femenino – 12:30 p.m. | menores de 16 años al 31 de dic 2026</li>
-            <li>Seniors: 40 años o más (Mixto) – 2:00 p.m.</li>
-            <li>Special Olympics – 2:00 p.m. | Evento gratuito ($0)</li>
+            <li>1900 puntos o menos – 9:00 a.m. | máx. 30 jugadores · 1ro $65 · 2do $60 · 3/4 $55</li>
+            <li>11 o Menos Masculino – 11:00 a.m. | nacido en 2015 o después</li>
+            <li>11 o Menos Femenino – 11:00 a.m. | nacido en 2015 o después</li>
+            <li>13 o Menos Masculino – 11:00 a.m. | nacido en 2013 o después</li>
+            <li>13 o Menos Femenino – 11:00 a.m. | nacido en 2013 o después</li>
+            <li>15 o Menos Masculino – 12:30 p.m. | nacido en 2011 o después</li>
+            <li>15 o Menos Femenino – 12:30 p.m. | nacido en 2011 o después</li>
+            <li>Special Olympics – 2:00 p.m. | Evento gratuito ($0) · Medallas</li>
           </ol>
           <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 17 de mayo</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
-            <li>1900 puntos o menos – 9:00 a.m.</li>
-            <li>7 años o menos Abierto – 11:00 a.m. | menores de 8 años al 31 de dic 2026</li>
-            <li>9 años o menos Masculino – 11:00 a.m. | menores de 10 años al 31 de dic 2026</li>
-            <li>9 años o menos Femenino – 11:00 a.m. | menores de 10 años al 31 de dic 2026</li>
-            <li>Sub-21 Abierto – 3:00 p.m. | menores de 22 años al 31 de dic 2026</li>
-            <li>1750 puntos o menos – 12:30 p.m.</li>
+            <li>1750 puntos o menos – 9:00 a.m. | máx. 30 jugadores · 1ro $55 · 2do $50 · 3/4 $45</li>
+            <li>7 o Menos Abierto – 11:00 a.m. | nacido en 2019 o después · Trofeos</li>
+            <li>9 o Menos Masculino – 11:00 a.m. | nacido en 2017 o después · Trofeos</li>
+            <li>9 o Menos Femenino – 11:00 a.m. | nacido en 2017 o después · Trofeos</li>
+            <li>Seniors – 40 años o más – 11:00 a.m. | nacido en 1986 o antes · 1ro $35 · 2do $30 · 3/4 $25</li>
+            <li>1600 puntos o menos – 12:30 p.m. | máx. 30 jugadores · 1ro $60 · 2do $55 · 3/4 $50</li>
           </ol>
           <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#f59e0b;margin-top:12px;">
-            ⚠ Categorías de Rating: máx. 30 jugadores por evento · Puedes inscribirte en múltiples categorías de Rating (1600, 1750, 1900) siempre que haya espacio · El sábado: solo 1 categoría por día · Si juegas Sub-21, solo puedes combinarla con 1 categoría de Rating adicional.
+            ⚠ Categorías de Rating: máx. 30 jugadores por evento · El sábado y el domingo: solo 1 categoría de Rating por día.
           </div>
         </div>
       </div>
@@ -4959,28 +4959,21 @@ function getTop10(catId, sex) {
 }
 
 async function openRankings() {
-  document.getElementById('rankingsContent').innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:55vh;text-align:center;padding:40px 24px;gap:22px;">
-      <img src="https://media3.giphy.com/media/37q9y7WbvLAy3Wg90h/giphy.gif"
-           alt="ping pong"
-           style="width:220px;height:220px;object-fit:contain;border-radius:16px;opacity:0.92;">
-      <div style="font-family:'Orbitron',monospace;font-size:clamp(22px,6vw,36px);font-weight:900;letter-spacing:2px;background:linear-gradient(135deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;">PRÓXIMAMENTE</div>
-      <div style="font-size:15px;color:var(--muted);max-width:340px;line-height:1.75;">Estamos afinando el sistema de rankings para darte los datos más precisos.<br><span style="color:var(--text);font-weight:600;">Vuelve pronto.</span></div>
-      <div style="width:56px;height:3px;border-radius:99px;background:linear-gradient(90deg,#38bdf8,#818cf8);"></div>
-      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.2);border-radius:99px;padding:8px 18px;font-size:12px;font-weight:600;color:#38bdf8;letter-spacing:0.1em;text-transform:uppercase;">
-        <span style="width:7px;height:7px;border-radius:50%;background:#38bdf8;display:inline-block;animation:rkPulse 1.4s ease-in-out infinite;"></span>
-        En construcción
-      </div>
-      <button onclick="document.getElementById('qaModal').style.display='flex'"
-        style="margin-top:4px;display:inline-flex;align-items:center;gap:8px;background:rgba(129,140,248,0.1);border:1px solid rgba(129,140,248,0.3);border-radius:12px;padding:12px 22px;color:#a5b4fc;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.15s;"
-        onmouseover="this.style.background='rgba(129,140,248,0.18)'" onmouseout="this.style.background='rgba(129,140,248,0.1)'">
-        Preguntas Frecuentes
-      </button>
-    </div>
-    <style>
-      @keyframes rkPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
-    </style>
-  `;
+  // Show pills
+  const pillsWrap = document.getElementById('rankCatPills');
+  if (pillsWrap) pillsWrap.closest('div[style]')?.removeAttribute('style');
+
+  document.getElementById('rankingsContent').innerHTML =
+    '<div style="text-align:center;padding:60px 0;color:var(--muted);">Cargando rankings...</div>';
+
+  try {
+    await loadRankingsData();
+    renderRankingPills();
+    renderRankingsContent(_activeCatId);
+  } catch(e) {
+    document.getElementById('rankingsContent').innerHTML =
+      `<div style="text-align:center;padding:40px;color:var(--red);">Error cargando rankings: ${e.message}</div>`;
+  }
 }
 
 function renderRankingPills() {
@@ -5643,13 +5636,15 @@ async function draftPublicar() {
   }
 
   // Save torneos + partidos + resultados_evento (authenticated)
+  const historialErrors = [];
   try {
     if (draft) {
       let torneoId = null;
-      const { data: tData } = await _supabase
+      const { data: tData, error: tErr } = await _supabase
         .from('torneos')
         .insert({ nombre: draft.torneo_nombre, fecha: draft.torneo_fecha })
         .select('id').single();
+      if (tErr) historialErrors.push(`torneos: ${tErr.message}`);
       torneoId = tData?.id || null;
 
       if (torneoId && Array.isArray(draft.partidos)) {
@@ -5662,20 +5657,22 @@ async function draftPublicar() {
         }));
         // Insert in batches of 100
         for (let i = 0; i < partidoRows.length; i += 100) {
-          await _supabase.from('partidos').insert(partidoRows.slice(i, i + 100));
+          const { error: pErr } = await _supabase.from('partidos').insert(partidoRows.slice(i, i + 100));
+          if (pErr) historialErrors.push(`partidos[${i}]: ${pErr.message}`);
         }
         const snapRows = _currentDraftSnapshot.map(s => ({ ...s, id_torneo: torneoId }));
         for (let i = 0; i < snapRows.length; i += 50) {
-          await _supabase.from('resultados_evento').insert(snapRows.slice(i, i + 50));
+          const { error: rErr } = await _supabase.from('resultados_evento').insert(snapRows.slice(i, i + 50));
+          if (rErr) historialErrors.push(`resultados_evento[${i}]: ${rErr.message}`);
         }
       }
     }
-  } catch(e) { console.warn('Error guardando historial:', e.message); }
+  } catch(e) { historialErrors.push(`historial: ${e.message}`); }
 
   // Mark draft as published
   await _supabase.from('resultados_draft').update({ status: 'published', published_at: new Date().toISOString() }).eq('id', _currentDraftId);
 
-  // Refresh rankings
+  // Refresh ratings list
   ALL_PLAYERS.sort((a, b) => b.rating - a.rating);
   ALL_PLAYERS.forEach((p, i) => { p.rank = i + 1; RANK_BY_ID[p.id] = p.rank; });
   filterPlayers();
@@ -5687,10 +5684,14 @@ async function draftPublicar() {
     btn.textContent = '✓ Publicar Ratings';
     btn.disabled = false;
   } else {
-    msgEl.style.color = 'var(--green)';
-    msgEl.textContent = `✓ ${applied} ratings publicados correctamente.`;
+    let successMsg = `✓ ${applied} ratings publicados correctamente.`;
+    if (historialErrors.length) {
+      successMsg += ` ⚠ Historial parcial: ${historialErrors.join('; ')}`;
+    }
+    msgEl.style.color = historialErrors.length ? '#f97316' : 'var(--green)';
+    msgEl.textContent = successMsg;
     btn.textContent = '✓ Publicado';
-    document.getElementById('draftModalActions').style.display = 'none';
+    if (!historialErrors.length) document.getElementById('draftModalActions').style.display = 'none';
   }
 }
 
@@ -8076,30 +8077,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 // INSCRIPCIONES — CONSTANTS
 // ══════════════════════════════════════════
 // Ceiba Open 2026 — Sáb 16 & Dom 17 de mayo
-// Rule: max 1 category per day · max 1 rating category per tournament
-// All SAB events share slot 'SAB'; all DOM events share slot 'DOM' (enforces 1-per-day)
-// ratingGroup: used to identify rating categories for Sub-21 combo rule
+// Rule: max 1 category per day slot · slot prefix 'SAB' = Saturday, 'DOM' = Sunday
+// ratingGroup: identifies rating-capped categories for same-day conflict logic
 const INSC_CATEGORIES = [
   // ── Sábado 16 de mayo ──
-  { id: 'ev1',  name: '1600 o Menos',              desc: '9:00 a.m. · máx. 30 jugadores',           price: 20, slot: 'SAB', maxRating: 1600, maxPlayers: 30, ratingGroup: 'rating' },
-  { id: 'ev2',  name: '11 años o Menos Masculino', desc: '11:00 a.m. · nacido en 2015 o después',   price: 20, slot: 'SAB', maxAge: 11, sex: 'M' },
-  { id: 'ev3',  name: '11 años o Menos Femenino',  desc: '11:00 a.m. · nacido en 2015 o después',   price: 20, slot: 'SAB', maxAge: 11, sex: 'F' },
-  { id: 'ev4',  name: '13 años o Menos Masculino', desc: '11:00 a.m. · nacido en 2013 o después',   price: 20, slot: 'SAB', maxAge: 13, sex: 'M' },
-  { id: 'ev5',  name: '13 años o Menos Femenino',  desc: '11:00 a.m. · nacido en 2013 o después',   price: 20, slot: 'SAB', maxAge: 13, sex: 'F' },
-  { id: 'ev6',  name: '15 años o Menos Masculino', desc: '12:30 p.m. · nacido en 2011 o después',   price: 20, slot: 'SAB', maxAge: 15, sex: 'M' },
-  { id: 'ev7',  name: '15 años o Menos Femenino',  desc: '12:30 p.m. · nacido en 2011 o después',   price: 20, slot: 'SAB', maxAge: 15, sex: 'F' },
-  { id: 'ev8',  name: 'Seniors 40+ (Mixto)',        desc: '2:00 p.m. · nacido en 1986 o antes',      price: 20, slot: 'SAB', minAge: 40 },
+  { id: 'ev1',  name: '1900 o Menos',             desc: '1ro $65 · 2do $60 · 3/4 $55',       price: 20, slot: 'SAB-900',  maxRating: 1900, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev2',  name: '11 o Menos Masculino',     desc: '1ro $30 · 2do $25 · 3/4 $20',       price: 20, slot: 'SAB-1100', maxAge: 11, sex: 'M' },
+  { id: 'ev3',  name: '11 o Menos Femenino',      desc: '1ro $30 · 2do $25 · 3/4 $20',       price: 20, slot: 'SAB-1100', maxAge: 11, sex: 'F' },
+  { id: 'ev4',  name: '13 o Menos Masculino',     desc: '1ro $35 · 2do $30 · 3/4 $25',       price: 20, slot: 'SAB-1100', maxAge: 13, sex: 'M' },
+  { id: 'ev5',  name: '13 o Menos Femenino',      desc: '1ro $35 · 2do $30 · 3/4 $25',       price: 20, slot: 'SAB-1100', maxAge: 13, sex: 'F' },
+  { id: 'ev6',  name: '15 o Menos Masculino',     desc: '1ro $40 · 2do $35 · 3/4 $30',       price: 20, slot: 'SAB-1230', maxAge: 15, sex: 'M' },
+  { id: 'ev7',  name: '15 o Menos Femenino',      desc: '1ro $40 · 2do $35 · 3/4 $30',       price: 20, slot: 'SAB-1230', maxAge: 15, sex: 'F' },
+  { id: 'ev8',  name: 'Special Olympics',         desc: 'Medallas · Evento especial',         price: 0,  slot: 'SAB-1400' },
   // ── Domingo 17 de mayo ──
-  { id: 'ev9',  name: '1900 o Menos',              desc: '9:00 a.m. · máx. 30 jugadores',           price: 20, slot: 'DOM', maxRating: 1900, maxPlayers: 30, ratingGroup: 'rating' },
-  { id: 'ev10', name: '7 años o Menos Abierto',    desc: '11:00 a.m. · nacido en 2019 o después',   price: 20, slot: 'DOM', maxAge: 7 },
-  { id: 'ev11', name: '9 años o Menos Masculino',  desc: '11:00 a.m. · nacido en 2017 o después',   price: 20, slot: 'DOM', maxAge: 9, sex: 'M' },
-  { id: 'ev12', name: '9 años o Menos Femenino',   desc: '11:00 a.m. · nacido en 2017 o después',   price: 20, slot: 'DOM', maxAge: 9, sex: 'F' },
-  { id: 'ev15', name: 'Sub-21 Abierto',             desc: '3:00 p.m. · nacido en 2005 o después · combinable con otra categoría del domingo',   price: 20, slot: 'DOM', maxAge: 21, sub21: true },
-  { id: 'ev14', name: '1750 o Menos',              desc: '12:30 p.m. · máx. 30 jugadores',          price: 20, slot: 'DOM', maxRating: 1750, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev9',  name: '1750 o Menos',             desc: '1ro $55 · 2do $50 · 3/4 $45',       price: 20, slot: 'DOM-900',  maxRating: 1750, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev10', name: '7 o Menos Abierto',        desc: 'Trofeos y medallas',                 price: 11, slot: 'DOM-1100', maxAge: 7 },
+  { id: 'ev11', name: '9 o Menos Masculino',      desc: 'Trofeos y medallas',                 price: 20, slot: 'DOM-1100', maxAge: 9,  sex: 'M' },
+  { id: 'ev12', name: '9 o Menos Femenino',       desc: 'Trofeos y medallas',                 price: 20, slot: 'DOM-1100', maxAge: 9,  sex: 'F' },
+  { id: 'ev13', name: 'Seniors – 40 años o más',  desc: '1ro $35 · 2do $30 · 3/4 $25',       price: 20, slot: 'DOM-1100', minAge: 40 },
+  { id: 'ev14', name: '1600 o Menos',             desc: '1ro $60 · 2do $55 · 3/4 $50',       price: 20, slot: 'DOM-1230', maxRating: 1600, maxPlayers: 30, ratingGroup: 'rating' },
 ];
 const INSC_SLOT_LABELS = {
-  'SAB': 'Sábado 16 de mayo',
-  'DOM': 'Domingo 17 de mayo',
+  'SAB-900':  'Sáb 16-mayo · 9:00 a.m.',
+  'SAB-1100': 'Sáb 16-mayo · 11:00 a.m.',
+  'SAB-1230': 'Sáb 16-mayo · 12:30 p.m.',
+  'SAB-1400': 'Sáb 16-mayo · 2:00 p.m.',
+  'DOM-900':  'Dom 17-mayo · 9:00 a.m.',
+  'DOM-1100': 'Dom 17-mayo · 11:00 a.m.',
+  'DOM-1230': 'Dom 17-mayo · 12:30 p.m.',
 };
 
 // Multas por no arbitrar (Reglamento Art. 9) — se aplican en el próximo torneo
@@ -9066,8 +9071,8 @@ function inscRenderCategories() {
     </div>`;
   };
 
-  const sabCats = INSC_CATEGORIES.filter(c => c.slot === 'SAB');
-  const domCats = INSC_CATEGORIES.filter(c => c.slot === 'DOM');
+  const sabCats = INSC_CATEGORIES.filter(c => c.slot.startsWith('SAB'));
+  const domCats = INSC_CATEGORIES.filter(c => c.slot.startsWith('DOM'));
 
   let html = '';
   if (existingIds.size > 0) {
@@ -9108,62 +9113,36 @@ function inscToggleCat(id) {
   if (inscState.selectedCats.has(id)) {
     inscState.selectedCats.delete(id);
   } else {
-    // Check same-day conflict (slot)
-    const SUB21_ID = 'ev15';
+    // Check same-day conflict: SAB-* slots share Saturday, DOM-* slots share Sunday
+    const catDay = cat.slot.startsWith('SAB') ? 'SAB' : cat.slot.startsWith('DOM') ? 'DOM' : null;
 
-    if (cat.slot === 'SAB') {
-      // Saturday: strict 1 per day — unchanged
-      const conflictId = [...inscState.selectedCats].find(selId => {
-        const s = INSC_CATEGORIES.find(c => c.id === selId);
-        return s && s.slot === 'SAB';
-      });
-      if (conflictId) {
-        const conflictCat = INSC_CATEGORIES.find(c => c.id === conflictId);
-        if (!confirm(`Solo puedes inscribirte en 1 categoría el sábado. ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
-        inscState.selectedCats.delete(conflictId);
-      }
-    } else if (cat.slot === 'DOM') {
-      const hasSub21 = inscState.selectedCats.has(SUB21_ID);
-
-      // Rating categories already selected on Sunday (excludes Sub-21)
-      const domRatingSelected = [...inscState.selectedCats].filter(selId => {
-        const s = INSC_CATEGORIES.find(c => c.id === selId);
-        return s && s.slot === 'DOM' && s.ratingGroup;
-      });
-
-      if (id === SUB21_ID) {
-        // Adding Sub-21: allowed only if ≤1 rating category is already selected
-        if (domRatingSelected.length >= 2) {
-          alert('Para inscribirte en Sub-21 debes tener máximo 1 categoría de Rating el domingo. Retira una categoría de Rating primero.');
-          return;
-        }
-        // 0 or 1 rating already → OK, no replacement needed
-      } else if (cat.ratingGroup) {
-        // Adding a rating category on Sunday (1750 / 1900): max 1 per day
-        // Cross-day combos (1600 SAB + 1750 or 1900 DOM) are handled separately and remain allowed
-        if (domRatingSelected.length >= 1) {
-          const existing = INSC_CATEGORIES.find(c => c.id === domRatingSelected[0]);
-          const msg = hasSub21
-            ? `Estás inscrito en Sub-21: solo puedes combinar con 1 categoría de Rating. ¿Reemplazar "${existing.name}" con "${cat.name}"?`
-            : `Solo puedes inscribirte en 1 categoría de Rating por día (Domingo). ¿Reemplazar "${existing.name}" con "${cat.name}"?`;
-          if (!confirm(msg)) return;
-          inscState.selectedCats.delete(domRatingSelected[0]);
+    if (catDay) {
+      if (cat.ratingGroup) {
+        // Rating categories: max 1 per day
+        const sameDayRatingId = [...inscState.selectedCats].find(selId => {
+          const s = INSC_CATEGORIES.find(c => c.id === selId);
+          return s && s.slot.startsWith(catDay) && s.ratingGroup;
+        });
+        if (sameDayRatingId) {
+          const conflictCat = INSC_CATEGORIES.find(c => c.id === sameDayRatingId);
+          const dayLabel = catDay === 'SAB' ? 'sábado' : 'domingo';
+          if (!confirm(`Solo puedes inscribirte en 1 categoría de Rating el ${dayLabel}. ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
+          inscState.selectedCats.delete(sameDayRatingId);
         }
       } else {
-        // Adding a non-rating, non-Sub-21 DOM category (7y, 9y, etc.)
-        // Age categories remain 1 per day
-        const domAgeSelected = [...inscState.selectedCats].filter(selId => {
+        // Age/non-rating categories: max 1 per day
+        const sameDayAgeId = [...inscState.selectedCats].find(selId => {
           const s = INSC_CATEGORIES.find(c => c.id === selId);
-          return s && s.slot === 'DOM' && !s.ratingGroup && selId !== SUB21_ID;
+          return s && s.slot.startsWith(catDay) && !s.ratingGroup;
         });
-        if (domAgeSelected.length >= 1) {
-          const conflictCat = INSC_CATEGORIES.find(c => c.id === domAgeSelected[0]);
-          if (!confirm(`Solo puedes inscribirte en 1 categoría de edad por día (Domingo). ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
-          inscState.selectedCats.delete(domAgeSelected[0]);
+        if (sameDayAgeId) {
+          const conflictCat = INSC_CATEGORIES.find(c => c.id === sameDayAgeId);
+          const dayLabel = catDay === 'SAB' ? 'sábado' : 'domingo';
+          if (!confirm(`Solo puedes inscribirte en 1 categoría de edad el ${dayLabel}. ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
+          inscState.selectedCats.delete(sameDayAgeId);
         }
       }
     }
-    // Cross-day rating restriction removed: 1600 (SAB) + 1750 (DOM) + 1900 (DOM) now allowed
     inscState.selectedCats.add(id);
   }
   inscRenderCategories();
@@ -9620,23 +9599,26 @@ function matchClubId(clubName) {
 
 // Derives Stadium Compete event slug from the category name.
 // Stadium format examples:
-//   "11 años o Menos Masculino" → "11u---masculino"  (age: NU - Gender)
+//   "11 o Menos Masculino" / "11 años o Menos Masculino" → "11u---masculino"
 //   "1600 o Menos"              → "1600-o-menos"
-//   "Seniors 40+ (Mixto)"       → "seniors"
-//   "Sub-21 Abierto"            → "sub-21-abierto"
+//   "Seniors – 40 años o más"   → "seniors"
+//   "Special Olympics"          → "special-olympics"
 function catNameToStadiumId(name) {
   if (!name) return '';
   let s = name.toLowerCase()
     .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i').replace(/ó/g,'o').replace(/ú/g,'u').replace(/ñ/g,'n')
-    .replace(/\s*\([^)]*\)\s*/g,' ').trim();
+    .replace(/–/g,'-').replace(/\s*\([^)]*\)\s*/g,' ').trim();
   // Seniors: Stadium event is just "Seniors" regardless of age qualifier
   if (s.startsWith('seniors')) return 'seniors';
-  // Age pattern: "11 anos o menos masculino" → "11u---masculino"
-  // Stadium name is "11U - Masculino" which slugifies with triple dash
-  if (/\d+\s+anos\s+o\s+menos/i.test(s)) {
-    s = s.replace(/(\d+)\s+anos\s+o\s+menos\s*/i, '$1u---');
-    s = s.replace(/\s+/g, '-');
-    return s;
+  // Age pattern: "11 (años) o menos (masculino/femenino/abierto)" → "11u---masculino"
+  // Handles both "11 o Menos Masculino" and "11 años o Menos Masculino"
+  if (/^(\d+)\s+(?:anos\s+)?o\s+menos(.*)$/.test(s)) {
+    const m = s.match(/^(\d+)\s+(?:anos\s+)?o\s+menos\s*(.*)\s*$/);
+    if (m) {
+      const num = m[1];
+      const rest = m[2].trim().replace(/\s+/g, '-');
+      return rest ? `${num}u---${rest}` : `${num}u`;
+    }
   }
   // General slugify: spaces and non-alphanumeric (except existing dashes) → dashes
   return s.replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
@@ -10489,8 +10471,8 @@ async function showInscLogisticaModal() {
         dob: dobIso,
         sex,
         club: p['Club'] || '—',
-        eligibleSab: eligibleCats.filter(c => c.slot === 'SAB'),
-        eligibleDom: eligibleCats.filter(c => c.slot === 'DOM'),
+        eligibleSab: eligibleCats.filter(c => c.slot.startsWith('SAB')),
+        eligibleDom: eligibleCats.filter(c => c.slot.startsWith('DOM')),
         eligibleIds: new Set(eligibleCats.map(c => c.id)),
       };
     });
@@ -10567,10 +10549,11 @@ function renderInscLogistica(filterCatId) {
        </div>`
     : `<div style="margin-bottom:14px;font-size:13px;color:var(--muted);">Todos los miembros activos · ${rows.length} jugador${rows.length !== 1 ? 'es' : ''}</div>`;
 
-  const catPill = (c, slot) => {
-    const bg    = slot === 'SAB' ? 'rgba(56,189,248,0.12)'   : 'rgba(167,139,250,0.12)';
-    const color = slot === 'SAB' ? 'var(--accent)'            : '#a78bfa';
-    const bdr   = slot === 'SAB' ? 'rgba(56,189,248,0.3)'    : 'rgba(167,139,250,0.3)';
+  const catPill = (c) => {
+    const isSab = c.slot.startsWith('SAB');
+    const bg    = isSab ? 'rgba(56,189,248,0.12)'   : 'rgba(167,139,250,0.12)';
+    const color = isSab ? 'var(--accent)'            : '#a78bfa';
+    const bdr   = isSab ? 'rgba(56,189,248,0.3)'    : 'rgba(167,139,250,0.3)';
     return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;margin:2px;background:${bg};color:${color};border:1px solid ${bdr};">${c.name}</span>`;
   };
 
@@ -10588,8 +10571,8 @@ function renderInscLogistica(filterCatId) {
     <tbody>`;
 
   rows.forEach((r, i) => {
-    const sabPills = r.eligibleSab.map(c => catPill(c, 'SAB')).join('') || '<span style="color:var(--muted);font-size:11px;">—</span>';
-    const domPills = r.eligibleDom.map(c => catPill(c, 'DOM')).join('') || '<span style="color:var(--muted);font-size:11px;">—</span>';
+    const sabPills = r.eligibleSab.map(c => catPill(c)).join('') || '<span style="color:var(--muted);font-size:11px;">—</span>';
+    const domPills = r.eligibleDom.map(c => catPill(c)).join('') || '<span style="color:var(--muted);font-size:11px;">—</span>';
     html += `
       <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"
           onmouseover="this.style.background='rgba(56,189,248,0.04)'"
