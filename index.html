@@ -3946,7 +3946,7 @@ Maria Lopez,Ana Torres,B</code>
 
       <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
         <strong style="color:#ef4444;">9. FECHA LÍMITE</strong><br>
-        <strong style="color:var(--text);font-size:15px;">Por anunciarse.</strong>
+        <strong style="color:var(--text);font-size:15px;">Miércoles 1 de julio de 2026.</strong>
       </div>
 
       <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
@@ -9019,7 +9019,7 @@ function inscRenderCategories() {
     const nameColor = isExisting ? '#86efac' : !elig.ok ? 'var(--muted)' : 'var(--text)';
     const subText  = isExisting
       ? `<span style="color:#4ade80;font-size:10px;font-weight:600;">Ya inscrito · $${cat.price}</span>`
-      : `<span style="color:var(--muted);font-size:10px;">${!elig.ok ? elig.reason : cat.desc} · $${cat.price}${capBadge}</span>`;
+      : `<span style="color:var(--muted);font-size:10px;">${!elig.ok ? elig.reason : cat.desc} · $${cat.price}${capBadge} · ${(INSC_SLOT_LABELS[cat.slot] || cat.slot).split('·').pop().trim()}</span>`;
 
     return `<div onclick="${disabled ? '' : `inscToggleCat('${cat.id}')`}"
       style="display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border-radius:9px;border:1.5px solid ${border};background:${bg};cursor:${cursor};opacity:${opacity};transition:all .15s;margin-bottom:5px;">
