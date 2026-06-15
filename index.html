@@ -8173,14 +8173,23 @@ function applyInscripcionesState() {
   const activeUI      = document.getElementById('inscActiveTorneoUI');
   const torneoCard    = document.getElementById('inscTorneoCard');
 
-  if (torneoArchivado) {
-    // Archived — show placeholder, hide everything else
+  if (torneoArchivado && !isAdmin()) {
+    // Archived — public sees placeholder only
     if (placeholder)   placeholder.style.display   = '';
     if (activeUI)      activeUI.style.display       = 'none';
     if (torneoCard)    torneoCard.style.display      = 'none';
     if (banner)        banner.style.display         = 'none';
     if (previewBanner) previewBanner.style.display  = 'none';
     if (progress)      progress.style.display       = 'none';
+  } else if (torneoArchivado && isAdmin()) {
+    // Archived but admin — show form in preview mode so admin can set up next torneo
+    if (placeholder)   placeholder.style.display   = 'none';
+    if (activeUI)      activeUI.style.display       = '';
+    if (torneoCard)    torneoCard.style.display      = '';
+    if (banner)        banner.style.display         = 'none';
+    if (previewBanner) previewBanner.style.display  = 'flex';
+    if (progress)      progress.style.display       = 'none';
+    if (inscReglamentoAceptado) { inscShowForm(); } else { inscGoToStep(0); }
   } else if (inscripcionesOpen) {
     // Open for everyone
     if (placeholder)   placeholder.style.display   = 'none';
