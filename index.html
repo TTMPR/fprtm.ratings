@@ -3863,7 +3863,7 @@ Maria Lopez,Ana Torres,B</code>
 </div>
 
 <!-- ══════════════════════════════════════════
-     REGLAMENTO MODAL — CEIBA OPEN 2026
+     REGLAMENTO MODAL — TRUJILLO ALTO OPEN 2026
 ═══════════════════════════════════════════ -->
 <div id="reglamentoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1200;overflow-y:auto;padding:16px;">
   <div style="max-width:680px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:28px 28px 36px;">
@@ -5427,7 +5427,7 @@ async function subirGuardarBorrador() {
     }
   }
 
-  // Generate column name for this tournament: "Trujillo Alto Open 2026" → "rating_ceiba_open_2026"
+  // Generate column name for this tournament: "Trujillo Alto Open 2026" → "rating_trujillo_alto_open_2026"
   const colName = 'rating_' + nombre.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 
   try {
@@ -8311,15 +8311,32 @@ async function toggleInscripciones() {
   // Flip immediately — visual feedback without waiting for network
   inscripcionesOpen = !inscripcionesOpen;
   localStorage.setItem('inscripciones_open', String(inscripcionesOpen));
+
+  // Opening inscripciones implies the torneo is active — un-archive automatically,
+  // otherwise the archived placeholder keeps overriding the open state.
+  const willUnarchive = inscripcionesOpen && torneoArchivado;
+  if (willUnarchive) {
+    torneoArchivado = false;
+    localStorage.setItem('torneo_archivado', 'false');
+  }
   applyInscripcionesState();
 
   // Upsert using the authenticated Supabase client (requires RLS + authenticated_write policy)
   try {
-    const { error } = await _supabase
-      .from('app_settings')
-      .upsert({ key: 'inscripciones_open', value: String(inscripcionesOpen), updated_at: new Date().toISOString() },
-               { onConflict: 'key' });
-    if (error) throw new Error(error.message);
+    const now = new Date().toISOString();
+    const promises = [
+      _supabase.from('app_settings')
+        .upsert({ key: 'inscripciones_open', value: String(inscripcionesOpen), updated_at: now },
+                 { onConflict: 'key' })
+    ];
+    if (willUnarchive) {
+      promises.push(_supabase.from('app_settings')
+        .upsert({ key: 'torneo_archivado', value: 'false', updated_at: now },
+                 { onConflict: 'key' }));
+    }
+    const results = await Promise.all(promises);
+    const failed = results.find(r => r.error);
+    if (failed) throw new Error(failed.error.message);
     inscSbSynced = true;
     applyInscripcionesState();
   } catch(e) {
@@ -9685,7 +9702,7 @@ async function exportInscripcionesStadium() {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url;
-    a.download = `inscritos_ceiba_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `inscritos_trujillo_alto_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -10173,7 +10190,7 @@ function exportReporteFinanciero() {
     }
   } catch(e) { /* charts as data only if image embed not supported */ }
 
-  XLSX.writeFile(wb, `reporte_financiero_ceiba_open_${new Date().toISOString().slice(0,10)}.xlsx`);
+  XLSX.writeFile(wb, `reporte_financiero_trujillo_alto_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 function printReporteFinanciero() {
@@ -10598,7 +10615,7 @@ function exportInscLogisticaCSV() {
   const suffix = _inscLogisticaActiveCat
     ? INSC_CATEGORIES.find(c => c.id === _inscLogisticaActiveCat)?.name.replace(/\s+/g,'_') || _inscLogisticaActiveCat
     : 'todos';
-  a.download = `logistica_ceiba2026_${suffix}.csv`;
+  a.download = `logistica_trujillo_alto_2026_${suffix}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
