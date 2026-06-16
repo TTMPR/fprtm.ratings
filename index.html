@@ -3515,7 +3515,7 @@ Maria Lopez,Ana Torres,B</code>
           <div style="font-size:15px;font-weight:700;color:var(--text);">Categorías</div>
           <button onclick="openReglamentoModal()" style="background:none;border:none;color:var(--accent);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;">📋 Ver reglamento</button>
         </div>
-        <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:14px;">1 categoría por día · 1 de Rating por torneo · Cupo máx. 30 por Rating.</p>
+        <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:14px;">Máx. 2 categorías por día · Sin coincidir en horario · Cupo máx. 30 por Rating.</p>
         <div id="inscCatList" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
 
@@ -3951,7 +3951,7 @@ Maria Lopez,Ana Torres,B</code>
             <li>Sub-21 Mixto – 12:30 p.m. | menores de 21 años al 31-dic-2026</li>
           </ol>
           <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#f59e0b;margin-top:12px;">
-            ⚠ Máx. 2 categorías por día · Máx. 1 categoría de Rating por día · Categorías de Rating: máx. 30 jugadores.
+            ⚠ Máx. 2 categorías por día · Las categorías del mismo día no pueden coincidir en horario · Categorías de Rating: máx. 30 jugadores.
           </div>
         </div>
       </div>
@@ -3978,7 +3978,7 @@ Maria Lopez,Ana Torres,B</code>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">10. INSCRIPCIONES</strong><br>
-        La hoja de inscripción será aceptada solo si está debidamente cumplimentada, incluyendo el pago de inscripción. Inscripciones en: ratings.ttmpr.xyz · Máximo 2 categorías por día, sin coincidir en horario · Categorías de Rating: máx. 30 jugadores por evento; las categorías por edad no tienen límite de jugadores.
+        La hoja de inscripción será aceptada solo si está debidamente cumplimentada, incluyendo el pago de inscripción. Inscripciones en: ratings.ttmpr.xyz · Máximo 2 categorías por día sin coincidir en horario (máx. 4 en total entre sábado y domingo) · Categorías de Rating: máx. 30 jugadores; las categorías por edad no tienen límite de jugadores.
       </div>
 
       <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
@@ -9254,34 +9254,26 @@ function inscToggleCat(id) {
   if (inscState.selectedCats.has(id)) {
     inscState.selectedCats.delete(id);
   } else {
-    // Check same-day conflict: SAB-* slots share Saturday, DOM-* slots share Sunday
     const catDay = cat.slot.startsWith('SAB') ? 'SAB' : cat.slot.startsWith('DOM') ? 'DOM' : null;
 
     if (catDay) {
-      if (cat.ratingGroup) {
-        // Rating categories: max 1 per day
-        const sameDayRatingId = [...inscState.selectedCats].find(selId => {
-          const s = INSC_CATEGORIES.find(c => c.id === selId);
-          return s && s.slot.startsWith(catDay) && s.ratingGroup;
-        });
-        if (sameDayRatingId) {
-          const conflictCat = INSC_CATEGORIES.find(c => c.id === sameDayRatingId);
-          const dayLabel = catDay === 'SAB' ? 'sábado' : 'domingo';
-          if (!confirm(`Solo puedes inscribirte en 1 categoría de Rating el ${dayLabel}. ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
-          inscState.selectedCats.delete(sameDayRatingId);
-        }
-      } else {
-        // Age/non-rating categories: max 1 per day
-        const sameDayAgeId = [...inscState.selectedCats].find(selId => {
-          const s = INSC_CATEGORIES.find(c => c.id === selId);
-          return s && s.slot.startsWith(catDay) && !s.ratingGroup;
-        });
-        if (sameDayAgeId) {
-          const conflictCat = INSC_CATEGORIES.find(c => c.id === sameDayAgeId);
-          const dayLabel = catDay === 'SAB' ? 'sábado' : 'domingo';
-          if (!confirm(`Solo puedes inscribirte en 1 categoría de edad el ${dayLabel}. ¿Reemplazar "${conflictCat.name}" con "${cat.name}"?`)) return;
-          inscState.selectedCats.delete(sameDayAgeId);
-        }
+      const sameDayCats = [...inscState.selectedCats]
+        .map(selId => INSC_CATEGORIES.find(c => c.id === selId))
+        .filter(c => c && c.slot.startsWith(catDay));
+
+      // Block same-slot (same start time) conflict
+      const sameSlot = sameDayCats.find(c => c.slot === cat.slot);
+      if (sameSlot) {
+        const dayLabel = catDay === 'SAB' ? 'sábado' : 'domingo';
+        alert(`"${sameSlot.name}" y "${cat.name}" comienzan a la misma hora el ${dayLabel} — no puedes inscribirte en ambas.`);
+        return;
+      }
+
+      // Block exceeding 2 per day — ask which to drop
+      if (sameDayCats.length >= 2) {
+        const dayLabel = catDay === 'SAB' ? 'sábado' : 'domingo';
+        alert(`Ya tienes 2 categorías el ${dayLabel}. Deselecciona una para añadir "${cat.name}".`);
+        return;
       }
     }
     inscState.selectedCats.add(id);
