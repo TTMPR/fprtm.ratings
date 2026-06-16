@@ -3355,6 +3355,32 @@ Maria Lopez,Ana Torres,B</code>
       </button>
     </div>
 
+    <!-- Estadísticas en vivo (público) — cupos por categoría y rating promedio -->
+    <div id="inscStatsCard" style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:20px;">
+      <div onclick="toggleInscStats()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">📊</span>
+          <span style="font-size:14px;font-weight:700;color:var(--text);">Estadísticas en vivo</span>
+        </div>
+        <span id="inscStatsChevron" style="color:var(--muted);font-size:13px;">Ver más ▾</span>
+      </div>
+      <div id="inscStatsBody" style="display:none;margin-top:16px;">
+        <div id="inscStatsLoading" style="text-align:center;padding:16px 0;color:var(--muted);font-size:13px;">Cargando estadísticas...</div>
+        <div id="inscStatsContent" style="display:none;">
+          <div id="inscStatsSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:22px;"></div>
+          <div style="margin-bottom:24px;">
+            <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em;">Cupos por categoría (Rating)</div>
+            <canvas id="inscStatsCapacityChart" height="170"></canvas>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em;">Rating promedio de inscritos por categoría</div>
+            <canvas id="inscStatsRatingChart" height="220"></canvas>
+          </div>
+        </div>
+        <div id="inscStatsError" style="display:none;color:#ef4444;font-size:13px;text-align:center;padding:16px 0;"></div>
+      </div>
+    </div>
+
     <!-- ══ TAB: INSCRIBIRSE ══ -->
     <div id="inscTabFormContent">
 
@@ -8946,6 +8972,126 @@ async function loadCatCounts() {
       });
     });
   } catch(e) { /* silent — capacity check skipped if fetch fails */ }
+}
+
+// ══════════════════════════════════════════
+// INSCRIPCIONES — PUBLIC STATS (cupos + rating promedio)
+// ══════════════════════════════════════════
+let _inscStatsLoaded         = false;
+let _inscStatsCapacityChart  = null;
+let _inscStatsRatingChart    = null;
+
+function toggleInscStats() {
+  const body    = document.getElementById('inscStatsBody');
+  const chevron = document.getElementById('inscStatsChevron');
+  if (!body) return;
+  const opening = body.style.display === 'none';
+  body.style.display = opening ? '' : 'none';
+  if (chevron) chevron.textContent = opening ? 'Ver menos ▴' : 'Ver más ▾';
+  if (opening && !_inscStatsLoaded) loadInscStats();
+}
+
+async function loadInscStats() {
+  const loadingEl = document.getElementById('inscStatsLoading');
+  const contentEl = document.getElementById('inscStatsContent');
+  const errorEl   = document.getElementById('inscStatsError');
+  try {
+    const rows = await sbGet('insc_registro',
+      '?torneo=eq.Trujillo%20Alto%20Open%202026&select=member_id,categorias');
+
+    const counts      = {};   // catId → número de inscritos
+    const ratings      = {};  // catId → [rating, ...]
+    const seenPlayers = new Set();
+    (rows || []).forEach(r => {
+      seenPlayers.add(r.member_id);
+      const rating = ALL_PLAYERS.find(p => p.id === r.member_id)?.rating;
+      (Array.isArray(r.categorias) ? r.categorias : []).forEach(c => {
+        if (c.id === 'multa') return;
+        counts[c.id] = (counts[c.id] || 0) + 1;
+        if (rating != null) (ratings[c.id] = ratings[c.id] || []).push(rating);
+      });
+    });
+
+    const avg = arr => arr.length ? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length) : null;
+
+    const totalInscritos = seenPlayers.size;
+    const ratingGeneral  = avg(Object.values(ratings).flat());
+    let topCat = null, topCount = 0;
+    INSC_CATEGORIES.forEach(c => {
+      if ((counts[c.id] || 0) > topCount) { topCount = counts[c.id]; topCat = c; }
+    });
+
+    const summaryEl = document.getElementById('inscStatsSummary');
+    if (summaryEl) {
+      summaryEl.innerHTML = `
+        <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:var(--accent);">${totalInscritos}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">Inscritos totales</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:var(--text);">${ratingGeneral ?? '—'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">Rating promedio</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:15px;font-weight:700;color:var(--text);line-height:1.3;">${topCat ? topCat.name : '—'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">Categoría más popular${topCat ? ` (${topCount})` : ''}</div>
+        </div>`;
+    }
+
+    // Cupos por categoría — solo categorías con límite de Rating
+    const capCats = INSC_CATEGORIES.filter(c => c.maxPlayers);
+    const capCtx  = document.getElementById('inscStatsCapacityChart')?.getContext('2d');
+    if (capCtx) {
+      if (_inscStatsCapacityChart) _inscStatsCapacityChart.destroy();
+      _inscStatsCapacityChart = new Chart(capCtx, {
+        type: 'bar',
+        data: {
+          labels: capCats.map(c => c.name),
+          datasets: [
+            { label: 'Inscritos',   data: capCats.map(c => counts[c.id] || 0), backgroundColor: '#38bdf8', borderRadius: 5 },
+            { label: 'Disponibles', data: capCats.map(c => Math.max(0, c.maxPlayers - (counts[c.id] || 0))), backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 5 },
+          ]
+        },
+        options: {
+          indexAxis: 'y', responsive: true,
+          plugins: { legend: { labels: { color: '#888899', font: { size: 11 } } } },
+          scales: {
+            x: { stacked: true, ticks: { color: '#888899', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: { stacked: true, ticks: { color: '#888899', font: { size: 11 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // Rating promedio por categoría — todas las categorías con al menos 1 inscrito con rating
+    const ratedCats = INSC_CATEGORIES.filter(c => ratings[c.id]?.length);
+    const ratingCtx = document.getElementById('inscStatsRatingChart')?.getContext('2d');
+    if (ratingCtx) {
+      if (_inscStatsRatingChart) _inscStatsRatingChart.destroy();
+      _inscStatsRatingChart = new Chart(ratingCtx, {
+        type: 'bar',
+        data: {
+          labels: ratedCats.map(c => c.name.length > 18 ? c.name.slice(0, 16) + '…' : c.name),
+          datasets: [{ label: 'Rating promedio', data: ratedCats.map(c => avg(ratings[c.id])), backgroundColor: '#a78bfa', borderRadius: 5 }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#888899', font: { size: 10 } }, grid: { display: false } },
+            y: { ticks: { color: '#888899' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+          }
+        }
+      });
+    }
+
+    loadingEl.style.display = 'none';
+    contentEl.style.display = '';
+    _inscStatsLoaded = true;
+  } catch(e) {
+    loadingEl.style.display = 'none';
+    if (errorEl) { errorEl.style.display = ''; errorEl.textContent = 'No se pudieron cargar las estadísticas: ' + e.message; }
+  }
 }
 
 // ══════════════════════════════════════════
