@@ -286,6 +286,20 @@
   .filter-chip:hover { border-color: var(--cyan); color: var(--cyan); }
   .filter-chip.on { background: rgba(56,189,248,0.12); border-color: var(--cyan); color: var(--cyan); }
 
+  .club-select {
+    padding: 6px 28px 6px 12px; border-radius: 99px;
+    border: 1px solid var(--border);
+    background: var(--card); color: var(--muted);
+    cursor: pointer; font-size: 13px; font-weight: 500;
+    transition: all 0.2s; outline: none;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .club-select:hover, .club-select:focus { border-color: var(--cyan); color: var(--cyan); }
+  .club-select.active { background-color: rgba(56,189,248,0.12); border-color: var(--cyan); color: var(--cyan); }
+
   /* ─── STATS ROW ─── */
   .stats-row {
     max-width: 1200px; margin: 0 auto; padding: 0 32px 32px;
@@ -1617,6 +1631,9 @@
     <div class="filter-chip on" onclick="setFilter(this,'all')">Todos</div>
     <div class="filter-chip" onclick="setFilter(this,'masc')">Masculino</div>
     <div class="filter-chip" onclick="setFilter(this,'fem')">Femenino</div>
+    <select id="clubSelect" class="club-select" onchange="setClubFilter(this.value)" title="Filtrar por club">
+      <option value="">Club: Todos los clubes</option>
+    </select>
   </div>
 
   <div class="join-banner">
@@ -4493,6 +4510,7 @@ function setupAutoHide() {
 // RANKINGS PAGE
 // ══════════════════════════════════════════
 let currentFilter = 'all';
+let currentClub = '';
 let displayedCount = 0;
 const PAGE_SIZE = 20;
 
@@ -4539,7 +4557,7 @@ function renderPlayers(list, append = false) {
         <div class="rank-num ${p.rank <= 3 ? 'top3' : ''}">#${p.rank}</div>
         <div class="player-name">${p.name}</div>
         <div style="font-family:'Orbitron',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;margin-bottom:2px">ID ${String(p.id).padStart(5,'0')}</div>
-        <div class="player-meta">${p.cat || '—'} · ${p.club || 'Sin club'} · ${p.sex || '—'}</div>
+        <div class="player-meta">${(p.club || '').trim() || 'Ninguno'} · ${{ masc: 'Masculino', fem: 'Femenino' }[playerSexGroup(p)] || '—'}</div>
       </div>
       <div class="player-right">
         <div class="rating-num"><span class="star">★</span>${p.rating}</div>
@@ -7030,7 +7048,12 @@ function filterPlayers() {
     results = results.filter(p => playerSexGroup(p) === 'fem');
   }
 
-  console.log(`Filtro '${currentFilter}' → ${results.length} jugadores`);
+  // Club filter: '' = all, else match normalized value (same normalization as dropdown).
+  if (currentClub !== '') {
+    results = results.filter(p => ((p.club || '').trim() || 'Ninguno') === currentClub);
+  }
+
+  console.log(`Filtro '${currentFilter}' club='${currentClub}' → ${results.length} jugadores`);
 
   // Text search (min 2 chars): matches name or 5-digit ID.
   if (q.length >= 2) {
@@ -7056,6 +7079,34 @@ function setFilter(el, val) {
   filterPlayers();
 }
 
+function setClubFilter(val) {
+  currentClub = val;
+  const sel = document.getElementById('clubSelect');
+  if (sel) sel.classList.toggle('active', val !== '');
+  filterPlayers();
+}
+
+function buildClubSelect() {
+  const sel = document.getElementById('clubSelect');
+  if (!sel || !ALL_PLAYERS.length) return;
+  const clubs = [...new Set(
+    ALL_PLAYERS.map(p => (p.club || '').trim() || 'Ninguno')
+  )]
+    .filter(Boolean)
+    .sort((a, b) => {
+      if (a === 'Ninguno') return 1;
+      if (b === 'Ninguno') return -1;
+      return a.localeCompare(b, 'es');
+    });
+  sel.innerHTML = '<option value="">Club: Todos los clubes</option>';
+  clubs.forEach(club => {
+    const opt = document.createElement('option');
+    opt.value = club;
+    opt.textContent = club;
+    sel.appendChild(opt);
+  });
+}
+
 function showAllPlayers() {
   const todosChip = document.querySelector('#rankingsPage .filter-chip');
   if (todosChip) {
@@ -7063,6 +7114,9 @@ function showAllPlayers() {
     todosChip.classList.add('on');
   }
   currentFilter = 'all';
+  currentClub = '';
+  const clubSel = document.getElementById('clubSelect');
+  if (clubSel) { clubSel.value = ''; clubSel.classList.remove('active'); }
   document.getElementById('searchInput').value = '';
   PLAYERS = [...ALL_PLAYERS];
   displayedCount = PLAYERS.length;
@@ -8056,6 +8110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (lm) lm.style.display = PLAYERS.length > PAGE_SIZE ? '' : 'none';
 
   buildDatalist();
+  buildClubSelect();
   simAddOpponent();
   renderMembers();
   updateStats();
