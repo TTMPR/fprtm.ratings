@@ -7073,7 +7073,7 @@ function filterPlayers() {
 }
 
 function setFilter(el, val) {
-  document.querySelectorAll('#rankingsPage .filter-chip').forEach(c => c.classList.remove('on'));
+  document.querySelectorAll('#ratingsPage .filter-chip').forEach(c => c.classList.remove('on'));
   el.classList.add('on');
   currentFilter = val;
   filterPlayers();
@@ -7108,9 +7108,9 @@ function buildClubSelect() {
 }
 
 function showAllPlayers() {
-  const todosChip = document.querySelector('#rankingsPage .filter-chip');
+  const todosChip = document.querySelector('#ratingsPage .filter-chip');
   if (todosChip) {
-    document.querySelectorAll('#rankingsPage .filter-chip').forEach(c => c.classList.remove('on'));
+    document.querySelectorAll('#ratingsPage .filter-chip').forEach(c => c.classList.remove('on'));
     todosChip.classList.add('on');
   }
   currentFilter = 'all';
