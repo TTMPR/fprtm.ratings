@@ -1,0 +1,52 @@
+<svg width="680" height="820" viewBox="0 0 680 820" xmlns="http://www.w3.org/2000/svg">
+  <rect width="680" height="820" fill="#FFFFFF"/>
+
+  <!-- ===== FLAME (orange), simple reliable teardrop-flame shape ===== -->
+  <path d="M340 60
+           C 280 170, 165 260, 165 380
+           C 165 500, 240 590, 340 620
+           C 440 590, 515 500, 515 380
+           C 515 260, 400 170, 340 60 Z"
+        fill="#F5A623"/>
+
+  <!-- small flame licks for character -->
+  <path d="M295 210 C 278 255, 283 300, 305 322 C 294 282, 300 242, 318 215 Z" fill="#F5A623"/>
+  <path d="M385 210 C 402 255, 397 300, 375 322 C 386 282, 380 242, 362 215 Z" fill="#F5A623"/>
+
+  <!-- Sun glow near flame tip -->
+  <circle cx="340" cy="140" r="28" fill="#FFD25C"/>
+  <g stroke="#FFD25C" stroke-width="4" stroke-linecap="round">
+    <line x1="340" y1="92" x2="340" y2="78"/>
+    <line x1="376" y1="108" x2="386" y2="98"/>
+    <line x1="304" y1="108" x2="294" y2="98"/>
+  </g>
+
+  <!-- White inner circle, sits on top of flame -->
+  <circle cx="340" cy="400" r="160" fill="#FFFFFF"/>
+
+  <!-- Wave inside circle, clipped to circle -->
+  <clipPath id="circleClip">
+    <circle cx="340" cy="400" r="155"/>
+  </clipPath>
+  <g clip-path="url(#circleClip)">
+    <path d="M170 470 Q 230 445 290 470 T 410 470 T 530 470 L530 570 L170 570 Z" fill="#BFE6F5"/>
+    <path d="M170 470 Q 230 448 290 470 T 410 470 T 530 470" fill="none" stroke="#7FD0EA" stroke-width="5"/>
+  </g>
+
+  <!-- Blue A outline -->
+  <path d="M340 270 L 460 555 L 405 555 L 340 405 L 275 555 L 220 555 Z
+           M340 405 L 363 460 L 317 460 Z"
+        fill="#1086C9" fill-rule="evenodd"/>
+
+  <!-- Table tennis ball accent at the A's apex of inner triangle -->
+  <circle cx="340" cy="470" r="16" fill="#F5A623" stroke="#FFFFFF" stroke-width="3"/>
+
+  <!-- Wordmark -->
+  <text x="340" y="650" text-anchor="middle" font-family="Arial, sans-serif" font-size="46" font-weight="700" fill="#1086C9">Albergue Olímpico</text>
+  <text x="340" y="700" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#F5A623" letter-spacing="2">SUMMER OPEN</text>
+  <text x="340" y="735" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1086C9" letter-spacing="3">2026</text>
+
+  <!-- Footer -->
+  <text x="340" y="775" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#1086C9" letter-spacing="1">FEDERACIÓN PUERTORRIQUEÑA DE TENIS DE MESA</text>
+  <text x="340" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#F5A623" letter-spacing="1">SALINAS, PUERTO RICO</text>
+</svg>
