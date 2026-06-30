@@ -2545,6 +2545,11 @@ Maria Lopez,Ana Torres,B</code>
         <div id="adminCardArchivarTitle" style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Archivar Torneo</div>
         <div id="adminCardArchivarDesc" style="color:var(--muted);font-size:13px;margin-top:6px">Mover inscripciones a historial</div>
       </div>
+      <div id="adminCardMigrar" style="background:var(--card2);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:24px;cursor:pointer;transition:border-color 0.2s;" onclick="migrarInscripcionesDesdeTraujillo()">
+        <div style="font-size:32px;margin-bottom:12px">🔄</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Migrar Inscritos</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Restablecer desde Trujillo Alto Open 2026</div>
+      </div>
       <div id="adminCardPastTorneos" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPastTorneosModal()">
         <div style="font-size:32px;margin-bottom:12px">🏆</div>
         <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Past Tournaments</div>
@@ -8348,6 +8353,70 @@ function initNextEventCountdown() {
   }
   tick();
   _countdownTimer = setInterval(tick, 60000);
+}
+
+// ══════════════════════════════════════════
+// MIGRAR INSCRITOS — Trujillo Alto → Albergue Olímpico
+// ══════════════════════════════════════════
+async function migrarInscripcionesDesdeTraujillo() {
+  if (!isAdmin()) { showLogin(); return; }
+  const OLD_TORNEO = 'Trujillo Alto Open 2026';
+  const NEW_TORNEO = 'Albergue Olímpico Summer Open 2026';
+
+  const card = document.getElementById('adminCardMigrar');
+  if (card) { card.style.opacity = '0.5'; card.style.pointerEvents = 'none'; }
+
+  try {
+    // 1. Fetch old registrations
+    const { data: old_rows, error: e1 } = await _supabase
+      .from('insc_registro').select('*').eq('torneo', OLD_TORNEO);
+    if (e1) throw new Error(e1.message);
+    if (!old_rows || old_rows.length === 0) {
+      alert('No se encontraron inscripciones en "' + OLD_TORNEO + '".');
+      return;
+    }
+
+    // 2. Fetch existing new-torneo registrations to avoid duplicates
+    const { data: new_rows, error: e2 } = await _supabase
+      .from('insc_registro').select('member_id').eq('torneo', NEW_TORNEO);
+    if (e2) throw new Error(e2.message);
+    const already = new Set((new_rows || []).map(r => String(r.member_id)));
+
+    // 3. Build rows to insert (skip those already registered)
+    const toInsert = old_rows
+      .filter(r => !already.has(String(r.member_id)))
+      .map(({ id, created_at, ...rest }) => ({
+        ...rest,
+        torneo:     NEW_TORNEO,
+        updated_at: new Date().toISOString(),
+      }));
+
+    const skipped = old_rows.length - toInsert.length;
+
+    if (toInsert.length === 0) {
+      alert(`Todos los ${old_rows.length} jugador(es) de "${OLD_TORNEO}" ya están inscritos en el nuevo torneo.`);
+      return;
+    }
+
+    // 4. Insert in batches of 50
+    const BATCH = 50;
+    for (let i = 0; i < toInsert.length; i += BATCH) {
+      const { error: e3 } = await _supabase
+        .from('insc_registro').insert(toInsert.slice(i, i + BATCH));
+      if (e3) throw new Error(e3.message);
+    }
+
+    const msg = `✅ Migración completa.\n\n`
+      + `• ${toInsert.length} inscripción(es) restablecida(s) desde "${OLD_TORNEO}".\n`
+      + (skipped ? `• ${skipped} jugador(es) omitidos (ya estaban inscritos en el nuevo torneo).` : '');
+    alert(msg);
+    await loadCatCounts();
+    applyInscripcionesState();
+  } catch(e) {
+    alert('Error durante la migración:\n' + e.message);
+  } finally {
+    if (card) { card.style.opacity = ''; card.style.pointerEvents = ''; }
+  }
 }
 
 async function toggleInscripciones() {
