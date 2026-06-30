@@ -3334,6 +3334,7 @@ Maria Lopez,Ana Torres,B</code>
       <div>
         <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:2px;">Torneo Activo</div>
         <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px;">Sáb 4 &amp; Dom 5 de julio · Salinas, PR</div>
+        <div id="inscDeadlineLabel" style="font-size:12px;color:#fb923c;font-weight:600;margin-bottom:4px;">⏰ Fecha límite de inscripción: jue. 2 julio · 8:00 p.m.</div>
         <a href="https://maps.google.com/?q=Albergue+Ol%C3%ADmpico+Salinas+Puerto+Rico" target="_blank" rel="noopener"
           style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:var(--accent);font-size:13px;font-weight:600;transition:opacity 0.15s;"
           onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">
@@ -3388,7 +3389,7 @@ Maria Lopez,Ana Torres,B</code>
     <div id="inscCerradasBanner" style="display:none;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:32px 24px;text-align:center;margin-bottom:24px;">
       <div style="font-size:40px;margin-bottom:12px;">🔒</div>
       <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:0.04em;color:#ef4444;margin-bottom:10px;">Inscripciones Cerradas</div>
-      <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0;">El periodo de inscripción para este torneo ha finalizado.<br>Para información contacta a la FPTM.</p>
+      <p id="inscCerradasMsg" style="font-size:14px;color:var(--muted);line-height:1.6;margin:0;">El periodo de inscripción para este torneo ha finalizado.<br>Para información contacta a la FPTM.</p>
     </div>
 
     <!-- Vista previa admin (solo visible cuando está logueado y las inscripciones están cerradas) -->
@@ -8181,6 +8182,7 @@ function inscUpdateProgress(step) {
 // ══════════════════════════════════════════
 let inscripcionesOpen = false;
 let inscSbSynced = false;   // true once a successful Supabase round-trip happens
+const INSC_DEADLINE = new Date('2026-07-02T20:00:00-04:00'); // jue. 2 julio · 8:00 p.m. AST
 
 async function loadInscripcionesConfig() {
   // Show locally-cached value instantly while network resolves
@@ -8210,6 +8212,18 @@ function applyInscripcionesState() {
   const activeUI      = document.getElementById('inscActiveTorneoUI');
   const torneoCard    = document.getElementById('inscTorneoCard');
 
+  const deadlinePassed = Date.now() > INSC_DEADLINE.getTime();
+  const deadlineLabel  = document.getElementById('inscDeadlineLabel');
+  const cerradasMsg    = document.getElementById('inscCerradasMsg');
+  if (deadlineLabel) deadlineLabel.style.display = deadlinePassed ? 'none' : '';
+  // Treat deadline-expired as closed (admin override still works)
+  const effectivelyOpen = inscripcionesOpen && !deadlinePassed;
+  if (cerradasMsg) {
+    cerradasMsg.innerHTML = deadlinePassed
+      ? 'La fecha límite de inscripción (jue. 2 julio · 8:00 p.m.) ya pasó.<br>Para información contacta a la FPTM.'
+      : 'El periodo de inscripción para este torneo ha finalizado.<br>Para información contacta a la FPTM.';
+  }
+
   if (torneoArchivado && !isAdmin()) {
     // Archived — public sees placeholder only
     if (placeholder)   placeholder.style.display   = '';
@@ -8227,8 +8241,8 @@ function applyInscripcionesState() {
     if (previewBanner) previewBanner.style.display  = 'flex';
     if (progress)      progress.style.display       = 'none';
     if (inscReglamentoAceptado) { inscShowForm(); } else { inscGoToStep(0); }
-  } else if (inscripcionesOpen) {
-    // Open for everyone
+  } else if (effectivelyOpen) {
+    // Open for everyone (and deadline hasn't passed)
     if (placeholder)   placeholder.style.display   = 'none';
     if (activeUI)      activeUI.style.display       = '';
     if (torneoCard)    torneoCard.style.display      = '';
@@ -8269,15 +8283,20 @@ function applyInscripcionesState() {
   const cardEl   = document.getElementById('inscAdminCard');
   const iconEl   = document.getElementById('inscAdminIcon');
   if (statusEl) {
-    statusEl.textContent = inscripcionesOpen ? 'Abiertas — clic para cerrar' : 'Cerradas — clic para abrir';
-    statusEl.style.color = inscripcionesOpen ? 'var(--green)' : '#ef4444';
+    if (deadlinePassed && inscripcionesOpen) {
+      statusEl.textContent = 'Fecha límite expiró · Cerradas para el público';
+      statusEl.style.color = '#f59e0b';
+    } else {
+      statusEl.textContent = inscripcionesOpen ? 'Abiertas — clic para cerrar' : 'Cerradas — clic para abrir';
+      statusEl.style.color = inscripcionesOpen ? 'var(--green)' : '#ef4444';
+    }
   }
   if (syncEl) {
     syncEl.textContent = inscSbSynced ? '● Sincronizado (global)' : '⚠ Solo local — corre create_app_settings.sql';
     syncEl.style.color = inscSbSynced ? 'var(--muted)' : '#f59e0b';
   }
-  if (cardEl)  cardEl.style.borderColor = inscripcionesOpen ? 'var(--border)' : 'rgba(239,68,68,0.4)';
-  if (iconEl)  iconEl.textContent       = inscripcionesOpen ? '📋' : '🔒';
+  if (cardEl)  cardEl.style.borderColor = effectivelyOpen ? 'var(--border)' : 'rgba(239,68,68,0.4)';
+  if (iconEl)  iconEl.textContent       = effectivelyOpen ? '📋' : '🔒';
 
   applyTorneoArchivoAdminCards();
 
