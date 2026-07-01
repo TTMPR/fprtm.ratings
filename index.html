@@ -3803,27 +3803,27 @@ Maria Lopez,Ana Torres,B</code>
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">5. EVENTOS</strong>
         <div style="margin-top:12px;">
-          <div style="font-weight:600;color:var(--text);margin-bottom:8px;">Sábado 4 de julio · 12 mesas</div>
+          <div style="font-weight:600;color:var(--text);margin-bottom:8px;">Sábado 4 de julio</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
-            <li>7 o Menos Abierto – 9:00 a.m. | menores de 8 años al 31-dic-2026 · Trofeos</li>
-            <li>9 o Menos Masculino – 9:00 a.m. | menores de 10 años al 31-dic-2026 · Trofeos</li>
-            <li>9 o Menos Femenino – 9:00 a.m. | menores de 10 años al 31-dic-2026 · Trofeos</li>
-            <li>11 o Menos Masculino – 9:00 a.m. | menores de 12 años al 31-dic-2026</li>
-            <li>11 o Menos Femenino – 9:00 a.m. | menores de 12 años al 31-dic-2026</li>
-            <li>13 o Menos Masculino – 9:00 a.m. | menores de 14 años al 31-dic-2026</li>
-            <li>13 o Menos Femenino – 9:00 a.m. | menores de 14 años al 31-dic-2026</li>
-            <li>15 o Menos Masculino – 9:00 a.m. | menores de 16 años al 31-dic-2026</li>
-            <li>15 o Menos Femenino – 9:00 a.m. | menores de 16 años al 31-dic-2026</li>
-            <li>Sub-21 Mixto – 12:00 p.m. | menores de 21 años al 31-dic-2026</li>
-            <li>Seniors: 40 años o más (Mixto) – 12:00 p.m.</li>
+            <li>1800 puntos o menos – 9:00 a.m. | máx. 30 jugadores</li>
+            <li>1700 puntos o menos – 9:00 a.m. | máx. 30 jugadores</li>
+            <li>1500 puntos o menos – 11:00 a.m. | máx. 30 jugadores</li>
+            <li>7 o Menos Abierto – 12:30 p.m. | menores de 8 años al 31-dic-2026 · Trofeos</li>
+            <li>Seniors: 40 años o más (Mixto) – 12:30 p.m.</li>
+            <li>11 o Menos Masculino – 12:30 p.m. | menores de 12 años al 31-dic-2026</li>
+            <li>11 o Menos Femenino – 12:30 p.m. | menores de 12 años al 31-dic-2026</li>
+            <li>15 o Menos Masculino – 12:30 p.m. | menores de 16 años al 31-dic-2026</li>
+            <li>15 o Menos Femenino – 12:30 p.m. | menores de 16 años al 31-dic-2026</li>
           </ol>
-          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 5 de julio · 22 mesas</div>
+          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 5 de julio</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
             <li>1950 puntos o menos – 9:00 a.m. | máx. 30 jugadores</li>
-            <li>1700 puntos o menos – 9:00 a.m. | máx. 30 jugadores</li>
-            <li>1500 puntos o menos – 9:00 a.m. | máx. 30 jugadores</li>
-            <li>1800 puntos o menos – 11:00 a.m. | máx. 30 jugadores</li>
-            <li>1600 puntos o menos – 11:00 a.m. | máx. 30 jugadores</li>
+            <li>1600 puntos o menos – 9:00 a.m. | máx. 30 jugadores</li>
+            <li>9 o Menos Masculino – 12:30 p.m. | menores de 10 años al 31-dic-2026 · Trofeos</li>
+            <li>9 o Menos Femenino – 12:30 p.m. | menores de 10 años al 31-dic-2026 · Trofeos</li>
+            <li>13 o Menos Masculino – 12:30 p.m. | menores de 14 años al 31-dic-2026</li>
+            <li>13 o Menos Femenino – 12:30 p.m. | menores de 14 años al 31-dic-2026</li>
+            <li>Sub-21 Mixto – 12:30 p.m. | menores de 21 años al 31-dic-2026</li>
           </ol>
           <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#f59e0b;margin-top:12px;">
             ⚠ Máx. 2 categorías por día · Las categorías del mismo día no pueden coincidir en horario · Categorías de Rating: máx. 30 jugadores.
@@ -7982,30 +7982,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Rule: max 2 categories per day · no same-slot conflicts · max 4 total
 // ratingGroup: identifies rating-capped categories for same-day conflict logic
 const INSC_CATEGORIES = [
-  // ── Sábado 4 de julio (12 mesas) ──
-  { id: 'ev1',  name: '7 o Menos Abierto',        desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                               price: 11, slot: 'SAB-900',  maxAge: 7 },
-  { id: 'ev11', name: '9 o Menos Masculino',       desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                               price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'M' },
-  { id: 'ev12', name: '9 o Menos Femenino',        desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                               price: 20, slot: 'SAB-900',  maxAge: 9,  sex: 'F' },
-  { id: 'ev3',  name: '11 o Menos Masculino',      desc: 'Premiación: $30 · $25 · $20 · $20 · menores de 12 al 31-dic',   price: 20, slot: 'SAB-900',  maxAge: 11, sex: 'M' },
-  { id: 'ev4',  name: '11 o Menos Femenino',       desc: 'Premiación: $30 · $25 · $20 · $20 · menores de 12 al 31-dic',   price: 20, slot: 'SAB-900',  maxAge: 11, sex: 'F' },
-  { id: 'ev13', name: '13 o Menos Masculino',      desc: 'Premiación: $35 · $30 · $25 · $25 · menores de 14 al 31-dic',   price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'M' },
-  { id: 'ev14', name: '13 o Menos Femenino',       desc: 'Premiación: $35 · $30 · $25 · $25 · menores de 14 al 31-dic',   price: 20, slot: 'SAB-900',  maxAge: 13, sex: 'F' },
-  { id: 'ev5',  name: '15 o Menos Masculino',      desc: 'Premiación: $40 · $35 · $30 · $30 · menores de 16 al 31-dic',   price: 20, slot: 'SAB-900',  maxAge: 15, sex: 'M' },
-  { id: 'ev6',  name: '15 o Menos Femenino',       desc: 'Premiación: $40 · $35 · $30 · $30 · menores de 16 al 31-dic',   price: 20, slot: 'SAB-900',  maxAge: 15, sex: 'F' },
-  { id: 'ev15', name: 'Sub-21 Mixto',              desc: 'Premiación: $65 · $55 · $45 · $45 · menores de 21 al 31-dic',   price: 20, slot: 'SAB-1200', maxAge: 21 },
-  { id: 'ev2',  name: 'Seniors – 40 años o más',   desc: 'Premiación: $35 · $30 · $25 · $25 · Mixto',                     price: 20, slot: 'SAB-1200', minAge: 40 },
-  // ── Domingo 5 de julio (22 mesas) ──
-  { id: 'ev10', name: '1950 o Menos',              desc: 'Premiación: $70 · $60 · $55 · $55 · máx 30 jugadores',           price: 20, slot: 'DOM-900',  maxRating: 1950, maxPlayers: 30, ratingGroup: 'rating' },
-  { id: 'ev16', name: '1700 o Menos',              desc: 'Premiación: $55 · $50 · $45 · $45 · máx 30 jugadores',           price: 20, slot: 'DOM-900',  maxRating: 1700, maxPlayers: 30, ratingGroup: 'rating' },
-  { id: 'ev7',  name: '1500 o Menos',              desc: 'Premiación: $45 · $40 · $35 · $35 · máx 30 jugadores',           price: 20, slot: 'DOM-900',  maxRating: 1500, maxPlayers: 30, ratingGroup: 'rating' },
-  { id: 'ev8',  name: '1800 o Menos',              desc: 'Premiación: $60 · $55 · $50 · $50 · máx 30 jugadores',           price: 20, slot: 'DOM-1100', maxRating: 1800, maxPlayers: 30, ratingGroup: 'rating' },
-  { id: 'ev9',  name: '1600 o Menos',              desc: 'Premiación: $50 · $45 · $40 · $40 · máx 30 jugadores',           price: 20, slot: 'DOM-1100', maxRating: 1600, maxPlayers: 30, ratingGroup: 'rating' },
+  // ── Sábado 4 de julio ──
+  { id: 'ev8',  name: '1800 o Menos',            desc: 'Premiación: $60 · $55 · $50 · $50 · máx 30 jugadores',           price: 20, slot: 'SAB-900',  maxRating: 1800, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev16', name: '1700 o Menos',            desc: 'Premiación: $55 · $50 · $45 · $45 · máx 30 jugadores',           price: 20, slot: 'SAB-900',  maxRating: 1700, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev7',  name: '1500 o Menos',            desc: 'Premiación: $45 · $40 · $35 · $35 · máx 30 jugadores',           price: 20, slot: 'SAB-1100', maxRating: 1500, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev1',  name: '7 o Menos Abierto',       desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                               price: 11, slot: 'SAB-1230', maxAge: 7 },
+  { id: 'ev2',  name: 'Seniors – 40 años o más', desc: 'Premiación: $35 · $30 · $25 · $25 · Mixto',                     price: 20, slot: 'SAB-1230', minAge: 40 },
+  { id: 'ev3',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 · $20 · menores de 12 al 31-dic',   price: 20, slot: 'SAB-1230', maxAge: 11, sex: 'M' },
+  { id: 'ev4',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 · $20 · menores de 12 al 31-dic',   price: 20, slot: 'SAB-1230', maxAge: 11, sex: 'F' },
+  { id: 'ev5',  name: '15 o Menos Masculino',    desc: 'Premiación: $40 · $35 · $30 · $30 · menores de 16 al 31-dic',   price: 20, slot: 'SAB-1230', maxAge: 15, sex: 'M' },
+  { id: 'ev6',  name: '15 o Menos Femenino',     desc: 'Premiación: $40 · $35 · $30 · $30 · menores de 16 al 31-dic',   price: 20, slot: 'SAB-1230', maxAge: 15, sex: 'F' },
+  // ── Domingo 5 de julio ──
+  { id: 'ev10', name: '1950 o Menos',            desc: 'Premiación: $70 · $60 · $55 · $55 · máx 30 jugadores',           price: 20, slot: 'DOM-900',  maxRating: 1950, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev9',  name: '1600 o Menos',            desc: 'Premiación: $50 · $45 · $40 · $40 · máx 30 jugadores',           price: 20, slot: 'DOM-900',  maxRating: 1600, maxPlayers: 30, ratingGroup: 'rating' },
+  { id: 'ev11', name: '9 o Menos Masculino',     desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                               price: 20, slot: 'DOM-1230', maxAge: 9,  sex: 'M' },
+  { id: 'ev12', name: '9 o Menos Femenino',      desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                               price: 20, slot: 'DOM-1230', maxAge: 9,  sex: 'F' },
+  { id: 'ev13', name: '13 o Menos Masculino',    desc: 'Premiación: $35 · $30 · $25 · $25 · menores de 14 al 31-dic',   price: 20, slot: 'DOM-1230', maxAge: 13, sex: 'M' },
+  { id: 'ev14', name: '13 o Menos Femenino',     desc: 'Premiación: $35 · $30 · $25 · $25 · menores de 14 al 31-dic',   price: 20, slot: 'DOM-1230', maxAge: 13, sex: 'F' },
+  { id: 'ev15', name: 'Sub-21 Mixto',            desc: 'Premiación: $65 · $55 · $45 · $45 · menores de 21 al 31-dic',   price: 20, slot: 'DOM-1230', maxAge: 21 },
 ];
 const INSC_SLOT_LABELS = {
   'SAB-900':  'Sáb 4 julio · 9:00 a.m.',
-  'SAB-1200': 'Sáb 4 julio · 12:00 p.m.',
+  'SAB-1100': 'Sáb 4 julio · 11:00 a.m.',
+  'SAB-1230': 'Sáb 4 julio · 12:30 p.m.',
   'DOM-900':  'Dom 5 julio · 9:00 a.m.',
-  'DOM-1100': 'Dom 5 julio · 11:00 a.m.',
+  'DOM-1230': 'Dom 5 julio · 12:30 p.m.',
 };
 
 // Multas por no arbitrar (Reglamento Art. 9) — se aplican en el próximo torneo
