@@ -9809,7 +9809,7 @@ async function inscSometerInscripcion() {
     const memberId = p.id || null;
     const fptmId   = memberId ? String(memberId) : 'NUEVO';
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/insc_registro`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/insc_registro?on_conflict=torneo,member_id`, {
       method:  'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
