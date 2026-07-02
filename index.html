@@ -2403,10 +2403,11 @@ Maria Lopez,Ana Torres,B</code>
         <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Crear Torneo</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Nuevo evento en calendario</div>
       </div>
-      <div id="adminCardGestionar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscAdminModal()">
+      <div id="adminCardGestionar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative;" onclick="showInscAdminModal()">
         <div style="font-size:32px;margin-bottom:12px">📋</div>
         <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Gestionar Inscritos</div>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Editar y eliminar inscripciones</div>
+        <span id="cancelBadge" style="display:none;position:absolute;top:12px;right:12px;background:#f59e0b;color:#000;font-size:11px;font-weight:800;border-radius:50%;width:22px;height:22px;display:none;align-items:center;justify-content:center;">0</span>
       </div>
       <div id="adminCardExportar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportInscripcionesStadium()">
         <div style="font-size:32px;margin-bottom:12px">📤</div>
@@ -2668,11 +2669,77 @@ Maria Lopez,Ana Torres,B</code>
         <option value="">Todos</option>
         <option value="pagado">✓ Pagados</option>
         <option value="pendiente">● Pendientes</option>
+        <option value="cancelacion">🔴 Cancelaciones</option>
       </select>
     </div>
 
     <!-- Table -->
     <div id="inscAdminTable" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CANCELACIÓN MODAL (jugador)
+═══════════════════════════════════════════ -->
+<div id="cancelModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1200;overflow-y:auto;padding:16px;">
+  <div style="max-width:480px;margin:0 auto;background:var(--card2);border:1px solid rgba(239,68,68,0.3);border-radius:16px;padding:28px;">
+    <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:#ef4444;margin-bottom:4px;">Solicitar Cancelación</div>
+    <div id="cancelModalSub" style="font-size:12px;color:var(--muted);margin-bottom:20px;"></div>
+
+    <!-- Tipo -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">¿Qué prefieres?</div>
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:14px;border:1px solid var(--border);border-radius:10px;cursor:pointer;margin-bottom:8px;transition:border-color 0.15s;"
+             id="cancelOptCredito" onclick="cancelSelectTipo('credito')">
+        <input type="radio" name="cancelTipo" value="credito" style="margin-top:2px;accent-color:var(--accent);">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);">Crédito para próximo torneo</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">Se aplica automáticamente cuando te inscribas en el siguiente evento.</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;padding:14px;border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color 0.15s;"
+             id="cancelOptReembolso" onclick="cancelSelectTipo('reembolso')">
+        <input type="radio" name="cancelTipo" value="reembolso" style="margin-top:2px;accent-color:var(--accent);">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);">Reembolso (ATH Móvil)</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">Los reembolsos pueden tomar <strong style="color:#f59e0b;">5 a 7 días laborales</strong> en procesarse.</div>
+        </div>
+      </label>
+    </div>
+
+    <!-- Nota -->
+    <div style="margin-bottom:20px;">
+      <label style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px;">Motivo (opcional)</label>
+      <textarea id="cancelNota" rows="3" placeholder="Ej: No podré asistir por cambio de fecha…"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);resize:vertical;outline:none;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+    </div>
+
+    <!-- Términos -->
+    <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.6;">
+      <strong style="color:var(--text);display:block;margin-bottom:4px;">Términos de cancelación</strong>
+      • Las cancelaciones están sujetas a aprobación de la FPRTM.<br>
+      • <strong style="color:#f59e0b;">Reembolsos</strong>: pueden tomar <strong>5 a 7 días laborales</strong> en procesarse vía ATH Móvil.<br>
+      • <strong style="color:var(--accent);">Créditos</strong>: se aplican automáticamente al inscribirte en el siguiente evento.<br>
+      • Una vez aprobada la cancelación, tu inscripción queda anulada.
+    </div>
+    <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:14px;cursor:pointer;">
+      <input type="checkbox" id="cancelTermsCheck" style="margin-top:2px;accent-color:var(--accent);" onchange="document.getElementById('cancelSubmitBtn').disabled=!this.checked; document.getElementById('cancelSubmitBtn').style.opacity=this.checked?'1':'0.4';">
+      <span style="font-size:12px;color:var(--muted);">Entiendo y acepto los términos de cancelación.</span>
+    </label>
+
+    <div id="cancelModalMsg" style="font-size:13px;color:#ef4444;min-height:18px;margin-bottom:12px;"></div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeCancelModal()"
+        style="flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+        Cancelar
+      </button>
+      <button id="cancelSubmitBtn" onclick="submitCancelRequest()"
+        style="flex:2;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+        Enviar solicitud
+      </button>
+    </div>
   </div>
 </div>
 
@@ -8179,8 +8246,9 @@ const inscState = {
   dob: null,
   sex: '',
   club: '',
-  existingInsc: null, // existing insc_registro row if player already inscribed
-  multa: null,        // { monto, razon } if player has a pending fine
+  existingInsc: null,    // existing insc_registro row if player already inscribed
+  multa: null,           // { monto, razon } if player has a pending fine
+  availableCredit: null, // approved credit row from a cancelled previous registration
   _dobFromDb: false,
   _sexFromDb: false,
   _clubFromDb: false,
@@ -8933,6 +9001,7 @@ function inscSelectPlayer(id) {
   inscState.player = p;
   inscState.dob = null;
   inscState.existingInsc = null;
+  inscState.availableCredit = null;
   inscState._dobFromDb = false;
   inscState.multa = INSC_MULTAS[p.id] || null;
   const normalizedSex = normSexForForm(p.sex);
@@ -8974,9 +9043,10 @@ function inscSelectPlayer(id) {
     inscFormChanged();
   });
 
-  // Check for existing inscription
-  fetchExistingInscripcion(p.id).then(existing => {
+  // Check for existing inscription + available credit in parallel
+  Promise.all([fetchExistingInscripcion(p.id), fetchAvailableCredit(p.id)]).then(([existing, credit]) => {
     inscState.existingInsc = existing;
+    inscState.availableCredit = credit;
     renderInscPlayerCard(p);
     inscRenderCategories();
     inscUpdateTotals();
@@ -9032,8 +9102,21 @@ function renderInscPlayerCard(p) {
     } else if (existing) {
       yainEl.style.display = '';
       const catNames = (existing.categorias || []).map(c => c.name).join(', ');
-      yainEl.innerHTML = `✅ Ya inscrito — puedes añadir más categorías<span style="display:block;font-weight:400;color:var(--muted);margin-top:2px;">${catNames}</span>`;
-      yainEl.style.color = '#4ade80';
+      const cancelPending  = existing.cancel_requested && existing.cancel_status !== 'rejected';
+      const cancelApproved = existing.cancel_status === 'approved';
+      if (cancelApproved) {
+        yainEl.innerHTML = `🔄 Cancelación aprobada — en proceso de ${existing.cancel_tipo === 'credito' ? 'crédito' : 'reembolso'}<span style="display:block;font-weight:400;color:var(--muted);margin-top:2px;">${catNames}</span>`;
+        yainEl.style.color = '#f59e0b';
+      } else if (cancelPending) {
+        yainEl.innerHTML = `⏳ Cancelación pendiente de revisión (${existing.cancel_tipo === 'credito' ? 'crédito' : 'reembolso'})<span style="display:block;font-weight:400;color:var(--muted);margin-top:2px;">${catNames}</span>`;
+        yainEl.style.color = '#f59e0b';
+      } else {
+        yainEl.innerHTML = `✅ Ya inscrito — puedes añadir más categorías<span style="display:block;font-weight:400;color:var(--muted);margin-top:2px;">${catNames}</span>
+          <button onclick="openCancelModal()" style="margin-top:8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:5px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;display:inline-block;">
+            Solicitar cancelación
+          </button>`;
+        yainEl.style.color = '#4ade80';
+      }
     } else {
       yainEl.style.display = 'none';
     }
@@ -9058,7 +9141,7 @@ async function fetchPlayerDob(memberId) {
 async function fetchExistingInscripcion(memberId) {
   try {
     const data = await sbGet('insc_registro',
-      `?torneo=eq.Albergue%20Ol%C3%ADmpico%20Summer%20Open%202026&member_id=eq.${memberId}&limit=1`);
+      `?torneo=eq.Albergue%20Ol%C3%ADmpico%20Summer%20Open%202026&member_id=eq.${memberId}&select=*&limit=1`);
     return data?.[0] || null;
   } catch(e) { return null; }
 }
@@ -9404,7 +9487,11 @@ function inscUpdateTotals() {
     const cat = INSC_CATEGORIES.find(c => c.id === id);
     if (cat) catTotal += cat.price;
   });
-  const grand = base + catTotal + multaMonto;
+
+  // Apply available credit from a previous cancelled inscription
+  const credit = inscState.availableCredit;
+  const creditMonto = credit ? Math.min(Number(credit.total) || 0, base + catTotal + multaMonto) : 0;
+  const grand = Math.max(0, base + catTotal + multaMonto - creditMonto);
 
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set('inscCheckoutBase', '$' + base.toFixed(2));
@@ -9414,6 +9501,27 @@ function inscUpdateTotals() {
   set('inscMultaAmt', '$' + multaMonto.toFixed(2));
   const multaRow = document.getElementById('inscMultaRow');
   if (multaRow) multaRow.style.display = multaMonto > 0 ? 'flex' : 'none';
+
+  // Show/hide credit row
+  let creditRow = document.getElementById('inscCreditRow');
+  if (creditMonto > 0) {
+    if (!creditRow) {
+      // Insert credit row before grand total row
+      const grandRow = document.getElementById('inscGrandTotalRow');
+      if (grandRow) {
+        creditRow = document.createElement('div');
+        creditRow.id = 'inscCreditRow';
+        creditRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid rgba(34,197,94,0.3);margin-top:4px;';
+        creditRow.innerHTML = `<span style="font-size:13px;color:#4ade80;font-weight:600;">🎁 Crédito aplicado</span><span id="inscCreditAmt" style="font-size:13px;color:#4ade80;font-weight:600;"></span>`;
+        grandRow.parentNode.insertBefore(creditRow, grandRow);
+      }
+    }
+    const amt = document.getElementById('inscCreditAmt');
+    if (amt) amt.textContent = '-$' + creditMonto.toFixed(2);
+    if (creditRow) creditRow.style.display = 'flex';
+  } else if (creditRow) {
+    creditRow.style.display = 'none';
+  }
 }
 
 
@@ -9583,7 +9691,12 @@ async function inscSometerInscripcion() {
   const existingCats  = existing?.categorias || [];
   const existingIdSet = new Set(existingCats.map(c => c.id));
   const mergedCats    = [...existingCats, ...newCats.filter(c => !existingIdSet.has(c.id))];
-  const accTotal      = (existing?.total ?? 0) + newTotal;
+  const rawTotal      = (existing?.total ?? 0) + newTotal;
+
+  // Apply available credit from a previous cancelled inscription
+  const creditRow   = inscState.availableCredit;
+  const creditMonto = creditRow ? Math.min(Number(creditRow.total) || 0, rawTotal) : 0;
+  const accTotal    = Math.max(0, rawTotal - creditMonto);
 
   const btn = document.getElementById('inscSubmitBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; btn.style.opacity = '0.6'; }
@@ -9617,6 +9730,9 @@ async function inscSometerInscripcion() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.message || res.statusText);
     }
+
+    // Mark credit as used (fire-and-forget)
+    if (creditRow) markCreditUsed(creditRow.id);
 
     // Show success panel
     const fp = document.getElementById('inscFormPanel');
@@ -10880,11 +10996,155 @@ async function showInscAdminModal() {
   if (!currentUser) { showLogin(); return; }
   document.getElementById('inscAdminModal').style.display = '';
   await loadInscAdminTable();
+  updateCancelBadge();
 }
 
 function closeInscAdminModal() {
   document.getElementById('inscAdminModal').style.display = 'none';
   _inscAdminData = [];
+}
+
+// ══════════════════════════════════════════
+// CANCELACIÓN DE INSCRIPCIÓN
+// ══════════════════════════════════════════
+let _cancelTipo = '';
+
+function openCancelModal() {
+  const existing = inscState.existingInsc;
+  const player   = inscState.player;
+  if (!existing || !player) return;
+  const cats = (existing.categorias || []).filter(c => c.id !== 'multa').map(c => c.name).join(', ');
+  const sub  = document.getElementById('cancelModalSub');
+  if (sub) sub.textContent = `${player.name} · $${(existing.total || 0).toFixed(2)} · ${cats}`;
+  _cancelTipo = '';
+  document.querySelectorAll('input[name="cancelTipo"]').forEach(r => r.checked = false);
+  ['cancelOptCredito','cancelOptReembolso'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.borderColor = 'var(--border)';
+  });
+  const nota = document.getElementById('cancelNota');
+  if (nota) nota.value = '';
+  const msg = document.getElementById('cancelModalMsg');
+  if (msg) msg.textContent = '';
+  const chkTerms = document.getElementById('cancelTermsCheck');
+  if (chkTerms) chkTerms.checked = false;
+  const btn = document.getElementById('cancelSubmitBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviar solicitud'; btn.style.opacity = '0.4'; }
+  document.getElementById('cancelModal').style.display = '';
+}
+
+function closeCancelModal() {
+  document.getElementById('cancelModal').style.display = 'none';
+}
+
+function cancelSelectTipo(tipo) {
+  _cancelTipo = tipo;
+  const active   = tipo === 'credito' ? 'cancelOptCredito' : 'cancelOptReembolso';
+  const inactive = tipo === 'credito' ? 'cancelOptReembolso' : 'cancelOptCredito';
+  const elA = document.getElementById(active);
+  const elI = document.getElementById(inactive);
+  if (elA) elA.style.borderColor = 'var(--accent)';
+  if (elI) elI.style.borderColor = 'var(--border)';
+  const radio = elA?.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+}
+
+async function submitCancelRequest() {
+  const existing = inscState.existingInsc;
+  if (!existing) return;
+  const msgEl = document.getElementById('cancelModalMsg');
+  const btn   = document.getElementById('cancelSubmitBtn');
+  if (!_cancelTipo) {
+    if (msgEl) msgEl.textContent = 'Selecciona crédito o reembolso.';
+    return;
+  }
+  if (!document.getElementById('cancelTermsCheck')?.checked) {
+    if (msgEl) msgEl.textContent = 'Debes aceptar los términos de cancelación.';
+    return;
+  }
+  const nota = document.getElementById('cancelNota')?.value.trim() || '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; btn.style.opacity = '0.6'; }
+  if (msgEl) msgEl.textContent = '';
+  try {
+    const { error } = await _supabase
+      .from('insc_registro')
+      .update({
+        cancel_requested: true,
+        cancel_tipo:      _cancelTipo,
+        cancel_nota:      nota || null,
+        cancel_at:        new Date().toISOString(),
+        cancel_status:    'pending',
+      })
+      .eq('id', existing.id);
+    if (error) throw new Error(error.message);
+    // Refresh local state
+    inscState.existingInsc = { ...existing, cancel_requested: true, cancel_tipo: _cancelTipo, cancel_status: 'pending' };
+    closeCancelModal();
+    renderInscPlayerCard(inscState.player);
+  } catch(e) {
+    if (msgEl) msgEl.textContent = 'Error: ' + e.message;
+    if (btn) { btn.disabled = false; btn.textContent = 'Enviar solicitud'; btn.style.opacity = '1'; }
+  }
+}
+
+// ══════════════════════════════════════════
+// CRÉDITO AUTOMÁTICO — próximo torneo
+// ══════════════════════════════════════════
+async function fetchAvailableCredit(memberId) {
+  // Returns the approved-credit insc_registro row (not yet applied), or null
+  try {
+    const { data, error } = await _supabase
+      .from('insc_registro')
+      .select('id, total, cancel_tipo, cancel_status, cancel_requested, torneo')
+      .eq('member_id', memberId)
+      .eq('cancel_requested', true)
+      .eq('cancel_tipo', 'credito')
+      .eq('cancel_status', 'approved')
+      .is('cancel_credito_applied_at', null)
+      .limit(1);
+    if (error) return null;
+    return data?.[0] || null;
+  } catch { return null; }
+}
+
+async function markCreditUsed(creditRowId) {
+  await _supabase.from('insc_registro')
+    .update({ cancel_credito_applied_at: new Date().toISOString() })
+    .eq('id', creditRowId);
+}
+
+// ══════════════════════════════════════════
+// ADMIN — PROCESAR CANCELACIONES
+// ══════════════════════════════════════════
+async function procesarCancelacion(id, action) {
+  const statusMap = { approve: 'approved', reject: 'rejected' };
+  const status = statusMap[action];
+  if (!status) return;
+  try {
+    const { error } = await _supabase
+      .from('insc_registro')
+      .update({ cancel_status: status })
+      .eq('id', id);
+    if (error) throw new Error(error.message);
+    await loadInscAdminTable();
+    updateCancelBadge();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function updateCancelBadge() {
+  try {
+    const { data } = await _supabase
+      .from('insc_registro')
+      .select('id')
+      .eq('torneo', 'Albergue Olímpico Summer Open 2026')
+      .eq('cancel_requested', true)
+      .eq('cancel_status', 'pending');
+    const count = data?.length || 0;
+    const badge = document.getElementById('cancelBadge');
+    if (badge) { badge.textContent = count; badge.style.display = count ? '' : 'none'; }
+  } catch {}
 }
 
 let _inscAdminSort = { key: 'created_at', dir: 'asc' };
@@ -10930,8 +11190,9 @@ function renderInscAdminTable() {
 
   // Filter
   let rows = _inscAdminData.filter(r => {
-    if (_inscAdminStatusFilter === 'pagado' && !r.pagado) return false;
-    if (_inscAdminStatusFilter === 'pendiente' && r.pagado) return false;
+    if (_inscAdminStatusFilter === 'pagado'     && !r.pagado) return false;
+    if (_inscAdminStatusFilter === 'pendiente'  && r.pagado)  return false;
+    if (_inscAdminStatusFilter === 'cancelacion' && !(r.cancel_requested && r.cancel_status === 'pending')) return false;
     if (_inscAdminFilter) {
       const name = (r.nombre || '').toLowerCase();
       const id   = (r.fptm_id || '').toLowerCase();
@@ -10999,14 +11260,22 @@ function renderInscAdminTable() {
     const fecha = row.created_at
       ? new Date(row.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric' })
       : '—';
+    const cancelPending  = row.cancel_requested && row.cancel_status === 'pending';
+    const cancelApproved = row.cancel_status === 'approved';
+    const cancelRejected = row.cancel_status === 'rejected';
+    const rowBg = cancelPending ? 'rgba(245,158,11,0.06)' : 'transparent';
+    const cancelTipoLabel = row.cancel_tipo === 'credito' ? 'Crédito' : row.cancel_tipo === 'reembolso' ? 'Reembolso' : '';
     html += `
-      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;"
-          onmouseover="this.style.background='rgba(56,189,248,0.04)'"
-          onmouseout="this.style.background='transparent'">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;background:${rowBg};"
+          onmouseover="this.style.background='${cancelPending ? 'rgba(245,158,11,0.1)' : 'rgba(56,189,248,0.04)'}'"
+          onmouseout="this.style.background='${rowBg}'">
         <td style="padding:10px 10px;color:var(--muted);">${i + 1}</td>
         <td style="padding:10px 10px;">
           <div style="font-weight:600;color:var(--text);">${row.nombre || '—'}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:1px;">${row.fptm_id || ''}</div>
+          ${cancelPending  ? `<div style="font-size:11px;color:#f59e0b;margin-top:3px;">🔴 Cancelación · ${cancelTipoLabel}${row.cancel_nota ? ' — ' + row.cancel_nota : ''}</div>` : ''}
+          ${cancelApproved ? `<div style="font-size:11px;color:#4ade80;margin-top:3px;">✅ Cancelación aprobada · ${cancelTipoLabel}</div>` : ''}
+          ${cancelRejected ? `<div style="font-size:11px;color:var(--muted);margin-top:3px;">✕ Cancelación rechazada</div>` : ''}
         </td>
         <td style="padding:10px 10px;color:var(--muted);max-width:220px;">
           <div style="white-space:normal;line-height:1.5;">${catNames}</div>
@@ -11025,6 +11294,15 @@ function renderInscAdminTable() {
         </td>
         <td style="padding:10px 10px;text-align:right;color:var(--muted);white-space:nowrap;">${fecha}</td>
         <td style="padding:10px 10px;text-align:right;white-space:nowrap;">
+          ${cancelPending ? `
+          <button onclick="procesarCancelacion(${row.id},'approve')"
+            style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.35);color:#4ade80;padding:5px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px;">
+            ✓ Aprobar
+          </button>
+          <button onclick="procesarCancelacion(${row.id},'reject')"
+            style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:5px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px;">
+            ✕ Rechazar
+          </button>` : ''}
           <button onclick="openEditInscripcion(${row.id})"
             style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;margin-right:6px;">
             Editar
