@@ -9453,6 +9453,22 @@ function inscCatEligible(cat) {
     }
   }
 
+  // Conflict with already-inscribed categories (slot and day cap)
+  const existingCats = (inscState.existingInsc?.categorias || [])
+    .map(c => INSC_CATEGORIES.find(ec => ec.id === c.id)).filter(Boolean);
+  if (existingCats.length) {
+    const sameSlot = existingCats.find(ec => ec.slot === cat.slot);
+    if (sameSlot) {
+      return { ok: false, reason: `Ya inscrito en otra categoría a esta misma hora.` };
+    }
+    const catDay = cat.slot.startsWith('SAB') ? 'SAB' : 'DOM';
+    const dayCount = existingCats.filter(ec => ec.slot.startsWith(catDay)).length;
+    if (dayCount >= 2) {
+      const dayLabel = catDay === 'SAB' ? 'sábado' : 'domingo';
+      return { ok: false, reason: `Máximo de 2 categorías por día (${dayLabel}) alcanzado.` };
+    }
+  }
+
   return { ok: true };
 }
 
@@ -9551,9 +9567,13 @@ function inscToggleCat(id) {
     const catDay = cat.slot.startsWith('SAB') ? 'SAB' : cat.slot.startsWith('DOM') ? 'DOM' : null;
 
     if (catDay) {
-      const sameDayCats = [...inscState.selectedCats]
+      const existingDayCats = (inscState.existingInsc?.categorias || [])
+        .map(c => INSC_CATEGORIES.find(ec => ec.id === c.id))
+        .filter(c => c && c.slot.startsWith(catDay));
+      const newDayCats = [...inscState.selectedCats]
         .map(selId => INSC_CATEGORIES.find(c => c.id === selId))
         .filter(c => c && c.slot.startsWith(catDay));
+      const sameDayCats = [...existingDayCats, ...newDayCats];
 
       // Block same-slot (same start time) conflict
       const sameSlot = sameDayCats.find(c => c.slot === cat.slot);
@@ -9563,10 +9583,10 @@ function inscToggleCat(id) {
         return;
       }
 
-      // Block exceeding 2 per day — ask which to drop
+      // Block exceeding 2 per day
       if (sameDayCats.length >= 2) {
         const dayLabel = catDay === 'SAB' ? 'sábado' : 'domingo';
-        alert(`Ya tienes 2 categorías el ${dayLabel}. Deselecciona una para añadir "${cat.name}".`);
+        alert(`Ya tienes 2 categorías el ${dayLabel}. No puedes añadir "${cat.name}".`);
         return;
       }
     }
