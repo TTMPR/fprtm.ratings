@@ -1899,6 +1899,12 @@
           </div>
         </div>
 
+        <!-- W/L por categoría -->
+        <div id="catBreakdown" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:4px;">
+          <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;font-weight:600;">Victorias · Derrotas por Categoría</div>
+          <div id="catBreakdownRows"></div>
+        </div>
+
         <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
           <div style="font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Historial de Rating</div>
           <div style="display:flex;align-items:end;gap:6px;height:60px;">
@@ -4742,6 +4748,8 @@ async function showProfile(player) {
   document.getElementById('pLosses').textContent       = '…';
   document.getElementById('pPct').textContent          = '…';
   document.querySelector('.winpct-row').style.display  = 'none';
+  const _catBdEl = document.getElementById('catBreakdown');
+  if (_catBdEl) _catBdEl.style.display = 'none';
   document.getElementById('ovTourneys').textContent    = '…';
   document.getElementById('tournList').innerHTML       = '<div style="color:var(--muted);padding:20px">Cargando historial...</div>';
   document.getElementById('matchList').innerHTML       = '<div style="color:var(--muted);padding:20px">Cargando partidos...</div>';
@@ -4770,13 +4778,29 @@ async function showProfile(player) {
     const matches = merged;
     let wins = 0, losses = 0;
     const isPlayerA = m => m.jugador_a_id === player.id || m.nombre_a === player.name;
+    // W/L totals + per-torneo breakdown
+    const byTorneo = {}; // torneo_id → { wins, losses, matches[] }
     matches.forEach(m => {
-      if (m.notas === 'retired') return; // no cuenta para estadísticas
+      if (m.notas === 'retired') return;
       const won = m.ganador_id != null
         ? m.ganador_id === player.id
         : m.ganador === (isPlayerA(m) ? 'A' : 'B');
       if (won) wins++; else losses++;
+      const tid = m.torneo_id ?? 'sin-torneo';
+      if (!byTorneo[tid]) byTorneo[tid] = { wins: 0, losses: 0, matches: [] };
+      if (won) byTorneo[tid].wins++; else byTorneo[tid].losses++;
+      byTorneo[tid].matches.push(m);
     });
+
+    // Fetch torneo names for all unique torneo_ids
+    const torneoIds = Object.keys(byTorneo).filter(k => k !== 'sin-torneo' && !isNaN(Number(k)));
+    let torneoNameMap = {};
+    if (torneoIds.length) {
+      try {
+        const ts = await sbGet('torneos', `?id=in.(${torneoIds.join(',')})&select=id,nombre,fecha`);
+        (ts || []).forEach(t => { torneoNameMap[t.id] = { nombre: t.nombre, fecha: t.fecha }; });
+      } catch(_) {}
+    }
 
     // YTD: find earliest match this year → rating before it = start rating
     const thisYear = new Date().getFullYear().toString();
@@ -4803,49 +4827,94 @@ async function showProfile(player) {
     document.getElementById('winCircle').style.strokeDashoffset = 213.6 * (1 - pct / 100);
     document.querySelector('.winpct-row').style.display = '';
 
-    // Render match list
+    // Per-category breakdown in Overview tab
+    const catBreakEl  = document.getElementById('catBreakdown');
+    const catBreakRows = document.getElementById('catBreakdownRows');
+    const catEntries  = Object.entries(byTorneo);
+    if (catBreakEl && catBreakRows && catEntries.length > 0) {
+      catBreakRows.innerHTML = catEntries.map(([tid, g]) => {
+        const meta  = torneoNameMap[tid];
+        const label = meta?.nombre || (tid !== 'sin-torneo' ? `Evento #${tid}` : 'Sin categoría');
+        const fecha = meta?.fecha ? new Date(meta.fecha + 'T00:00:00').toLocaleDateString('es-PR', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        const wPct  = g.wins + g.losses > 0 ? Math.round(g.wins / (g.wins + g.losses) * 100) : 0;
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</div>
+            ${fecha ? `<div style="font-size:11px;color:var(--muted);">${fecha}</div>` : ''}
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+            <span style="font-size:13px;font-weight:700;color:#4ade80;">${g.wins}V</span>
+            <span style="color:var(--muted);font-size:12px;">·</span>
+            <span style="font-size:13px;font-weight:700;color:#ef4444;">${g.losses}D</span>
+            <span style="font-size:11px;color:var(--muted);min-width:30px;text-align:right;">${wPct}%</span>
+          </div>
+        </div>`;
+      }).join('');
+      catBreakEl.style.display = '';
+    } else if (catBreakEl) {
+      catBreakEl.style.display = 'none';
+    }
+
+    // Helper: render one match card
+    function matchCard(m) {
+      if (m.notas === 'retired') return '';
+      const isA      = isPlayerA(m);
+      const myRating = isA ? m.rating_a_antes  : m.rating_b_antes;
+      const myAfter  = isA ? m.rating_a_despues : m.rating_b_despues;
+      const oppId    = isA ? m.jugador_b_id : m.jugador_a_id;
+      const oppPlayer = ALL_PLAYERS.find(x => x.id === oppId);
+      const oppName  = isA ? (m.nombre_b || oppPlayer?.name || `#${oppId}`) : (m.nombre_a || oppPlayer?.name || `#${oppId}`);
+      const oppRating = isA ? m.rating_b_antes : m.rating_a_antes;
+      const pts      = myAfter != null ? myAfter - (myRating || 0) : null;
+      const won      = m.ganador_id != null
+        ? m.ganador_id === player.id
+        : m.ganador === (isA ? 'A' : 'B');
+      return { html: `<div class="match-item">
+        <div class="match-player ${won ? 'winner' : 'loser'}">
+          <div class="name">${won ? '👑 ' : ''}${player.name.split(' ')[0]}</div>
+          <div class="rating-tag">★ ${player.rating}</div>
+          ${pts != null ? `<div class="pts-change">${pts >= 0 ? '+' : ''}${pts} pts</div>` : ''}
+        </div>
+        <div class="match-center">
+          <div class="match-score">${m.resultado || 'VS'}</div>
+          <div class="match-date">${m.fecha ? new Date(m.fecha).toLocaleDateString('es-PR',{month:'short',day:'numeric'}) : ''}</div>
+        </div>
+        <div class="match-player ${!won ? 'winner' : 'loser'} right">
+          <div class="name">${!won ? '👑 ' : ''}${oppName.split(' ')[0]}</div>
+          <div class="rating-tag">★ ${oppRating || '—'}</div>
+        </div>
+      </div>`, pts };
+    }
+
+    // Render match list grouped by category/torneo
     const ml = document.getElementById('matchList');
     if (matches.length) {
       let totalPts = 0;
-      const rows = matches.map(m => {
-        if (m.notas === 'retired') return ''; // excluir retired del historial visible
-        const isA       = isPlayerA(m);
-        const myRating  = isA ? m.rating_a_antes   : m.rating_b_antes;
-        const myAfter   = isA ? m.rating_a_despues  : m.rating_b_despues;
-        const oppId     = isA ? m.jugador_b_id : m.jugador_a_id;
-        const oppPlayer = ALL_PLAYERS.find(x => x.id === oppId);
-        const oppName   = isA ? (m.nombre_b || oppPlayer?.name || `#${oppId}`) : (m.nombre_a || oppPlayer?.name || `#${oppId}`);
-        const oppRating = isA ? m.rating_b_antes    : m.rating_a_antes;
-        const pts       = myAfter != null ? myAfter - (myRating || 0) : null;
-        if (pts != null) totalPts += pts;
-        const won       = m.ganador_id != null
-          ? m.ganador_id === player.id
-          : m.ganador === (isA ? 'A' : 'B');
-        return `<div class="match-item">
-          <div class="match-player ${won ? 'winner' : 'loser'}">
-            <div class="name">${won ? '👑 ' : ''}${player.name.split(' ')[0]}</div>
-            <div class="rating-tag">★ ${player.rating}</div>
-            ${pts != null ? `<div class="pts-change">${pts >= 0 ? '+' : ''}${pts} pts</div>` : ''}
-          </div>
-          <div class="match-center">
-            <div class="match-score">${m.resultado || 'VS'}</div>
-            <div class="match-date">${m.fecha ? new Date(m.fecha).toLocaleDateString('es-PR',{month:'short',day:'numeric'}) : ''}</div>
-          </div>
-          <div class="match-player ${!won ? 'winner' : 'loser'} right">
-            <div class="name">${!won ? '👑 ' : ''}${oppName.split(' ')[0]}</div>
-            <div class="rating-tag">★ ${oppRating || '—'}</div>
-          </div>
+      let mlHtml = '';
+      for (const [tid, g] of Object.entries(byTorneo)) {
+        const meta  = torneoNameMap[tid];
+        const label = meta?.nombre || (tid !== 'sin-torneo' ? `Evento #${tid}` : 'Sin categoría');
+        const wColor = g.wins >= g.losses ? '#4ade80' : '#ef4444';
+        mlHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;margin-top:6px;border-bottom:2px solid var(--border);">
+          <span style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;">${label}</span>
+          <span style="font-size:12px;font-weight:700;color:${wColor};">${g.wins}V · ${g.losses}D</span>
         </div>`;
-      });
-      const totalSign = totalPts >= 0 ? `+${totalPts}` : `${totalPts}`;
+        g.matches.forEach(m => {
+          const card = matchCard(m);
+          if (card.html) { mlHtml += card.html; if (card.pts != null) totalPts += card.pts; }
+        });
+      }
+      const totalSign  = totalPts >= 0 ? `+${totalPts}` : `${totalPts}`;
       const totalColor = totalPts >= 0 ? 'var(--green)' : 'var(--red)';
-      ml.innerHTML = rows.join('') + `<div style="text-align:center;padding:16px 0;font-family:'Orbitron',monospace;font-size:15px;color:${totalColor};border-top:1px solid var(--border);margin-top:8px">TOTAL: ${totalSign} pts</div>`;
+      ml.innerHTML = mlHtml + `<div style="text-align:center;padding:16px 0;font-family:'Orbitron',monospace;font-size:15px;color:${totalColor};border-top:1px solid var(--border);margin-top:8px">TOTAL: ${totalSign} pts</div>`;
     } else {
       ml.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Sin partidos registrados aún.</div>';
     }
   } else {
     ['pMatches','pWins','pLosses','pPct'].forEach(id => document.getElementById(id).textContent = '—');
     document.getElementById('matchList').innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Sin partidos registrados aún.</div>';
+    const catBreakEl = document.getElementById('catBreakdown');
+    if (catBreakEl) catBreakEl.style.display = 'none';
   }
 
 
