@@ -1519,6 +1519,7 @@
   <nav>
     <button id="navRatings" class="active" onclick="showPage('ratings')">📊 Ratings</button>
     <button id="navCalculator" onclick="showPage('calculator')">⚡ Calcular Rating</button>
+    <button id="navClubes" onclick="showPage('clubes')">🏅 Clubes</button>
     <button id="navTorneos" onclick="showPage('torneosList')">🏓 Torneos</button>
     <button id="navInscripciones" onclick="showPage('inscripciones')">📋 Inscripciones</button>
     <button id="navMembresia" style="display:none" onclick="showPage('membresia')">🪪 Membresía</button>
@@ -1554,6 +1555,10 @@
     <button class="sb-btn" id="sbCalculator" onclick="showPage('calculator')">
       <span class="sb-icon">⚡</span>
       <span class="sb-label">Calcular Rating</span>
+    </button>
+    <button class="sb-btn" id="sbClubes" onclick="showPage('clubes')">
+      <span class="sb-icon">🏅</span>
+      <span class="sb-label">Clubes</span>
     </button>
     <button class="sb-btn" id="sbTorneos" onclick="showPage('torneosList')">
       <span class="sb-icon">🏓</span>
@@ -1600,6 +1605,10 @@
     <span class="bn-pill"><span class="bn-icon">⚡</span></span>
     <span class="bn-label">Calcular</span>
   </button>
+  <button class="bottom-nav-btn" id="bnClubes" onclick="showPage('clubes')">
+    <span class="bn-pill"><span class="bn-icon">🏅</span></span>
+    <span class="bn-label">Clubes</span>
+  </button>
   <button class="bottom-nav-btn" id="bnTorneos" onclick="showPage('torneosList')">
     <span class="bn-pill"><span class="bn-icon">🏓</span></span>
     <span class="bn-label">Torneos</span>
@@ -1639,9 +1648,6 @@
     <div class="filter-chip on" onclick="setFilter(this,'all')">Todos</div>
     <div class="filter-chip" onclick="setFilter(this,'masc')">Masculino</div>
     <div class="filter-chip" onclick="setFilter(this,'fem')">Femenino</div>
-    <select id="clubSelect" class="club-select" onchange="setClubFilter(this.value)" title="Filtrar por club">
-      <option value="">Club: Todos los clubes</option>
-    </select>
   </div>
 
   <div class="join-banner">
@@ -1687,6 +1693,24 @@
      PAGE: HALL OF FAME (Rankings by Category)
 ═══════════════════════════════════════════ -->
 <div id="hallOfFamePage" class="page">
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: CLUBES
+═══════════════════════════════════════════ -->
+<div id="clubesPage" class="page" style="display:none">
+  <!-- Club listing -->
+  <div id="clubesListView" style="padding:20px 16px 80px;max-width:960px;margin:0 auto">
+    <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px;font-weight:700;margin-bottom:2px">CLUBES</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Federación de Pimpón de Puerto Rico · <span id="clubesTotalJugadores"></span></div>
+    <div id="clubesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px"></div>
+  </div>
+  <!-- Club profile -->
+  <div id="clubProfileView" style="display:none;padding:20px 16px 80px;max-width:960px;margin:0 auto">
+    <button onclick="showClubesListView()" style="background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;margin-bottom:18px;padding:0;display:flex;align-items:center;gap:6px">← Volver a Clubes</button>
+    <div id="clubProfileHeader" style="margin-bottom:20px"></div>
+    <div id="clubProfilePlayers"></div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════════
@@ -4296,8 +4320,8 @@ async function loadPlayers(filter = {}) {
     gender: p['Sex'] || '',
     age: null,
     cat: null,
-    club: p['Club'],
-    escuela: p['Escuela'] || null,
+    club: (() => { const n = normalizeClub(p['Club']); return n.club; })(),
+    escuela: p['Escuela'] || (() => { const n = normalizeClub(p['Club']); return n.escuela; })() || null,
     member: p['Expiration Date'] ? new Date(p['Expiration Date']) > now : false,
     expDate: p['Expiration Date'] || null,
     rating: p['New Rating'] || p['Rating'],
@@ -4395,6 +4419,7 @@ const pages = {
   hallofame:      'hallOfFamePage',
   calculator:     'calculatorPage',
   subir:          'subirPage',
+  clubes:         'clubesPage',
   torneosList:    'torneosListPage',
   torneoEvento:   'torneoEventoPage',
   inscripciones:  'inscripcionesPage',
@@ -4409,6 +4434,7 @@ const navIdMap = {
   ratings:      { sb: 'sbRatings',       bn: 'bnRatings' },
   hallofame:    { sb: 'sbHallOfFame',    bn: 'bnHallOfFame' },
   calculator:   { sb: 'sbCalculator',    bn: 'bnCalculator' },
+  clubes:       { sb: 'sbClubes',        bn: 'bnClubes' },
   torneosList:  { sb: 'sbTorneos',       bn: 'bnTorneos' },
   torneoEvento: { sb: 'sbTorneos',       bn: 'bnTorneos' },
   inscripciones:{ sb: 'sbInscripciones', bn: 'bnInscripciones' },
@@ -4460,6 +4486,8 @@ function showPage(key) {
   }
   // Load Hall of Fame rankings on navigation
   if (key === 'hallofame') openRankings();
+  // Load clubs page
+  if (key === 'clubes') renderClubesPage();
 }
 
 // ── Sidebar toggle ──────────────────────────────────────────────────────────
@@ -4551,7 +4579,7 @@ function renderPlayers(list, append = false) {
         <div class="rank-num ${p.rank <= 3 ? 'top3' : ''}">#${p.rank}</div>
         <div class="player-name">${p.name}</div>
         <div style="font-family:'Orbitron',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;margin-bottom:2px">ID ${String(p.id).padStart(5,'0')}</div>
-        <div class="player-meta">${(p.club || '').trim() || 'Ninguno'} · ${{ masc: 'Masculino', fem: 'Femenino' }[playerSexGroup(p)] || '—'}</div>
+        <div class="player-meta">${[p.club ? p.club.trim() : null, { masc: 'Masculino', fem: 'Femenino' }[playerSexGroup(p)] || null].filter(Boolean).join(' · ')}</div>
       </div>
       <div class="player-right">
         <div class="rating-num"><span class="star">★</span>${p.rating}</div>
@@ -5027,6 +5055,89 @@ function getTop10(catId, sex) {
     })
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 10);
+}
+
+// ── CLUBES PAGE ──────────────────────────────────────────────────────────────
+
+function showClubesListView() {
+  document.getElementById('clubesListView').style.display = '';
+  document.getElementById('clubProfileView').style.display = 'none';
+}
+
+function renderClubesPage() {
+  showClubesListView();
+  const players = ALL_PLAYERS.filter(p => p.club);
+  const byClub = {};
+  players.forEach(p => {
+    const c = p.club;
+    if (!byClub[c]) byClub[c] = [];
+    byClub[c].push(p);
+  });
+
+  const sinClub = ALL_PLAYERS.filter(p => !p.club).length;
+  document.getElementById('clubesTotalJugadores').textContent =
+    `${ALL_PLAYERS.length} jugadores · ${sinClub} sin club`;
+
+  const sorted = CLUBS_LIST.filter(c => byClub[c]?.length > 0)
+    .sort((a, b) => (byClub[b]?.length || 0) - (byClub[a]?.length || 0));
+
+  document.getElementById('clubesGrid').innerHTML = sorted.map(club => {
+    const members = byClub[club] || [];
+    const avgRating = members.length
+      ? Math.round(members.reduce((s, p) => s + (p.rating || 0), 0) / members.length)
+      : 0;
+    const top = members[0];
+    return `<div onclick="showClubProfile(${JSON.stringify(club)})"
+      style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 16px;cursor:pointer;transition:border-color .15s,transform .1s"
+      onmouseenter="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'"
+      onmouseleave="this.style.borderColor='var(--border)';this.style.transform=''">
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px;line-height:1.3">${club}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">${members.length} jugador${members.length !== 1 ? 'es' : ''}</div>
+      <div style="font-size:12px;color:var(--muted)">Rating prom. <span style="color:var(--text);font-weight:600">★ ${avgRating}</span></div>
+      ${top ? `<div style="font-size:11px;color:var(--accent);margin-top:6px;font-weight:600">#${top.rank} ${top.name}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function showClubProfile(clubName) {
+  document.getElementById('clubesListView').style.display = 'none';
+  document.getElementById('clubProfileView').style.display = '';
+
+  const members = ALL_PLAYERS.filter(p => p.club === clubName);
+  const avgRating = members.length
+    ? Math.round(members.reduce((s, p) => s + (p.rating || 0), 0) / members.length)
+    : 0;
+
+  document.getElementById('clubProfileHeader').innerHTML = `
+    <div style="font-family:'Orbitron',monospace;font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:6px">${clubName}</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 18px;text-align:center">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Jugadores</div>
+        <div style="font-size:22px;font-weight:700;margin-top:2px">${members.length}</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 18px;text-align:center">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Rating Prom.</div>
+        <div style="font-size:22px;font-weight:700;margin-top:2px">★ ${avgRating}</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 18px;text-align:center">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Top Rating</div>
+        <div style="font-size:22px;font-weight:700;margin-top:2px">${members[0]?.rating ?? '—'}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('clubProfilePlayers').innerHTML = `
+    <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:10px;margin-top:20px">Jugadores</div>
+    ${members.map(p => `
+      <div onclick="openPlayerProfile(${p.id})" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:border-color .15s"
+        onmouseenter="this.style.borderColor='var(--accent)'"
+        onmouseleave="this.style.borderColor='var(--border)'">
+        <div style="font-weight:700;color:var(--muted);font-size:13px;width:32px">#${p.rank}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:14px">${p.name}</div>
+          ${p.escuela ? `<div style="font-size:11px;color:var(--accent);margin-top:2px">${p.escuela}</div>` : ''}
+        </div>
+        <div style="font-family:'Orbitron',monospace;font-weight:700;font-size:15px">★ ${p.rating}</div>
+      </div>`).join('')}`;
 }
 
 async function openRankings() {
@@ -8285,7 +8396,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (lm) lm.style.display = PLAYERS.length > PAGE_SIZE ? '' : 'none';
 
   buildDatalist();
-  buildClubSelect();
   simAddOpponent();
   renderMembers();
   updateStats();
@@ -8348,6 +8458,45 @@ const ESCUELAS_LIST = [
   'Escuela de Deportes de San Juan',
   'FMC',
 ];
+
+// Maps raw club field values to { club, escuela } canonical forms.
+// Used at data-load time so the UI normalizes even before the SQL migration runs.
+function normalizeClub(raw) {
+  if (!raw) return { club: null, escuela: null };
+  const s = raw.trim();
+  if (CLUBS_LIST.includes(s))   return { club: s, escuela: null };
+  if (ESCUELAS_LIST.includes(s)) return { club: null, escuela: s };
+  const l = s.toLowerCase();
+  // Escuelas (check before clubs — more specific)
+  if (/ecedao/.test(l))                              return { club: null, escuela: 'ECEDAO' };
+  if (/\bfmc\b/.test(l))                             return { club: null, escuela: 'FMC' };
+  if (/ed\.?\s*san\s*juan|deportes\s*san\s*juan/.test(l)) return { club: null, escuela: 'Escuela de Deportes de San Juan' };
+  if (/ed\.?\s*carolina|deportes\s*carolina/.test(l))     return { club: null, escuela: 'Escuela de Deportes de Carolina' };
+  // Clubs
+  if (/ceiba/.test(l))       return { club: 'Ceiba Marlins', escuela: null };
+  if (/humacao/.test(l))     return { club: 'Tenis de Mesa Humacao', escuela: null };
+  if (/yabucoa/.test(l))     return { club: 'Academia de TM Yabucoa', escuela: null };
+  if (/caguas/.test(l))      return { club: 'CAM Caguas', escuela: null };
+  if (/guaynabo/.test(l))    return { club: 'Guaynabo', escuela: null };
+  if (/trujillo/.test(l))    return { club: 'Club Tenis de Mesa Trujillo Alto', escuela: null };
+  if (/cidra/.test(l))       return { club: 'Club Bravos de Cidra', escuela: null };
+  if (/utuado/.test(l))      return { club: 'Aguilas de la Montaña Utuado', escuela: null };
+  if (/morovis/.test(l))     return { club: 'Morovis Table Tennis Club', escuela: null };
+  if (/barranquitas/.test(l))return { club: 'Barranquitas', escuela: null };
+  if (/corozal/.test(l))     return { club: 'Caballetes de Corozal', escuela: null };
+  if (/florida/.test(l))     return { club: 'Florida TTC', escuela: null };
+  if (/mayag/.test(l))       return { club: 'Mayaguez', escuela: null };
+  if (/salinas/.test(l))     return { club: 'CFD Salinas', escuela: null };
+  if (/vega\s*baja/.test(l)) return { club: 'Vega Baja Table Tennis Club', escuela: null };
+  if (/bayam/.test(l))       return { club: 'Bayamón', escuela: null };
+  if (/villalba/.test(l))    return { club: 'Villalba', escuela: null };
+  if (/a[nñ]asco/.test(l))   return { club: 'Añasco', escuela: null };
+  if (/naguabo/.test(l))     return { club: 'Naguabo Table Tennis Club', escuela: null };
+  if (/san\s*juan/.test(l))  return { club: 'San Juan Table Tennis Club', escuela: null };
+  // Blanks
+  if (/^(ninguno|none|otro|other|n\/a|na|-+)$/i.test(l)) return { club: null, escuela: null };
+  return { club: s, escuela: null };
+}
 
 const INSC_SLOT_LABELS = {
   'SAB-900':  'Sáb 4 julio · 9:00 a.m.',
