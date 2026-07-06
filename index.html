@@ -5081,8 +5081,13 @@ function renderClubesPage() {
   document.getElementById('clubesTotalJugadores').textContent =
     `${ALL_PLAYERS.length} jugadores · ${sinClub} sin club`;
 
-  const sorted = CLUBS_LIST.filter(c => byClub[c]?.length > 0)
-    .sort((a, b) => (byClub[b]?.length || 0) - (byClub[a]?.length || 0));
+  // Show all clubs that have players, canonical ones first then any unrecognized names
+  const knownWithPlayers = CLUBS_LIST.filter(c => byClub[c]?.length > 0);
+  const unknownWithPlayers = Object.keys(byClub).filter(c => !CLUBS_LIST.includes(c));
+  const sorted = [
+    ...knownWithPlayers.sort((a, b) => (byClub[b]?.length || 0) - (byClub[a]?.length || 0)),
+    ...unknownWithPlayers.sort((a, b) => (byClub[b]?.length || 0) - (byClub[a]?.length || 0)),
+  ];
 
   document.getElementById('clubesGrid').innerHTML = sorted.map(club => {
     const members = byClub[club] || [];
@@ -8520,6 +8525,7 @@ const CLUBS_LIST = [
   'Naguabo Table Tennis Club',
   'San Juan Table Tennis Club',
   'Tenis de Mesa Humacao',
+  'Vega Alta',
   'Vega Baja Table Tennis Club',
   'Villalba',
 ];
@@ -8563,10 +8569,12 @@ function normalizeClub(raw) {
   if (/bayam/.test(l))       return { club: 'Bayamón', escuela: null };
   if (/villalba/.test(l))    return { club: 'Villalba', escuela: null };
   if (/a[nñ]asco/.test(l))   return { club: 'Añasco', escuela: null };
-  if (/naguabo/.test(l))     return { club: 'Naguabo Table Tennis Club', escuela: null };
-  if (/san\s*juan/.test(l))  return { club: 'San Juan Table Tennis Club', escuela: null };
+  if (/naguabo/.test(l))            return { club: 'Naguabo Table Tennis Club', escuela: null };
+  if (/san\s*juan/.test(l))         return { club: 'San Juan Table Tennis Club', escuela: null };
+  if (/vega\s*alta/.test(l))        return { club: 'Vega Alta', escuela: null };
+  if (/\bcam\b/.test(l))            return { club: 'CAM Caguas', escuela: null };
   // Blanks
-  if (/^(ninguno|none|otro|other|n\/a|na|-+)$/i.test(l)) return { club: null, escuela: null };
+  if (/^(ninguno|none|otro|other|no affiliation|n\/a|na|-+)$/i.test(l)) return { club: null, escuela: null };
   return { club: s, escuela: null };
 }
 
