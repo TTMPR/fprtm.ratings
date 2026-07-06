@@ -5067,27 +5067,21 @@ function showClubesListView() {
 
 function renderClubesPage() {
   showClubesListView();
-  // Resolve canonical club for each player (handles both raw DB values and already-canonical names)
+
+  // Group directly by the raw club value stored in the DB — no normalization needed here
   const byClub = {};
   ALL_PLAYERS.forEach(p => {
-    const n = normalizeClub(p.club || '');
-    const c = n.club;
+    const c = (p.club || '').trim();
     if (!c) return;
     if (!byClub[c]) byClub[c] = [];
-    byClub[c].push({ ...p, _canonClub: c, _canonEscuela: n.escuela || p.escuela });
+    byClub[c].push(p);
   });
 
-  const sinClub = ALL_PLAYERS.filter(p => !normalizeClub(p.club || '').club).length;
+  const sinClub = ALL_PLAYERS.filter(p => !(p.club || '').trim()).length;
   document.getElementById('clubesTotalJugadores').textContent =
     `${ALL_PLAYERS.length} jugadores · ${sinClub} sin club`;
 
-  // Show all clubs that have players, canonical ones first then any unrecognized names
-  const knownWithPlayers = CLUBS_LIST.filter(c => byClub[c]?.length > 0);
-  const unknownWithPlayers = Object.keys(byClub).filter(c => !CLUBS_LIST.includes(c));
-  const sorted = [
-    ...knownWithPlayers.sort((a, b) => (byClub[b]?.length || 0) - (byClub[a]?.length || 0)),
-    ...unknownWithPlayers.sort((a, b) => (byClub[b]?.length || 0) - (byClub[a]?.length || 0)),
-  ];
+  const sorted = Object.entries(byClub).sort((a, b) => b[1].length - a[1].length).map(([c]) => c);
 
   document.getElementById('clubesGrid').innerHTML = sorted.map(club => {
     const members = byClub[club] || [];
@@ -5112,7 +5106,7 @@ function showClubProfile(clubName) {
   document.getElementById('clubesListView').style.display = 'none';
   document.getElementById('clubProfileView').style.display = '';
 
-  const members = ALL_PLAYERS.filter(p => normalizeClub(p.club || '').club === clubName);
+  const members = ALL_PLAYERS.filter(p => (p.club || '').trim() === clubName);
   const avgRating = members.length
     ? Math.round(members.reduce((s, p) => s + (p.rating || 0), 0) / members.length)
     : 0;
