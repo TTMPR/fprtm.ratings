@@ -13,25 +13,30 @@ CREATE TABLE IF NOT EXISTS public.clubs (
 
 ALTER TABLE public.clubs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public can read clubs" ON public.clubs;
 CREATE POLICY "Public can read clubs"
   ON public.clubs FOR SELECT TO anon, authenticated USING (true);
 
+DROP POLICY IF EXISTS "Authenticated can manage clubs" ON public.clubs;
 CREATE POLICY "Authenticated can manage clubs"
   ON public.clubs FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
--- Storage bucket para logos (ejecutar también)
+-- Storage bucket para logos
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('club-logos', 'club-logos', true)
 ON CONFLICT (id) DO NOTHING;
 
-CREATE POLICY IF NOT EXISTS "Public read club-logos"
+DROP POLICY IF EXISTS "Public read club-logos" ON storage.objects;
+CREATE POLICY "Public read club-logos"
   ON storage.objects FOR SELECT TO anon, authenticated
   USING (bucket_id = 'club-logos');
 
-CREATE POLICY IF NOT EXISTS "Authenticated upload club-logos"
+DROP POLICY IF EXISTS "Authenticated upload club-logos" ON storage.objects;
+CREATE POLICY "Authenticated upload club-logos"
   ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (bucket_id = 'club-logos');
 
-CREATE POLICY IF NOT EXISTS "Authenticated update club-logos"
+DROP POLICY IF EXISTS "Authenticated update club-logos" ON storage.objects;
+CREATE POLICY "Authenticated update club-logos"
   ON storage.objects FOR UPDATE TO authenticated
   USING (bucket_id = 'club-logos');
