@@ -4661,8 +4661,9 @@ async function showProfile(player) {
         ? m.ganador_id === player.id
         : m.ganador === (isPlayerA(m) ? 'A' : 'B');
       if (won) wins++; else losses++;
-      const key = m.categoria || (m.torneo_id != null ? 'tid_' + m.torneo_id : 'sin-cat');
-      if (!byTorneo[key]) byTorneo[key] = { wins: 0, losses: 0, matches: [], categoria: m.categoria || null, torneo_id: m.torneo_id ?? null };
+      const catLabel = m.categoria || m.categoria_evento || null;
+      const key = catLabel || (m.torneo_id != null ? 'tid_' + m.torneo_id : 'sin-cat');
+      if (!byTorneo[key]) byTorneo[key] = { wins: 0, losses: 0, matches: [], categoria: catLabel, torneo_id: m.torneo_id ?? null };
       if (won) byTorneo[key].wins++; else byTorneo[key].losses++;
       byTorneo[key].matches.push(m);
     });
