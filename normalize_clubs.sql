@@ -97,3 +97,14 @@ SELECT "Club", "Escuela", COUNT(*) as jugadores
 FROM "Base de Datos"
 GROUP BY "Club", "Escuela"
 ORDER BY jugadores DESC;
+
+-- ============================================================
+--  Parche adicional (correr después del script principal)
+-- ============================================================
+
+-- Normalizar variantes restantes detectadas en los datos
+UPDATE "Base de Datos" SET "Club" = 'CAM Caguas'
+  WHERE "Club" = 'Club de Tenis de Mesa CAM';
+
+UPDATE "Base de Datos" SET "Club" = ''
+  WHERE LOWER(TRIM("Club")) = 'no affiliation';
