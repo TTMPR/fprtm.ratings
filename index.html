@@ -1706,6 +1706,7 @@
         <div class="profile-club" id="profileClub">Naguabo</div>
         <span id="profileMembDot" style="display:none;width:8px;height:8px;border-radius:50%;flex-shrink:0;"></span>
       </div>
+      <div id="profileEscuela" style="display:none;font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--accent);background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);border-radius:20px;padding:2px 10px;margin:4px auto 0;width:fit-content;"></div>
       <span id="profileBadge" class="badge">Jugador activo</span>
       <div id="profileMembStatus" class="profile-memb-status none" style="display:none">
         <div class="profile-memb-dot"></div>
@@ -2834,7 +2835,15 @@ Maria Lopez,Ana Torres,B</code>
     </div>
     <div class="edit-field">
       <label>Club</label>
-      <input type="text" id="editMembClub" placeholder="Nombre del club">
+      <select id="editMembClub" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;">
+        <option value="">— Sin club —</option>
+      </select>
+    </div>
+    <div class="edit-field">
+      <label>Escuela</label>
+      <select id="editMembEscuela" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;">
+        <option value="">— Sin escuela —</option>
+      </select>
     </div>
     <div class="edit-field">
       <label>Fecha de Vencimiento</label>
@@ -4267,7 +4276,7 @@ function showError(msg) {
 
 async function loadPlayers(filter = {}) {
   // Only fetch non-sensitive columns — never request Email, Home Address, or Date of Birth
-  let params = '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22,%22New%20Rating%22,%22Sex%22,%22Club%22,%22Expiration%20Date%22&order=%22New%20Rating%22.desc.nullslast,Rating.desc&limit=600';
+  let params = '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22,%22New%20Rating%22,%22Sex%22,%22Club%22,%22Escuela%22,%22Expiration%20Date%22&order=%22New%20Rating%22.desc.nullslast,Rating.desc&limit=600';
   if (filter.sexoAny?.length) {
     const sexoOr = filter.sexoAny
       .map(v => `Sex.eq.${encodeURIComponent(v)}`)
@@ -4288,6 +4297,7 @@ async function loadPlayers(filter = {}) {
     age: null,
     cat: null,
     club: p['Club'],
+    escuela: p['Escuela'] || null,
     member: p['Expiration Date'] ? new Date(p['Expiration Date']) > now : false,
     expDate: p['Expiration Date'] || null,
     rating: p['New Rating'] || p['Rating'],
@@ -4297,7 +4307,7 @@ async function loadPlayers(filter = {}) {
 
 async function loadMembers() {
   // Only fetch non-sensitive columns — never request Home Address or Date of Birth
-  const data = await sbGet('Base%20de%20Datos', '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Club%22,%22Sex%22,%22Email%22,%22Expiration%20Date%22&order=%22Member%20ID%22.asc&limit=300');
+  const data = await sbGet('Base%20de%20Datos', '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Club%22,%22Escuela%22,%22Sex%22,%22Email%22,%22Expiration%20Date%22&order=%22Member%20ID%22.asc&limit=300');
   const now = new Date();
   return data.map(m => {
     const expDate = m['Expiration Date'] ? new Date(m['Expiration Date']) : null;
@@ -4315,6 +4325,7 @@ async function loadMembers() {
       id:          m['Member ID'],
       name:        `${m['First Name'] || ''} ${m['Last Name'] || ''}`.trim(),
       club:        m['Club'] || '—',
+      escuela:     m['Escuela'] || null,
       sex:         m['Sex'] || '—',
       age:         '—',
       date:        '—',
@@ -4590,7 +4601,10 @@ async function showProfile(player) {
   }
   document.getElementById('profileName').textContent   = player.name;
   document.getElementById('profileId').textContent     = 'ID: ' + player.id;
-  document.getElementById('profileClub').textContent   = player.club || 'Sin club';
+  document.getElementById('profileClub').textContent   = player.club || '';
+  const escuelaEl = document.getElementById('profileEscuela');
+  if (player.escuela) { escuelaEl.textContent = player.escuela; escuelaEl.style.display = ''; }
+  else escuelaEl.style.display = 'none';
   const _badge = document.getElementById('profileBadge');
   _badge.className = 'badge';
   _badge.style.display = 'none';
@@ -6124,7 +6138,18 @@ function openEditMember(memberId) {
   document.getElementById('editMembSub').textContent = `FPTM #${memberId}`;
   document.getElementById('editMembName').value  = m ? m.name : (p ? p.name : '');
   document.getElementById('editMembEmail').value = m ? (m.email || '') : '';
-  document.getElementById('editMembClub').value  = m ? (m.club !== '—' ? m.club : '') : (p ? (p.club || '') : '');
+
+  const clubSel = document.getElementById('editMembClub');
+  clubSel.innerHTML = '<option value="">— Sin club —</option>'
+    + CLUBS_LIST.map(c => `<option value="${c}">${c}</option>`).join('');
+  const currentClub = m ? (m.club !== '—' ? m.club : '') : (p ? (p.club || '') : '');
+  clubSel.value = CLUBS_LIST.includes(currentClub) ? currentClub : '';
+
+  const escuelaSel = document.getElementById('editMembEscuela');
+  escuelaSel.innerHTML = '<option value="">— Sin escuela —</option>'
+    + ESCUELAS_LIST.map(e => `<option value="${e}">${e}</option>`).join('');
+  const currentEscuela = m ? (m.escuela || '') : (p ? (p.escuela || '') : '');
+  escuelaSel.value = ESCUELAS_LIST.includes(currentEscuela) ? currentEscuela : '';
 
   // expDate in MEMBERS is already YYYY-MM-DD (from toISOString)
   document.getElementById('editMembExpDate').value = m && m.expDate && m.expDate !== '—' ? m.expDate : '';
@@ -6146,7 +6171,8 @@ async function saveEditMember() {
 
   const id      = Number(document.getElementById('editMembId').value);
   const email   = document.getElementById('editMembEmail').value.trim();
-  const club    = document.getElementById('editMembClub').value.trim();
+  const club    = document.getElementById('editMembClub').value;
+  const escuela = document.getElementById('editMembEscuela').value;
   const expRaw  = document.getElementById('editMembExpDate').value; // YYYY-MM-DD
   const ratingV = document.getElementById('editMembRating').value;
   const rating  = ratingV ? Number(ratingV) : null;
@@ -6168,8 +6194,9 @@ async function saveEditMember() {
   }
 
   const body = {};
-  body['Email'] = email;
-  body['Club']  = club;
+  body['Email']   = email;
+  body['Club']    = club;
+  body['Escuela'] = escuela || null;
   if (expFormatted) body['Expiration Date'] = expFormatted;
   if (rating !== null) body['Rating'] = rating;
 
@@ -6185,7 +6212,8 @@ async function saveEditMember() {
     const mi = MEMBERS.findIndex(x => x.id === id);
     if (mi !== -1) {
       if (email !== undefined) MEMBERS[mi].email = email;
-      if (club)  MEMBERS[mi].club  = club;
+      MEMBERS[mi].club    = club || '—';
+      MEMBERS[mi].escuela = escuela || null;
       if (expFormatted) {
         const now = new Date();
         const newExp = new Date(expRaw);
@@ -8032,16 +8060,14 @@ function showClubChangeModal() {
   if (!_photoUploadPlayer) return;
   _clubChangePlayer = _photoUploadPlayer;
 
-  const clubs = [...new Set(ALL_PLAYERS.map(p => p.club).filter(Boolean))].sort();
-  const sel   = document.getElementById('clubChangeSelect');
-  sel.innerHTML = '<option value="">— Seleccionar club existente —</option>'
-    + clubs.map(c => `<option value="${c}">${c}</option>`).join('');
+  const sel = document.getElementById('clubChangeSelect');
+  sel.innerHTML = '<option value="">— Seleccionar club —</option>'
+    + CLUBS_LIST.map(c => `<option value="${c}">${c}</option>`).join('');
 
   document.getElementById('clubChangeSubtitle').textContent =
     `Jugador: ${_clubChangePlayer.name} · ID ${_clubChangePlayer.id}`;
   document.getElementById('clubChangeCurrent').textContent =
     _clubChangePlayer.club || 'Sin club';
-  document.getElementById('clubChangeInput').value = '';
   sel.value = '';
   document.getElementById('clubChangeMsg').textContent = '';
   document.getElementById('clubChangeModal').style.display = 'flex';
@@ -8055,13 +8081,11 @@ function closeClubChangeModal() {
 async function submitClubChangeRequest() {
   if (!_clubChangePlayer) return;
   const msgEl   = document.getElementById('clubChangeMsg');
-  const selVal  = document.getElementById('clubChangeSelect').value.trim();
-  const inpVal  = document.getElementById('clubChangeInput').value.trim();
-  const newClub = inpVal || selVal;
+  const newClub = document.getElementById('clubChangeSelect').value;
 
   if (!newClub) {
     msgEl.style.color = 'var(--red)';
-    msgEl.textContent = 'Selecciona o escribe el nombre del nuevo club.';
+    msgEl.textContent = 'Selecciona el nuevo club.';
     return;
   }
   if (newClub === (_clubChangePlayer.club || '')) {
@@ -8294,6 +8318,37 @@ const INSC_CATEGORIES = [
   { id: 'ev14', name: '13 o Menos Femenino',     desc: 'Premiación: $35 · $30 · $25 · $25 · menores de 14 al 31-dic',   price: 20, slot: 'DOM-1230', maxAge: 13, sex: 'F',                                   stadiumId: '13u---femenino' },
   { id: 'ev15', name: 'Sub-21 Mixto',            desc: 'Premiación: $65 · $55 · $45 · $45 · menores de 21 al 31-dic',   price: 20, slot: 'DOM-1230', maxAge: 21,                                             stadiumId: 'sub21---abierto' },
 ];
+
+const CLUBS_LIST = [
+  'Aguilas de la Montaña Utuado',
+  'Academia de TM Yabucoa',
+  'Añasco',
+  'Barranquitas',
+  'Bayamón',
+  'Caballetes de Corozal',
+  'CAM Caguas',
+  'Ceiba Marlins',
+  'CFD Salinas',
+  'Club Bravos de Cidra',
+  'Club Tenis de Mesa Trujillo Alto',
+  'Florida TTC',
+  'Guaynabo',
+  'Mayaguez',
+  'Morovis Table Tennis Club',
+  'Naguabo Table Tennis Club',
+  'San Juan Table Tennis Club',
+  'Tenis de Mesa Humacao',
+  'Vega Baja Table Tennis Club',
+  'Villalba',
+];
+
+const ESCUELAS_LIST = [
+  'ECEDAO',
+  'Escuela de Deportes de Carolina',
+  'Escuela de Deportes de San Juan',
+  'FMC',
+];
+
 const INSC_SLOT_LABELS = {
   'SAB-900':  'Sáb 4 julio · 9:00 a.m.',
   'SAB-1100': 'Sáb 4 julio · 11:00 a.m.',
@@ -12093,12 +12148,9 @@ async function submitPublicReg() {
     <div id="clubChangeCurrent" style="font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)">—</div>
 
     <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px">Nuevo club *</label>
-    <select id="clubChangeSelect" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;margin-bottom:6px">
-      <option value="">— Seleccionar club existente —</option>
+    <select id="clubChangeSelect" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;margin-bottom:16px">
+      <option value="">— Seleccionar club —</option>
     </select>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:4px;text-align:center">— o escribe un club nuevo —</div>
-    <input id="clubChangeInput" type="text" placeholder="Nombre del club nuevo"
-           style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;box-sizing:border-box;margin-bottom:16px">
 
     <div id="clubChangeMsg" style="font-size:13px;min-height:18px;margin-bottom:12px"></div>
     <div style="display:flex;gap:8px">
