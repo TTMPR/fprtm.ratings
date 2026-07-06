@@ -5,30 +5,30 @@
 --    ALTER TABLE "Base de Datos" ADD COLUMN IF NOT EXISTS "Escuela" TEXT;
 -- ============================================================
 
--- 1. Detectar y mover escuelas al campo Escuela (donde Club tiene el nombre)
+-- 1. Detectar escuelas (mover Club → Escuela, dejar Club en blanco '')
 UPDATE "Base de Datos"
-SET "Escuela" = 'ECEDAO', "Club" = NULL
-WHERE LOWER(TRIM("Club")) ILIKE '%ecedao%'
+SET "Escuela" = 'ECEDAO', "Club" = ''
+WHERE "Club" ILIKE '%ecedao%'
   AND ("Escuela" IS NULL OR "Escuela" = '');
 
 UPDATE "Base de Datos"
-SET "Escuela" = 'FMC', "Club" = NULL
-WHERE LOWER(TRIM("Club")) ~ '\yfmc\y'
+SET "Escuela" = 'FMC', "Club" = ''
+WHERE "Club" ILIKE '%fmc%'
   AND ("Escuela" IS NULL OR "Escuela" = '');
 
 UPDATE "Base de Datos"
-SET "Escuela" = 'Escuela de Deportes de San Juan', "Club" = NULL
+SET "Escuela" = 'Escuela de Deportes de San Juan', "Club" = ''
 WHERE ("Club" ILIKE '%ed san juan%' OR "Club" ILIKE '%deportes san juan%' OR "Club" ILIKE '%ed. san juan%')
   AND ("Escuela" IS NULL OR "Escuela" = '');
 
 UPDATE "Base de Datos"
-SET "Escuela" = 'Escuela de Deportes de Carolina', "Club" = NULL
+SET "Escuela" = 'Escuela de Deportes de Carolina', "Club" = ''
 WHERE ("Club" ILIKE '%ed carolina%' OR "Club" ILIKE '%deportes carolina%' OR "Club" ILIKE '%ed. carolina%')
   AND ("Escuela" IS NULL OR "Escuela" = '');
 
 -- 2. Normalizar nombres de clubes a nombres oficiales
 UPDATE "Base de Datos" SET "Club" = 'Ceiba Marlins'
-  WHERE "Club" ILIKE '%ceiba%' AND "Club" NOT ILIKE '%ecedao%';
+  WHERE "Club" ILIKE '%ceiba%';
 
 UPDATE "Base de Datos" SET "Club" = 'Tenis de Mesa Humacao'
   WHERE "Club" ILIKE '%humacao%';
@@ -40,11 +40,11 @@ UPDATE "Base de Datos" SET "Club" = 'CAM Caguas'
   WHERE "Club" ILIKE '%caguas%';
 
 UPDATE "Base de Datos" SET "Club" = 'Guaynabo'
-  WHERE LOWER(TRIM("Club")) IN ('guaynabo', 'tt guaynabo', 'table tennis guaynabo');
+  WHERE "Club" ILIKE '%guaynabo%';
 
 UPDATE "Base de Datos" SET "Club" = 'San Juan Table Tennis Club'
   WHERE "Club" ILIKE '%san juan%'
-    AND "Club" NOT ILIKE '%deportes%' AND "Club" NOT ILIKE '%ed%';
+    AND "Club" NOT ILIKE '%deportes%';
 
 UPDATE "Base de Datos" SET "Club" = 'Club Tenis de Mesa Trujillo Alto'
   WHERE "Club" ILIKE '%trujillo%';
@@ -53,13 +53,13 @@ UPDATE "Base de Datos" SET "Club" = 'Club Bravos de Cidra'
   WHERE "Club" ILIKE '%cidra%' OR "Club" ILIKE '%bravos%';
 
 UPDATE "Base de Datos" SET "Club" = 'Aguilas de la Montaña Utuado'
-  WHERE "Club" ILIKE '%utuado%' OR "Club" ILIKE '%aguilas%';
+  WHERE "Club" ILIKE '%utuado%' OR "Club" ILIKE '%aguila%';
 
 UPDATE "Base de Datos" SET "Club" = 'Morovis Table Tennis Club'
   WHERE "Club" ILIKE '%morovis%';
 
 UPDATE "Base de Datos" SET "Club" = 'Barranquitas'
-  WHERE LOWER(TRIM("Club")) IN ('barranquitas', 'tt barranquitas', 'club barranquitas');
+  WHERE "Club" ILIKE '%barranquitas%';
 
 UPDATE "Base de Datos" SET "Club" = 'Caballetes de Corozal'
   WHERE "Club" ILIKE '%corozal%' OR "Club" ILIKE '%caballetes%';
@@ -80,7 +80,7 @@ UPDATE "Base de Datos" SET "Club" = 'Bayamón'
   WHERE "Club" ILIKE '%bayam%';
 
 UPDATE "Base de Datos" SET "Club" = 'Villalba'
-  WHERE LOWER(TRIM("Club")) IN ('villalba', 'tt villalba', 'club villalba');
+  WHERE "Club" ILIKE '%villalba%';
 
 UPDATE "Base de Datos" SET "Club" = 'Añasco'
   WHERE "Club" ILIKE '%añasco%' OR "Club" ILIKE '%anasco%';
@@ -88,9 +88,9 @@ UPDATE "Base de Datos" SET "Club" = 'Añasco'
 UPDATE "Base de Datos" SET "Club" = 'Naguabo Table Tennis Club'
   WHERE "Club" ILIKE '%naguabo%';
 
--- 3. Limpiar valores que significan "ninguno"
-UPDATE "Base de Datos" SET "Club" = NULL
-  WHERE LOWER(TRIM("Club")) IN ('ninguno', 'none', 'otro', 'other', 'n/a', 'na', '-', '--', '');
+-- 3. Limpiar valores que significan "ninguno" → string vacío
+UPDATE "Base de Datos" SET "Club" = ''
+  WHERE LOWER(TRIM("Club")) IN ('ninguno', 'none', 'otro', 'other', 'n/a', 'na', '-', '--');
 
 -- 4. Verificar resultados
 SELECT "Club", "Escuela", COUNT(*) as jugadores

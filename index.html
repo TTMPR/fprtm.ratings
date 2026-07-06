@@ -8462,7 +8462,7 @@ const ESCUELAS_LIST = [
 // Maps raw club field values to { club, escuela } canonical forms.
 // Used at data-load time so the UI normalizes even before the SQL migration runs.
 function normalizeClub(raw) {
-  if (!raw) return { club: null, escuela: null };
+  if (!raw || !raw.trim()) return { club: null, escuela: null };
   const s = raw.trim();
   if (CLUBS_LIST.includes(s))   return { club: s, escuela: null };
   if (ESCUELAS_LIST.includes(s)) return { club: null, escuela: s };
