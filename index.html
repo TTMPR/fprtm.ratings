@@ -4320,8 +4320,8 @@ async function loadPlayers(filter = {}) {
     gender: p['Sex'] || '',
     age: null,
     cat: null,
-    club: (() => { const n = normalizeClub(p['Club']); return n.club; })(),
-    escuela: p['Escuela'] || (() => { const n = normalizeClub(p['Club']); return n.escuela; })() || null,
+    club: p['Club'] ? p['Club'].trim() || null : null,
+    escuela: p['Escuela'] ? p['Escuela'].trim() || null : null,
     member: p['Expiration Date'] ? new Date(p['Expiration Date']) > now : false,
     expDate: p['Expiration Date'] || null,
     rating: p['New Rating'] || p['Rating'],
@@ -4631,7 +4631,8 @@ async function showProfile(player) {
   document.getElementById('profileId').textContent     = 'ID: ' + player.id;
   document.getElementById('profileClub').textContent   = player.club || '';
   const escuelaEl = document.getElementById('profileEscuela');
-  if (player.escuela) { escuelaEl.textContent = player.escuela; escuelaEl.style.display = ''; }
+  const escuelaVal = player.escuela || normalizeClub(player.club || '').escuela || null;
+  if (escuelaVal) { escuelaEl.textContent = escuelaVal; escuelaEl.style.display = ''; }
   else escuelaEl.style.display = 'none';
   const _badge = document.getElementById('profileBadge');
   _badge.className = 'badge';
@@ -5066,15 +5067,17 @@ function showClubesListView() {
 
 function renderClubesPage() {
   showClubesListView();
-  const players = ALL_PLAYERS.filter(p => p.club);
+  // Resolve canonical club for each player (handles both raw DB values and already-canonical names)
   const byClub = {};
-  players.forEach(p => {
-    const c = p.club;
+  ALL_PLAYERS.forEach(p => {
+    const n = normalizeClub(p.club || '');
+    const c = n.club;
+    if (!c) return;
     if (!byClub[c]) byClub[c] = [];
-    byClub[c].push(p);
+    byClub[c].push({ ...p, _canonClub: c, _canonEscuela: n.escuela || p.escuela });
   });
 
-  const sinClub = ALL_PLAYERS.filter(p => !p.club).length;
+  const sinClub = ALL_PLAYERS.filter(p => !normalizeClub(p.club || '').club).length;
   document.getElementById('clubesTotalJugadores').textContent =
     `${ALL_PLAYERS.length} jugadores · ${sinClub} sin club`;
 
@@ -5103,7 +5106,7 @@ function showClubProfile(clubName) {
   document.getElementById('clubesListView').style.display = 'none';
   document.getElementById('clubProfileView').style.display = '';
 
-  const members = ALL_PLAYERS.filter(p => p.club === clubName);
+  const members = ALL_PLAYERS.filter(p => normalizeClub(p.club || '').club === clubName);
   const avgRating = members.length
     ? Math.round(members.reduce((s, p) => s + (p.rating || 0), 0) / members.length)
     : 0;
