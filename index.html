@@ -2215,7 +2215,11 @@
         <h3>TORNEO</h3>
         <div class="edit-field">
           <label>Nombre del torneo *</label>
-          <input type="text" id="subirTorneoNombre" placeholder="Ej: Clasificatorio Marzo 2026">
+          <input type="text" id="subirTorneoNombre" placeholder="Ej: Albergue Olímpico Summer Open 2026">
+        </div>
+        <div class="edit-field">
+          <label>Categoría *</label>
+          <input type="text" id="subirCategoria" placeholder="Ej: 1800 Under, 11U Masculino, Sub21 Abierto…">
         </div>
         <div class="edit-field">
           <label>Fecha del torneo *</label>
@@ -4778,26 +4782,29 @@ async function showProfile(player) {
     const matches = merged;
     let wins = 0, losses = 0;
     const isPlayerA = m => m.jugador_a_id === player.id || m.nombre_a === player.name;
-    // W/L totals + per-torneo breakdown
-    const byTorneo = {}; // torneo_id → { wins, losses, matches[] }
+    // W/L totals + per-category breakdown
+    // Group key: categoria string when present, else 'tid_<torneo_id>'
+    const byTorneo = {};
     matches.forEach(m => {
       if (m.notas === 'retired') return;
       const won = m.ganador_id != null
         ? m.ganador_id === player.id
         : m.ganador === (isPlayerA(m) ? 'A' : 'B');
       if (won) wins++; else losses++;
-      const tid = m.torneo_id ?? 'sin-torneo';
-      if (!byTorneo[tid]) byTorneo[tid] = { wins: 0, losses: 0, matches: [] };
-      if (won) byTorneo[tid].wins++; else byTorneo[tid].losses++;
-      byTorneo[tid].matches.push(m);
+      const key = m.categoria || (m.torneo_id != null ? 'tid_' + m.torneo_id : 'sin-cat');
+      if (!byTorneo[key]) byTorneo[key] = { wins: 0, losses: 0, matches: [], categoria: m.categoria || null, torneo_id: m.torneo_id ?? null };
+      if (won) byTorneo[key].wins++; else byTorneo[key].losses++;
+      byTorneo[key].matches.push(m);
     });
 
-    // Fetch torneo names for all unique torneo_ids
-    const torneoIds = Object.keys(byTorneo).filter(k => k !== 'sin-torneo' && !isNaN(Number(k)));
+    // Fetch torneo names only for groups without a categoria (legacy data)
+    const legacyTorneoIds = Object.values(byTorneo)
+      .filter(g => !g.categoria && g.torneo_id != null)
+      .map(g => g.torneo_id);
     let torneoNameMap = {};
-    if (torneoIds.length) {
+    if (legacyTorneoIds.length) {
       try {
-        const ts = await sbGet('torneos', `?id=in.(${torneoIds.join(',')})&select=id,nombre,fecha`);
+        const ts = await sbGet('torneos', `?id=in.(${legacyTorneoIds.join(',')})&select=id,nombre,fecha`);
         (ts || []).forEach(t => { torneoNameMap[t.id] = { nombre: t.nombre, fecha: t.fecha }; });
       } catch(_) {}
     }
@@ -4832,9 +4839,9 @@ async function showProfile(player) {
     const catBreakRows = document.getElementById('catBreakdownRows');
     const catEntries  = Object.entries(byTorneo);
     if (catBreakEl && catBreakRows && catEntries.length > 0) {
-      catBreakRows.innerHTML = catEntries.map(([tid, g]) => {
-        const meta  = torneoNameMap[tid];
-        const label = meta?.nombre || (tid !== 'sin-torneo' ? `Evento #${tid}` : 'Sin categoría');
+      catBreakRows.innerHTML = catEntries.map(([, g]) => {
+        const meta  = g.torneo_id ? torneoNameMap[g.torneo_id] : null;
+        const label = g.categoria || meta?.nombre || 'Sin categoría';
         const fecha = meta?.fecha ? new Date(meta.fecha + 'T00:00:00').toLocaleDateString('es-PR', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
         const wPct  = g.wins + g.losses > 0 ? Math.round(g.wins / (g.wins + g.losses) * 100) : 0;
         return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -4891,9 +4898,9 @@ async function showProfile(player) {
     if (matches.length) {
       let totalPts = 0;
       let mlHtml = '';
-      for (const [tid, g] of Object.entries(byTorneo)) {
-        const meta  = torneoNameMap[tid];
-        const label = meta?.nombre || (tid !== 'sin-torneo' ? `Evento #${tid}` : 'Sin categoría');
+      for (const [, g] of Object.entries(byTorneo)) {
+        const meta  = g.torneo_id ? torneoNameMap[g.torneo_id] : null;
+        const label = g.categoria || meta?.nombre || 'Sin categoría';
         const wColor = g.wins >= g.losses ? '#4ade80' : '#ef4444';
         mlHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;margin-top:6px;border-bottom:2px solid var(--border);">
           <span style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;">${label}</span>
@@ -5389,13 +5396,19 @@ let subirCsvRows = [];   // parsed rows from the uploaded CSV
 let subirPending = [];   // computed pendingResults for subirPage
 
 function subirPaso2() {
-  const nombre = document.getElementById('subirTorneoNombre').value.trim();
-  const fecha  = document.getElementById('subirTorneoFecha').value;
-  const msgEl  = document.getElementById('subirStep1Msg');
+  const nombre    = document.getElementById('subirTorneoNombre').value.trim();
+  const categoria = document.getElementById('subirCategoria').value.trim();
+  const fecha     = document.getElementById('subirTorneoFecha').value;
+  const msgEl     = document.getElementById('subirStep1Msg');
 
   if (!nombre) {
     msgEl.style.color = 'var(--red)';
     msgEl.textContent = 'El nombre del torneo es requerido.';
+    return;
+  }
+  if (!categoria) {
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'La categoría es requerida.';
     return;
   }
   if (!fecha) {
@@ -5410,7 +5423,9 @@ function subirPaso2() {
 
   const fechaFmt = new Date(fecha + 'T12:00:00').toLocaleDateString('es-PR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   document.getElementById('subirTorneoInfo').innerHTML =
-    `<strong style="color:var(--accent)">🏓 ${nombre}</strong> <span style="color:var(--muted);margin-left:8px">${fechaFmt}</span>`;
+    `<strong style="color:var(--accent)">🏓 ${nombre}</strong>` +
+    `<span style="background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600;color:var(--accent);margin-left:8px;">${categoria}</span>` +
+    `<span style="color:var(--muted);margin-left:8px;">${fechaFmt}</span>`;
 
   // Reset CSV state
   subirCsvRows = [];
@@ -5602,10 +5617,11 @@ async function subirGuardarBorrador() {
   if (!currentUser) { showLogin(); return; }
   if (!subirPending.length) return;
 
-  const nombre = document.getElementById('subirTorneoNombre').value.trim();
-  const fecha  = document.getElementById('subirTorneoFecha').value;
-  const btn    = document.getElementById('subirSaveDraftBtn');
-  const msgEl  = document.getElementById('subirDraftMsg');
+  const nombre    = document.getElementById('subirTorneoNombre').value.trim();
+  const categoria = document.getElementById('subirCategoria').value.trim();
+  const fecha     = document.getElementById('subirTorneoFecha').value;
+  const btn       = document.getElementById('subirSaveDraftBtn');
+  const msgEl     = document.getElementById('subirDraftMsg');
 
   btn.disabled = true;
   btn.textContent = '⏳ Guardando...';
@@ -5640,12 +5656,13 @@ async function subirGuardarBorrador() {
 
   try {
     const { error } = await _supabase.from('resultados_draft').insert({
-      torneo_nombre: nombre,
-      torneo_fecha:  fecha,
-      partidos:      subirPending,
-      snapshot_map:  Object.values(snapshotMap),
-      col_name:      colName,
-      status:        'pending'
+      torneo_nombre:    nombre,
+      torneo_categoria: categoria || null,
+      torneo_fecha:     fecha,
+      partidos:         subirPending,
+      snapshot_map:     Object.values(snapshotMap),
+      col_name:         colName,
+      status:           'pending'
     });
     if (error) throw new Error(error.message);
 
@@ -5785,7 +5802,7 @@ async function draftPublicar() {
   // Fetch full draft to get col_name
   const { data: draft } = await _supabase
     .from('resultados_draft')
-    .select('torneo_nombre,torneo_fecha,partidos,snapshot_map,col_name')
+    .select('torneo_nombre,torneo_categoria,torneo_fecha,partidos,snapshot_map,col_name')
     .eq('id', _currentDraftId).single();
 
   const colName = draft?.col_name || null;
@@ -5820,11 +5837,16 @@ async function draftPublicar() {
 
       if (torneoId && Array.isArray(draft.partidos)) {
         const partidoRows = draft.partidos.map(r => ({
-          torneo_id: torneoId, jugador_a_id: r.idA, jugador_b_id: r.idB,
-          ganador_id: r.winner === r.pA ? r.idA : r.idB,
-          rating_a_antes: r.rA, rating_b_antes: r.rB,
-          rating_a_despues: r.rA + r.aGain, rating_b_despues: r.rB + r.bGain,
-          fecha: draft.torneo_fecha
+          torneo_id:        torneoId,
+          jugador_a_id:     r.idA,
+          jugador_b_id:     r.idB,
+          ganador_id:       r.winner === r.pA ? r.idA : r.idB,
+          rating_a_antes:   r.rA,
+          rating_b_antes:   r.rB,
+          rating_a_despues: r.rA + r.aGain,
+          rating_b_despues: r.rB + r.bGain,
+          fecha:            draft.torneo_fecha,
+          categoria:        draft.torneo_categoria || null,
         }));
         // Insert in batches of 100
         for (let i = 0; i < partidoRows.length; i += 100) {
@@ -5964,7 +5986,7 @@ async function resyncPartidosDraft(draftId, torneoIdsStr, btn) {
   try {
     const { data: draft, error } = await _supabase
       .from('resultados_draft')
-      .select('torneo_nombre,torneo_fecha,partidos,snapshot_map')
+      .select('torneo_nombre,torneo_categoria,torneo_fecha,partidos,snapshot_map')
       .eq('id', draftId).single();
     if (error || !draft) throw new Error('No se pudo cargar el borrador.');
 
@@ -5993,6 +6015,7 @@ async function resyncPartidosDraft(draftId, torneoIdsStr, btn) {
         rating_a_despues: r.rA + r.aGain,
         rating_b_despues: r.rB + r.bGain,
         fecha:            draft.torneo_fecha,
+        categoria:        draft.torneo_categoria || null,
       };
     });
 
@@ -6025,9 +6048,10 @@ async function subirApplyRatings() {
   if (!currentUser) { showLogin(); return; }
   if (!subirPending.length) return;
 
-  const nombre = document.getElementById('subirTorneoNombre').value.trim();
-  const fecha  = document.getElementById('subirTorneoFecha').value;
-  const btn    = document.getElementById('subirApplyBtn');
+  const nombre    = document.getElementById('subirTorneoNombre').value.trim();
+  const categoria = document.getElementById('subirCategoria')?.value.trim() || null;
+  const fecha     = document.getElementById('subirTorneoFecha').value;
+  const btn       = document.getElementById('subirApplyBtn');
   btn.disabled = true;
   btn.textContent = '⏳ Aplicando...';
 
@@ -6080,6 +6104,7 @@ async function subirApplyRatings() {
           rating_a_despues: r.rA + r.aGain,
           rating_b_despues: r.rB + r.bGain,
           fecha,
+          categoria:        categoria || null,
           ...(r.retired ? { notas: 'retired' } : {})
         });
       } catch(e) { console.warn('Error guardando partido:', e.message); }
