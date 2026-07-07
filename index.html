@@ -8508,6 +8508,7 @@ const CLUBS_LIST = [
   'Bayamón',
   'Caballetes de Corozal',
   'CAM Caguas',
+  'Cayey',
   'Ceiba Marlins',
   'CFD Salinas',
   'Club Bravos de Cidra',
@@ -8567,6 +8568,7 @@ function normalizeClub(raw) {
   if (/san\s*juan/.test(l))         return { club: 'San Juan Table Tennis Club', escuela: null };
   if (/vega\s*alta/.test(l))        return { club: 'Vega Alta', escuela: null };
   if (/\bcam\b/.test(l))            return { club: 'CAM Caguas', escuela: null };
+  if (/cayey/.test(l))              return { club: 'Cayey', escuela: null };
   // Blanks
   if (/^(ninguno|none|otro|other|no affiliation|n\/a|na|-+)$/i.test(l)) return { club: null, escuela: null };
   return { club: s, escuela: null };

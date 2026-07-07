@@ -54,11 +54,10 @@ UPDATE "Base de Datos" SET "Club" = 'Tenis de Mesa Humacao'
   WHERE "Member ID" IN (60432);
   -- Gabriel Gomez Quiroz
 
--- ⚠️  Cayey (member 20458 - Alejandro Torres Mercado)
--- "Cayey" no está en la lista oficial de clubs.
--- Descomenta la línea correcta:
--- UPDATE "Base de Datos" SET "Club" = 'Cayey' WHERE "Member ID" = 20458;
--- UPDATE "Base de Datos" SET "Club" = 'Barranquitas' WHERE "Member ID" = 20458;
+-- Cayey
+UPDATE "Base de Datos" SET "Club" = 'Cayey'
+  WHERE "Member ID" = 20458;
+  -- Alejandro Torres Mercado
 
 -- Verificar resultado
 SELECT "Member ID", "Club", "Escuela"
