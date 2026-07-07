@@ -5095,7 +5095,7 @@ function renderClubesPage() {
       ? Math.round(members.reduce((s, p) => s + (p.rating || 0), 0) / members.length)
       : 0;
     const top = members[0];
-    return `<div onclick="showClubProfile(${JSON.stringify(club)})"
+    return `<div onclick="showClubProfile(this.dataset.club)" data-club="${club.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"
       style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px 16px 18px;cursor:pointer;transition:border-color .15s,transform .12s,box-shadow .12s;text-align:center"
       onmouseenter="this.style.borderColor='var(--accent)';this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(56,189,248,0.1)'"
       onmouseleave="this.style.borderColor='var(--border)';this.style.transform='';this.style.boxShadow=''">
@@ -5109,6 +5109,7 @@ function renderClubesPage() {
 }
 
 function showClubProfile(clubName) {
+  _clubProfileName = clubName;
   document.getElementById('clubesListView').style.display = 'none';
   document.getElementById('clubProfileView').style.display = '';
 
@@ -5125,7 +5126,7 @@ function showClubProfile(clubName) {
   // ── Hero card ──────────────────────────────────────────────────────────────
   const adminBtns = isAdmin() ? `
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px">
-      <button onclick="uploadClubLogo(${JSON.stringify(clubName)})"
+      <button onclick="uploadClubLogo(_clubProfileName)"
         style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--accent);cursor:pointer">
         Cambiar logo
       </button>
@@ -5179,11 +5180,11 @@ function showClubProfile(clubName) {
     </div>`;
 
   const actionBtn = isAdmin()
-    ? `<button onclick="openClubInfoEditPanel(${JSON.stringify(clubName)})"
+    ? `<button onclick="openClubInfoEditPanel(_clubProfileName)"
         style="width:100%;margin-top:16px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:10px;padding:11px;font-size:13px;color:var(--accent);cursor:pointer;font-weight:600;letter-spacing:.04em">
         Editar información
       </button>`
-    : `<button onclick="openClubInfoRequestModal(${JSON.stringify(clubName)})"
+    : `<button onclick="openClubInfoRequestModal(_clubProfileName)"
         style="width:100%;margin-top:16px;background:var(--grad);border:none;border-radius:10px;padding:11px;font-size:13px;color:#fff;cursor:pointer;font-weight:600;letter-spacing:.04em">
         Proponer información del club
       </button>`;
@@ -5256,7 +5257,7 @@ function openClubInfoEditPanel(clubName) {
           style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;margin-top:4px;resize:vertical;box-sizing:border-box">${info.descripcion || ''}</textarea>
       </div>
       <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;align-items:center">
-        <button onclick="saveClubInfoAdmin(${JSON.stringify(clubName)})"
+        <button onclick="saveClubInfoAdmin(_clubProfileName)"
           style="background:var(--grad);border:none;border-radius:8px;padding:8px 20px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">
           Guardar
         </button>
@@ -5352,7 +5353,7 @@ async function showClubInfoRequestsModal() {
           ${r.descripcion? `<div>📝 <strong>Descripción:</strong> ${r.descripcion}</div>` : ''}
         </div>
         <div style="display:flex;gap:8px">
-          <button onclick="approveClubInfoRequest('${r.id}',${JSON.stringify(r.club_name)})"
+          <button onclick="approveClubInfoRequest('${r.id}',this.dataset.club)" data-club="${(r.club_name||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"
             style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);border-radius:8px;padding:7px 16px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer">
             Aprobar
           </button>
@@ -8192,6 +8193,7 @@ async function submitMembershipRequest(e) {
 // ══════════════════════════════════════════
 let PHOTO_MAP  = {};          // member_id → approved photo_url
 let CLUB_INFO = {};            // club name → { name, logo_url, direccion, telefono, encargado, descripcion }
+let _clubProfileName = null;   // active club in showClubProfile
 let _photoUploadFile   = null;
 let _photoUploadPlayer = null;
 
