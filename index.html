@@ -5116,82 +5116,117 @@ function showClubProfile(clubName) {
   const avgRating = members.length
     ? Math.round(members.reduce((s, p) => s + (p.rating || 0), 0) / members.length)
     : 0;
+  const topPlayer = members[0];
 
   const info = CLUB_INFO[clubName] || {};
+  const hasContact = info.encargado || info.telefono || info.direccion || info.descripcion;
+  const mapUrl = info.direccion ? `https://maps.google.com/?q=${encodeURIComponent(info.direccion)}` : '';
 
-  const adminLogoBtn = isAdmin() ? `
-    <div style="margin-top:10px">
+  // ── Hero card ──────────────────────────────────────────────────────────────
+  const adminBtns = isAdmin() ? `
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px">
       <button onclick="uploadClubLogo(${JSON.stringify(clubName)})"
-        style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:var(--accent);cursor:pointer">
+        style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--accent);cursor:pointer">
         Cambiar logo
       </button>
-      <div id="clubLogoUploadMsg" style="font-size:12px;margin-top:6px;min-height:16px"></div>
+      <div id="clubLogoUploadMsg" style="font-size:12px;align-self:center"></div>
     </div>` : '';
 
-  const mapUrl = info.direccion ? `https://maps.google.com/?q=${encodeURIComponent(info.direccion)}` : '';
-  const hasContact = info.encargado || info.telefono || info.direccion || info.descripcion;
-  const contactHTML = hasContact ? `
-    <div style="margin-top:14px;display:flex;flex-direction:column;gap:7px">
-      ${info.encargado  ? `<div style="font-size:13px;color:var(--text)">👤 <strong>${info.encargado}</strong></div>` : ''}
-      ${info.telefono   ? `<div style="font-size:13px"><a href="tel:${info.telefono}" style="color:var(--accent);text-decoration:none">📞 ${info.telefono}</a></div>` : ''}
-      ${info.direccion  ? `<div style="font-size:13px"><a href="${mapUrl}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">📍 ${info.direccion}</a></div>` : ''}
-      ${info.descripcion? `<div style="font-size:13px;color:var(--muted);line-height:1.5;margin-top:2px">${info.descripcion}</div>` : ''}
-    </div>` : `<div style="margin-top:12px;font-size:12px;color:var(--muted)">Sin información de contacto aún.</div>`;
-
-  const actionBtn = isAdmin()
-    ? `<button onclick="openClubInfoEditPanel(${JSON.stringify(clubName)})"
-        style="margin-top:14px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:8px;padding:7px 16px;font-size:12px;color:var(--accent);cursor:pointer;font-weight:600">
-        Editar información
-      </button>`
-    : `<button onclick="openClubInfoRequestModal(${JSON.stringify(clubName)})"
-        style="margin-top:14px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:8px;padding:7px 16px;font-size:12px;color:var(--accent);cursor:pointer">
-        Proponer actualización
-      </button>`;
-
-  document.getElementById('clubProfileHeader').innerHTML = `
-    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
-      <div style="text-align:center;flex-shrink:0">
-        ${clubLogoHTML(clubName, 100)}
-        ${adminLogoBtn}
+  const statsRow = `
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 22px;text-align:center;min-width:80px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Jugadores</div>
+        <div style="font-family:'Orbitron',monospace;font-size:28px;font-weight:700;margin-top:4px">${members.length}</div>
       </div>
-      <div style="flex:1;min-width:180px">
-        <div style="font-family:'Orbitron',monospace;font-size:20px;font-weight:700;letter-spacing:1px;line-height:1.2;margin-bottom:12px">${clubName}</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;min-width:70px">
-            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Jugadores</div>
-            <div style="font-size:22px;font-weight:700;margin-top:2px">${members.length}</div>
-          </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;min-width:70px">
-            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Rating Prom.</div>
-            <div style="font-size:22px;font-weight:700;margin-top:2px">★ ${avgRating}</div>
-          </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;min-width:70px">
-            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Top Rating</div>
-            <div style="font-size:22px;font-weight:700;margin-top:2px">${members[0]?.rating ?? '—'}</div>
-          </div>
-        </div>
-        ${contactHTML}
-        ${actionBtn}
-        <div id="clubInfoEditPanel" style="display:none;margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px"></div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 22px;text-align:center;min-width:80px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Rating Prom.</div>
+        <div style="font-family:'Orbitron',monospace;font-size:28px;font-weight:700;margin-top:4px;color:var(--accent)">★ ${avgRating}</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 22px;text-align:center;min-width:80px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Top Rating</div>
+        <div style="font-family:'Orbitron',monospace;font-size:28px;font-weight:700;margin-top:4px">${topPlayer?.rating ?? '—'}</div>
       </div>
     </div>`;
 
+  // ── Contact section ────────────────────────────────────────────────────────
+  const contactBody = hasContact ? `
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${info.encargado ? `
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:20px;width:28px;text-align:center;flex-shrink:0">👤</span>
+          <div><div style="font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">Encargado</div>
+          <div style="font-weight:600;margin-top:2px">${info.encargado}</div></div>
+        </div>` : ''}
+      ${info.telefono ? `
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:20px;width:28px;text-align:center;flex-shrink:0">📞</span>
+          <div><div style="font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">Teléfono</div>
+          <a href="tel:${info.telefono}" style="color:var(--accent);font-weight:600;text-decoration:none;display:block;margin-top:2px">${info.telefono}</a></div>
+        </div>` : ''}
+      ${info.direccion ? `
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <span style="font-size:20px;width:28px;text-align:center;flex-shrink:0">📍</span>
+          <div><div style="font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">Dirección</div>
+          <a href="${mapUrl}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;text-decoration:none;display:block;margin-top:2px;line-height:1.4">${info.direccion}</a></div>
+        </div>` : ''}
+      ${info.descripcion ? `
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;font-size:13px;color:var(--muted);line-height:1.6">${info.descripcion}</div>` : ''}
+    </div>` : `
+    <div style="text-align:center;padding:28px 0 16px">
+      <div style="font-size:36px;margin-bottom:10px">📋</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">Sin información de contacto aún</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5">Si eres parte de este club, puedes<br>proponer la información de contacto.</div>
+    </div>`;
+
+  const actionBtn = isAdmin()
+    ? `<button onclick="openClubInfoEditPanel(${JSON.stringify(clubName)})"
+        style="width:100%;margin-top:16px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:10px;padding:11px;font-size:13px;color:var(--accent);cursor:pointer;font-weight:600;letter-spacing:.04em">
+        Editar información
+      </button>`
+    : `<button onclick="openClubInfoRequestModal(${JSON.stringify(clubName)})"
+        style="width:100%;margin-top:16px;background:var(--grad);border:none;border-radius:10px;padding:11px;font-size:13px;color:#fff;cursor:pointer;font-weight:600;letter-spacing:.04em">
+        Proponer información del club
+      </button>`;
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  document.getElementById('clubProfileHeader').innerHTML = `
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:32px 24px;text-align:center;margin-bottom:16px">
+      <div style="display:flex;justify-content:center;margin-bottom:14px">${clubLogoHTML(clubName, 108)}</div>
+      <div style="font-family:'Orbitron',monospace;font-size:22px;font-weight:700;letter-spacing:1px;line-height:1.2">${clubName}</div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:5px">Federación de Pimpón de Puerto Rico</div>
+      ${adminBtns}
+      ${statsRow}
+    </div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Información del club</div>
+      ${contactBody}
+      ${actionBtn}
+      <div id="clubInfoEditPanel" style="display:none;margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px"></div>
+    </div>`;
+
   document.getElementById('clubProfilePlayers').innerHTML = `
-    <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:10px;margin-top:24px">Jugadores</div>
-    ${members.map(p => {
-      const escuelaVal = p.escuela || normalizeClub(p.club || '').escuela;
-      return `<div onclick="openPlayerProfile(${p.id})" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:border-color .15s"
-        onmouseenter="this.style.borderColor='var(--accent)'"
-        onmouseleave="this.style.borderColor='var(--border)'">
-        <div style="font-weight:700;color:var(--muted);font-size:12px;width:28px;text-align:right">#${p.rank}</div>
-        <div style="flex-shrink:0">${avatarHTML(p, 38)}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
-          ${escuelaVal ? `<div style="font-size:11px;color:var(--accent);margin-top:1px">${escuelaVal}</div>` : ''}
-        </div>
-        <div style="font-family:'Orbitron',monospace;font-weight:700;font-size:14px;color:var(--text)">★ ${p.rating}</div>
-      </div>`;
-    }).join('')}`;
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:22px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">
+        Jugadores · ${members.length}
+      </div>
+      ${members.length === 0
+        ? '<div style="text-align:center;padding:20px;color:var(--muted)">Sin jugadores registrados.</div>'
+        : members.map(p => {
+            const escuelaVal = p.escuela || normalizeClub(p.club || '').escuela;
+            return `<div onclick="openPlayerProfile(${p.id})"
+              style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:border-color .15s"
+              onmouseenter="this.style.borderColor='var(--accent)'"
+              onmouseleave="this.style.borderColor='var(--border)'">
+              <div style="font-weight:700;color:var(--muted);font-size:12px;width:32px;text-align:right;flex-shrink:0">#${p.rank}</div>
+              <div style="flex-shrink:0">${avatarHTML(p, 40)}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+                ${escuelaVal ? `<div style="font-size:11px;color:var(--accent);margin-top:2px">${escuelaVal}</div>` : ''}
+              </div>
+              <div style="font-family:'Orbitron',monospace;font-weight:700;font-size:14px;color:var(--text);flex-shrink:0">★ ${p.rating}</div>
+            </div>`;
+          }).join('')}
+    </div>`;
 }
 
 function openClubInfoEditPanel(clubName) {
