@@ -2415,6 +2415,12 @@ Maria Lopez,Ana Torres,B</code>
         <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar solicitudes de cambio de club</div>
         <span id="pendingClubBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
       </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showClubInfoRequestsModal()">
+        <div style="font-size:32px;margin-bottom:12px">📋</div>
+        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Info de Clubes</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar propuestas de información de clubes</div>
+        <span id="pendingClubInfoBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
+      </div>
       <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showRegTokenModal()">
         <div style="font-size:32px;margin-bottom:12px">🔗</div>
         <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Generar Enlace</div>
@@ -5111,14 +5117,36 @@ function showClubProfile(clubName) {
     ? Math.round(members.reduce((s, p) => s + (p.rating || 0), 0) / members.length)
     : 0;
 
-  const adminLogoBtn = currentUser ? `
+  const info = CLUB_INFO[clubName] || {};
+
+  const adminLogoBtn = isAdmin() ? `
     <div style="margin-top:10px">
       <button onclick="uploadClubLogo(${JSON.stringify(clubName)})"
         style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:var(--accent);cursor:pointer">
-        📷 Cambiar logo
+        Cambiar logo
       </button>
       <div id="clubLogoUploadMsg" style="font-size:12px;margin-top:6px;min-height:16px"></div>
     </div>` : '';
+
+  const mapUrl = info.direccion ? `https://maps.google.com/?q=${encodeURIComponent(info.direccion)}` : '';
+  const hasContact = info.encargado || info.telefono || info.direccion || info.descripcion;
+  const contactHTML = hasContact ? `
+    <div style="margin-top:14px;display:flex;flex-direction:column;gap:7px">
+      ${info.encargado  ? `<div style="font-size:13px;color:var(--text)">👤 <strong>${info.encargado}</strong></div>` : ''}
+      ${info.telefono   ? `<div style="font-size:13px"><a href="tel:${info.telefono}" style="color:var(--accent);text-decoration:none">📞 ${info.telefono}</a></div>` : ''}
+      ${info.direccion  ? `<div style="font-size:13px"><a href="${mapUrl}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">📍 ${info.direccion}</a></div>` : ''}
+      ${info.descripcion? `<div style="font-size:13px;color:var(--muted);line-height:1.5;margin-top:2px">${info.descripcion}</div>` : ''}
+    </div>` : `<div style="margin-top:12px;font-size:12px;color:var(--muted)">Sin información de contacto aún.</div>`;
+
+  const actionBtn = isAdmin()
+    ? `<button onclick="openClubInfoEditPanel(${JSON.stringify(clubName)})"
+        style="margin-top:14px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:8px;padding:7px 16px;font-size:12px;color:var(--accent);cursor:pointer;font-weight:600">
+        Editar información
+      </button>`
+    : `<button onclick="openClubInfoRequestModal(${JSON.stringify(clubName)})"
+        style="margin-top:14px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:8px;padding:7px 16px;font-size:12px;color:var(--accent);cursor:pointer">
+        Proponer actualización
+      </button>`;
 
   document.getElementById('clubProfileHeader').innerHTML = `
     <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
@@ -5142,6 +5170,9 @@ function showClubProfile(clubName) {
             <div style="font-size:22px;font-weight:700;margin-top:2px">${members[0]?.rating ?? '—'}</div>
           </div>
         </div>
+        ${contactHTML}
+        ${actionBtn}
+        <div id="clubInfoEditPanel" style="display:none;margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px"></div>
       </div>
     </div>`;
 
@@ -5161,6 +5192,178 @@ function showClubProfile(clubName) {
         <div style="font-family:'Orbitron',monospace;font-weight:700;font-size:14px;color:var(--text)">★ ${p.rating}</div>
       </div>`;
     }).join('')}`;
+}
+
+function openClubInfoEditPanel(clubName) {
+  const panel = document.getElementById('clubInfoEditPanel');
+  const info = CLUB_INFO[clubName] || {};
+  panel.innerHTML = `
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Editar información del club</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Persona encargada</label>
+        <input id="ciEncargado" value="${(info.encargado || '').replace(/"/g,'&quot;')}" placeholder="Nombre del encargado"
+          style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Teléfono</label>
+        <input id="ciTelefono" value="${(info.telefono || '').replace(/"/g,'&quot;')}" placeholder="787-000-0000"
+          style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Dirección</label>
+        <input id="ciDireccion" value="${(info.direccion || '').replace(/"/g,'&quot;')}" placeholder="Dirección del club"
+          style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Descripción</label>
+        <textarea id="ciDescripcion" placeholder="Historia, horarios de práctica, etc." rows="2"
+          style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;margin-top:4px;resize:vertical;box-sizing:border-box">${info.descripcion || ''}</textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;align-items:center">
+        <button onclick="saveClubInfoAdmin(${JSON.stringify(clubName)})"
+          style="background:var(--grad);border:none;border-radius:8px;padding:8px 20px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">
+          Guardar
+        </button>
+        <button onclick="document.getElementById('clubInfoEditPanel').style.display='none'"
+          style="background:none;border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--muted);font-size:13px;cursor:pointer">
+          Cancelar
+        </button>
+        <div id="ciSaveMsg" style="font-size:12px;color:var(--muted)"></div>
+      </div>
+    </div>`;
+  panel.style.display = '';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function saveClubInfoAdmin(clubName) {
+  const msgEl = document.getElementById('ciSaveMsg');
+  if (msgEl) { msgEl.textContent = 'Guardando…'; msgEl.style.color = 'var(--muted)'; }
+  const body = {
+    name:        clubName,
+    encargado:   document.getElementById('ciEncargado').value.trim() || null,
+    telefono:    document.getElementById('ciTelefono').value.trim()  || null,
+    direccion:   document.getElementById('ciDireccion').value.trim() || null,
+    descripcion: document.getElementById('ciDescripcion').value.trim() || null,
+  };
+  try {
+    const { error } = await _supabase.from('clubs').upsert(body, { onConflict: 'name' });
+    if (error) throw error;
+    if (!CLUB_INFO[clubName]) CLUB_INFO[clubName] = { name: clubName };
+    Object.assign(CLUB_INFO[clubName], body);
+    if (msgEl) { msgEl.textContent = '✓ Guardado'; msgEl.style.color = 'var(--green)'; }
+    setTimeout(() => showClubProfile(clubName), 900);
+  } catch (e) {
+    if (msgEl) { msgEl.textContent = 'Error: ' + e.message; msgEl.style.color = 'var(--red)'; }
+  }
+}
+
+function openClubInfoRequestModal(clubName) {
+  document.getElementById('cirClubName').textContent = clubName;
+  ['cirSolicitante','cirEncargado','cirTelefono','cirDireccion','cirDescripcion'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.tagName === 'TEXTAREA' ? el.value = '' : el.value = '';
+  });
+  document.getElementById('cirMsg').textContent = '';
+  const modal = document.getElementById('clubInfoRequestModal');
+  modal.style.display = 'flex';
+  modal._clubName = clubName;
+}
+
+async function submitClubInfoRequest() {
+  const modal = document.getElementById('clubInfoRequestModal');
+  const clubName = modal._clubName;
+  const msgEl = document.getElementById('cirMsg');
+  const body = {
+    club_name:   clubName,
+    solicitante: document.getElementById('cirSolicitante').value.trim() || null,
+    encargado:   document.getElementById('cirEncargado').value.trim()   || null,
+    telefono:    document.getElementById('cirTelefono').value.trim()    || null,
+    direccion:   document.getElementById('cirDireccion').value.trim()   || null,
+    descripcion: document.getElementById('cirDescripcion').value.trim() || null,
+  };
+  if (!body.encargado && !body.telefono && !body.direccion && !body.descripcion) {
+    msgEl.textContent = 'Llena al menos un campo.'; msgEl.style.color = 'var(--red)'; return;
+  }
+  msgEl.textContent = 'Enviando…'; msgEl.style.color = 'var(--muted)';
+  try {
+    await sbPost('club_info_requests', body);
+    msgEl.textContent = '✓ Solicitud enviada. Gracias.'; msgEl.style.color = 'var(--green)';
+    setTimeout(() => { modal.style.display = 'none'; }, 1800);
+  } catch (e) {
+    msgEl.textContent = 'Error: ' + e.message; msgEl.style.color = 'var(--red)';
+  }
+}
+
+async function showClubInfoRequestsModal() {
+  const modal = document.getElementById('clubInfoRequestsModal');
+  modal.style.display = 'flex';
+  const list = document.getElementById('cirAdminList');
+  list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando…</div>';
+  try {
+    const data = await sbGet('club_info_requests', '?status=eq.pending&order=created_at.asc');
+    if (!data.length) {
+      list.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">✅ Sin solicitudes pendientes.</div>';
+      return;
+    }
+    list.innerHTML = data.map(r => `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px" id="cir_${r.id}">
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px">${r.club_name}</div>
+        ${r.solicitante ? `<div style="font-size:12px;color:var(--muted);margin-bottom:8px">Propuesto por: ${r.solicitante}</div>` : ''}
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:13px;margin-bottom:12px">
+          ${r.encargado  ? `<div>👤 <strong>Encargado:</strong> ${r.encargado}</div>` : ''}
+          ${r.telefono   ? `<div>📞 <strong>Teléfono:</strong> ${r.telefono}</div>` : ''}
+          ${r.direccion  ? `<div>📍 <strong>Dirección:</strong> ${r.direccion}</div>` : ''}
+          ${r.descripcion? `<div>📝 <strong>Descripción:</strong> ${r.descripcion}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="approveClubInfoRequest('${r.id}',${JSON.stringify(r.club_name)})"
+            style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);border-radius:8px;padding:7px 16px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer">
+            Aprobar
+          </button>
+          <button onclick="rejectClubInfoRequest('${r.id}')"
+            style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:7px 16px;color:var(--red);font-size:13px;cursor:pointer">
+            Rechazar
+          </button>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--red);padding:20px">Error: ${e.message}</div>`;
+  }
+}
+
+async function approveClubInfoRequest(reqId, clubName) {
+  const el = document.getElementById(`cir_${reqId}`);
+  try {
+    const data = await sbGet('club_info_requests', `?id=eq.${reqId}&select=*`);
+    if (!data.length) return;
+    const r = data[0];
+    const body = { name: clubName };
+    if (r.encargado)   body.encargado   = r.encargado;
+    if (r.telefono)    body.telefono    = r.telefono;
+    if (r.direccion)   body.direccion   = r.direccion;
+    if (r.descripcion) body.descripcion = r.descripcion;
+    const { error } = await _supabase.from('clubs').upsert(body, { onConflict: 'name' });
+    if (error) throw error;
+    if (!CLUB_INFO[clubName]) CLUB_INFO[clubName] = { name: clubName };
+    Object.assign(CLUB_INFO[clubName], body);
+    await sbPatch('club_info_requests', `id=eq.${reqId}`, { status: 'approved', reviewed_at: new Date().toISOString() });
+    if (el) { el.style.opacity = '0.5'; el.insertAdjacentHTML('beforeend', '<div style="color:#4ade80;font-weight:600;margin-top:8px">✓ Aprobado y publicado</div>'); }
+    updatePendingBadge();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function rejectClubInfoRequest(reqId) {
+  try {
+    await sbPatch('club_info_requests', `id=eq.${reqId}`, { status: 'rejected', reviewed_at: new Date().toISOString() });
+    const el = document.getElementById(`cir_${reqId}`);
+    if (el) { el.style.opacity = '0.5'; el.insertAdjacentHTML('beforeend', '<div style="color:var(--red);margin-top:8px">Rechazado</div>'); }
+    updatePendingBadge();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
 }
 
 async function openRankings() {
@@ -7953,7 +8156,7 @@ async function submitMembershipRequest(e) {
 // PHOTO REQUESTS
 // ══════════════════════════════════════════
 let PHOTO_MAP  = {};          // member_id → approved photo_url
-let CLUB_LOGOS = {};          // club canonical name → logo_url
+let CLUB_INFO = {};            // club name → { name, logo_url, direccion, telefono, encargado, descripcion }
 let _photoUploadFile   = null;
 let _photoUploadPlayer = null;
 
@@ -7967,18 +8170,18 @@ async function loadApprovedPhotos() {
   }
 }
 
-async function loadClubLogos() {
+async function loadClubData() {
   try {
-    const data = await sbGet('clubs', '?select=name,logo_url');
-    CLUB_LOGOS = {};
-    (data || []).forEach(r => { if (r.logo_url) CLUB_LOGOS[r.name] = r.logo_url; });
+    const data = await sbGet('clubs', '?select=name,logo_url,direccion,telefono,encargado,descripcion');
+    CLUB_INFO = {};
+    (data || []).forEach(r => { CLUB_INFO[r.name] = r; });
   } catch (e) {
-    console.warn('loadClubLogos:', e.message);
+    console.warn('loadClubData:', e.message);
   }
 }
 
 function clubLogoHTML(clubName, size = 80) {
-  const url = CLUB_LOGOS[clubName];
+  const url = CLUB_INFO[clubName]?.logo_url;
   const initls = clubName.split(' ').filter(w => /^[A-Za-záéíóúñÁÉÍÓÚÑ]/.test(w)).slice(0, 2).map(w => w[0].toUpperCase()).join('');
   const fontSize = Math.round(size * 0.3);
   if (url) return `<img src="${url}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:3px solid rgba(56,189,248,0.35);flex-shrink:0" onerror="this.outerHTML=clubLogoHTML(${JSON.stringify(clubName)},${size})">`;
@@ -8004,7 +8207,8 @@ async function uploadClubLogo(clubName) {
       const { data: { publicUrl } } = _supabase.storage.from('club-logos').getPublicUrl(path);
       const { error: dbErr } = await _supabase.from('clubs').upsert({ name: clubName, logo_url: publicUrl }, { onConflict: 'name' });
       if (dbErr) throw dbErr;
-      CLUB_LOGOS[clubName] = publicUrl;
+      if (!CLUB_INFO[clubName]) CLUB_INFO[clubName] = { name: clubName };
+      CLUB_INFO[clubName].logo_url = publicUrl;
       if (msgEl) { msgEl.textContent = '✓ Logo actualizado'; msgEl.style.color = 'var(--green)'; }
       showClubProfile(clubName);
     } catch (err) {
@@ -8231,6 +8435,11 @@ async function updatePendingBadge() {
     const badge = document.getElementById('pendingClubBadge');
     if (badge) { badge.textContent = data.length; badge.style.display = data.length > 0 ? '' : 'none'; }
   } catch (_) {}
+  try {
+    const data  = await sbGet('club_info_requests', '?status=eq.pending&select=id');
+    const badge = document.getElementById('pendingClubInfoBadge');
+    if (badge) { badge.textContent = data.length; badge.style.display = data.length > 0 ? '' : 'none'; }
+  } catch (_) {}
   await loadDraftResultsBadge();
 }
 
@@ -8442,7 +8651,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadTorneoArchivoConfig();
 
   showLoading(true);
-  const [playersResult, membersResult] = await Promise.allSettled([loadPlayers(), loadMembers(), loadApprovedPhotos(), loadClubLogos()]);
+  const [playersResult, membersResult] = await Promise.allSettled([loadPlayers(), loadMembers(), loadApprovedPhotos(), loadClubData()]);
   if (playersResult.status === 'fulfilled') {
     ALL_PLAYERS = playersResult.value;
     ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
@@ -12611,6 +12820,72 @@ async function submitPublicReg() {
       </button>
     </div>
 
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CLUB INFO REQUEST MODAL (public)
+═══════════════════════════════════════════ -->
+<div id="clubInfoRequestModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1500;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto">
+    <div style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px;margin-bottom:4px">Proponer actualización</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Para el club <strong id="cirClubName"></strong></div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Tu nombre (opcional)</label>
+        <input id="cirSolicitante" placeholder="Tu nombre o contacto"
+          style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Persona encargada del club</label>
+        <input id="cirEncargado" placeholder="Nombre del encargado"
+          style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Teléfono</label>
+        <input id="cirTelefono" placeholder="787-000-0000"
+          style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Dirección</label>
+        <input id="cirDireccion" placeholder="Calle, Ciudad, PR"
+          style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Descripción del club (opcional)</label>
+        <textarea id="cirDescripcion" placeholder="Historia, horarios de práctica, etc." rows="2"
+          style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;margin-top:4px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+    </div>
+    <div id="cirMsg" style="font-size:12px;margin-top:10px;min-height:16px"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button onclick="submitClubInfoRequest()"
+        style="flex:1;background:var(--grad);border:none;border-radius:8px;padding:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer">
+        Enviar solicitud
+      </button>
+      <button onclick="document.getElementById('clubInfoRequestModal').style.display='none'"
+        style="background:none;border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--muted);font-size:13px;cursor:pointer">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADMIN CLUB INFO REQUESTS MODAL
+═══════════════════════════════════════════ -->
+<div id="clubInfoRequestsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1500;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:560px;width:100%;margin:20px auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px">Info de Clubes</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Solicitudes de actualización pendientes</div>
+      </div>
+      <button onclick="document.getElementById('clubInfoRequestsModal').style.display='none'"
+        style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div id="cirAdminList"></div>
   </div>
 </div>
 
