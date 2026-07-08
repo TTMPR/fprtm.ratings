@@ -8310,7 +8310,7 @@ async function proposeClubLogo() {
       const blob = await _resizeImageBlob(file);
       const path = `pending/${slug}-${Date.now()}.jpg`;
       const { error: upErr } = await _supabase.storage.from('club-logos').upload(path, blob, { contentType: 'image/jpeg' });
-      if (upErr) throw upErr;
+      if (upErr) throw new Error('No se pudo subir la imagen. Verifica que el SQL patch_club_logo_requests.sql fue ejecutado en Supabase. (' + upErr.message + ')');
       const { data: { publicUrl } } = _supabase.storage.from('club-logos').getPublicUrl(path);
       await sbPost('club_info_requests', { club_name: clubName, logo_url: publicUrl });
       if (msgEl) { msgEl.textContent = '✓ Logo propuesto. El administrador lo revisará.'; msgEl.style.color = 'var(--green)'; }
