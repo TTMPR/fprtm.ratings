@@ -6722,6 +6722,8 @@ function _parseDOBStr(raw) {
   if (!raw || !raw.trim()) return null;
   raw = raw.trim();
   const monMap = { Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12 };
+  // YYYY-MM-DD (ISO — returned by Supabase date columns and <input type="date">)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
   // D-Mon-YY or D-Mon-YYYY  e.g. "25-Nov-01" "24-Aug-09"
   const dm = raw.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2,4})$/);
   if (dm) {
@@ -8289,7 +8291,7 @@ async function verificarEditarPerfil() {
     const row = Array.isArray(data) ? data[0] : data;
     const stored = row?.['Date of Birth'] ? _parseDOBStr(String(row['Date of Birth'])) : null;
     if (!stored || entered !== stored) {
-      msgEl.textContent = 'La fecha no coincide con nuestros registros.';
+      msgEl.textContent = 'La fecha no coincide. Usa el formato DD/MM/AAAA (ej: 15/03/1990).';
       return;
     }
     document.getElementById('editarPerfilStep1').style.display = 'none';
