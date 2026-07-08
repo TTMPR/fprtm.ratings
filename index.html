@@ -5338,56 +5338,110 @@ async function submitClubInfoRequest() {
   }
 }
 
+let _cirActiveTab = 'pending';
+
 async function showClubInfoRequestsModal() {
-  const modal = document.getElementById('clubInfoRequestsModal');
-  modal.style.display = 'flex';
+  document.getElementById('clubInfoRequestsModal').style.display = 'flex';
+  cirSwitchTab('pending');
+}
+
+function cirSwitchTab(tab) {
+  _cirActiveTab = tab;
+  [['cirTabPendientes', 'pending'], ['cirTabHistorial', 'history']].forEach(([id, t]) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const active = t === tab;
+    btn.style.background  = active ? 'rgba(56,189,248,0.12)' : 'none';
+    btn.style.borderColor = active ? 'rgba(56,189,248,0.4)' : 'var(--border)';
+    btn.style.color       = active ? 'var(--accent)' : 'var(--muted)';
+  });
+  renderClubInfoRequestsList();
+}
+
+function _cirFmtDate(iso) {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleDateString('es-PR', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  catch (_) { return ''; }
+}
+
+function _cirCardHTML(r, isHistory) {
+  const hasLogo = !!r.logo_url;
+  const hasInfo = r.encargado || r.telefono || r.direccion || r.descripcion;
+  const safeClub = (r.club_name || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const footer = isHistory
+    ? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        ${r.status === 'approved'
+          ? '<span style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);border-radius:20px;padding:3px 12px;color:#4ade80;font-size:12px;font-weight:600">✓ Aprobado</span>'
+          : '<span style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:20px;padding:3px 12px;color:var(--red);font-size:12px;font-weight:600">Rechazado</span>'}
+        <span style="font-size:12px;color:var(--muted)">${_cirFmtDate(r.reviewed_at)}</span>
+      </div>`
+    : `<div style="display:flex;gap:8px">
+        <button onclick="approveClubInfoRequest('${r.id}',this.dataset.club)" data-club="${safeClub}"
+          style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);border-radius:8px;padding:7px 16px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer">
+          Aprobar
+        </button>
+        <button onclick="rejectClubInfoRequest('${r.id}')"
+          style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:7px 16px;color:var(--red);font-size:13px;cursor:pointer">
+          Rechazar
+        </button>
+      </div>`;
+  return `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px${isHistory && r.status === 'rejected' ? ';opacity:0.65' : ''}" id="cir_${r.id}">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        ${hasLogo ? `<img src="${r.logo_url}" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">` : ''}
+        <div>
+          <div style="font-weight:700;font-size:15px">${r.club_name}</div>
+          ${r.solicitante ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">Por: ${r.solicitante}</div>` : ''}
+          ${hasLogo && !hasInfo ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">Propuesta de logo</div>` : ''}
+        </div>
+      </div>
+      ${hasInfo ? `<div style="display:flex;flex-direction:column;gap:4px;font-size:13px;margin-bottom:12px">
+        ${r.encargado  ? `<div>👤 <strong>Encargado:</strong> ${r.encargado}</div>` : ''}
+        ${r.telefono   ? `<div>📞 <strong>Teléfono:</strong> ${r.telefono}</div>` : ''}
+        ${r.direccion  ? `<div>📍 <strong>Dirección:</strong> ${r.direccion}</div>` : ''}
+        ${r.descripcion? `<div>📝 <strong>Descripción:</strong> ${r.descripcion}</div>` : ''}
+      </div>` : ''}
+      ${footer}
+    </div>`;
+}
+
+async function renderClubInfoRequestsList() {
   const list = document.getElementById('cirAdminList');
   list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando…</div>';
+  const isHistory = _cirActiveTab === 'history';
   try {
-    const data = await sbGet('club_info_requests', '?status=eq.pending&order=created_at.asc');
+    const data = await sbGet('club_info_requests', isHistory
+      ? '?status=in.(approved,rejected)&order=reviewed_at.desc.nullslast&limit=100'
+      : '?status=eq.pending&order=created_at.asc');
     if (!data.length) {
-      list.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">✅ Sin solicitudes pendientes.</div>';
+      list.innerHTML = isHistory
+        ? '<div style="text-align:center;padding:60px;color:var(--muted)">Aún no hay solicitudes revisadas.</div>'
+        : '<div style="text-align:center;padding:60px;color:var(--muted)">✅ Sin solicitudes pendientes.</div>';
       return;
     }
-    list.innerHTML = data.map(r => {
-      const hasLogo = !!r.logo_url;
-      const hasInfo = r.encargado || r.telefono || r.direccion || r.descripcion;
-      const safeClub = (r.club_name || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-      return `
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px" id="cir_${r.id}">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-          ${hasLogo ? `<img src="${r.logo_url}" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">` : ''}
-          <div>
-            <div style="font-weight:700;font-size:15px">${r.club_name}</div>
-            ${r.solicitante ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">Por: ${r.solicitante}</div>` : ''}
-            ${hasLogo && !hasInfo ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">Propuesta de logo</div>` : ''}
-          </div>
-        </div>
-        ${hasInfo ? `<div style="display:flex;flex-direction:column;gap:4px;font-size:13px;margin-bottom:12px">
-          ${r.encargado  ? `<div>👤 <strong>Encargado:</strong> ${r.encargado}</div>` : ''}
-          ${r.telefono   ? `<div>📞 <strong>Teléfono:</strong> ${r.telefono}</div>` : ''}
-          ${r.direccion  ? `<div>📍 <strong>Dirección:</strong> ${r.direccion}</div>` : ''}
-          ${r.descripcion? `<div>📝 <strong>Descripción:</strong> ${r.descripcion}</div>` : ''}
-        </div>` : ''}
-        <div style="display:flex;gap:8px">
-          <button onclick="approveClubInfoRequest('${r.id}',this.dataset.club)" data-club="${safeClub}"
-            style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);border-radius:8px;padding:7px 16px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer">
-            Aprobar
-          </button>
-          <button onclick="rejectClubInfoRequest('${r.id}')"
-            style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:7px 16px;color:var(--red);font-size:13px;cursor:pointer">
-            Rechazar
-          </button>
-        </div>
-      </div>`;
-    }).join('');
+    list.innerHTML = data.map(r => _cirCardHTML(r, isHistory)).join('');
   } catch (e) {
     list.innerHTML = `<div style="color:var(--red);padding:20px">Error: ${e.message}</div>`;
   }
 }
 
-async function approveClubInfoRequest(reqId, clubName) {
+function _cirMarkReviewed(reqId, html) {
   const el = document.getElementById(`cir_${reqId}`);
+  if (!el) return;
+  el.style.opacity = '0.5';
+  el.querySelectorAll('button').forEach(b => b.disabled = true);
+  el.insertAdjacentHTML('beforeend', html);
+  // Move the card out of Pendientes shortly after — it now lives in Historial
+  setTimeout(() => {
+    el.remove();
+    const list = document.getElementById('cirAdminList');
+    if (list && _cirActiveTab === 'pending' && !list.querySelector('[id^="cir_"]')) {
+      list.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">✅ Sin solicitudes pendientes.</div>';
+    }
+  }, 1200);
+}
+
+async function approveClubInfoRequest(reqId, clubName) {
   try {
     const data = await sbGet('club_info_requests', `?id=eq.${reqId}&select=*`);
     if (!data.length) return;
@@ -5403,7 +5457,7 @@ async function approveClubInfoRequest(reqId, clubName) {
     if (!CLUB_INFO[clubName]) CLUB_INFO[clubName] = { name: clubName };
     Object.assign(CLUB_INFO[clubName], body);
     await sbPatch('club_info_requests', `id=eq.${reqId}`, { status: 'approved', reviewed_at: new Date().toISOString() });
-    if (el) { el.style.opacity = '0.5'; el.insertAdjacentHTML('beforeend', '<div style="color:#4ade80;font-weight:600;margin-top:8px">✓ Aprobado y publicado</div>'); }
+    _cirMarkReviewed(reqId, '<div style="color:#4ade80;font-weight:600;margin-top:8px">✓ Aprobado y publicado — movido al historial</div>');
     updatePendingBadge();
   } catch (e) {
     alert('Error: ' + e.message);
@@ -5413,8 +5467,7 @@ async function approveClubInfoRequest(reqId, clubName) {
 async function rejectClubInfoRequest(reqId) {
   try {
     await sbPatch('club_info_requests', `id=eq.${reqId}`, { status: 'rejected', reviewed_at: new Date().toISOString() });
-    const el = document.getElementById(`cir_${reqId}`);
-    if (el) { el.style.opacity = '0.5'; el.insertAdjacentHTML('beforeend', '<div style="color:var(--red);margin-top:8px">Rechazado</div>'); }
+    _cirMarkReviewed(reqId, '<div style="color:var(--red);margin-top:8px">Rechazado — movido al historial</div>');
     updatePendingBadge();
   } catch (e) {
     alert('Error: ' + e.message);
@@ -12980,13 +13033,23 @@ async function submitPublicReg() {
 ═══════════════════════════════════════════ -->
 <div id="clubInfoRequestsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1500;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
   <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:560px;width:100%;margin:20px auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div>
         <div style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px">Info de Clubes</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">Solicitudes de actualización pendientes</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Solicitudes de actualización de clubes</div>
       </div>
       <button onclick="document.getElementById('clubInfoRequestsModal').style.display='none'"
         style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button id="cirTabPendientes" onclick="cirSwitchTab('pending')"
+        style="flex:1;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.4);border-radius:8px;padding:8px;font-size:13px;color:var(--accent);cursor:pointer;font-weight:600">
+        Pendientes
+      </button>
+      <button id="cirTabHistorial" onclick="cirSwitchTab('history')"
+        style="flex:1;background:none;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:13px;color:var(--muted);cursor:pointer;font-weight:600">
+        Historial
+      </button>
     </div>
     <div id="cirAdminList"></div>
   </div>
