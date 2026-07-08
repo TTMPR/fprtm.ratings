@@ -5124,14 +5124,21 @@ function showClubProfile(clubName) {
   const mapUrl = info.direccion ? `https://maps.google.com/?q=${encodeURIComponent(info.direccion)}` : '';
 
   // ── Hero card ──────────────────────────────────────────────────────────────
-  const adminBtns = isAdmin() ? `
-    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px">
-      <button onclick="uploadClubLogo(_clubProfileName)"
-        style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--accent);cursor:pointer">
-        Cambiar logo
-      </button>
-      <div id="clubLogoUploadMsg" style="font-size:12px;align-self:center"></div>
-    </div>` : '';
+  const adminBtns = isAdmin()
+    ? `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+        <button onclick="uploadClubLogo(_clubProfileName)"
+          style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--accent);cursor:pointer">
+          Cambiar logo
+        </button>
+        <div id="clubLogoUploadMsg" style="font-size:12px;align-self:center"></div>
+      </div>`
+    : `<div style="margin-top:10px">
+        <button onclick="proposeClubLogo()"
+          style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--accent);cursor:pointer">
+          Proponer logo
+        </button>
+        <div id="clubLogoProposeMsg" style="font-size:12px;margin-top:6px;color:var(--muted)"></div>
+      </div>`;
 
   const statsRow = `
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px">
@@ -5342,18 +5349,28 @@ async function showClubInfoRequestsModal() {
       list.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">✅ Sin solicitudes pendientes.</div>';
       return;
     }
-    list.innerHTML = data.map(r => `
+    list.innerHTML = data.map(r => {
+      const hasLogo = !!r.logo_url;
+      const hasInfo = r.encargado || r.telefono || r.direccion || r.descripcion;
+      const safeClub = (r.club_name || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+      return `
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px" id="cir_${r.id}">
-        <div style="font-weight:700;font-size:15px;margin-bottom:4px">${r.club_name}</div>
-        ${r.solicitante ? `<div style="font-size:12px;color:var(--muted);margin-bottom:8px">Propuesto por: ${r.solicitante}</div>` : ''}
-        <div style="display:flex;flex-direction:column;gap:4px;font-size:13px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          ${hasLogo ? `<img src="${r.logo_url}" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">` : ''}
+          <div>
+            <div style="font-weight:700;font-size:15px">${r.club_name}</div>
+            ${r.solicitante ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">Por: ${r.solicitante}</div>` : ''}
+            ${hasLogo && !hasInfo ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">Propuesta de logo</div>` : ''}
+          </div>
+        </div>
+        ${hasInfo ? `<div style="display:flex;flex-direction:column;gap:4px;font-size:13px;margin-bottom:12px">
           ${r.encargado  ? `<div>👤 <strong>Encargado:</strong> ${r.encargado}</div>` : ''}
           ${r.telefono   ? `<div>📞 <strong>Teléfono:</strong> ${r.telefono}</div>` : ''}
           ${r.direccion  ? `<div>📍 <strong>Dirección:</strong> ${r.direccion}</div>` : ''}
           ${r.descripcion? `<div>📝 <strong>Descripción:</strong> ${r.descripcion}</div>` : ''}
-        </div>
+        </div>` : ''}
         <div style="display:flex;gap:8px">
-          <button onclick="approveClubInfoRequest('${r.id}',this.dataset.club)" data-club="${(r.club_name||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"
+          <button onclick="approveClubInfoRequest('${r.id}',this.dataset.club)" data-club="${safeClub}"
             style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);border-radius:8px;padding:7px 16px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer">
             Aprobar
           </button>
@@ -5362,7 +5379,8 @@ async function showClubInfoRequestsModal() {
             Rechazar
           </button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } catch (e) {
     list.innerHTML = `<div style="color:var(--red);padding:20px">Error: ${e.message}</div>`;
   }
@@ -5379,6 +5397,7 @@ async function approveClubInfoRequest(reqId, clubName) {
     if (r.telefono)    body.telefono    = r.telefono;
     if (r.direccion)   body.direccion   = r.direccion;
     if (r.descripcion) body.descripcion = r.descripcion;
+    if (r.logo_url)    body.logo_url    = r.logo_url;
     const { error } = await _supabase.from('clubs').upsert(body, { onConflict: 'name' });
     if (error) throw error;
     if (!CLUB_INFO[clubName]) CLUB_INFO[clubName] = { name: clubName };
@@ -8252,6 +8271,51 @@ async function uploadClubLogo(clubName) {
       showClubProfile(clubName);
     } catch (err) {
       if (msgEl) { msgEl.textContent = 'Error: ' + err.message; msgEl.style.color = 'var(--red)'; }
+    }
+  };
+  input.click();
+}
+
+async function _resizeImageBlob(file, maxSide = 500) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => resolve(blob || file), 'image/jpeg', 0.88);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+async function proposeClubLogo() {
+  const clubName = _clubProfileName;
+  if (!clubName) return;
+  const msgEl = document.getElementById('clubLogoProposeMsg');
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    if (msgEl) { msgEl.textContent = 'Subiendo…'; msgEl.style.color = 'var(--muted)'; }
+    try {
+      const slug = clubName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+      const blob = await _resizeImageBlob(file);
+      const path = `pending/${slug}-${Date.now()}.jpg`;
+      const { error: upErr } = await _supabase.storage.from('club-logos').upload(path, blob, { contentType: 'image/jpeg' });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = _supabase.storage.from('club-logos').getPublicUrl(path);
+      await sbPost('club_info_requests', { club_name: clubName, logo_url: publicUrl });
+      if (msgEl) { msgEl.textContent = '✓ Logo propuesto. El administrador lo revisará.'; msgEl.style.color = 'var(--green)'; }
+    } catch (e) {
+      if (msgEl) { msgEl.textContent = 'Error: ' + e.message; msgEl.style.color = 'var(--red)'; }
     }
   };
   input.click();
