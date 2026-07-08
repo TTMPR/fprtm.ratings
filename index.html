@@ -952,6 +952,42 @@
     .overview-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
+  /* ─── ADMIN DASHBOARD ─── */
+  .adm-section { margin-bottom: 30px; }
+  .adm-section-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+  .adm-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 10px;
+  }
+  .adm-card {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; cursor: pointer;
+    position: relative; text-align: left;
+    transition: border-color .15s, transform .12s;
+  }
+  .adm-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .adm-ico {
+    font-size: 21px; width: 44px; height: 44px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(56,189,248,0.07); border-radius: 10px;
+  }
+  .adm-title { font-size: 14px; font-weight: 600; line-height: 1.25; }
+  .adm-desc { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+  .adm-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--red); color: #fff; border-radius: 999px;
+    font-size: 11px; font-weight: 700; padding: 2px 8px; line-height: 1.45;
+  }
+  @media (max-width: 560px) {
+    .adm-grid { grid-template-columns: 1fr; }
+  }
+
   /* ─── TABLE ─── */
   .table-wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px 40px; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; }
@@ -2349,155 +2385,227 @@ Maria Lopez,Ana Torres,B</code>
   </div>
   <div class="container">
 
-    <!-- ── Rankings & Datos ── -->
-    <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">Rankings & Datos</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;">
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPage('subir')">
-        <div style="font-size:32px;margin-bottom:12px">📸</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Subir Resultados</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV de partidos → actualizar ratings oficiales</div>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportRankings()">
-        <div style="font-size:32px;margin-bottom:12px">📊</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Exportar Rankings</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Descargar Excel actualizado</div>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportStadiumCompete()">
-        <div style="font-size:32px;margin-bottom:12px">🏟</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Exportar Stadium</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV para importar en Stadium Compete</div>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showConfigModal()">
-        <div style="font-size:32px;margin-bottom:12px">⚙</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Configuración</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Tabla de puntos, categorías</div>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="sincronizarInscripcionesDB()">
-        <div style="font-size:32px;margin-bottom:12px">🔄</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Sincronizar Datos</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Actualizar Base de Datos con datos de inscripciones</div>
-      </div>
-      <div id="adminCardDraftResults" style="display:none;background:var(--card2);border:1px solid rgba(56,189,248,0.3);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showDraftResultsModal()">
-        <div style="font-size:32px;margin-bottom:12px">📬</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Resultados Pendientes</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Revisar y publicar ratings del torneo</div>
-        <span id="draftResultsBadge" style="position:absolute;top:12px;right:12px;background:var(--grad);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">!</span>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showResyncPartidosModal()">
-        <div style="font-size:32px;margin-bottom:12px">🔧</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Reparar Partidos</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Recuperar partidos faltantes de torneos publicados</div>
-      </div>
-    </div>
-
-    <!-- ── Jugadores ── -->
-    <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">Jugadores</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;">
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showNewPlayerModal()">
-        <div style="font-size:32px;margin-bottom:12px">➕</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Nuevo Jugador</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Registrar jugador en el sistema</div>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPage('membresia')">
-        <div style="font-size:32px;margin-bottom:12px">🪪</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Gestionar Membresías</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Activar, vencer, alertas</div>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showPendingPhotosModal()">
-        <div style="font-size:32px;margin-bottom:12px">🖼</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Fotos Pendientes</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar fotos de jugadores</div>
-        <span id="pendingPhotoBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showPendingClubChangesModal()">
-        <div style="font-size:32px;margin-bottom:12px">🏛</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Cambios de Club</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar o rechazar solicitudes de cambio de club</div>
-        <span id="pendingClubBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showClubInfoRequestsModal()">
-        <div style="font-size:32px;margin-bottom:12px">📋</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Info de Clubes</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Aprobar propuestas de información de clubes</div>
-        <span id="pendingClubInfoBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showRegTokenModal()">
-        <div style="font-size:32px;margin-bottom:12px">🔗</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Generar Enlace</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Registro para no miembros</div>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative" onclick="showRegSubmissionsModal()">
-        <div style="font-size:32px;margin-bottom:12px">📥</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Solicitudes</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Revisar registros de no miembros</div>
-        <span id="pendingRegBadge" style="display:none;position:absolute;top:12px;right:12px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:3px 8px">0</span>
-      </div>
-      <div style="background:var(--card2);border:1px solid rgba(56,189,248,0.25);border-radius:12px;padding:24px;cursor:pointer" onclick="showMembresias2026Modal()">
-        <div style="font-size:32px;margin-bottom:12px">✅</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Membresías 2026</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Quiénes pagaron este año (vencen en 2027)</div>
-      </div>
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showCsvMembresiaModal()">
-        <div style="font-size:32px;margin-bottom:12px">📂</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Importar CSV</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Actualizar DOB y membresías desde planilla</div>
+    <!-- ── Solicitudes & Aprobaciones ── -->
+    <div class="adm-section">
+      <div class="adm-section-title">🔔 Solicitudes & Aprobaciones</div>
+      <div class="adm-grid">
+        <div id="adminCardDraftResults" class="adm-card" style="display:none;border-color:rgba(56,189,248,0.3)" onclick="showDraftResultsModal()">
+          <div class="adm-ico">📬</div>
+          <div>
+            <div class="adm-title">Resultados Pendientes</div>
+            <div class="adm-desc">Revisar y publicar ratings del torneo</div>
+          </div>
+          <span id="draftResultsBadge" class="adm-badge" style="background:var(--grad)">!</span>
+        </div>
+        <div class="adm-card" onclick="showPendingPhotosModal()">
+          <div class="adm-ico">🖼</div>
+          <div>
+            <div class="adm-title">Fotos Pendientes</div>
+            <div class="adm-desc">Aprobar fotos de jugadores</div>
+          </div>
+          <span id="pendingPhotoBadge" class="adm-badge" style="display:none">0</span>
+        </div>
+        <div class="adm-card" onclick="showPendingClubChangesModal()">
+          <div class="adm-ico">🏛</div>
+          <div>
+            <div class="adm-title">Cambios de Club</div>
+            <div class="adm-desc">Solicitudes de cambio de club</div>
+          </div>
+          <span id="pendingClubBadge" class="adm-badge" style="display:none">0</span>
+        </div>
+        <div class="adm-card" onclick="showClubInfoRequestsModal()">
+          <div class="adm-ico">📋</div>
+          <div>
+            <div class="adm-title">Info de Clubes</div>
+            <div class="adm-desc">Propuestas de info y logos</div>
+          </div>
+          <span id="pendingClubInfoBadge" class="adm-badge" style="display:none">0</span>
+        </div>
+        <div class="adm-card" onclick="showRegSubmissionsModal()">
+          <div class="adm-ico">📥</div>
+          <div>
+            <div class="adm-title">Solicitudes de Registro</div>
+            <div class="adm-desc">Registros de no miembros</div>
+          </div>
+          <span id="pendingRegBadge" class="adm-badge" style="display:none">0</span>
+        </div>
       </div>
     </div>
 
-    <!-- ── Torneos & Inscripciones ── -->
-    <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">Torneos & Inscripciones</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;">
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showNewTournamentModal()">
-        <div style="font-size:32px;margin-bottom:12px">🏓</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Crear Torneo</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Nuevo evento en calendario</div>
+    <!-- ── Torneo & Inscripciones ── -->
+    <div class="adm-section">
+      <div class="adm-section-title">🏓 Torneo & Inscripciones</div>
+      <div class="adm-grid">
+        <div id="inscAdminCard" class="adm-card" onclick="toggleInscripciones()">
+          <div class="adm-ico" id="inscAdminIcon">📋</div>
+          <div>
+            <div class="adm-title">Inscripciones</div>
+            <div class="adm-desc" id="inscAdminStatus">Cargando...</div>
+            <div id="inscAdminSync" style="font-size:11px;margin-top:3px;color:var(--muted)"></div>
+          </div>
+        </div>
+        <div id="adminCardGestionar" class="adm-card" onclick="showInscAdminModal()">
+          <div class="adm-ico">🧾</div>
+          <div>
+            <div class="adm-title">Gestionar Inscritos</div>
+            <div class="adm-desc">Editar, eliminar y cancelaciones</div>
+          </div>
+          <span id="cancelBadge" class="adm-badge" style="display:none;background:#f59e0b;color:#000">0</span>
+        </div>
+        <div id="adminCardExportar" class="adm-card" onclick="exportInscripcionesStadium()">
+          <div class="adm-ico">📤</div>
+          <div>
+            <div class="adm-title">Exportar Inscritos</div>
+            <div class="adm-desc">CSV para Stadium Compete</div>
+          </div>
+        </div>
+        <div id="adminCardReporte" class="adm-card" onclick="showInscReporteModal()">
+          <div class="adm-ico">📊</div>
+          <div>
+            <div class="adm-title">Reporte por Categoría</div>
+            <div class="adm-desc">Inscritos con rating y club</div>
+          </div>
+        </div>
+        <div id="adminCardFinanciero" class="adm-card" style="border-color:rgba(34,197,94,0.3)" onclick="showReporteFinancieroModal()">
+          <div class="adm-ico">💰</div>
+          <div>
+            <div class="adm-title">Reporte Financiero</div>
+            <div class="adm-desc">Ingresos, totales y gráficas</div>
+          </div>
+        </div>
+        <div id="adminCardLogistica" class="adm-card" onclick="showInscLogisticaModal()">
+          <div class="adm-ico">📅</div>
+          <div>
+            <div class="adm-title">Logística</div>
+            <div class="adm-desc">Horarios y conflictos</div>
+          </div>
+        </div>
+        <div class="adm-card" onclick="showNewTournamentModal()">
+          <div class="adm-ico">🏓</div>
+          <div>
+            <div class="adm-title">Crear Torneo</div>
+            <div class="adm-desc">Nuevo evento en calendario</div>
+          </div>
+        </div>
+        <div id="adminCardArchivar" class="adm-card" onclick="toggleTorneoArchivado()">
+          <div class="adm-ico" id="adminCardArchivarIcon">🗃️</div>
+          <div>
+            <div class="adm-title" id="adminCardArchivarTitle">Archivar Torneo</div>
+            <div class="adm-desc" id="adminCardArchivarDesc">Mover inscripciones a historial</div>
+          </div>
+        </div>
+        <div id="adminCardMigrar" class="adm-card" style="border-color:rgba(245,158,11,0.3)" onclick="migrarInscripcionesDesdeTraujillo()">
+          <div class="adm-ico">🔄</div>
+          <div>
+            <div class="adm-title">Migrar Inscritos</div>
+            <div class="adm-desc">Restablecer desde Trujillo Alto Open 2026</div>
+          </div>
+        </div>
+        <div id="adminCardPastTorneos" class="adm-card" style="display:none" onclick="showPastTorneosModal()">
+          <div class="adm-ico">🏆</div>
+          <div>
+            <div class="adm-title">Past Tournaments</div>
+            <div class="adm-desc">Historial de torneos archivados</div>
+          </div>
+        </div>
       </div>
-      <div id="adminCardGestionar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative;" onclick="showInscAdminModal()">
-        <div style="font-size:32px;margin-bottom:12px">📋</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Gestionar Inscritos</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Editar y eliminar inscripciones</div>
-        <span id="cancelBadge" style="display:none;position:absolute;top:12px;right:12px;background:#f59e0b;color:#000;font-size:11px;font-weight:800;border-radius:50%;width:22px;height:22px;display:none;align-items:center;justify-content:center;">0</span>
+    </div>
+
+    <!-- ── Ratings & Resultados ── -->
+    <div class="adm-section">
+      <div class="adm-section-title">⭐ Ratings & Resultados</div>
+      <div class="adm-grid">
+        <div class="adm-card" onclick="showPage('subir')">
+          <div class="adm-ico">📸</div>
+          <div>
+            <div class="adm-title">Subir Resultados</div>
+            <div class="adm-desc">CSV de partidos → ratings oficiales</div>
+          </div>
+        </div>
+        <div class="adm-card" onclick="showResyncPartidosModal()">
+          <div class="adm-ico">🔧</div>
+          <div>
+            <div class="adm-title">Reparar Partidos</div>
+            <div class="adm-desc">Recuperar partidos de torneos publicados</div>
+          </div>
+        </div>
+        <div class="adm-card" onclick="exportRankings()">
+          <div class="adm-ico">📊</div>
+          <div>
+            <div class="adm-title">Exportar Rankings</div>
+            <div class="adm-desc">Descargar Excel actualizado</div>
+          </div>
+        </div>
+        <div class="adm-card" onclick="exportStadiumCompete()">
+          <div class="adm-ico">🏟</div>
+          <div>
+            <div class="adm-title">Exportar Stadium</div>
+            <div class="adm-desc">CSV para Stadium Compete</div>
+          </div>
+        </div>
       </div>
-      <div id="adminCardExportar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="exportInscripcionesStadium()">
-        <div style="font-size:32px;margin-bottom:12px">📤</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Exportar Inscritos</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">CSV para Stadium Compete</div>
+    </div>
+
+    <!-- ── Jugadores & Membresías ── -->
+    <div class="adm-section">
+      <div class="adm-section-title">👥 Jugadores & Membresías</div>
+      <div class="adm-grid">
+        <div class="adm-card" onclick="showNewPlayerModal()">
+          <div class="adm-ico">➕</div>
+          <div>
+            <div class="adm-title">Nuevo Jugador</div>
+            <div class="adm-desc">Registrar jugador en el sistema</div>
+          </div>
+        </div>
+        <div class="adm-card" onclick="showPage('membresia')">
+          <div class="adm-ico">🪪</div>
+          <div>
+            <div class="adm-title">Gestionar Membresías</div>
+            <div class="adm-desc">Activar, vencer, alertas</div>
+          </div>
+        </div>
+        <div class="adm-card" style="border-color:rgba(56,189,248,0.25)" onclick="showMembresias2026Modal()">
+          <div class="adm-ico">✅</div>
+          <div>
+            <div class="adm-title">Membresías 2026</div>
+            <div class="adm-desc">Pagos de este año (vencen 2027)</div>
+          </div>
+        </div>
+        <div class="adm-card" onclick="showCsvMembresiaModal()">
+          <div class="adm-ico">📂</div>
+          <div>
+            <div class="adm-title">Importar CSV</div>
+            <div class="adm-desc">DOB y membresías desde planilla</div>
+          </div>
+        </div>
+        <div class="adm-card" onclick="showRegTokenModal()">
+          <div class="adm-ico">🔗</div>
+          <div>
+            <div class="adm-title">Generar Enlace</div>
+            <div class="adm-desc">Registro para no miembros</div>
+          </div>
+        </div>
       </div>
-      <div id="adminCardReporte" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscReporteModal()">
-        <div style="font-size:32px;margin-bottom:12px">📊</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Reporte por Categoría</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Jugadores inscritos con rating y club</div>
-      </div>
-      <div id="adminCardFinanciero" style="background:var(--card2);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:24px;cursor:pointer" onclick="showReporteFinancieroModal()">
-        <div style="font-size:32px;margin-bottom:12px">💰</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Reporte Financiero</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Ingresos por categoría, totales y gráficas</div>
-      </div>
-      <div id="adminCardLogistica" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showInscLogisticaModal()">
-        <div style="font-size:32px;margin-bottom:12px">📅</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Logística</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Planificación de horarios y conflictos</div>
-      </div>
-      <div id="inscAdminCard" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;position:relative;transition:border-color 0.2s" onclick="toggleInscripciones()">
-        <div id="inscAdminIcon" style="font-size:32px;margin-bottom:12px">📋</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Inscripciones</div>
-        <div id="inscAdminStatus" style="color:var(--muted);font-size:13px;margin-top:6px">Cargando...</div>
-        <div id="inscAdminSync" style="font-size:11px;margin-top:4px;color:var(--muted)"></div>
-      </div>
-      <div id="adminCardArchivar" style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer;transition:border-color 0.2s;" onclick="toggleTorneoArchivado()">
-        <div id="adminCardArchivarIcon" style="font-size:32px;margin-bottom:12px">🗃️</div>
-        <div id="adminCardArchivarTitle" style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Archivar Torneo</div>
-        <div id="adminCardArchivarDesc" style="color:var(--muted);font-size:13px;margin-top:6px">Mover inscripciones a historial</div>
-      </div>
-      <div id="adminCardMigrar" style="background:var(--card2);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:24px;cursor:pointer;transition:border-color 0.2s;" onclick="migrarInscripcionesDesdeTraujillo()">
-        <div style="font-size:32px;margin-bottom:12px">🔄</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Migrar Inscritos</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Restablecer desde Trujillo Alto Open 2026</div>
-      </div>
-      <div id="adminCardPastTorneos" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:24px;cursor:pointer" onclick="showPastTorneosModal()">
-        <div style="font-size:32px;margin-bottom:12px">🏆</div>
-        <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px">Past Tournaments</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:6px">Ver historial de torneos archivados</div>
+    </div>
+
+    <!-- ── Sistema ── -->
+    <div class="adm-section">
+      <div class="adm-section-title">⚙️ Sistema</div>
+      <div class="adm-grid">
+        <div class="adm-card" onclick="showConfigModal()">
+          <div class="adm-ico">⚙</div>
+          <div>
+            <div class="adm-title">Configuración</div>
+            <div class="adm-desc">Tabla de puntos, categorías</div>
+          </div>
+        </div>
+        <div class="adm-card" onclick="sincronizarInscripcionesDB()">
+          <div class="adm-ico">🔄</div>
+          <div>
+            <div class="adm-title">Sincronizar Datos</div>
+            <div class="adm-desc">Base de Datos ← inscripciones</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -5338,56 +5446,110 @@ async function submitClubInfoRequest() {
   }
 }
 
+let _cirActiveTab = 'pending';
+
 async function showClubInfoRequestsModal() {
-  const modal = document.getElementById('clubInfoRequestsModal');
-  modal.style.display = 'flex';
+  document.getElementById('clubInfoRequestsModal').style.display = 'flex';
+  cirSwitchTab('pending');
+}
+
+function cirSwitchTab(tab) {
+  _cirActiveTab = tab;
+  [['cirTabPendientes', 'pending'], ['cirTabHistorial', 'history']].forEach(([id, t]) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const active = t === tab;
+    btn.style.background  = active ? 'rgba(56,189,248,0.12)' : 'none';
+    btn.style.borderColor = active ? 'rgba(56,189,248,0.4)' : 'var(--border)';
+    btn.style.color       = active ? 'var(--accent)' : 'var(--muted)';
+  });
+  renderClubInfoRequestsList();
+}
+
+function _cirFmtDate(iso) {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleDateString('es-PR', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  catch (_) { return ''; }
+}
+
+function _cirCardHTML(r, isHistory) {
+  const hasLogo = !!r.logo_url;
+  const hasInfo = r.encargado || r.telefono || r.direccion || r.descripcion;
+  const safeClub = (r.club_name || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const footer = isHistory
+    ? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        ${r.status === 'approved'
+          ? '<span style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);border-radius:20px;padding:3px 12px;color:#4ade80;font-size:12px;font-weight:600">✓ Aprobado</span>'
+          : '<span style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:20px;padding:3px 12px;color:var(--red);font-size:12px;font-weight:600">Rechazado</span>'}
+        <span style="font-size:12px;color:var(--muted)">${_cirFmtDate(r.reviewed_at)}</span>
+      </div>`
+    : `<div style="display:flex;gap:8px">
+        <button onclick="approveClubInfoRequest('${r.id}',this.dataset.club)" data-club="${safeClub}"
+          style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);border-radius:8px;padding:7px 16px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer">
+          Aprobar
+        </button>
+        <button onclick="rejectClubInfoRequest('${r.id}')"
+          style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:7px 16px;color:var(--red);font-size:13px;cursor:pointer">
+          Rechazar
+        </button>
+      </div>`;
+  return `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px${isHistory && r.status === 'rejected' ? ';opacity:0.65' : ''}" id="cir_${r.id}">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        ${hasLogo ? `<img src="${r.logo_url}" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">` : ''}
+        <div>
+          <div style="font-weight:700;font-size:15px">${r.club_name}</div>
+          ${r.solicitante ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">Por: ${r.solicitante}</div>` : ''}
+          ${hasLogo && !hasInfo ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">Propuesta de logo</div>` : ''}
+        </div>
+      </div>
+      ${hasInfo ? `<div style="display:flex;flex-direction:column;gap:4px;font-size:13px;margin-bottom:12px">
+        ${r.encargado  ? `<div>👤 <strong>Encargado:</strong> ${r.encargado}</div>` : ''}
+        ${r.telefono   ? `<div>📞 <strong>Teléfono:</strong> ${r.telefono}</div>` : ''}
+        ${r.direccion  ? `<div>📍 <strong>Dirección:</strong> ${r.direccion}</div>` : ''}
+        ${r.descripcion? `<div>📝 <strong>Descripción:</strong> ${r.descripcion}</div>` : ''}
+      </div>` : ''}
+      ${footer}
+    </div>`;
+}
+
+async function renderClubInfoRequestsList() {
   const list = document.getElementById('cirAdminList');
   list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando…</div>';
+  const isHistory = _cirActiveTab === 'history';
   try {
-    const data = await sbGet('club_info_requests', '?status=eq.pending&order=created_at.asc');
+    const data = await sbGet('club_info_requests', isHistory
+      ? '?status=in.(approved,rejected)&order=reviewed_at.desc.nullslast&limit=100'
+      : '?status=eq.pending&order=created_at.asc');
     if (!data.length) {
-      list.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">✅ Sin solicitudes pendientes.</div>';
+      list.innerHTML = isHistory
+        ? '<div style="text-align:center;padding:60px;color:var(--muted)">Aún no hay solicitudes revisadas.</div>'
+        : '<div style="text-align:center;padding:60px;color:var(--muted)">✅ Sin solicitudes pendientes.</div>';
       return;
     }
-    list.innerHTML = data.map(r => {
-      const hasLogo = !!r.logo_url;
-      const hasInfo = r.encargado || r.telefono || r.direccion || r.descripcion;
-      const safeClub = (r.club_name || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-      return `
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px" id="cir_${r.id}">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-          ${hasLogo ? `<img src="${r.logo_url}" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">` : ''}
-          <div>
-            <div style="font-weight:700;font-size:15px">${r.club_name}</div>
-            ${r.solicitante ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">Por: ${r.solicitante}</div>` : ''}
-            ${hasLogo && !hasInfo ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">Propuesta de logo</div>` : ''}
-          </div>
-        </div>
-        ${hasInfo ? `<div style="display:flex;flex-direction:column;gap:4px;font-size:13px;margin-bottom:12px">
-          ${r.encargado  ? `<div>👤 <strong>Encargado:</strong> ${r.encargado}</div>` : ''}
-          ${r.telefono   ? `<div>📞 <strong>Teléfono:</strong> ${r.telefono}</div>` : ''}
-          ${r.direccion  ? `<div>📍 <strong>Dirección:</strong> ${r.direccion}</div>` : ''}
-          ${r.descripcion? `<div>📝 <strong>Descripción:</strong> ${r.descripcion}</div>` : ''}
-        </div>` : ''}
-        <div style="display:flex;gap:8px">
-          <button onclick="approveClubInfoRequest('${r.id}',this.dataset.club)" data-club="${safeClub}"
-            style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);border-radius:8px;padding:7px 16px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer">
-            Aprobar
-          </button>
-          <button onclick="rejectClubInfoRequest('${r.id}')"
-            style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:7px 16px;color:var(--red);font-size:13px;cursor:pointer">
-            Rechazar
-          </button>
-        </div>
-      </div>`;
-    }).join('');
+    list.innerHTML = data.map(r => _cirCardHTML(r, isHistory)).join('');
   } catch (e) {
     list.innerHTML = `<div style="color:var(--red);padding:20px">Error: ${e.message}</div>`;
   }
 }
 
-async function approveClubInfoRequest(reqId, clubName) {
+function _cirMarkReviewed(reqId, html) {
   const el = document.getElementById(`cir_${reqId}`);
+  if (!el) return;
+  el.style.opacity = '0.5';
+  el.querySelectorAll('button').forEach(b => b.disabled = true);
+  el.insertAdjacentHTML('beforeend', html);
+  // Move the card out of Pendientes shortly after — it now lives in Historial
+  setTimeout(() => {
+    el.remove();
+    const list = document.getElementById('cirAdminList');
+    if (list && _cirActiveTab === 'pending' && !list.querySelector('[id^="cir_"]')) {
+      list.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">✅ Sin solicitudes pendientes.</div>';
+    }
+  }, 1200);
+}
+
+async function approveClubInfoRequest(reqId, clubName) {
   try {
     const data = await sbGet('club_info_requests', `?id=eq.${reqId}&select=*`);
     if (!data.length) return;
@@ -5403,7 +5565,7 @@ async function approveClubInfoRequest(reqId, clubName) {
     if (!CLUB_INFO[clubName]) CLUB_INFO[clubName] = { name: clubName };
     Object.assign(CLUB_INFO[clubName], body);
     await sbPatch('club_info_requests', `id=eq.${reqId}`, { status: 'approved', reviewed_at: new Date().toISOString() });
-    if (el) { el.style.opacity = '0.5'; el.insertAdjacentHTML('beforeend', '<div style="color:#4ade80;font-weight:600;margin-top:8px">✓ Aprobado y publicado</div>'); }
+    _cirMarkReviewed(reqId, '<div style="color:#4ade80;font-weight:600;margin-top:8px">✓ Aprobado y publicado — movido al historial</div>');
     updatePendingBadge();
   } catch (e) {
     alert('Error: ' + e.message);
@@ -5413,8 +5575,7 @@ async function approveClubInfoRequest(reqId, clubName) {
 async function rejectClubInfoRequest(reqId) {
   try {
     await sbPatch('club_info_requests', `id=eq.${reqId}`, { status: 'rejected', reviewed_at: new Date().toISOString() });
-    const el = document.getElementById(`cir_${reqId}`);
-    if (el) { el.style.opacity = '0.5'; el.insertAdjacentHTML('beforeend', '<div style="color:var(--red);margin-top:8px">Rechazado</div>'); }
+    _cirMarkReviewed(reqId, '<div style="color:var(--red);margin-top:8px">Rechazado — movido al historial</div>');
     updatePendingBadge();
   } catch (e) {
     alert('Error: ' + e.message);
@@ -12980,13 +13141,23 @@ async function submitPublicReg() {
 ═══════════════════════════════════════════ -->
 <div id="clubInfoRequestsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1500;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
   <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:560px;width:100%;margin:20px auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div>
         <div style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px">Info de Clubes</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">Solicitudes de actualización pendientes</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Solicitudes de actualización de clubes</div>
       </div>
       <button onclick="document.getElementById('clubInfoRequestsModal').style.display='none'"
         style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button id="cirTabPendientes" onclick="cirSwitchTab('pending')"
+        style="flex:1;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.4);border-radius:8px;padding:8px;font-size:13px;color:var(--accent);cursor:pointer;font-weight:600">
+        Pendientes
+      </button>
+      <button id="cirTabHistorial" onclick="cirSwitchTab('history')"
+        style="flex:1;background:none;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:13px;color:var(--muted);cursor:pointer;font-weight:600">
+        Historial
+      </button>
     </div>
     <div id="cirAdminList"></div>
   </div>
