@@ -1,13 +1,18 @@
 -- ============================================================
---  FPTM — Patch: logo proposals in club_info_requests
+--  FPTM — Patch: propuestas de logo en club_info_requests
 --  Ejecutar en: Supabase → SQL Editor
+--
+--  Nota: ya NO se necesita ninguna política de storage para el
+--  público. Las propuestas viajan como data URL (base64) dentro
+--  de club_info_requests; al aprobar, la sesión del admin sube
+--  el archivo al bucket club-logos con las políticas existentes.
 -- ============================================================
 
--- 1. Add logo_url column to club_info_requests
+-- Columna para la imagen propuesta (data URL) o URL final
 ALTER TABLE public.club_info_requests ADD COLUMN IF NOT EXISTS logo_url TEXT;
 
--- 2. Allow anonymous users to upload to pending/ prefix in club-logos bucket
-DROP POLICY IF EXISTS "Public upload pending club logos" ON storage.objects;
-CREATE POLICY "Public upload pending club logos"
-  ON storage.objects FOR INSERT TO anon
-  WITH CHECK (bucket_id = 'club-logos' AND name LIKE 'pending/%');
+-- Verificar: debe listar logo_url entre las columnas
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'club_info_requests'
+ORDER BY ordinal_position;

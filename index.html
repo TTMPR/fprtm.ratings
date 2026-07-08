@@ -5559,7 +5559,20 @@ async function approveClubInfoRequest(reqId, clubName) {
     if (r.telefono)    body.telefono    = r.telefono;
     if (r.direccion)   body.direccion   = r.direccion;
     if (r.descripcion) body.descripcion = r.descripcion;
-    if (r.logo_url)    body.logo_url    = r.logo_url;
+    if (r.logo_url) {
+      let finalLogo = r.logo_url;
+      // Proposals arrive as base64 data URLs; on approval the admin session
+      // uploads the real file to storage and publishes its public URL.
+      if (r.logo_url.startsWith('data:')) {
+        const blob = await (await fetch(r.logo_url)).blob();
+        const slug = clubName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+        const path = `${slug}.jpg`;
+        const { error: upErr } = await _supabase.storage.from('club-logos').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+        if (upErr) throw upErr;
+        finalLogo = _supabase.storage.from('club-logos').getPublicUrl(path).data.publicUrl + '?v=' + Date.now();
+      }
+      body.logo_url = finalLogo;
+    }
     const { error } = await _supabase.from('clubs').upsert(body, { onConflict: 'name' });
     if (error) throw error;
     if (!CLUB_INFO[clubName]) CLUB_INFO[clubName] = { name: clubName };
@@ -8437,24 +8450,31 @@ async function uploadClubLogo(clubName) {
   input.click();
 }
 
-async function _resizeImageBlob(file, maxSide = 500) {
+// Resize to max 500px and return a base64 data URL (JPEG). Returns null if
+// the browser can't decode the image (e.g. unsupported format).
+async function _resizeImageDataUrl(file, maxSide = 500) {
   return new Promise(resolve => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(url);
-      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
-      const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      canvas.toBlob(blob => resolve(blob || file), 'image/jpeg', 0.88);
+      try {
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      } catch (_) { resolve(null); }
     };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
     img.src = url;
   });
 }
 
+// Public logo proposal: the image travels as a data URL inside
+// club_info_requests (anon INSERT already allowed). No storage permissions
+// needed until the admin approves — the admin session does the real upload.
 async function proposeClubLogo() {
   const clubName = _clubProfileName;
   if (!clubName) return;
@@ -8465,16 +8485,12 @@ async function proposeClubLogo() {
   input.onchange = async () => {
     const file = input.files[0];
     if (!file) return;
-    if (msgEl) { msgEl.textContent = 'Subiendo…'; msgEl.style.color = 'var(--muted)'; }
+    if (msgEl) { msgEl.textContent = 'Enviando…'; msgEl.style.color = 'var(--muted)'; }
     try {
-      const slug = clubName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
-      const blob = await _resizeImageBlob(file);
-      const path = `pending/${slug}-${Date.now()}.jpg`;
-      const { error: upErr } = await _supabase.storage.from('club-logos').upload(path, blob, { contentType: 'image/jpeg' });
-      if (upErr) throw new Error('No se pudo subir la imagen. Verifica que el SQL patch_club_logo_requests.sql fue ejecutado en Supabase. (' + upErr.message + ')');
-      const { data: { publicUrl } } = _supabase.storage.from('club-logos').getPublicUrl(path);
-      await sbPost('club_info_requests', { club_name: clubName, logo_url: publicUrl });
-      if (msgEl) { msgEl.textContent = '✓ Logo propuesto. El administrador lo revisará.'; msgEl.style.color = 'var(--green)'; }
+      const dataUrl = await _resizeImageDataUrl(file);
+      if (!dataUrl) throw new Error('No se pudo procesar la imagen. Intenta con una foto JPG o PNG.');
+      await sbPost('club_info_requests', { club_name: clubName, logo_url: dataUrl });
+      if (msgEl) { msgEl.textContent = '✓ Logo enviado. El administrador lo revisará.'; msgEl.style.color = 'var(--green)'; }
     } catch (e) {
       if (msgEl) { msgEl.textContent = 'Error: ' + e.message; msgEl.style.color = 'var(--red)'; }
     }
