@@ -1556,9 +1556,9 @@
     <button id="navRatings" class="active" onclick="showPage('ratings')">📊 Ratings</button>
     <button id="navCalculator" onclick="showPage('calculator')">⚡ Calcular Rating</button>
     <button id="navClubes" onclick="showPage('clubes')">🏅 Clubes</button>
-    <button id="navNoticias" onclick="showPage('noticias')">📰 Blog</button>
     <button id="navTorneos" onclick="showPage('torneosList')">🏓 Torneos</button>
     <button id="navInscripciones" onclick="showPage('inscripciones')">📋 Inscripciones</button>
+    <button id="navNoticias" onclick="showPage('noticias')">📰 Blog</button>
     <button id="navMembresia" style="display:none" onclick="showPage('membresia')">🪪 Membresía</button>
     <button id="navAdmin" style="display:none" onclick="showPage('admin')">⚙ Admin</button>
   </nav>
@@ -1597,10 +1597,6 @@
       <span class="sb-icon">🏅</span>
       <span class="sb-label">Clubes</span>
     </button>
-    <button class="sb-btn" id="sbNoticias" onclick="showPage('noticias')">
-      <span class="sb-icon">📰</span>
-      <span class="sb-label">Blog</span>
-    </button>
     <button class="sb-btn" id="sbTorneos" onclick="showPage('torneosList')">
       <span class="sb-icon">🏓</span>
       <span class="sb-label">Torneos</span>
@@ -1608,6 +1604,10 @@
     <button class="sb-btn" id="sbInscripciones" onclick="showPage('inscripciones')">
       <span class="sb-icon">📋</span>
       <span class="sb-label">Inscripciones</span>
+    </button>
+    <button class="sb-btn" id="sbNoticias" onclick="showPage('noticias')">
+      <span class="sb-icon">📰</span>
+      <span class="sb-label">Blog</span>
     </button>
     <button class="sb-btn" id="sbMembresia" style="display:none" onclick="showPage('membresia')">
       <span class="sb-icon">🪪</span>
@@ -1650,10 +1650,6 @@
     <span class="bn-pill"><span class="bn-icon">🏅</span></span>
     <span class="bn-label">Clubes</span>
   </button>
-  <button class="bottom-nav-btn" id="bnNoticias" onclick="showPage('noticias')">
-    <span class="bn-pill"><span class="bn-icon">📰</span></span>
-    <span class="bn-label">Blog</span>
-  </button>
   <button class="bottom-nav-btn" id="bnTorneos" onclick="showPage('torneosList')">
     <span class="bn-pill"><span class="bn-icon">🏓</span></span>
     <span class="bn-label">Torneos</span>
@@ -1661,6 +1657,10 @@
   <button class="bottom-nav-btn" id="bnInscripciones" onclick="showPage('inscripciones')">
     <span class="bn-pill"><span class="bn-icon">📋</span></span>
     <span class="bn-label">Inscripción</span>
+  </button>
+  <button class="bottom-nav-btn" id="bnNoticias" onclick="showPage('noticias')">
+    <span class="bn-pill"><span class="bn-icon">📰</span></span>
+    <span class="bn-label">Blog</span>
   </button>
   <button class="bottom-nav-btn" id="bnMembresia" style="display:none" onclick="showPage('membresia')">
     <span class="bn-pill"><span class="bn-icon">🪪</span></span>
@@ -4597,9 +4597,19 @@ const navIdMap = {
   admin:        { sb: 'sbAdmin',         bn: 'bnAdmin' },
 };
 
+// Pages that get their own shareable URL (#hash)
+const HASH_PAGES = new Set(['ratings', 'hallofame', 'calculator', 'clubes', 'noticias', 'torneosList', 'inscripciones', 'membresia', 'admin']);
+let _currentPageKey = 'ratings';
+
 function showPage(key) {
   const PROTECTED = ['membresia', 'admin', 'subir'];
   if (PROTECTED.includes(key) && !currentUser) { showLogin(); return; }
+
+  _currentPageKey = key;
+  // Give each tab a unique, shareable URL (also enables browser back/forward)
+  if (HASH_PAGES.has(key) && location.hash !== '#' + key) {
+    location.hash = key;
+  }
 
   Object.values(pages).forEach(id => {
     const el = document.getElementById(id);
@@ -4646,6 +4656,12 @@ function showPage(key) {
   // Load noticias page
   if (key === 'noticias') renderNoticiasPage();
 }
+
+// Browser back/forward + direct links to #tab
+window.addEventListener('hashchange', () => {
+  const key = location.hash.replace('#', '') || 'ratings';
+  if (HASH_PAGES.has(key) && key !== _currentPageKey) showPage(key);
+});
 
 // ── Sidebar toggle ──────────────────────────────────────────────────────────
 function toggleSidebar() {
@@ -9178,6 +9194,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderMembers();
   updateStats();
   updatePendingBadge();
+
+  // Direct link to a tab (#clubes, #noticias, …) — navigate after data is ready
+  const initialKey = location.hash.replace('#', '');
+  if (HASH_PAGES.has(initialKey) && initialKey !== 'ratings') showPage(initialKey);
 });
 
 // ══════════════════════════════════════════
