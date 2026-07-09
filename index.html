@@ -1556,6 +1556,7 @@
     <button id="navRatings" class="active" onclick="showPage('ratings')">📊 Ratings</button>
     <button id="navCalculator" onclick="showPage('calculator')">⚡ Calcular Rating</button>
     <button id="navClubes" onclick="showPage('clubes')">🏅 Clubes</button>
+    <button id="navNoticias" onclick="showPage('noticias')">📰 Noticias</button>
     <button id="navTorneos" onclick="showPage('torneosList')">🏓 Torneos</button>
     <button id="navInscripciones" onclick="showPage('inscripciones')">📋 Inscripciones</button>
     <button id="navMembresia" style="display:none" onclick="showPage('membresia')">🪪 Membresía</button>
@@ -1595,6 +1596,10 @@
     <button class="sb-btn" id="sbClubes" onclick="showPage('clubes')">
       <span class="sb-icon">🏅</span>
       <span class="sb-label">Clubes</span>
+    </button>
+    <button class="sb-btn" id="sbNoticias" onclick="showPage('noticias')">
+      <span class="sb-icon">📰</span>
+      <span class="sb-label">Noticias</span>
     </button>
     <button class="sb-btn" id="sbTorneos" onclick="showPage('torneosList')">
       <span class="sb-icon">🏓</span>
@@ -1644,6 +1649,10 @@
   <button class="bottom-nav-btn" id="bnClubes" onclick="showPage('clubes')">
     <span class="bn-pill"><span class="bn-icon">🏅</span></span>
     <span class="bn-label">Clubes</span>
+  </button>
+  <button class="bottom-nav-btn" id="bnNoticias" onclick="showPage('noticias')">
+    <span class="bn-pill"><span class="bn-icon">📰</span></span>
+    <span class="bn-label">Noticias</span>
   </button>
   <button class="bottom-nav-btn" id="bnTorneos" onclick="showPage('torneosList')">
     <span class="bn-pill"><span class="bn-icon">🏓</span></span>
@@ -1746,6 +1755,29 @@
     <button onclick="showClubesListView()" style="background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;margin-bottom:18px;padding:0;display:flex;align-items:center;gap:6px">← Volver a Clubes</button>
     <div id="clubProfileHeader" style="margin-bottom:20px"></div>
     <div id="clubProfilePlayers"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: NOTICIAS (blog)
+═══════════════════════════════════════════ -->
+<div id="noticiasPage" class="page" style="display:none">
+  <!-- Article list -->
+  <div id="noticiasListView" style="padding:20px 16px 80px;max-width:960px;margin:0 auto">
+    <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:2px;font-weight:700;margin-bottom:2px">NOTICIAS</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Federación Puertorriqueña de Tenis de Mesa</div>
+    <div id="noticiasAdminBar" style="display:none;margin-bottom:18px">
+      <button onclick="openArticuloEditor()"
+        style="background:var(--grad);border:none;border-radius:10px;padding:10px 20px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">
+        ✍️ Nuevo artículo
+      </button>
+    </div>
+    <div id="noticiasGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+  </div>
+  <!-- Article detail -->
+  <div id="noticiaDetailView" style="display:none;padding:20px 16px 80px;max-width:760px;margin:0 auto">
+    <button onclick="showNoticiasListView()" style="background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;margin-bottom:18px;padding:0;display:flex;align-items:center;gap:6px">← Volver a Noticias</button>
+    <div id="noticiaDetailBody"></div>
   </div>
 </div>
 
@@ -2604,6 +2636,13 @@ Maria Lopez,Ana Torres,B</code>
           <div>
             <div class="adm-title">Sincronizar Datos</div>
             <div class="adm-desc">Base de Datos ← inscripciones</div>
+          </div>
+        </div>
+        <div class="adm-card" onclick="showPage('noticias')">
+          <div class="adm-ico">📰</div>
+          <div>
+            <div class="adm-title">Noticias / Blog</div>
+            <div class="adm-desc">Publicar y editar artículos</div>
           </div>
         </div>
       </div>
@@ -4534,6 +4573,7 @@ const pages = {
   calculator:     'calculatorPage',
   subir:          'subirPage',
   clubes:         'clubesPage',
+  noticias:       'noticiasPage',
   torneosList:    'torneosListPage',
   torneoEvento:   'torneoEventoPage',
   inscripciones:  'inscripcionesPage',
@@ -4549,6 +4589,7 @@ const navIdMap = {
   hallofame:    { sb: 'sbHallOfFame',    bn: 'bnHallOfFame' },
   calculator:   { sb: 'sbCalculator',    bn: 'bnCalculator' },
   clubes:       { sb: 'sbClubes',        bn: 'bnClubes' },
+  noticias:     { sb: 'sbNoticias',      bn: 'bnNoticias' },
   torneosList:  { sb: 'sbTorneos',       bn: 'bnTorneos' },
   torneoEvento: { sb: 'sbTorneos',       bn: 'bnTorneos' },
   inscripciones:{ sb: 'sbInscripciones', bn: 'bnInscripciones' },
@@ -4602,6 +4643,8 @@ function showPage(key) {
   if (key === 'hallofame') openRankings();
   // Load clubs page
   if (key === 'clubes') renderClubesPage();
+  // Load noticias page
+  if (key === 'noticias') renderNoticiasPage();
 }
 
 // ── Sidebar toggle ──────────────────────────────────────────────────────────
@@ -5590,6 +5633,181 @@ async function rejectClubInfoRequest(reqId) {
     await sbPatch('club_info_requests', `id=eq.${reqId}`, { status: 'rejected', reviewed_at: new Date().toISOString() });
     _cirMarkReviewed(reqId, '<div style="color:var(--red);margin-top:8px">Rechazado — movido al historial</div>');
     updatePendingBadge();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+// ══════════════════════════════════════════
+// NOTICIAS (blog)
+// ══════════════════════════════════════════
+let ARTICULOS = [];
+let _articuloEditId = null;
+
+function escHTML(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function showNoticiasListView() {
+  document.getElementById('noticiasListView').style.display = '';
+  document.getElementById('noticiaDetailView').style.display = 'none';
+}
+
+async function renderNoticiasPage() {
+  showNoticiasListView();
+  document.getElementById('noticiasAdminBar').style.display = isAdmin() ? '' : 'none';
+  const grid = document.getElementById('noticiasGrid');
+  grid.innerHTML = '<div style="color:var(--muted);padding:40px 0;text-align:center;grid-column:1/-1">Cargando…</div>';
+  try {
+    const { data, error } = await _supabase.from('articulos')
+      .select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    ARTICULOS = data || [];
+    if (!ARTICULOS.length) {
+      grid.innerHTML = '<div style="color:var(--muted);padding:60px 0;text-align:center;grid-column:1/-1">📰 Aún no hay artículos publicados.</div>';
+      return;
+    }
+    grid.innerHTML = ARTICULOS.map(a => `
+      <div onclick="openNoticiaDetail('${a.id}')"
+        style="background:var(--card2);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:border-color .15s,transform .12s"
+        onmouseenter="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'"
+        onmouseleave="this.style.borderColor='var(--border)';this.style.transform=''">
+        ${a.imagen_url
+          ? `<img src="${a.imagen_url}" style="width:100%;height:160px;object-fit:cover;display:block" onerror="this.style.display='none'">`
+          : `<div style="width:100%;height:90px;background:linear-gradient(135deg,rgba(56,189,248,0.12),rgba(129,140,248,0.15));display:flex;align-items:center;justify-content:center;font-size:34px">📰</div>`}
+        <div style="padding:16px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${_cirFmtDate(a.created_at)}${a.autor ? ' · ' + escHTML(a.autor) : ''}</div>
+          <div style="font-weight:700;font-size:16px;line-height:1.3;margin-bottom:6px">${escHTML(a.titulo)}</div>
+          ${a.resumen ? `<div style="font-size:13px;color:var(--muted);line-height:1.5">${escHTML(a.resumen)}</div>` : ''}
+          <div style="font-size:12px;color:var(--accent);font-weight:600;margin-top:10px">Leer más →</div>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    grid.innerHTML = `<div style="color:var(--red);padding:30px 0;text-align:center;grid-column:1/-1">Error cargando noticias: ${escHTML(e.message)}<br><small style="color:var(--muted)">¿Corriste create_articulos.sql en Supabase?</small></div>`;
+  }
+}
+
+// Minimal formatting: escaped HTML, **bold**, auto-links, paragraphs
+function _renderArticuloContent(text) {
+  let s = escHTML(text);
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener" style="color:var(--accent)">$1</a>');
+  return s.split(/\n{2,}/).map(p =>
+    `<p style="margin:0 0 14px;line-height:1.7">${p.replace(/\n/g, '<br>')}</p>`).join('');
+}
+
+function openNoticiaDetail(id) {
+  const a = ARTICULOS.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('noticiasListView').style.display = 'none';
+  document.getElementById('noticiaDetailView').style.display = '';
+  const adminBtns = isAdmin() ? `
+    <div style="display:flex;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+      <button onclick="openArticuloEditor('${a.id}')"
+        style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:8px;padding:7px 16px;color:var(--accent);font-size:13px;cursor:pointer">✏️ Editar</button>
+      <button onclick="deleteArticulo('${a.id}')"
+        style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:7px 16px;color:var(--red);font-size:13px;cursor:pointer">🗑 Borrar</button>
+    </div>` : '';
+  document.getElementById('noticiaDetailBody').innerHTML = `
+    ${a.imagen_url ? `<img src="${a.imagen_url}" style="width:100%;max-height:340px;object-fit:cover;border-radius:16px;margin-bottom:20px" onerror="this.style.display='none'">` : ''}
+    <div style="font-family:'Orbitron',monospace;font-size:24px;font-weight:700;letter-spacing:0.5px;line-height:1.25;margin-bottom:8px">${escHTML(a.titulo)}</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:22px">${_cirFmtDate(a.created_at)}${a.autor ? ' · ' + escHTML(a.autor) : ''}</div>
+    <div style="font-size:15px;color:var(--text)">${_renderArticuloContent(a.contenido)}</div>
+    ${adminBtns}`;
+  window.scrollTo({ top: 0 });
+}
+
+// ── Admin editor ──────────────────────────────────────────────────────────
+let _articuloImagenDataUrl = null;
+
+function openArticuloEditor(id = null) {
+  if (!isAdmin()) { showLogin(); return; }
+  _articuloEditId = id;
+  _articuloImagenDataUrl = null;
+  const a = id ? ARTICULOS.find(x => x.id === id) : null;
+  document.getElementById('artEdTitle').textContent = a ? 'Editar artículo' : 'Nuevo artículo';
+  document.getElementById('artEdTitulo').value    = a?.titulo || '';
+  document.getElementById('artEdAutor').value     = a?.autor || 'FPTM';
+  document.getElementById('artEdResumen').value   = a?.resumen || '';
+  document.getElementById('artEdContenido').value = a?.contenido || '';
+  document.getElementById('artEdMsg').textContent = '';
+  document.getElementById('artEdImgPreview').innerHTML = a?.imagen_url
+    ? `<img src="${a.imagen_url}" style="max-width:100%;max-height:140px;border-radius:10px">`
+    : '<span style="color:var(--muted);font-size:12px">Sin imagen de portada</span>';
+  document.getElementById('articuloEditorModal').style.display = 'flex';
+}
+
+function articuloPickImage() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    const dataUrl = await _resizeImageDataUrl(file, 1000);
+    if (!dataUrl) { alert('No se pudo procesar la imagen. Usa JPG o PNG.'); return; }
+    _articuloImagenDataUrl = dataUrl;
+    document.getElementById('artEdImgPreview').innerHTML =
+      `<img src="${dataUrl}" style="max-width:100%;max-height:140px;border-radius:10px">`;
+  };
+  input.click();
+}
+
+async function saveArticulo() {
+  const msgEl = document.getElementById('artEdMsg');
+  const titulo = document.getElementById('artEdTitulo').value.trim();
+  const contenido = document.getElementById('artEdContenido').value.trim();
+  if (!titulo || !contenido) {
+    msgEl.textContent = 'Título y contenido son obligatorios.'; msgEl.style.color = 'var(--red)'; return;
+  }
+  msgEl.textContent = 'Guardando…'; msgEl.style.color = 'var(--muted)';
+  try {
+    const body = {
+      titulo,
+      contenido,
+      autor:   document.getElementById('artEdAutor').value.trim() || 'FPTM',
+      resumen: document.getElementById('artEdResumen').value.trim() || null,
+      updated_at: new Date().toISOString(),
+    };
+    // New cover image: upload via the admin session to the club-logos bucket
+    // (its authenticated policies cover any path); fall back to the data URL.
+    if (_articuloImagenDataUrl) {
+      try {
+        const blob = await (await fetch(_articuloImagenDataUrl)).blob();
+        const path = `articulos/${Date.now()}.jpg`;
+        const { error: upErr } = await _supabase.storage.from('club-logos').upload(path, blob, { contentType: 'image/jpeg' });
+        if (upErr) throw upErr;
+        body.imagen_url = _supabase.storage.from('club-logos').getPublicUrl(path).data.publicUrl;
+      } catch (_) {
+        body.imagen_url = _articuloImagenDataUrl;
+      }
+    }
+    let error;
+    if (_articuloEditId) {
+      ({ error } = await _supabase.from('articulos').update(body).eq('id', _articuloEditId));
+    } else {
+      ({ error } = await _supabase.from('articulos').insert(body));
+    }
+    if (error) throw error;
+    msgEl.textContent = '✓ Publicado'; msgEl.style.color = 'var(--green)';
+    setTimeout(() => {
+      document.getElementById('articuloEditorModal').style.display = 'none';
+      renderNoticiasPage();
+    }, 700);
+  } catch (e) {
+    msgEl.textContent = 'Error: ' + e.message; msgEl.style.color = 'var(--red)';
+  }
+}
+
+async function deleteArticulo(id) {
+  if (!isAdmin()) return;
+  if (!confirm('¿Borrar este artículo? Esta acción no se puede deshacer.')) return;
+  try {
+    const { error } = await _supabase.from('articulos').delete().eq('id', id);
+    if (error) throw error;
+    renderNoticiasPage();
   } catch (e) {
     alert('Error: ' + e.message);
   }
@@ -13176,6 +13394,62 @@ async function submitPublicReg() {
       </button>
     </div>
     <div id="cirAdminList"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ARTICULO EDITOR MODAL (admin)
+═══════════════════════════════════════════ -->
+<div id="articuloEditorModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1500;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:640px;width:100%;margin:20px auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div id="artEdTitle" style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px">Nuevo artículo</div>
+      <button onclick="document.getElementById('articuloEditorModal').style.display='none'"
+        style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Título *</label>
+        <input id="artEdTitulo" placeholder="Título del artículo"
+          style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:11px;color:var(--muted)">Autor</label>
+          <input id="artEdAutor" value="FPTM"
+            style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:4px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--muted)">Imagen de portada</label>
+          <button onclick="articuloPickImage()"
+            style="width:100%;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:8px;padding:10px;color:var(--accent);font-size:13px;cursor:pointer;margin-top:4px">
+            📷 Elegir imagen
+          </button>
+        </div>
+      </div>
+      <div id="artEdImgPreview" style="text-align:center;padding:6px 0"></div>
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Resumen (aparece en la tarjeta)</label>
+        <input id="artEdResumen" placeholder="Una o dos oraciones"
+          style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:4px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted)">Contenido * — párrafos separados por línea en blanco · **negritas** · los enlaces se detectan solos</label>
+        <textarea id="artEdContenido" rows="12" placeholder="Escribe el artículo aquí…"
+          style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:14px;margin-top:4px;resize:vertical;line-height:1.6;box-sizing:border-box"></textarea>
+      </div>
+    </div>
+    <div id="artEdMsg" style="font-size:12px;margin-top:10px;min-height:16px"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="saveArticulo()"
+        style="flex:1;background:var(--grad);border:none;border-radius:10px;padding:12px;color:#fff;font-size:14px;font-weight:600;cursor:pointer">
+        Publicar
+      </button>
+      <button onclick="document.getElementById('articuloEditorModal').style.display='none'"
+        style="background:none;border:1px solid var(--border);border-radius:10px;padding:12px 18px;color:var(--muted);font-size:13px;cursor:pointer">
+        Cancelar
+      </button>
+    </div>
   </div>
 </div>
 
