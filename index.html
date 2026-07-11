@@ -2600,6 +2600,20 @@ Maria Lopez,Ana Torres,B</code>
             <div class="adm-desc">CSV para Stadium Compete</div>
           </div>
         </div>
+        <div class="adm-card" onclick="showAuditLogModal()">
+          <div class="adm-ico">📜</div>
+          <div>
+            <div class="adm-title">Historial de Cambios</div>
+            <div class="adm-desc">Auditoría: quién cambió qué y cuándo</div>
+          </div>
+        </div>
+        <div class="adm-card" style="border-color:rgba(239,68,68,0.25)" onclick="showTrashModal()">
+          <div class="adm-ico">🗑️</div>
+          <div>
+            <div class="adm-title">Papelera de Torneos</div>
+            <div class="adm-desc">Restaurar borrados (últimos 30 días)</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2731,6 +2745,65 @@ Maria Lopez,Ana Torres,B</code>
       <button onclick="closePastTorneosModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
     </div>
     <div id="pastTorneoslist" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     AUDIT LOG MODAL (Historial de Cambios)
+═══════════════════════════════════════════ -->
+<div id="auditLogModal" role="dialog" aria-modal="true" aria-label="Historial de Cambios" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">📜 Historial de Cambios</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Registro automático de auditoría — solo lectura</div>
+      </div>
+      <button onclick="closeAuditLogModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <select id="auditFilterTable" aria-label="Filtrar por tabla" onchange="loadAuditLog(true)"
+        style="background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;">
+        <option value="">Todas las tablas</option>
+        <option value="Base de Datos">Ratings (Base de Datos)</option>
+        <option value="jugadores">Jugadores</option>
+        <option value="torneos">Torneos</option>
+        <option value="resultados_evento">Resultados</option>
+        <option value="partidos">Partidos</option>
+        <option value="membership_requests">Membresías</option>
+        <option value="insc_registro">Inscripciones</option>
+      </select>
+      <select id="auditFilterDays" aria-label="Filtrar por fecha" onchange="loadAuditLog(true)"
+        style="background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;">
+        <option value="7">Últimos 7 días</option>
+        <option value="30" selected>Últimos 30 días</option>
+        <option value="365">Último año</option>
+        <option value="">Todo</option>
+      </select>
+      <input type="text" id="auditFilterSearch" aria-label="Buscar por ID de registro"
+        placeholder="ID de registro (ej. Member ID)…" oninput="clearTimeout(_auditSearchT); _auditSearchT = setTimeout(() => loadAuditLog(true), 400)"
+        style="flex:1;min-width:160px;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;">
+    </div>
+    <div id="auditLogBody" style="font-size:13px;"></div>
+    <div style="text-align:center;margin-top:14px;">
+      <button id="auditLogMoreBtn" onclick="loadAuditLog(false)" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 18px;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;">Cargar más</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAPELERA DE TORNEOS MODAL
+═══════════════════════════════════════════ -->
+<div id="trashModal" role="dialog" aria-modal="true" aria-label="Papelera de Torneos" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:720px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:12px;">
+      <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">🗑️ Papelera de Torneos</div>
+      <button onclick="closeTrashModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:0 0 18px;">
+      Los torneos borrados se conservan 30 días antes de purgarse definitivamente.
+      Restaurar reaplica los ratings finales del torneo a sus participantes.
+    </p>
+    <div id="trashBody" style="font-size:14px;color:var(--muted);text-align:center;padding:30px 0;">Cargando...</div>
   </div>
 </div>
 
@@ -3165,9 +3238,10 @@ Maria Lopez,Ana Torres,B</code>
   <div class="edit-memb-box">
     <div class="edit-memb-title" style="color:var(--red)">Borrar Torneo</div>
     <div class="edit-memb-sub" id="deleteTorneoSub" style="margin-bottom:16px"></div>
-    <p style="font-size:13px;color:var(--muted);margin:0 0 24px">
+    <p style="font-size:13px;color:var(--muted);margin:0 0 24px" id="deleteTorneoExplain">
       Esto revertirá los ratings de todos los jugadores que participaron.<br>
-      <strong style="color:var(--red)">No se puede deshacer.</strong>
+      El torneo pasa a la <strong>papelera por 30 días</strong> — se puede
+      restaurar desde el Admin antes de que se purgue definitivamente.
     </p>
     <div id="deleteTorneoMsg" class="edit-memb-msg"></div>
     <div class="edit-actions">
@@ -4307,6 +4381,58 @@ async function sbGet(table, params = '') {
   }
 }
 
+// ── Soft delete (Fase 3.5) ──────────────────────────────────────────────────
+// Lecturas públicas de tablas con papelera (torneos, resultados_evento,
+// partidos): excluyen filas con deleted_at. Si el SQL de soft delete aún no
+// se aplicó en Supabase (columna inexistente), cae al query sin filtro y el
+// borrado vuelve a ser duro — la app funciona en ambos estados.
+let _softDeleteReady = null;   // null = sin detectar · true/false tras 1ª consulta
+
+// Como sbGet pero autenticado con el JWT de la sesión (no la anon key):
+// necesario para tablas cuya RLS exige el email del admin (ej. audit_log).
+async function sbGetAuth(table, params = '') {
+  if (SB_SIMULATE_ERROR) {
+    await new Promise(r => setTimeout(r, 400));
+    throw new Error('Error simulado (?simulateError=1)');
+  }
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (!session) throw new Error('Sesión expirada — vuelve a iniciar sesión.');
+  const ctrl  = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), SB_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+      headers: { ...SB_HEADERS, 'Authorization': `Bearer ${session.access_token}`, 'Cache-Control': 'no-cache' },
+      signal: ctrl.signal
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Supabase GET ${table} (${res.status}): ${err}`);
+    }
+    return res.json();
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error(`Supabase GET ${table}: tiempo de espera agotado (${SB_TIMEOUT_MS / 1000}s)`);
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function sbGetActive(table, params = '') {
+  if (_softDeleteReady === false) return sbGet(table, params);
+  try {
+    const rows = await sbGet(table, params + (params ? '&' : '?') + 'deleted_at=is.null');
+    _softDeleteReady = true;
+    return rows;
+  } catch (e) {
+    if (_softDeleteReady === null && /deleted_at/.test(e.message)) {
+      console.warn(`[soft-delete] columna deleted_at no existe en ${table} — corre sql/soft_delete_torneos.sql`);
+      _softDeleteReady = false;
+      return sbGet(table, params);
+    }
+    throw e;
+  }
+}
+
 // Pinta el estado de error dentro de un contenedor: mensaje corto + botón
 // "⟳ Reintentar" (botón real: focusable y con texto, no necesita aria-label).
 function showLoadError(el, retryFn, msg = 'No se pudo cargar') {
@@ -4960,9 +5086,9 @@ async function showProfile(player) {
   // ── Parallel queries ──────────────────────────────────────────────────
   const encName = encodeURIComponent(player.name);
   const [partidosRes, partidosNombreRes, participacionesRes] = await Promise.allSettled([
-    sbGet('partidos', `?or=(jugador_a_id.eq.${player.id},jugador_b_id.eq.${player.id})&order=fecha.desc&limit=500`),
-    sbGet('partidos', `?or=(nombre_a.eq.${encName},nombre_b.eq.${encName})&order=fecha.desc&limit=500`),
-    sbGet('resultados_evento', `?id_jugador=eq.${player.id}&order=created_at.asc&limit=100`)
+    sbGetActive('partidos', `?or=(jugador_a_id.eq.${player.id},jugador_b_id.eq.${player.id})&order=fecha.desc&limit=500`),
+    sbGetActive('partidos', `?or=(nombre_a.eq.${encName},nombre_b.eq.${encName})&order=fecha.desc&limit=500`),
+    sbGetActive('resultados_evento', `?id_jugador=eq.${player.id}&order=created_at.asc&limit=100`)
   ]);
 
   // ── MATCH STATS (from partidos) ───────────────────────────────────────
@@ -5004,7 +5130,7 @@ async function showProfile(player) {
     let torneoNameMap = {};
     if (legacyTorneoIds.length) {
       try {
-        const ts = await sbGet('torneos', `?id=in.(${legacyTorneoIds.join(',')})&select=id,nombre,fecha`);
+        const ts = await sbGetActive('torneos', `?id=in.(${legacyTorneoIds.join(',')})&select=id,nombre,fecha`);
         (ts || []).forEach(t => { torneoNameMap[t.id] = { nombre: t.nombre, fecha: t.fecha }; });
       } catch(_) {}
     }
@@ -5140,7 +5266,7 @@ async function showProfile(player) {
     let torneoMeta = {};
     try {
       const ids = [...new Set(parts.map(p => p.id_torneo))];
-      const torneos = await sbGet('torneos', `?id=in.(${ids.join(',')})&select=id,nombre,fecha`);
+      const torneos = await sbGetActive('torneos', `?id=in.(${ids.join(',')})&select=id,nombre,fecha`);
       torneos.forEach(t => { torneoMeta[t.id] = { nombre: t.nombre, fecha: t.fecha }; });
     } catch(_) {}
 
@@ -7766,18 +7892,37 @@ async function confirmarBorrarTorneo() {
       console.log('[borrarTorneo] Ratings revertidos correctamente.');
     }
 
-    // 3. Borrado en cascada
-    console.log('[borrarTorneo] Borrando partidos...');
-    try { await sbDelete('partidos', `torneo_id=eq.${torneoId}`); } catch(_) {
-      console.warn('[borrarTorneo] No se pudo borrar partidos (posiblemente columna no existe), continuando...');
+    // 3. Soft delete: marcar deleted_at (papelera 30 días) en vez de borrar.
+    //    Si la columna aún no existe (sql/soft_delete_torneos.sql sin aplicar),
+    //    cae al borrado duro original.
+    let softDeleted = _softDeleteReady !== false;
+    if (softDeleted) {
+      try {
+        const ts = new Date().toISOString();
+        console.log('[borrarTorneo] Moviendo a papelera (deleted_at)...');
+        try { await sbPatch('partidos', `torneo_id=eq.${torneoId}`, { deleted_at: ts }); } catch(_) {
+          console.warn('[borrarTorneo] No se pudo marcar partidos (posiblemente columna torneo_id no existe), continuando...');
+        }
+        await sbPatch('resultados_evento', `id_torneo=eq.${torneoId}`, { deleted_at: ts });
+        await sbPatch('torneos', `id=eq.${torneoId}`, { deleted_at: ts });
+        console.log('[borrarTorneo] Torneo en papelera — restaurable por 30 días.');
+      } catch (e) {
+        if (!/deleted_at/.test(e.message)) throw e;
+        softDeleted = false;
+      }
     }
-
-    console.log('[borrarTorneo] Borrando resultados_evento...');
-    await sbDelete('resultados_evento', `id_torneo=eq.${torneoId}`);
-
-    console.log('[borrarTorneo] Borrando torneo...');
-    await sbDelete('torneos', `id=eq.${torneoId}`);
-    console.log('[borrarTorneo] Torneo eliminado exitosamente.');
+    if (!softDeleted) {
+      // Borrado duro (comportamiento original, pre-soft-delete)
+      console.log('[borrarTorneo] Borrando partidos...');
+      try { await sbDelete('partidos', `torneo_id=eq.${torneoId}`); } catch(_) {
+        console.warn('[borrarTorneo] No se pudo borrar partidos (posiblemente columna no existe), continuando...');
+      }
+      console.log('[borrarTorneo] Borrando resultados_evento...');
+      await sbDelete('resultados_evento', `id_torneo=eq.${torneoId}`);
+      console.log('[borrarTorneo] Borrando torneo...');
+      await sbDelete('torneos', `id=eq.${torneoId}`);
+      console.log('[borrarTorneo] Torneo eliminado exitosamente.');
+    }
 
     // 4. Actualizar UI
     await loadPlayers();
@@ -7793,6 +7938,169 @@ async function confirmarBorrarTorneo() {
 }
 
 // ══════════════════════════════════════════
+// PAPELERA DE TORNEOS (soft delete · Fase 3.5)
+// ══════════════════════════════════════════
+function showTrashModal() {
+  if (!isAdmin()) { showLogin(); return; }
+  document.getElementById('trashModal').style.display = '';
+  loadTrash();
+}
+function closeTrashModal() {
+  document.getElementById('trashModal').style.display = 'none';
+}
+
+async function loadTrash() {
+  const body = document.getElementById('trashBody');
+  body.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted)">Cargando...</div>';
+  try {
+    const rows = await sbGet('torneos', '?deleted_at=not.is.null&select=id,nombre,fecha,deleted_at&order=deleted_at.desc&limit=100');
+    if (!rows.length) {
+      body.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted)">La papelera está vacía.</div>';
+      return;
+    }
+    body.innerHTML = rows.map(t => {
+      const borrado = new Date(t.deleted_at);
+      const diasRestantes = Math.max(0, 30 - Math.floor((Date.now() - borrado.getTime()) / 86400000));
+      return `<div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;text-align:left;">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;color:var(--text);font-size:14px">${escHTML(t.nombre)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">
+            Borrado ${borrado.toLocaleDateString('es-PR', { day: 'numeric', month: 'short' })} ·
+            <span style="color:${diasRestantes <= 7 ? 'var(--orange)' : 'var(--muted)'}">se purga en ${diasRestantes} día${diasRestantes !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+        <button onclick="restaurarTorneo(${t.id}, this)"
+          style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.35);border-radius:9px;padding:8px 16px;color:var(--green);font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0">↩ Restaurar</button>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    if (/deleted_at/.test(e.message)) {
+      body.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted)">El soft delete no está activo todavía.<br><small>Corre <code>sql/soft_delete_torneos.sql</code> en Supabase.</small></div>';
+    } else {
+      showLoadError(body, loadTrash, 'No se pudo cargar la papelera');
+    }
+  }
+}
+
+async function restaurarTorneo(torneoId, btn) {
+  if (!isAdmin()) { showLogin(); return; }
+  if (!confirm('Se restaurará el torneo y se reaplicarán los ratings finales a sus participantes.\n\nSi subiste OTROS torneos después de borrar este, revisa los ratings después de restaurar.')) return;
+  if (btn) { btn.disabled = true; btn.textContent = 'Restaurando...'; }
+  try {
+    // 1. Quitar las marcas de papelera (inverso del borrado, que marcó al final)
+    try { await sbPatch('partidos', `torneo_id=eq.${torneoId}&deleted_at=not.is.null`, { deleted_at: null }); } catch(_) {}
+    await sbPatch('resultados_evento', `id_torneo=eq.${torneoId}&deleted_at=not.is.null`, { deleted_at: null });
+    await sbPatch('torneos', `id=eq.${torneoId}`, { deleted_at: null });
+
+    // 2. Reaplicar ratings finales: última fila (id asc) por jugador = rating final
+    const parts = await sbGet('resultados_evento', `?id_torneo=eq.${torneoId}&select=id,id_jugador,rating_fin&order=id.asc`);
+    const finalByPlayer = new Map();
+    parts.forEach(p => finalByPlayer.set(p.id_jugador, p.rating_fin));
+    await Promise.all([...finalByPlayer.entries()].flatMap(([jugadorId, ratingFin]) => [
+      sbPatch('jugadores', `id=eq.${jugadorId}`, { rating_actual: ratingFin }),
+      sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${jugadorId}`, { 'New Rating': ratingFin }),
+    ]));
+
+    // 3. Refrescar UI
+    await loadTrash();
+    await loadDirectoryData();
+    if (document.getElementById('torneosGrid')) loadTorneosList();
+  } catch (e) {
+    alert('Error restaurando el torneo: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '↩ Restaurar'; }
+  }
+}
+
+// ══════════════════════════════════════════
+// HISTORIAL DE CAMBIOS (audit_log · Fase 3.3)
+// ══════════════════════════════════════════
+let _auditSearchT = null;
+let _auditOffset  = 0;
+const AUDIT_PAGE  = 100;
+
+function showAuditLogModal() {
+  if (!isAdmin()) { showLogin(); return; }
+  document.getElementById('auditLogModal').style.display = '';
+  loadAuditLog(true);
+}
+function closeAuditLogModal() {
+  document.getElementById('auditLogModal').style.display = 'none';
+}
+
+// Resume un UPDATE mostrando solo los campos que cambiaron
+function _auditDiff(oldD, newD) {
+  const keys = new Set([...Object.keys(oldD || {}), ...Object.keys(newD || {})]);
+  const changes = [];
+  keys.forEach(k => {
+    if (k === 'deleted_at' && (oldD?.[k] ?? null) === (newD?.[k] ?? null)) return;
+    const a = JSON.stringify(oldD?.[k] ?? null);
+    const b = JSON.stringify(newD?.[k] ?? null);
+    if (a !== b) changes.push(`<span style="color:var(--muted)">${escHTML(k)}:</span> ${escHTML(a)} <span style="color:var(--muted)">→</span> <strong>${escHTML(b)}</strong>`);
+  });
+  return changes;
+}
+
+async function loadAuditLog(reset) {
+  const body    = document.getElementById('auditLogBody');
+  const moreBtn = document.getElementById('auditLogMoreBtn');
+  if (reset) {
+    _auditOffset = 0;
+    body.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted)">Cargando...</div>';
+    moreBtn.style.display = 'none';
+  }
+  try {
+    let params = `?select=*&order=occurred_at.desc&limit=${AUDIT_PAGE}&offset=${_auditOffset}`;
+    const tabla = document.getElementById('auditFilterTable').value;
+    if (tabla) params += `&table_name=eq.${encodeURIComponent(tabla)}`;
+    const days = document.getElementById('auditFilterDays').value;
+    if (days) params += `&occurred_at=gte.${new Date(Date.now() - days * 86400000).toISOString()}`;
+    const search = document.getElementById('auditFilterSearch').value.trim();
+    if (search) params += `&record_id=ilike.${encodeURIComponent('%' + search + '%')}`;
+
+    const rows = await sbGetAuth('audit_log', params);
+
+    const html = rows.map(r => {
+      const when = new Date(r.occurred_at).toLocaleString('es-PR', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+      const badge = { INSERT: ['#4ade80', 'rgba(34,197,94,0.12)', '+ Creado'], UPDATE: ['#7dd3fc', 'rgba(56,189,248,0.12)', '✎ Editado'], DELETE: ['#f87171', 'rgba(239,68,68,0.12)', '− Borrado'] }[r.action] || ['var(--muted)', 'var(--card)', r.action];
+      let detail = '';
+      if (r.action === 'UPDATE') {
+        const changes = _auditDiff(r.old_data, r.new_data);
+        detail = changes.length
+          ? `<div style="margin-top:6px;line-height:1.7">${changes.slice(0, 6).join('<br>')}${changes.length > 6 ? `<br><span style="color:var(--muted)">… y ${changes.length - 6} campos más</span>` : ''}</div>`
+          : '';
+      }
+      const raw = escHTML(JSON.stringify(r.new_data || r.old_data || {}, null, 1));
+      return `<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="background:${badge[1]};color:${badge[0]};border-radius:6px;padding:2px 9px;font-size:11px;font-weight:700">${badge[2]}</span>
+          <strong style="color:var(--text)">${escHTML(r.table_name)}</strong>
+          ${r.record_id ? `<span style="color:var(--muted)">#${escHTML(r.record_id)}</span>` : ''}
+          <span style="margin-left:auto;color:var(--muted);font-size:12px">${when} · ${escHTML(r.actor || 'anon')}</span>
+        </div>
+        ${detail}
+        <details style="margin-top:6px"><summary style="cursor:pointer;color:var(--muted);font-size:12px">Ver fila completa</summary>
+          <pre style="overflow-x:auto;font-size:11px;color:var(--muted);margin:6px 0 0;white-space:pre-wrap">${raw}</pre>
+        </details>
+      </div>`;
+    }).join('');
+
+    if (reset) {
+      body.innerHTML = html || '<div style="text-align:center;padding:30px 0;color:var(--muted)">Sin cambios registrados con estos filtros.</div>';
+    } else {
+      body.insertAdjacentHTML('beforeend', html);
+    }
+    _auditOffset += rows.length;
+    moreBtn.style.display = rows.length === AUDIT_PAGE ? '' : 'none';
+  } catch (e) {
+    if (/42P01|does not exist|404/.test(e.message)) {
+      body.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted)">El audit log no está activo todavía.<br><small>Corre <code>sql/create_audit_log.sql</code> en Supabase.</small></div>';
+    } else {
+      showLoadError(body, () => loadAuditLog(true), 'No se pudo cargar el historial');
+    }
+  }
+}
+
+// ══════════════════════════════════════════
 // TORNEOS LIST PAGE
 // ══════════════════════════════════════════
 let allTorneos = [];   // cached list of torneos
@@ -7802,11 +8110,11 @@ async function loadTorneosList() {
   if (!grid) return;
   grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando torneos...</div>';
   try {
-    allTorneos = await sbGet('torneos', '?select=id,nombre,fecha&order=fecha.desc&limit=200');
+    allTorneos = await sbGetActive('torneos', '?select=id,nombre,fecha&order=fecha.desc&limit=200');
     // Fetch participant IDs to compute unique player counts per torneo
     let playersByTorneo = {};  // id_torneo -> Set of id_jugador
     try {
-      const counts = await sbGet('resultados_evento', '?select=id_torneo,id_jugador&limit=10000');
+      const counts = await sbGetActive('resultados_evento', '?select=id_torneo,id_jugador&limit=10000');
       counts.forEach(r => {
         if (!playersByTorneo[r.id_torneo]) playersByTorneo[r.id_torneo] = new Set();
         playersByTorneo[r.id_torneo].add(r.id_jugador);
@@ -7896,7 +8204,7 @@ async function openTorneoEvento(torneoIds, nombre, fecha) {
       ? `id_torneo=eq.${ids[0]}`
       : `id_torneo=in.(${ids.join(',')})`;
     // Order by id ascending so we process each player's categories chronologically
-    const data = await sbGet('resultados_evento', `?${filter}&order=id.asc&limit=2000`);
+    const data = await sbGetActive('resultados_evento', `?${filter}&order=id.asc&limit=2000`);
 
     // Merge players that appear in multiple categories:
     // - ratingInicio = first record's rating_inicio (before first category played)
@@ -7973,7 +8281,7 @@ async function showPlayerMatches(playerId, playerName, ratingInicio) {
   modal.classList.add('open');
 
   try {
-    const data = await sbGet('partidos',
+    const data = await sbGetActive('partidos',
       `?or=(jugador_a_id.eq.${playerId},jugador_b_id.eq.${playerId})&${currentEventoTorneoId.length === 1 ? `torneo_id=eq.${currentEventoTorneoId[0]}` : `torneo_id=in.(${currentEventoTorneoId.join(',')})`}&order=id.asc&limit=200`
     );
 
