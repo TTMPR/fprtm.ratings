@@ -1608,7 +1608,8 @@
       <span class="sb-icon">📊</span>
       <span class="sb-label">Ratings</span>
     </button>
-    <button class="sb-btn" id="sbHallOfFame" onclick="showPage('hallofame')">
+    <!-- Rankings oculto hasta lanzamiento del sistema Race 2026 -->
+    <button class="sb-btn" id="sbHallOfFame" style="display:none" onclick="showPage('hallofame')">
       <span class="sb-icon">🏆</span>
       <span class="sb-label">Rankings</span>
     </button>
@@ -1661,7 +1662,8 @@
     <span class="bn-pill"><span class="bn-icon">📊</span></span>
     <span class="bn-label">Ratings</span>
   </button>
-  <button class="bottom-nav-btn" id="bnHallOfFame" onclick="showPage('hallofame')">
+  <!-- Rankings oculto hasta lanzamiento del sistema Race 2026 -->
+  <button class="bottom-nav-btn" id="bnHallOfFame" style="display:none" onclick="showPage('hallofame')">
     <span class="bn-pill"><span class="bn-icon">🏆</span></span>
     <span class="bn-label">Rankings</span>
   </button>
@@ -2598,6 +2600,20 @@ Maria Lopez,Ana Torres,B</code>
             <div class="adm-desc">CSV para Stadium Compete</div>
           </div>
         </div>
+        <div class="adm-card" onclick="showAuditLogModal()">
+          <div class="adm-ico">📜</div>
+          <div>
+            <div class="adm-title">Historial de Cambios</div>
+            <div class="adm-desc">Auditoría: quién cambió qué y cuándo</div>
+          </div>
+        </div>
+        <div class="adm-card" style="border-color:rgba(239,68,68,0.25)" onclick="showTrashModal()">
+          <div class="adm-ico">🗑️</div>
+          <div>
+            <div class="adm-title">Papelera de Torneos</div>
+            <div class="adm-desc">Restaurar borrados (últimos 30 días)</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2729,6 +2745,65 @@ Maria Lopez,Ana Torres,B</code>
       <button onclick="closePastTorneosModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
     </div>
     <div id="pastTorneoslist" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     AUDIT LOG MODAL (Historial de Cambios)
+═══════════════════════════════════════════ -->
+<div id="auditLogModal" role="dialog" aria-modal="true" aria-label="Historial de Cambios" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">📜 Historial de Cambios</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Registro automático de auditoría — solo lectura</div>
+      </div>
+      <button onclick="closeAuditLogModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <select id="auditFilterTable" aria-label="Filtrar por tabla" onchange="loadAuditLog(true)"
+        style="background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;">
+        <option value="">Todas las tablas</option>
+        <option value="Base de Datos">Ratings (Base de Datos)</option>
+        <option value="jugadores">Jugadores</option>
+        <option value="torneos">Torneos</option>
+        <option value="resultados_evento">Resultados</option>
+        <option value="partidos">Partidos</option>
+        <option value="membership_requests">Membresías</option>
+        <option value="insc_registro">Inscripciones</option>
+      </select>
+      <select id="auditFilterDays" aria-label="Filtrar por fecha" onchange="loadAuditLog(true)"
+        style="background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;">
+        <option value="7">Últimos 7 días</option>
+        <option value="30" selected>Últimos 30 días</option>
+        <option value="365">Último año</option>
+        <option value="">Todo</option>
+      </select>
+      <input type="text" id="auditFilterSearch" aria-label="Buscar por ID de registro"
+        placeholder="ID de registro (ej. Member ID)…" oninput="clearTimeout(_auditSearchT); _auditSearchT = setTimeout(() => loadAuditLog(true), 400)"
+        style="flex:1;min-width:160px;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;">
+    </div>
+    <div id="auditLogBody" style="font-size:13px;"></div>
+    <div style="text-align:center;margin-top:14px;">
+      <button id="auditLogMoreBtn" onclick="loadAuditLog(false)" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 18px;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;">Cargar más</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAPELERA DE TORNEOS MODAL
+═══════════════════════════════════════════ -->
+<div id="trashModal" role="dialog" aria-modal="true" aria-label="Papelera de Torneos" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:720px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:12px;">
+      <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">🗑️ Papelera de Torneos</div>
+      <button onclick="closeTrashModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:0 0 18px;">
+      Los torneos borrados se conservan 30 días antes de purgarse definitivamente.
+      Restaurar reaplica los ratings finales del torneo a sus participantes.
+    </p>
+    <div id="trashBody" style="font-size:14px;color:var(--muted);text-align:center;padding:30px 0;">Cargando...</div>
   </div>
 </div>
 
@@ -3163,9 +3238,10 @@ Maria Lopez,Ana Torres,B</code>
   <div class="edit-memb-box">
     <div class="edit-memb-title" style="color:var(--red)">Borrar Torneo</div>
     <div class="edit-memb-sub" id="deleteTorneoSub" style="margin-bottom:16px"></div>
-    <p style="font-size:13px;color:var(--muted);margin:0 0 24px">
+    <p style="font-size:13px;color:var(--muted);margin:0 0 24px" id="deleteTorneoExplain">
       Esto revertirá los ratings de todos los jugadores que participaron.<br>
-      <strong style="color:var(--red)">No se puede deshacer.</strong>
+      El torneo pasa a la <strong>papelera por 30 días</strong> — se puede
+      restaurar desde el Admin antes de que se purgue definitivamente.
     </p>
     <div id="deleteTorneoMsg" class="edit-memb-msg"></div>
     <div class="edit-actions">
@@ -3484,7 +3560,7 @@ Maria Lopez,Ana Torres,B</code>
       <!-- ── PRÓXIMO EVENTO — countdown hero ── -->
       <div id="nextEventCard" style="background:linear-gradient(145deg,rgba(56,189,248,0.08),rgba(129,140,248,0.07));border:1px solid rgba(129,140,248,0.22);border-radius:20px;padding:36px 28px 32px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:-50px;left:50%;transform:translateX(-50%);width:300px;height:300px;background:radial-gradient(circle,rgba(129,140,248,0.09),transparent 70%);pointer-events:none;"></div>
-        <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--purple);margin-bottom:14px;">Próximo torneo</div>
+        <div id="nextEventOverline" style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--purple);margin-bottom:14px;">Próximo torneo</div>
         <img id="nextEventLogo" src="Logo_Albergue_Olimpico_Summer_Open_2026.svg" alt="Albergue Olímpico Summer Open 2026"
           style="width:120px;height:120px;object-fit:contain;border-radius:50%;margin-bottom:16px;filter:drop-shadow(0 4px 20px rgba(129,140,248,0.4));"
           onerror="this.style.display='none'">
@@ -4270,15 +4346,106 @@ const SB_HEADERS = {
   'Content-Type': 'application/json'
 };
 
+// ── Estados de carga/error (Fase 4.1) ───────────────────────────────────────
+// Todo fetch visible al usuario sigue el patrón: cargando → dato | error con
+// "⟳ Reintentar" que reejecuta solo esa consulta. El timeout evita que un
+// "Cargando..." quede eterno cuando la red se cuelga sin responder.
+const SB_TIMEOUT_MS = 12000;
+// Para probar los estados de error sin tumbar Supabase: abrir la app con
+// ?simulateError=1 en la URL — todas las consultas GET fallan a propósito.
+// No afecta a usuarios normales (el flag no se guarda en ningún lado).
+const SB_SIMULATE_ERROR = new URLSearchParams(location.search).has('simulateError');
+
 async function sbGet(table, params = '') {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
-    headers: { ...SB_HEADERS, 'Cache-Control': 'no-cache' }
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Supabase GET ${table} (${res.status}): ${err}`);
+  if (SB_SIMULATE_ERROR) {
+    await new Promise(r => setTimeout(r, 400));
+    throw new Error('Error simulado (?simulateError=1)');
   }
-  return res.json();
+  const ctrl  = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), SB_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+      headers: { ...SB_HEADERS, 'Cache-Control': 'no-cache' },
+      signal: ctrl.signal
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Supabase GET ${table} (${res.status}): ${err}`);
+    }
+    return res.json();
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error(`Supabase GET ${table}: tiempo de espera agotado (${SB_TIMEOUT_MS / 1000}s)`);
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ── Soft delete (Fase 3.5) ──────────────────────────────────────────────────
+// Lecturas públicas de tablas con papelera (torneos, resultados_evento,
+// partidos): excluyen filas con deleted_at. Si el SQL de soft delete aún no
+// se aplicó en Supabase (columna inexistente), cae al query sin filtro y el
+// borrado vuelve a ser duro — la app funciona en ambos estados.
+let _softDeleteReady = null;   // null = sin detectar · true/false tras 1ª consulta
+
+// Como sbGet pero autenticado con el JWT de la sesión (no la anon key):
+// necesario para tablas cuya RLS exige el email del admin (ej. audit_log).
+async function sbGetAuth(table, params = '') {
+  if (SB_SIMULATE_ERROR) {
+    await new Promise(r => setTimeout(r, 400));
+    throw new Error('Error simulado (?simulateError=1)');
+  }
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (!session) throw new Error('Sesión expirada — vuelve a iniciar sesión.');
+  const ctrl  = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), SB_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+      headers: { ...SB_HEADERS, 'Authorization': `Bearer ${session.access_token}`, 'Cache-Control': 'no-cache' },
+      signal: ctrl.signal
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Supabase GET ${table} (${res.status}): ${err}`);
+    }
+    return res.json();
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error(`Supabase GET ${table}: tiempo de espera agotado (${SB_TIMEOUT_MS / 1000}s)`);
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function sbGetActive(table, params = '') {
+  if (_softDeleteReady === false) return sbGet(table, params);
+  try {
+    const rows = await sbGet(table, params + (params ? '&' : '?') + 'deleted_at=is.null');
+    _softDeleteReady = true;
+    return rows;
+  } catch (e) {
+    if (_softDeleteReady === null && /deleted_at/.test(e.message)) {
+      console.warn(`[soft-delete] columna deleted_at no existe en ${table} — corre sql/soft_delete_torneos.sql`);
+      _softDeleteReady = false;
+      return sbGet(table, params);
+    }
+    throw e;
+  }
+}
+
+// Pinta el estado de error dentro de un contenedor: mensaje corto + botón
+// "⟳ Reintentar" (botón real: focusable y con texto, no necesita aria-label).
+function showLoadError(el, retryFn, msg = 'No se pudo cargar') {
+  if (!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:24px 12px;grid-column:1/-1">
+    <div style="color:var(--muted);font-size:13px;margin-bottom:10px">⚠️ ${msg}</div>
+  </div>`;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = '⟳ Reintentar';
+  btn.style.cssText = "background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 18px;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif";
+  btn.addEventListener('click', retryFn);
+  el.firstElementChild.appendChild(btn);
 }
 
 async function sbPatch(table, query, body) {
@@ -4470,7 +4637,7 @@ function showError(msg) {
       <div style="font-size:36px;margin-bottom:12px">⚠️</div>
       <div style="color:var(--red);font-family:'Orbitron',monospace;font-size:22px;letter-spacing:2px">Error de Conexión</div>
       <div style="color:var(--muted);font-size:13px;margin-top:8px;max-width:400px;margin-left:auto;margin-right:auto">${msg}</div>
-      <button onclick="location.reload()" class="btn-primary" style="margin-top:16px;font-size:13px;padding:8px 20px">↺ Reintentar</button>
+      <button onclick="loadDirectoryData()" class="btn-primary" style="margin-top:16px;font-size:13px;padding:8px 20px">⟳ Reintentar</button>
     </div>`;
 }
 
@@ -4544,8 +4711,9 @@ function updateStats() {
   const top = PLAYERS[0] || {};
   document.getElementById('statTopRating').textContent = top.rating || '—';
   document.getElementById('statTopName').textContent   = top.name
-    ? top.name.split(' ').slice(0, 2).join(' ') : '—';
-  document.getElementById('statTotal').textContent   = PLAYERS.length;
+    ? top.name.split(' ').slice(0, 2).join(' ')
+    : (_directoryLoadFailed ? 'Sin conexión' : '—');
+  document.getElementById('statTotal').textContent   = _directoryLoadFailed && !PLAYERS.length ? '—' : PLAYERS.length;
   const avgRating = PLAYERS.length ? Math.round(PLAYERS.reduce((acc, p) => acc + (Number(p.rating) || 0), 0) / PLAYERS.length) : 0;
   document.getElementById('statMembers').textContent = avgRating || '—';
   const now = new Date();
@@ -4573,13 +4741,15 @@ function updateStats() {
   };
   Object.entries(els).forEach(([id, val]) => {
     const el = document.getElementById(id);
-    if (el) el.textContent = val;
+    if (el) el.textContent = _directoryLoadFailed ? '—' : val;
   });
 
   // Alert banner
   const alertEl = document.getElementById('alertText');
   if (alertEl) {
-    if (warning > 0) {
+    if (_directoryLoadFailed) {
+      alertEl.innerHTML = `<strong style="color:var(--red)">No se pudieron cargar las membresías.</strong> <button type="button" onclick="loadDirectoryData()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:4px 12px;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;margin-left:6px">⟳ Reintentar</button>`;
+    } else if (warning > 0) {
       alertEl.innerHTML = `<strong>${warning} membresía${warning>1?'s':''} próxima${warning>1?'s':''} a vencer</strong> en los próximos 30 días. <span style="color:var(--muted)"> · ${noMember} jugadores sin membresía activa.</span>`;
     } else {
       alertEl.innerHTML = `<strong style="color:var(--green)">✓ Todas las membresías están al día.</strong> <span style="color:var(--muted)">${noMember} jugadores sin membresía.</span>`;
@@ -4647,6 +4817,11 @@ function setDocTitle(sub) {
 }
 
 function showPage(key) {
+  // Rankings (Hall of Fame) deshabilitado hasta el lanzamiento del sistema
+  // Race 2026 — la página fue vaciada y su markup no existe. Redirigir
+  // deep-links viejos (#hallofame) al directorio en vez de romper.
+  if (key === 'hallofame') key = 'ratings';
+
   const PROTECTED = ['membresia', 'admin', 'subir'];
   if (PROTECTED.includes(key) && !currentUser) { showLogin(); return; }
 
@@ -4911,9 +5086,9 @@ async function showProfile(player) {
   // ── Parallel queries ──────────────────────────────────────────────────
   const encName = encodeURIComponent(player.name);
   const [partidosRes, partidosNombreRes, participacionesRes] = await Promise.allSettled([
-    sbGet('partidos', `?or=(jugador_a_id.eq.${player.id},jugador_b_id.eq.${player.id})&order=fecha.desc&limit=500`),
-    sbGet('partidos', `?or=(nombre_a.eq.${encName},nombre_b.eq.${encName})&order=fecha.desc&limit=500`),
-    sbGet('resultados_evento', `?id_jugador=eq.${player.id}&order=created_at.asc&limit=100`)
+    sbGetActive('partidos', `?or=(jugador_a_id.eq.${player.id},jugador_b_id.eq.${player.id})&order=fecha.desc&limit=500`),
+    sbGetActive('partidos', `?or=(nombre_a.eq.${encName},nombre_b.eq.${encName})&order=fecha.desc&limit=500`),
+    sbGetActive('resultados_evento', `?id_jugador=eq.${player.id}&order=created_at.asc&limit=100`)
   ]);
 
   // ── MATCH STATS (from partidos) ───────────────────────────────────────
@@ -4955,7 +5130,7 @@ async function showProfile(player) {
     let torneoNameMap = {};
     if (legacyTorneoIds.length) {
       try {
-        const ts = await sbGet('torneos', `?id=in.(${legacyTorneoIds.join(',')})&select=id,nombre,fecha`);
+        const ts = await sbGetActive('torneos', `?id=in.(${legacyTorneoIds.join(',')})&select=id,nombre,fecha`);
         (ts || []).forEach(t => { torneoNameMap[t.id] = { nombre: t.nombre, fecha: t.fecha }; });
       } catch(_) {}
     }
@@ -5091,7 +5266,7 @@ async function showProfile(player) {
     let torneoMeta = {};
     try {
       const ids = [...new Set(parts.map(p => p.id_torneo))];
-      const torneos = await sbGet('torneos', `?id=in.(${ids.join(',')})&select=id,nombre,fecha`);
+      const torneos = await sbGetActive('torneos', `?id=in.(${ids.join(',')})&select=id,nombre,fecha`);
       torneos.forEach(t => { torneoMeta[t.id] = { nombre: t.nombre, fecha: t.fecha }; });
     } catch(_) {}
 
@@ -5296,6 +5471,14 @@ function showClubesListView() {
 
 function renderClubesPage() {
   showClubesListView();
+
+  if (_directoryLoadFailed) {
+    document.getElementById('clubesTotalJugadores').textContent = '';
+    showLoadError(document.getElementById('clubesGrid'),
+      async () => { await loadDirectoryData(); renderClubesPage(); },
+      'No se pudieron cargar los clubes');
+    return;
+  }
 
   // Group directly by the raw club value stored in the DB — no normalization needed here
   const byClub = {};
@@ -5733,9 +5916,10 @@ async function renderNoticiasPage() {
   const grid = document.getElementById('noticiasGrid');
   grid.innerHTML = '<div style="color:var(--muted);padding:40px 0;text-align:center;grid-column:1/-1">Cargando…</div>';
   try {
-    const { data, error } = await _supabase.from('articulos')
-      .select('*').order('created_at', { ascending: false });
-    if (error) throw error;
+    // sbGet en vez de _supabase: mismo endpoint REST público, pero con el
+    // timeout y el estado de error del patrón de la Fase 4.1 (supabase-js
+    // reintenta internamente y puede dejar el "Cargando…" colgado).
+    const data = await sbGet('articulos', '?select=*&order=created_at.desc');
     ARTICULOS = data || [];
     if (!ARTICULOS.length) {
       grid.innerHTML = '<div style="color:var(--muted);padding:60px 0;text-align:center;grid-column:1/-1">📰 Aún no hay artículos publicados.</div>';
@@ -5757,7 +5941,7 @@ async function renderNoticiasPage() {
         </div>
       </div>`).join('');
   } catch (e) {
-    grid.innerHTML = `<div style="color:var(--red);padding:30px 0;text-align:center;grid-column:1/-1">Error cargando noticias: ${escHTML(e.message)}<br><small style="color:var(--muted)">¿Corriste create_articulos.sql en Supabase?</small></div>`;
+    showLoadError(grid, renderNoticiasPage, 'No se pudieron cargar los artículos');
   }
 }
 
@@ -5906,6 +6090,10 @@ async function deleteArticulo(id) {
 }
 
 async function openRankings() {
+  // La vista Rankings está vaciada (pendiente sistema Race 2026); sin este
+  // guard, cualquier llamada residual lanza "Cannot set properties of null".
+  if (!document.getElementById('rankingsContent')) return;
+
   // Show pills
   const pillsWrap = document.getElementById('rankCatPills');
   if (pillsWrap) pillsWrap.closest('div[style]')?.removeAttribute('style');
@@ -7704,18 +7892,37 @@ async function confirmarBorrarTorneo() {
       console.log('[borrarTorneo] Ratings revertidos correctamente.');
     }
 
-    // 3. Borrado en cascada
-    console.log('[borrarTorneo] Borrando partidos...');
-    try { await sbDelete('partidos', `torneo_id=eq.${torneoId}`); } catch(_) {
-      console.warn('[borrarTorneo] No se pudo borrar partidos (posiblemente columna no existe), continuando...');
+    // 3. Soft delete: marcar deleted_at (papelera 30 días) en vez de borrar.
+    //    Si la columna aún no existe (sql/soft_delete_torneos.sql sin aplicar),
+    //    cae al borrado duro original.
+    let softDeleted = _softDeleteReady !== false;
+    if (softDeleted) {
+      try {
+        const ts = new Date().toISOString();
+        console.log('[borrarTorneo] Moviendo a papelera (deleted_at)...');
+        try { await sbPatch('partidos', `torneo_id=eq.${torneoId}`, { deleted_at: ts }); } catch(_) {
+          console.warn('[borrarTorneo] No se pudo marcar partidos (posiblemente columna torneo_id no existe), continuando...');
+        }
+        await sbPatch('resultados_evento', `id_torneo=eq.${torneoId}`, { deleted_at: ts });
+        await sbPatch('torneos', `id=eq.${torneoId}`, { deleted_at: ts });
+        console.log('[borrarTorneo] Torneo en papelera — restaurable por 30 días.');
+      } catch (e) {
+        if (!/deleted_at/.test(e.message)) throw e;
+        softDeleted = false;
+      }
     }
-
-    console.log('[borrarTorneo] Borrando resultados_evento...');
-    await sbDelete('resultados_evento', `id_torneo=eq.${torneoId}`);
-
-    console.log('[borrarTorneo] Borrando torneo...');
-    await sbDelete('torneos', `id=eq.${torneoId}`);
-    console.log('[borrarTorneo] Torneo eliminado exitosamente.');
+    if (!softDeleted) {
+      // Borrado duro (comportamiento original, pre-soft-delete)
+      console.log('[borrarTorneo] Borrando partidos...');
+      try { await sbDelete('partidos', `torneo_id=eq.${torneoId}`); } catch(_) {
+        console.warn('[borrarTorneo] No se pudo borrar partidos (posiblemente columna no existe), continuando...');
+      }
+      console.log('[borrarTorneo] Borrando resultados_evento...');
+      await sbDelete('resultados_evento', `id_torneo=eq.${torneoId}`);
+      console.log('[borrarTorneo] Borrando torneo...');
+      await sbDelete('torneos', `id=eq.${torneoId}`);
+      console.log('[borrarTorneo] Torneo eliminado exitosamente.');
+    }
 
     // 4. Actualizar UI
     await loadPlayers();
@@ -7731,6 +7938,169 @@ async function confirmarBorrarTorneo() {
 }
 
 // ══════════════════════════════════════════
+// PAPELERA DE TORNEOS (soft delete · Fase 3.5)
+// ══════════════════════════════════════════
+function showTrashModal() {
+  if (!isAdmin()) { showLogin(); return; }
+  document.getElementById('trashModal').style.display = '';
+  loadTrash();
+}
+function closeTrashModal() {
+  document.getElementById('trashModal').style.display = 'none';
+}
+
+async function loadTrash() {
+  const body = document.getElementById('trashBody');
+  body.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted)">Cargando...</div>';
+  try {
+    const rows = await sbGet('torneos', '?deleted_at=not.is.null&select=id,nombre,fecha,deleted_at&order=deleted_at.desc&limit=100');
+    if (!rows.length) {
+      body.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted)">La papelera está vacía.</div>';
+      return;
+    }
+    body.innerHTML = rows.map(t => {
+      const borrado = new Date(t.deleted_at);
+      const diasRestantes = Math.max(0, 30 - Math.floor((Date.now() - borrado.getTime()) / 86400000));
+      return `<div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;text-align:left;">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;color:var(--text);font-size:14px">${escHTML(t.nombre)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">
+            Borrado ${borrado.toLocaleDateString('es-PR', { day: 'numeric', month: 'short' })} ·
+            <span style="color:${diasRestantes <= 7 ? 'var(--orange)' : 'var(--muted)'}">se purga en ${diasRestantes} día${diasRestantes !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+        <button onclick="restaurarTorneo(${t.id}, this)"
+          style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.35);border-radius:9px;padding:8px 16px;color:var(--green);font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0">↩ Restaurar</button>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    if (/deleted_at/.test(e.message)) {
+      body.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted)">El soft delete no está activo todavía.<br><small>Corre <code>sql/soft_delete_torneos.sql</code> en Supabase.</small></div>';
+    } else {
+      showLoadError(body, loadTrash, 'No se pudo cargar la papelera');
+    }
+  }
+}
+
+async function restaurarTorneo(torneoId, btn) {
+  if (!isAdmin()) { showLogin(); return; }
+  if (!confirm('Se restaurará el torneo y se reaplicarán los ratings finales a sus participantes.\n\nSi subiste OTROS torneos después de borrar este, revisa los ratings después de restaurar.')) return;
+  if (btn) { btn.disabled = true; btn.textContent = 'Restaurando...'; }
+  try {
+    // 1. Quitar las marcas de papelera (inverso del borrado, que marcó al final)
+    try { await sbPatch('partidos', `torneo_id=eq.${torneoId}&deleted_at=not.is.null`, { deleted_at: null }); } catch(_) {}
+    await sbPatch('resultados_evento', `id_torneo=eq.${torneoId}&deleted_at=not.is.null`, { deleted_at: null });
+    await sbPatch('torneos', `id=eq.${torneoId}`, { deleted_at: null });
+
+    // 2. Reaplicar ratings finales: última fila (id asc) por jugador = rating final
+    const parts = await sbGet('resultados_evento', `?id_torneo=eq.${torneoId}&select=id,id_jugador,rating_fin&order=id.asc`);
+    const finalByPlayer = new Map();
+    parts.forEach(p => finalByPlayer.set(p.id_jugador, p.rating_fin));
+    await Promise.all([...finalByPlayer.entries()].flatMap(([jugadorId, ratingFin]) => [
+      sbPatch('jugadores', `id=eq.${jugadorId}`, { rating_actual: ratingFin }),
+      sbPatch('Base%20de%20Datos', `%22Member%20ID%22=eq.${jugadorId}`, { 'New Rating': ratingFin }),
+    ]));
+
+    // 3. Refrescar UI
+    await loadTrash();
+    await loadDirectoryData();
+    if (document.getElementById('torneosGrid')) loadTorneosList();
+  } catch (e) {
+    alert('Error restaurando el torneo: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '↩ Restaurar'; }
+  }
+}
+
+// ══════════════════════════════════════════
+// HISTORIAL DE CAMBIOS (audit_log · Fase 3.3)
+// ══════════════════════════════════════════
+let _auditSearchT = null;
+let _auditOffset  = 0;
+const AUDIT_PAGE  = 100;
+
+function showAuditLogModal() {
+  if (!isAdmin()) { showLogin(); return; }
+  document.getElementById('auditLogModal').style.display = '';
+  loadAuditLog(true);
+}
+function closeAuditLogModal() {
+  document.getElementById('auditLogModal').style.display = 'none';
+}
+
+// Resume un UPDATE mostrando solo los campos que cambiaron
+function _auditDiff(oldD, newD) {
+  const keys = new Set([...Object.keys(oldD || {}), ...Object.keys(newD || {})]);
+  const changes = [];
+  keys.forEach(k => {
+    if (k === 'deleted_at' && (oldD?.[k] ?? null) === (newD?.[k] ?? null)) return;
+    const a = JSON.stringify(oldD?.[k] ?? null);
+    const b = JSON.stringify(newD?.[k] ?? null);
+    if (a !== b) changes.push(`<span style="color:var(--muted)">${escHTML(k)}:</span> ${escHTML(a)} <span style="color:var(--muted)">→</span> <strong>${escHTML(b)}</strong>`);
+  });
+  return changes;
+}
+
+async function loadAuditLog(reset) {
+  const body    = document.getElementById('auditLogBody');
+  const moreBtn = document.getElementById('auditLogMoreBtn');
+  if (reset) {
+    _auditOffset = 0;
+    body.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted)">Cargando...</div>';
+    moreBtn.style.display = 'none';
+  }
+  try {
+    let params = `?select=*&order=occurred_at.desc&limit=${AUDIT_PAGE}&offset=${_auditOffset}`;
+    const tabla = document.getElementById('auditFilterTable').value;
+    if (tabla) params += `&table_name=eq.${encodeURIComponent(tabla)}`;
+    const days = document.getElementById('auditFilterDays').value;
+    if (days) params += `&occurred_at=gte.${new Date(Date.now() - days * 86400000).toISOString()}`;
+    const search = document.getElementById('auditFilterSearch').value.trim();
+    if (search) params += `&record_id=ilike.${encodeURIComponent('%' + search + '%')}`;
+
+    const rows = await sbGetAuth('audit_log', params);
+
+    const html = rows.map(r => {
+      const when = new Date(r.occurred_at).toLocaleString('es-PR', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+      const badge = { INSERT: ['#4ade80', 'rgba(34,197,94,0.12)', '+ Creado'], UPDATE: ['#7dd3fc', 'rgba(56,189,248,0.12)', '✎ Editado'], DELETE: ['#f87171', 'rgba(239,68,68,0.12)', '− Borrado'] }[r.action] || ['var(--muted)', 'var(--card)', r.action];
+      let detail = '';
+      if (r.action === 'UPDATE') {
+        const changes = _auditDiff(r.old_data, r.new_data);
+        detail = changes.length
+          ? `<div style="margin-top:6px;line-height:1.7">${changes.slice(0, 6).join('<br>')}${changes.length > 6 ? `<br><span style="color:var(--muted)">… y ${changes.length - 6} campos más</span>` : ''}</div>`
+          : '';
+      }
+      const raw = escHTML(JSON.stringify(r.new_data || r.old_data || {}, null, 1));
+      return `<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="background:${badge[1]};color:${badge[0]};border-radius:6px;padding:2px 9px;font-size:11px;font-weight:700">${badge[2]}</span>
+          <strong style="color:var(--text)">${escHTML(r.table_name)}</strong>
+          ${r.record_id ? `<span style="color:var(--muted)">#${escHTML(r.record_id)}</span>` : ''}
+          <span style="margin-left:auto;color:var(--muted);font-size:12px">${when} · ${escHTML(r.actor || 'anon')}</span>
+        </div>
+        ${detail}
+        <details style="margin-top:6px"><summary style="cursor:pointer;color:var(--muted);font-size:12px">Ver fila completa</summary>
+          <pre style="overflow-x:auto;font-size:11px;color:var(--muted);margin:6px 0 0;white-space:pre-wrap">${raw}</pre>
+        </details>
+      </div>`;
+    }).join('');
+
+    if (reset) {
+      body.innerHTML = html || '<div style="text-align:center;padding:30px 0;color:var(--muted)">Sin cambios registrados con estos filtros.</div>';
+    } else {
+      body.insertAdjacentHTML('beforeend', html);
+    }
+    _auditOffset += rows.length;
+    moreBtn.style.display = rows.length === AUDIT_PAGE ? '' : 'none';
+  } catch (e) {
+    if (/42P01|does not exist|404/.test(e.message)) {
+      body.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted)">El audit log no está activo todavía.<br><small>Corre <code>sql/create_audit_log.sql</code> en Supabase.</small></div>';
+    } else {
+      showLoadError(body, () => loadAuditLog(true), 'No se pudo cargar el historial');
+    }
+  }
+}
+
+// ══════════════════════════════════════════
 // TORNEOS LIST PAGE
 // ══════════════════════════════════════════
 let allTorneos = [];   // cached list of torneos
@@ -7740,11 +8110,11 @@ async function loadTorneosList() {
   if (!grid) return;
   grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando torneos...</div>';
   try {
-    allTorneos = await sbGet('torneos', '?select=id,nombre,fecha&order=fecha.desc&limit=200');
+    allTorneos = await sbGetActive('torneos', '?select=id,nombre,fecha&order=fecha.desc&limit=200');
     // Fetch participant IDs to compute unique player counts per torneo
     let playersByTorneo = {};  // id_torneo -> Set of id_jugador
     try {
-      const counts = await sbGet('resultados_evento', '?select=id_torneo,id_jugador&limit=10000');
+      const counts = await sbGetActive('resultados_evento', '?select=id_torneo,id_jugador&limit=10000');
       counts.forEach(r => {
         if (!playersByTorneo[r.id_torneo]) playersByTorneo[r.id_torneo] = new Set();
         playersByTorneo[r.id_torneo].add(r.id_jugador);
@@ -7802,7 +8172,7 @@ async function loadTorneosList() {
       </div>`;
     }).join('');
   } catch(e) {
-    grid.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error: ${e.message}</div>`;
+    showLoadError(grid, loadTorneosList, 'No se pudieron cargar los torneos');
   }
 }
 
@@ -7834,7 +8204,7 @@ async function openTorneoEvento(torneoIds, nombre, fecha) {
       ? `id_torneo=eq.${ids[0]}`
       : `id_torneo=in.(${ids.join(',')})`;
     // Order by id ascending so we process each player's categories chronologically
-    const data = await sbGet('resultados_evento', `?${filter}&order=id.asc&limit=2000`);
+    const data = await sbGetActive('resultados_evento', `?${filter}&order=id.asc&limit=2000`);
 
     // Merge players that appear in multiple categories:
     // - ratingInicio = first record's rating_inicio (before first category played)
@@ -7868,8 +8238,11 @@ async function openTorneoEvento(torneoIds, nombre, fecha) {
     document.getElementById('eventoParticipantCount').textContent = eventoRows.length;
     renderEventoRows(eventoRows);
   } catch(e) {
-    document.getElementById('eventoGrid').innerHTML =
-      `<div style="text-align:center;padding:40px;color:var(--red)">Error cargando datos: ${e.message}</div>`;
+    document.getElementById('eventoSubtitle').textContent = '';
+    document.getElementById('eventoParticipantCount').textContent = '—';
+    showLoadError(document.getElementById('eventoGrid'),
+      () => openTorneoEvento(ids, nombre, fecha),
+      'No se pudieron cargar los resultados del torneo');
   }
 }
 
@@ -7908,7 +8281,7 @@ async function showPlayerMatches(playerId, playerName, ratingInicio) {
   modal.classList.add('open');
 
   try {
-    const data = await sbGet('partidos',
+    const data = await sbGetActive('partidos',
       `?or=(jugador_a_id.eq.${playerId},jugador_b_id.eq.${playerId})&${currentEventoTorneoId.length === 1 ? `torneo_id=eq.${currentEventoTorneoId[0]}` : `torneo_id=in.(${currentEventoTorneoId.join(',')})`}&order=id.asc&limit=200`
     );
 
@@ -9241,16 +9614,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadInscripcionesConfig();
   loadTorneoArchivoConfig();
 
+  await loadDirectoryData();
+  simAddOpponent();
+
+  // Direct link to a tab (#clubes, #noticias, …) — navigate after data is ready
+  const initialKey = location.hash.replace('#', '');
+  if (HASH_PAGES.has(initialKey) && initialKey !== 'ratings') showPage(initialKey);
+});
+
+// Carga (o recarga tras un error) los datos base del directorio: jugadores,
+// miembros, fotos y clubes. Reintentable desde los estados de error sin
+// recargar la página completa.
+let _directoryLoadFailed = false;
+
+async function loadDirectoryData() {
   showLoading(true);
   const [playersResult, membersResult] = await Promise.allSettled([loadPlayers(), loadMembers(), loadApprovedPhotos(), loadClubData()]);
+  _directoryLoadFailed = playersResult.status !== 'fulfilled';
   if (playersResult.status === 'fulfilled') {
     ALL_PLAYERS = playersResult.value;
     ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
     PLAYERS = ALL_PLAYERS;
   } else {
     console.error('Error cargando jugadores:', playersResult.reason);
-    showLoading(false);
-    showError(`No se pudo conectar a Supabase.<br><small style="font-family:monospace">${playersResult.reason.message}</small>`);
     ALL_PLAYERS = []; PLAYERS = [];
   }
   if (membersResult.status === 'fulfilled') {
@@ -9262,20 +9648,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   showLoading(false);
 
   displayedCount = PAGE_SIZE;
-  renderPlayers(PLAYERS.slice(0, PAGE_SIZE));
+  if (_directoryLoadFailed) {
+    showError(`No se pudo conectar a Supabase.<br><small style="font-family:monospace">${playersResult.reason.message}</small>`);
+  } else {
+    renderPlayers(PLAYERS.slice(0, PAGE_SIZE));
+  }
   const lm = document.getElementById('loadMore');
-  if (lm) lm.style.display = PLAYERS.length > PAGE_SIZE ? '' : 'none';
+  if (lm) lm.style.display = (!_directoryLoadFailed && PLAYERS.length > PAGE_SIZE) ? '' : 'none';
 
   buildDatalist();
-  simAddOpponent();
   renderMembers();
   updateStats();
   updatePendingBadge();
-
-  // Direct link to a tab (#clubes, #noticias, …) — navigate after data is ready
-  const initialKey = location.hash.replace('#', '');
-  if (HASH_PAGES.has(initialKey) && initialKey !== 'ratings') showPage(initialKey);
-});
+}
 
 // ══════════════════════════════════════════
 // INSCRIPCIONES — CONSTANTS
@@ -9596,37 +9981,85 @@ function applyInscripcionesState() {
 }
 
 // ── UPCOMING EVENTS COUNTDOWN ──────────────────────────────────────────────
+// Cada evento: target = inicio, end = fin real del evento (torneos de fin de
+// semana duran dos días). logo y mapsUrl son opcionales — si faltan, no se
+// muestra logo ni el enlace "¿Cómo llegar?" del estado HOY.
 const UPCOMING_EVENTS = [
-  { name: 'Albergue Olímpico Summer Open', dateLabel: 'Sábado 4 & Domingo 5 de julio', target: new Date('2026-07-04T08:00:00') },
-  { name: 'Cidra Open',         dateLabel: 'Partes 1 & 2 · Agosto 2026',    target: new Date('2026-08-15T08:00:00') },
+  { name: 'Albergue Olímpico Summer Open', dateLabel: 'Sábado 4 & Domingo 5 de julio',
+    target: new Date('2026-07-04T08:00:00'), end: new Date('2026-07-05T23:59:59'),
+    logo: 'Logo_Albergue_Olimpico_Summer_Open_2026.svg',
+    mapsUrl: 'https://maps.google.com/?q=Albergue+Ol%C3%ADmpico+Salinas+Puerto+Rico' },
+  { name: 'Cidra Open', dateLabel: 'Partes 1 & 2 · Agosto 2026',
+    target: new Date('2026-08-15T08:00:00'), end: new Date('2026-08-16T23:59:59') },
 ];
+const FINISHED_BADGE_DAYS = 7; // días que se muestra "Torneo finalizado" tras el evento
 
 let _countdownTimer = null;
 
+// Cuatro estados según la fecha: torneo en curso (HOY) → recién finalizado
+// (≤7 días, con "Ver resultados") → próximo futuro (countdown) → sin torneo.
 function initNextEventCountdown() {
   if (_countdownTimer) clearInterval(_countdownTimer);
-  const now = new Date();
-  const next = UPCOMING_EVENTS.find(e => e.target > now);
-  const nameEl  = document.getElementById('nextEventName');
-  const datesEl = document.getElementById('nextEventDates');
-  const noteEl  = document.getElementById('nextEventNote');
+  const overlineEl = document.getElementById('nextEventOverline');
+  const nameEl   = document.getElementById('nextEventName');
+  const datesEl  = document.getElementById('nextEventDates');
+  const noteEl   = document.getElementById('nextEventNote');
+  const boxesEl  = document.getElementById('countdownBoxes');
+  const logoEl   = document.getElementById('nextEventLogo');
   if (!nameEl) return;
-  if (!next) {
-    nameEl.textContent  = 'Temporada 2026';
-    datesEl.textContent = 'Más eventos próximamente';
-    document.getElementById('countdownBoxes').style.display = 'none';
+
+  const now = new Date();
+  const dayStart = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+  const ongoing  = UPCOMING_EVENTS.find(e => now >= dayStart(e.target) && now <= e.end);
+  const finished = [...UPCOMING_EVENTS].reverse()
+    .find(e => now > e.end && (now - e.end) / 86400000 <= FINISHED_BADGE_DAYS);
+  const next = UPCOMING_EVENTS.find(e => e.target > now);
+
+  function setEvent(ev, overline) {
+    if (overlineEl) overlineEl.textContent = overline;
+    nameEl.textContent  = ev ? ev.name : '';
+    datesEl.textContent = ev ? ev.dateLabel : '';
+    if (logoEl) {
+      logoEl.style.display = ev?.logo ? '' : 'none';
+      if (ev?.logo) { logoEl.src = ev.logo; logoEl.alt = ev.name; }
+    }
+  }
+
+  if (ongoing) {
+    setEvent(ongoing, 'Torneo en curso');
+    boxesEl.style.display = 'none';
+    noteEl.innerHTML = `<span style="font-size:16px;font-weight:700;color:var(--text)">🏓 ¡El torneo es HOY!</span>`
+      + (ongoing.mapsUrl ? ` &nbsp;·&nbsp; <a href="${ongoing.mapsUrl}" target="_blank" rel="noopener" style="color:var(--accent);font-size:13px">📍 ¿Cómo llegar?</a>` : '');
     return;
   }
-  nameEl.textContent  = next.name;
-  datesEl.textContent = next.dateLabel;
+
+  if (finished) {
+    setEvent(finished, 'Torneo reciente');
+    boxesEl.style.display = 'none';
+    noteEl.innerHTML = `<div style="font-size:14px;color:var(--text);margin-bottom:10px">Torneo finalizado</div>
+      <button type="button" onclick="showPage('torneosList')"
+        style="background:var(--grad);border:none;border-radius:10px;padding:9px 20px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Ver resultados →</button>`
+      + (next ? `<div style="font-size:12px;color:var(--muted);margin-top:12px">Próximo: ${next.name} · ${next.dateLabel}</div>` : '');
+    return;
+  }
+
+  if (!next) {
+    setEvent(null, 'Temporada 2026');
+    nameEl.textContent  = 'Próximo torneo por anunciar';
+    datesEl.textContent = 'Síguenos en redes para enterarte primero';
+    boxesEl.style.display = 'none';
+    noteEl.textContent = '';
+    return;
+  }
+
+  setEvent(next, 'Próximo torneo');
+  boxesEl.style.display = 'flex';
   function tick() {
     const diff = next.target - new Date();
     if (diff <= 0) {
-      document.getElementById('cdDays').textContent  = '0';
-      document.getElementById('cdHours').textContent = '0';
-      document.getElementById('cdMins').textContent  = '0';
-      if (noteEl) noteEl.textContent = '¡El torneo comienza hoy!';
+      // El evento comenzó mientras la página estaba abierta → pasa al estado HOY
       clearInterval(_countdownTimer);
+      initNextEventCountdown();
       return;
     }
     const d = Math.floor(diff / 86400000);
@@ -10383,6 +10816,8 @@ async function loadInscStats() {
   const loadingEl = document.getElementById('inscStatsLoading');
   const contentEl = document.getElementById('inscStatsContent');
   const errorEl   = document.getElementById('inscStatsError');
+  if (loadingEl) loadingEl.style.display = '';
+  if (errorEl)   errorEl.style.display   = 'none';
   try {
     const rows = await sbGet('insc_registro',
       '?torneo=eq.Albergue%20Ol%C3%ADmpico%20Summer%20Open%202026&select=member_id,categorias');
@@ -10478,7 +10913,10 @@ async function loadInscStats() {
     _inscStatsLoaded = true;
   } catch(e) {
     loadingEl.style.display = 'none';
-    if (errorEl) { errorEl.style.display = ''; errorEl.textContent = 'No se pudieron cargar las estadísticas: ' + e.message; }
+    if (errorEl) {
+      errorEl.style.display = '';
+      showLoadError(errorEl, loadInscStats, 'No se pudieron cargar las estadísticas');
+    }
   }
 }
 
