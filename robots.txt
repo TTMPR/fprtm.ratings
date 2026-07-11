@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ratings.ttmpr.xyz/sitemap.xml
