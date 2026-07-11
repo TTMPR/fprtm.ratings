@@ -1608,7 +1608,8 @@
       <span class="sb-icon">📊</span>
       <span class="sb-label">Ratings</span>
     </button>
-    <button class="sb-btn" id="sbHallOfFame" onclick="showPage('hallofame')">
+    <!-- Rankings oculto hasta lanzamiento del sistema Race 2026 -->
+    <button class="sb-btn" id="sbHallOfFame" style="display:none" onclick="showPage('hallofame')">
       <span class="sb-icon">🏆</span>
       <span class="sb-label">Rankings</span>
     </button>
@@ -1661,7 +1662,8 @@
     <span class="bn-pill"><span class="bn-icon">📊</span></span>
     <span class="bn-label">Ratings</span>
   </button>
-  <button class="bottom-nav-btn" id="bnHallOfFame" onclick="showPage('hallofame')">
+  <!-- Rankings oculto hasta lanzamiento del sistema Race 2026 -->
+  <button class="bottom-nav-btn" id="bnHallOfFame" style="display:none" onclick="showPage('hallofame')">
     <span class="bn-pill"><span class="bn-icon">🏆</span></span>
     <span class="bn-label">Rankings</span>
   </button>
@@ -3484,7 +3486,7 @@ Maria Lopez,Ana Torres,B</code>
       <!-- ── PRÓXIMO EVENTO — countdown hero ── -->
       <div id="nextEventCard" style="background:linear-gradient(145deg,rgba(56,189,248,0.08),rgba(129,140,248,0.07));border:1px solid rgba(129,140,248,0.22);border-radius:20px;padding:36px 28px 32px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:-50px;left:50%;transform:translateX(-50%);width:300px;height:300px;background:radial-gradient(circle,rgba(129,140,248,0.09),transparent 70%);pointer-events:none;"></div>
-        <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--purple);margin-bottom:14px;">Próximo torneo</div>
+        <div id="nextEventOverline" style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--purple);margin-bottom:14px;">Próximo torneo</div>
         <img id="nextEventLogo" src="Logo_Albergue_Olimpico_Summer_Open_2026.svg" alt="Albergue Olímpico Summer Open 2026"
           style="width:120px;height:120px;object-fit:contain;border-radius:50%;margin-bottom:16px;filter:drop-shadow(0 4px 20px rgba(129,140,248,0.4));"
           onerror="this.style.display='none'">
@@ -4270,15 +4272,54 @@ const SB_HEADERS = {
   'Content-Type': 'application/json'
 };
 
+// ── Estados de carga/error (Fase 4.1) ───────────────────────────────────────
+// Todo fetch visible al usuario sigue el patrón: cargando → dato | error con
+// "⟳ Reintentar" que reejecuta solo esa consulta. El timeout evita que un
+// "Cargando..." quede eterno cuando la red se cuelga sin responder.
+const SB_TIMEOUT_MS = 12000;
+// Para probar los estados de error sin tumbar Supabase: abrir la app con
+// ?simulateError=1 en la URL — todas las consultas GET fallan a propósito.
+// No afecta a usuarios normales (el flag no se guarda en ningún lado).
+const SB_SIMULATE_ERROR = new URLSearchParams(location.search).has('simulateError');
+
 async function sbGet(table, params = '') {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
-    headers: { ...SB_HEADERS, 'Cache-Control': 'no-cache' }
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Supabase GET ${table} (${res.status}): ${err}`);
+  if (SB_SIMULATE_ERROR) {
+    await new Promise(r => setTimeout(r, 400));
+    throw new Error('Error simulado (?simulateError=1)');
   }
-  return res.json();
+  const ctrl  = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), SB_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+      headers: { ...SB_HEADERS, 'Cache-Control': 'no-cache' },
+      signal: ctrl.signal
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Supabase GET ${table} (${res.status}): ${err}`);
+    }
+    return res.json();
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error(`Supabase GET ${table}: tiempo de espera agotado (${SB_TIMEOUT_MS / 1000}s)`);
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Pinta el estado de error dentro de un contenedor: mensaje corto + botón
+// "⟳ Reintentar" (botón real: focusable y con texto, no necesita aria-label).
+function showLoadError(el, retryFn, msg = 'No se pudo cargar') {
+  if (!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:24px 12px;grid-column:1/-1">
+    <div style="color:var(--muted);font-size:13px;margin-bottom:10px">⚠️ ${msg}</div>
+  </div>`;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = '⟳ Reintentar';
+  btn.style.cssText = "background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 18px;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif";
+  btn.addEventListener('click', retryFn);
+  el.firstElementChild.appendChild(btn);
 }
 
 async function sbPatch(table, query, body) {
@@ -4470,7 +4511,7 @@ function showError(msg) {
       <div style="font-size:36px;margin-bottom:12px">⚠️</div>
       <div style="color:var(--red);font-family:'Orbitron',monospace;font-size:22px;letter-spacing:2px">Error de Conexión</div>
       <div style="color:var(--muted);font-size:13px;margin-top:8px;max-width:400px;margin-left:auto;margin-right:auto">${msg}</div>
-      <button onclick="location.reload()" class="btn-primary" style="margin-top:16px;font-size:13px;padding:8px 20px">↺ Reintentar</button>
+      <button onclick="loadDirectoryData()" class="btn-primary" style="margin-top:16px;font-size:13px;padding:8px 20px">⟳ Reintentar</button>
     </div>`;
 }
 
@@ -4544,8 +4585,9 @@ function updateStats() {
   const top = PLAYERS[0] || {};
   document.getElementById('statTopRating').textContent = top.rating || '—';
   document.getElementById('statTopName').textContent   = top.name
-    ? top.name.split(' ').slice(0, 2).join(' ') : '—';
-  document.getElementById('statTotal').textContent   = PLAYERS.length;
+    ? top.name.split(' ').slice(0, 2).join(' ')
+    : (_directoryLoadFailed ? 'Sin conexión' : '—');
+  document.getElementById('statTotal').textContent   = _directoryLoadFailed && !PLAYERS.length ? '—' : PLAYERS.length;
   const avgRating = PLAYERS.length ? Math.round(PLAYERS.reduce((acc, p) => acc + (Number(p.rating) || 0), 0) / PLAYERS.length) : 0;
   document.getElementById('statMembers').textContent = avgRating || '—';
   const now = new Date();
@@ -4573,13 +4615,15 @@ function updateStats() {
   };
   Object.entries(els).forEach(([id, val]) => {
     const el = document.getElementById(id);
-    if (el) el.textContent = val;
+    if (el) el.textContent = _directoryLoadFailed ? '—' : val;
   });
 
   // Alert banner
   const alertEl = document.getElementById('alertText');
   if (alertEl) {
-    if (warning > 0) {
+    if (_directoryLoadFailed) {
+      alertEl.innerHTML = `<strong style="color:var(--red)">No se pudieron cargar las membresías.</strong> <button type="button" onclick="loadDirectoryData()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:4px 12px;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;margin-left:6px">⟳ Reintentar</button>`;
+    } else if (warning > 0) {
       alertEl.innerHTML = `<strong>${warning} membresía${warning>1?'s':''} próxima${warning>1?'s':''} a vencer</strong> en los próximos 30 días. <span style="color:var(--muted)"> · ${noMember} jugadores sin membresía activa.</span>`;
     } else {
       alertEl.innerHTML = `<strong style="color:var(--green)">✓ Todas las membresías están al día.</strong> <span style="color:var(--muted)">${noMember} jugadores sin membresía.</span>`;
@@ -4647,6 +4691,11 @@ function setDocTitle(sub) {
 }
 
 function showPage(key) {
+  // Rankings (Hall of Fame) deshabilitado hasta el lanzamiento del sistema
+  // Race 2026 — la página fue vaciada y su markup no existe. Redirigir
+  // deep-links viejos (#hallofame) al directorio en vez de romper.
+  if (key === 'hallofame') key = 'ratings';
+
   const PROTECTED = ['membresia', 'admin', 'subir'];
   if (PROTECTED.includes(key) && !currentUser) { showLogin(); return; }
 
@@ -5297,6 +5346,14 @@ function showClubesListView() {
 function renderClubesPage() {
   showClubesListView();
 
+  if (_directoryLoadFailed) {
+    document.getElementById('clubesTotalJugadores').textContent = '';
+    showLoadError(document.getElementById('clubesGrid'),
+      async () => { await loadDirectoryData(); renderClubesPage(); },
+      'No se pudieron cargar los clubes');
+    return;
+  }
+
   // Group directly by the raw club value stored in the DB — no normalization needed here
   const byClub = {};
   ALL_PLAYERS.forEach(p => {
@@ -5733,9 +5790,10 @@ async function renderNoticiasPage() {
   const grid = document.getElementById('noticiasGrid');
   grid.innerHTML = '<div style="color:var(--muted);padding:40px 0;text-align:center;grid-column:1/-1">Cargando…</div>';
   try {
-    const { data, error } = await _supabase.from('articulos')
-      .select('*').order('created_at', { ascending: false });
-    if (error) throw error;
+    // sbGet en vez de _supabase: mismo endpoint REST público, pero con el
+    // timeout y el estado de error del patrón de la Fase 4.1 (supabase-js
+    // reintenta internamente y puede dejar el "Cargando…" colgado).
+    const data = await sbGet('articulos', '?select=*&order=created_at.desc');
     ARTICULOS = data || [];
     if (!ARTICULOS.length) {
       grid.innerHTML = '<div style="color:var(--muted);padding:60px 0;text-align:center;grid-column:1/-1">📰 Aún no hay artículos publicados.</div>';
@@ -5757,7 +5815,7 @@ async function renderNoticiasPage() {
         </div>
       </div>`).join('');
   } catch (e) {
-    grid.innerHTML = `<div style="color:var(--red);padding:30px 0;text-align:center;grid-column:1/-1">Error cargando noticias: ${escHTML(e.message)}<br><small style="color:var(--muted)">¿Corriste create_articulos.sql en Supabase?</small></div>`;
+    showLoadError(grid, renderNoticiasPage, 'No se pudieron cargar los artículos');
   }
 }
 
@@ -5906,6 +5964,10 @@ async function deleteArticulo(id) {
 }
 
 async function openRankings() {
+  // La vista Rankings está vaciada (pendiente sistema Race 2026); sin este
+  // guard, cualquier llamada residual lanza "Cannot set properties of null".
+  if (!document.getElementById('rankingsContent')) return;
+
   // Show pills
   const pillsWrap = document.getElementById('rankCatPills');
   if (pillsWrap) pillsWrap.closest('div[style]')?.removeAttribute('style');
@@ -7802,7 +7864,7 @@ async function loadTorneosList() {
       </div>`;
     }).join('');
   } catch(e) {
-    grid.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)">Error: ${e.message}</div>`;
+    showLoadError(grid, loadTorneosList, 'No se pudieron cargar los torneos');
   }
 }
 
@@ -7868,8 +7930,11 @@ async function openTorneoEvento(torneoIds, nombre, fecha) {
     document.getElementById('eventoParticipantCount').textContent = eventoRows.length;
     renderEventoRows(eventoRows);
   } catch(e) {
-    document.getElementById('eventoGrid').innerHTML =
-      `<div style="text-align:center;padding:40px;color:var(--red)">Error cargando datos: ${e.message}</div>`;
+    document.getElementById('eventoSubtitle').textContent = '';
+    document.getElementById('eventoParticipantCount').textContent = '—';
+    showLoadError(document.getElementById('eventoGrid'),
+      () => openTorneoEvento(ids, nombre, fecha),
+      'No se pudieron cargar los resultados del torneo');
   }
 }
 
@@ -9241,16 +9306,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadInscripcionesConfig();
   loadTorneoArchivoConfig();
 
+  await loadDirectoryData();
+  simAddOpponent();
+
+  // Direct link to a tab (#clubes, #noticias, …) — navigate after data is ready
+  const initialKey = location.hash.replace('#', '');
+  if (HASH_PAGES.has(initialKey) && initialKey !== 'ratings') showPage(initialKey);
+});
+
+// Carga (o recarga tras un error) los datos base del directorio: jugadores,
+// miembros, fotos y clubes. Reintentable desde los estados de error sin
+// recargar la página completa.
+let _directoryLoadFailed = false;
+
+async function loadDirectoryData() {
   showLoading(true);
   const [playersResult, membersResult] = await Promise.allSettled([loadPlayers(), loadMembers(), loadApprovedPhotos(), loadClubData()]);
+  _directoryLoadFailed = playersResult.status !== 'fulfilled';
   if (playersResult.status === 'fulfilled') {
     ALL_PLAYERS = playersResult.value;
     ALL_PLAYERS.forEach(p => { RANK_BY_ID[p.id] = p.rank; });
     PLAYERS = ALL_PLAYERS;
   } else {
     console.error('Error cargando jugadores:', playersResult.reason);
-    showLoading(false);
-    showError(`No se pudo conectar a Supabase.<br><small style="font-family:monospace">${playersResult.reason.message}</small>`);
     ALL_PLAYERS = []; PLAYERS = [];
   }
   if (membersResult.status === 'fulfilled') {
@@ -9262,20 +9340,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   showLoading(false);
 
   displayedCount = PAGE_SIZE;
-  renderPlayers(PLAYERS.slice(0, PAGE_SIZE));
+  if (_directoryLoadFailed) {
+    showError(`No se pudo conectar a Supabase.<br><small style="font-family:monospace">${playersResult.reason.message}</small>`);
+  } else {
+    renderPlayers(PLAYERS.slice(0, PAGE_SIZE));
+  }
   const lm = document.getElementById('loadMore');
-  if (lm) lm.style.display = PLAYERS.length > PAGE_SIZE ? '' : 'none';
+  if (lm) lm.style.display = (!_directoryLoadFailed && PLAYERS.length > PAGE_SIZE) ? '' : 'none';
 
   buildDatalist();
-  simAddOpponent();
   renderMembers();
   updateStats();
   updatePendingBadge();
-
-  // Direct link to a tab (#clubes, #noticias, …) — navigate after data is ready
-  const initialKey = location.hash.replace('#', '');
-  if (HASH_PAGES.has(initialKey) && initialKey !== 'ratings') showPage(initialKey);
-});
+}
 
 // ══════════════════════════════════════════
 // INSCRIPCIONES — CONSTANTS
@@ -9596,37 +9673,85 @@ function applyInscripcionesState() {
 }
 
 // ── UPCOMING EVENTS COUNTDOWN ──────────────────────────────────────────────
+// Cada evento: target = inicio, end = fin real del evento (torneos de fin de
+// semana duran dos días). logo y mapsUrl son opcionales — si faltan, no se
+// muestra logo ni el enlace "¿Cómo llegar?" del estado HOY.
 const UPCOMING_EVENTS = [
-  { name: 'Albergue Olímpico Summer Open', dateLabel: 'Sábado 4 & Domingo 5 de julio', target: new Date('2026-07-04T08:00:00') },
-  { name: 'Cidra Open',         dateLabel: 'Partes 1 & 2 · Agosto 2026',    target: new Date('2026-08-15T08:00:00') },
+  { name: 'Albergue Olímpico Summer Open', dateLabel: 'Sábado 4 & Domingo 5 de julio',
+    target: new Date('2026-07-04T08:00:00'), end: new Date('2026-07-05T23:59:59'),
+    logo: 'Logo_Albergue_Olimpico_Summer_Open_2026.svg',
+    mapsUrl: 'https://maps.google.com/?q=Albergue+Ol%C3%ADmpico+Salinas+Puerto+Rico' },
+  { name: 'Cidra Open', dateLabel: 'Partes 1 & 2 · Agosto 2026',
+    target: new Date('2026-08-15T08:00:00'), end: new Date('2026-08-16T23:59:59') },
 ];
+const FINISHED_BADGE_DAYS = 7; // días que se muestra "Torneo finalizado" tras el evento
 
 let _countdownTimer = null;
 
+// Cuatro estados según la fecha: torneo en curso (HOY) → recién finalizado
+// (≤7 días, con "Ver resultados") → próximo futuro (countdown) → sin torneo.
 function initNextEventCountdown() {
   if (_countdownTimer) clearInterval(_countdownTimer);
-  const now = new Date();
-  const next = UPCOMING_EVENTS.find(e => e.target > now);
-  const nameEl  = document.getElementById('nextEventName');
-  const datesEl = document.getElementById('nextEventDates');
-  const noteEl  = document.getElementById('nextEventNote');
+  const overlineEl = document.getElementById('nextEventOverline');
+  const nameEl   = document.getElementById('nextEventName');
+  const datesEl  = document.getElementById('nextEventDates');
+  const noteEl   = document.getElementById('nextEventNote');
+  const boxesEl  = document.getElementById('countdownBoxes');
+  const logoEl   = document.getElementById('nextEventLogo');
   if (!nameEl) return;
-  if (!next) {
-    nameEl.textContent  = 'Temporada 2026';
-    datesEl.textContent = 'Más eventos próximamente';
-    document.getElementById('countdownBoxes').style.display = 'none';
+
+  const now = new Date();
+  const dayStart = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+  const ongoing  = UPCOMING_EVENTS.find(e => now >= dayStart(e.target) && now <= e.end);
+  const finished = [...UPCOMING_EVENTS].reverse()
+    .find(e => now > e.end && (now - e.end) / 86400000 <= FINISHED_BADGE_DAYS);
+  const next = UPCOMING_EVENTS.find(e => e.target > now);
+
+  function setEvent(ev, overline) {
+    if (overlineEl) overlineEl.textContent = overline;
+    nameEl.textContent  = ev ? ev.name : '';
+    datesEl.textContent = ev ? ev.dateLabel : '';
+    if (logoEl) {
+      logoEl.style.display = ev?.logo ? '' : 'none';
+      if (ev?.logo) { logoEl.src = ev.logo; logoEl.alt = ev.name; }
+    }
+  }
+
+  if (ongoing) {
+    setEvent(ongoing, 'Torneo en curso');
+    boxesEl.style.display = 'none';
+    noteEl.innerHTML = `<span style="font-size:16px;font-weight:700;color:var(--text)">🏓 ¡El torneo es HOY!</span>`
+      + (ongoing.mapsUrl ? ` &nbsp;·&nbsp; <a href="${ongoing.mapsUrl}" target="_blank" rel="noopener" style="color:var(--accent);font-size:13px">📍 ¿Cómo llegar?</a>` : '');
     return;
   }
-  nameEl.textContent  = next.name;
-  datesEl.textContent = next.dateLabel;
+
+  if (finished) {
+    setEvent(finished, 'Torneo reciente');
+    boxesEl.style.display = 'none';
+    noteEl.innerHTML = `<div style="font-size:14px;color:var(--text);margin-bottom:10px">Torneo finalizado</div>
+      <button type="button" onclick="showPage('torneosList')"
+        style="background:var(--grad);border:none;border-radius:10px;padding:9px 20px;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Ver resultados →</button>`
+      + (next ? `<div style="font-size:12px;color:var(--muted);margin-top:12px">Próximo: ${next.name} · ${next.dateLabel}</div>` : '');
+    return;
+  }
+
+  if (!next) {
+    setEvent(null, 'Temporada 2026');
+    nameEl.textContent  = 'Próximo torneo por anunciar';
+    datesEl.textContent = 'Síguenos en redes para enterarte primero';
+    boxesEl.style.display = 'none';
+    noteEl.textContent = '';
+    return;
+  }
+
+  setEvent(next, 'Próximo torneo');
+  boxesEl.style.display = 'flex';
   function tick() {
     const diff = next.target - new Date();
     if (diff <= 0) {
-      document.getElementById('cdDays').textContent  = '0';
-      document.getElementById('cdHours').textContent = '0';
-      document.getElementById('cdMins').textContent  = '0';
-      if (noteEl) noteEl.textContent = '¡El torneo comienza hoy!';
+      // El evento comenzó mientras la página estaba abierta → pasa al estado HOY
       clearInterval(_countdownTimer);
+      initNextEventCountdown();
       return;
     }
     const d = Math.floor(diff / 86400000);
@@ -10383,6 +10508,8 @@ async function loadInscStats() {
   const loadingEl = document.getElementById('inscStatsLoading');
   const contentEl = document.getElementById('inscStatsContent');
   const errorEl   = document.getElementById('inscStatsError');
+  if (loadingEl) loadingEl.style.display = '';
+  if (errorEl)   errorEl.style.display   = 'none';
   try {
     const rows = await sbGet('insc_registro',
       '?torneo=eq.Albergue%20Ol%C3%ADmpico%20Summer%20Open%202026&select=member_id,categorias');
@@ -10478,7 +10605,10 @@ async function loadInscStats() {
     _inscStatsLoaded = true;
   } catch(e) {
     loadingEl.style.display = 'none';
-    if (errorEl) { errorEl.style.display = ''; errorEl.textContent = 'No se pudieron cargar las estadísticas: ' + e.message; }
+    if (errorEl) {
+      errorEl.style.display = '';
+      showLoadError(errorEl, loadInscStats, 'No se pudieron cargar las estadísticas');
+    }
   }
 }
 
