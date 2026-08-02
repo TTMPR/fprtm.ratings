@@ -9292,7 +9292,7 @@ const INSC_CATEGORIES = [
   { id: 'ev5',  name: '1900 o Menos',            desc: 'Premiación: $70 · $60 · $55 (x2)',                            price: 20, slot: 'D16-900',  maxRating: 1900, ratingGroup: 'rating', stadiumId: '1900-under' },
   { id: 'ev6',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1130', maxAge: 11, sex: 'M',                   stadiumId: '11u---masculino' },
   { id: 'ev7',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1130', maxAge: 11, sex: 'F',                   stadiumId: '11u---femenino' },
-  { id: 'ev8',  name: 'Dobles Abierto',          desc: 'Premiación: $120 · $100 · $80 (x2) por pareja · Precio por jugador', price: 40, slot: 'D16-1400', openDivision: true, dobles: true, stadiumId: 'dobles---abierto' },
+  { id: 'ev8',  name: 'Dobles Abierto',          desc: 'Premiación: $120 · $100 · $80 (x2) por pareja · $40 por pareja ($20 c/u)', price: 20, slot: 'D16-1400', openDivision: true, dobles: true, stadiumId: 'dobles---abierto' },
   // ── Sábado 22 de agosto ──
   { id: 'ev9',  name: '1700 o Menos',            desc: 'Premiación: $55 · $50 · $45 (x2)',                            price: 20, slot: 'S22-900',  maxRating: 1700, ratingGroup: 'rating', stadiumId: '1700-under' },
   { id: 'ev10', name: '1500 o Menos',            desc: 'Premiación: $45 · $40 · $35 (x2)',                            price: 20, slot: 'S22-1130', maxRating: 1500, ratingGroup: 'rating', stadiumId: '1500-under' },
@@ -9978,7 +9978,7 @@ function renderPastDetailGestionar() {
 
   rows.forEach((row, i) => {
     const cats = Array.isArray(row.categorias) ? row.categorias : [];
-    const catNames = cats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja})` : '')).join(', ') || '—';
+    const catNames = cats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja}${c.rating_combinado != null ? ` · comb. ★${c.rating_combinado}` : ''})` : '')).join(', ') || '—';
     const fecha = row.created_at
       ? new Date(row.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric', year: 'numeric' })
       : '—';
@@ -10278,7 +10278,7 @@ function renderInscPlayerCard(p) {
       yainEl.style.color = 'var(--muted)';
     } else if (existing) {
       yainEl.style.display = '';
-      const catNames = (existing.categorias || []).map(c => c.name + (c.pareja ? ` · pareja: ${c.pareja}` : '')).join(', ');
+      const catNames = (existing.categorias || []).map(c => c.name + (c.pareja ? ` · pareja: ${c.pareja}${c.rating_combinado != null ? ` (★${c.rating_combinado})` : ''}` : '')).join(', ');
       const cancelPending  = existing.cancel_requested && existing.cancel_status !== 'rejected';
       const cancelApproved = existing.cancel_status === 'approved';
       if (cancelApproved) {
@@ -10658,22 +10658,66 @@ function inscRenderCategories() {
       ${doblesCats.map(cat => {
         const isExisting = existingIds.has(cat.id);
         const sel = inscState.selectedCats.has(cat.id);
-        const savedPareja = (inscState.existingInsc?.categorias || []).find(c => c.id === cat.id)?.pareja || '';
-        const showInput = sel || isExisting;
-        return buildCatCard(cat) + (showInput ? `
-          <div style="margin:2px 0 0 26px;">
-            <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px;">Nombre de tu pareja ${isExisting ? '(ya registrado)' : '*'}</label>
-            <input id="inscPareja_${cat.id}" value="${(inscState.doblesPareja[cat.id] ?? savedPareja).replace(/"/g, '&quot;')}"
-              ${isExisting ? 'disabled' : ''} placeholder="Nombre y apellido de tu compañero/a"
-              oninput="inscState.doblesPareja['${cat.id}']=this.value"
-              style="width:100%;background:var(--card);border:1px solid ${isExisting ? 'var(--border)' : 'rgba(52,211,153,0.35)'};border-radius:7px;padding:7px 10px;color:var(--text);font-size:12px;box-sizing:border-box;${isExisting ? 'opacity:.6;' : ''}">
-            ${isExisting ? '' : '<div style="font-size:10px;color:var(--muted);margin-top:3px;">Si aún no tienes pareja, escribe «Por asignar» y el comité te ubicará.</div>'}
-          </div>` : '');
+        if (!sel && !isExisting) return buildCatCard(cat);
+
+        const me       = inscState.player;
+        const savedRow = (inscState.existingInsc?.categorias || []).find(c => c.id === cat.id);
+        const partnerId = isExisting ? (savedRow?.pareja_id ?? '') : (inscState.doblesPareja[cat.id] ?? '');
+        const partner   = ALL_PLAYERS.find(p => String(p.id) === String(partnerId));
+        const lockField = isExisting ? 'disabled' : '';
+        const fieldCss  = `width:100%;background:var(--card);border:1px solid rgba(52,211,153,0.35);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;box-sizing:border-box;`;
+
+        // Combined rating — shown once both slots are filled
+        const myRating = me?.rating ?? null;
+        const paRating = partner ? (partner.rating ?? null) : (isExisting ? (savedRow?.pareja_rating ?? null) : null);
+        const combined = (myRating !== null && paRating !== null) ? myRating + paRating : null;
+        const partnerName = partner?.name || savedRow?.pareja || '';
+
+        const options = ALL_PLAYERS
+          .filter(p => !me || p.id !== me.id)
+          .slice()
+          .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+          .map(p => `<option value="${p.id}"${String(p.id) === String(partnerId) ? ' selected' : ''}>${p.name}${p.rating ? ` · ★${p.rating}` : ''}</option>`)
+          .join('');
+
+        return buildCatCard(cat) + `
+          <div style="margin:4px 0 0 26px;display:flex;flex-direction:column;gap:8px;">
+            <div>
+              <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px;">Encasillado 1 — Jugador</label>
+              <select disabled style="${fieldCss}opacity:.75;">
+                <option>${me ? `${me.name}${me.rating ? ` · ★${me.rating}` : ''}` : '—'}</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px;">Encasillado 2 — Pareja ${isExisting ? '(ya registrada)' : '*'}</label>
+              <select id="inscPareja_${cat.id}" ${lockField}
+                onchange="inscSetDoblesPareja('${cat.id}', this.value)"
+                style="${fieldCss}${isExisting ? 'opacity:.75;' : ''}">
+                <option value="">— Selecciona tu pareja —</option>
+                ${isExisting && partnerName && !partner ? `<option value="" selected>${partnerName}</option>` : ''}
+                ${options}
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:8px;padding:8px 12px;">
+              <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;">Rating combinado</span>
+              <span style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:${combined !== null ? '#34d399' : 'var(--muted)'};">
+                ${combined !== null ? `★ ${combined}` : '—'}
+              </span>
+            </div>
+            ${combined !== null ? `<div style="font-size:10px;color:var(--muted);margin-top:-2px;">${me.name} (${myRating}) + ${partnerName} (${paRating})</div>` : ''}
+            ${isExisting ? '' : '<div style="font-size:10px;color:var(--muted);">Cada jugador de la pareja se inscribe por separado ($20 c/u · $40 la pareja).</div>'}
+          </div>`;
       }).join('')}
     </div>`;
   }
 
   container.innerHTML = html;
+}
+
+// Partner picked for a doubles event — re-render so the combined rating updates
+function inscSetDoblesPareja(catId, playerId) {
+  inscState.doblesPareja[catId] = playerId || '';
+  inscRenderCategories();
 }
 
 // ══════════════════════════════════════════
@@ -10944,11 +10988,11 @@ async function inscSometerInscripcion() {
     return;
   }
 
-  // Doubles requires naming a partner
+  // Doubles requires picking a partner
   for (const c of newCats.filter(c => c.dobles)) {
-    const pareja = (inscState.doblesPareja[c.id] || '').trim();
-    if (!pareja) {
-      if (msg) msg.textContent = `Indica el nombre de tu pareja para ${c.name} (o escribe «Por asignar»).`;
+    const pid = String(inscState.doblesPareja[c.id] || '');
+    if (!pid || !ALL_PLAYERS.some(x => String(x.id) === pid)) {
+      if (msg) msg.textContent = `Selecciona tu pareja en el encasillado 2 para ${c.name}.`;
       document.getElementById(`inscPareja_${c.id}`)?.focus();
       return;
     }
@@ -10997,8 +11041,23 @@ async function inscSometerInscripcion() {
             // mergedCats mixes plain DB rows with INSC_CATEGORIES entries — look
             // the definition up so `dobles` is detected for both.
             if (INSC_CATEGORIES.find(x => x.id === c.id)?.dobles) {
-              const pareja = c.pareja || (inscState.doblesPareja[c.id] || '').trim();
-              if (pareja) row.pareja = pareja;
+              if (c.pareja) {
+                // Already saved on a previous submission — keep it untouched
+                row.pareja = c.pareja;
+                if (c.pareja_id)     row.pareja_id     = c.pareja_id;
+                if (c.pareja_rating != null) row.pareja_rating = c.pareja_rating;
+                if (c.rating_combinado != null) row.rating_combinado = c.rating_combinado;
+              } else {
+                const partner = ALL_PLAYERS.find(x => String(x.id) === String(inscState.doblesPareja[c.id] || ''));
+                if (partner) {
+                  row.pareja        = partner.name;
+                  row.pareja_id     = partner.id;
+                  row.pareja_rating = partner.rating ?? null;
+                  if (p.rating != null && partner.rating != null) {
+                    row.rating_combinado = p.rating + partner.rating;
+                  }
+                }
+              }
             }
             return row;
           }),
@@ -11032,7 +11091,7 @@ async function inscSometerInscripcion() {
 
     if (nameEl) nameEl.textContent = `${p.name} · FPTM-${fptmId}`;
 
-    const allCatNames = mergedCats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja})` : '')).join(' · ');
+    const allCatNames = mergedCats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja}${c.rating_combinado != null ? ` · ★${c.rating_combinado}` : ''})` : '')).join(' · ');
     if (catsEl) catsEl.innerHTML = allCatNames
       ? `<span style="color:var(--accent);">${allCatNames}</span>`
       : '';
@@ -11623,7 +11682,7 @@ function _renderReporteFinanciero() {
           <tbody>
             ${rows.map(r => {
               const allCats = Array.isArray(r.categorias) ? r.categorias : [];
-              const cats = allCats.filter(c => c.id !== 'multa' && c.id !== 'credito').map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja})` : '')).join(', ');
+              const cats = allCats.filter(c => c.id !== 'multa' && c.id !== 'credito').map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja}${c.rating_combinado != null ? ` · comb. ★${c.rating_combinado}` : ''})` : '')).join(', ');
               const multa = allCats.find(c => c.id === 'multa');
               const creditos = allCats.filter(c => c.id === 'credito');
               const creditHtml = creditos.map(c => `<span style="color:#a78bfa;font-size:11px;display:block;">- Crédito: ${c.name} (-$${Math.abs(c.price).toFixed(2)})</span>`).join('');
@@ -12627,7 +12686,7 @@ function renderInscAdminTable() {
 
   rows.forEach((row, i) => {
     const cats = Array.isArray(row.categorias) ? row.categorias : [];
-    const catNames = cats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja})` : '')).join(', ') || '—';
+    const catNames = cats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja}${c.rating_combinado != null ? ` · comb. ★${c.rating_combinado}` : ''})` : '')).join(', ') || '—';
     const fecha = row.created_at
       ? new Date(row.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric' })
       : '—';
