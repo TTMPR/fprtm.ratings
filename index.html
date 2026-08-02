@@ -33,7 +33,7 @@
 <meta name="twitter:image" content="https://ratings.ttmpr.xyz/fprtm-logo.jpg">
 
 <link rel="icon" type="image/png" href="ttm_pr_favicon_32x32.png">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -970,6 +970,65 @@
     .stats-row { grid-template-columns: repeat(2, 1fr); }
     .profile-hero { grid-template-columns: 1fr; }
     .overview-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ─── CIDRA OPEN 2026 BANNER ─── */
+  .cidra-banner {
+    --cg: #177d5a;
+    position: relative; overflow: hidden;
+    background: #f5f7f6;
+    border-radius: 16px;
+    padding: 24px 26px 24px 34px;
+    margin-bottom: 14px;
+  }
+  .cidra-banner::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 11px; background: var(--cg);
+  }
+  .cidra-year {
+    position: absolute; top: -6px; right: 16px; z-index: 0;
+    font-weight: 800; font-size: 62px; line-height: 1;
+    color: #e7ebe9; letter-spacing: 0.01em; pointer-events: none; user-select: none;
+  }
+  .cidra-eyebrow {
+    position: relative; z-index: 1;
+    font-size: 10.5px; font-weight: 600; color: #8d9599;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 4px; white-space: nowrap;
+  }
+  .cidra-lockup {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; gap: 16px; margin-bottom: 16px;
+  }
+  .cidra-word {
+    font-size: clamp(38px, 11vw, 56px); font-weight: 900; color: #232323;
+    line-height: 0.9; letter-spacing: -0.025em;
+  }
+  .cidra-div { width: 1px; align-self: stretch; background: #d3dad6; }
+  .cidra-open {
+    font-size: clamp(20px, 5.5vw, 28px); font-weight: 700; color: var(--cg);
+    letter-spacing: 0.15em; line-height: 1;
+  }
+  .cidra-meta {
+    position: relative; z-index: 1;
+    font-size: 14px; color: #4b5257; line-height: 1.6; margin-bottom: 16px;
+  }
+  .cidra-cta {
+    position: relative; z-index: 1;
+    display: inline-block; background: var(--cg); color: #fff;
+    border: none; border-radius: 999px; padding: 12px 28px;
+    font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 700;
+    letter-spacing: 0.09em; cursor: pointer; transition: filter .15s, transform .12s;
+  }
+  .cidra-cta:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  @media (max-width: 440px) {
+    .cidra-banner { padding: 20px 18px 20px 26px; }
+    .cidra-banner::before { width: 8px; }
+    .cidra-year { font-size: 42px; right: 12px; top: -2px; }
+    .cidra-eyebrow { font-size: 9.5px; letter-spacing: 0.16em; }
+    .cidra-lockup { gap: 12px; margin-bottom: 13px; }
+    .cidra-meta { font-size: 13px; }
+    .cidra-cta { padding: 11px 22px; font-size: 12.5px; }
   }
 
   /* ─── ADMIN DASHBOARD ─── */
@@ -2210,7 +2269,7 @@
         <h3>TORNEO</h3>
         <div class="edit-field">
           <label>Nombre del torneo *</label>
-          <input type="text" id="subirTorneoNombre" placeholder="Ej: Albergue Olímpico Summer Open 2026">
+          <input type="text" id="subirTorneoNombre" placeholder="Ej: Cidra Open 2026">
         </div>
         <div class="edit-field">
           <label>Categoría *</label>
@@ -2551,13 +2610,6 @@ Maria Lopez,Ana Torres,B</code>
             <div class="adm-desc" id="adminCardArchivarDesc">Mover inscripciones a historial</div>
           </div>
         </div>
-        <div id="adminCardMigrar" class="adm-card" style="border-color:rgba(245,158,11,0.3)" onclick="migrarInscripcionesDesdeTraujillo()">
-          <div class="adm-ico">🔄</div>
-          <div>
-            <div class="adm-title">Migrar Inscritos</div>
-            <div class="adm-desc">Restablecer desde Trujillo Alto Open 2026</div>
-          </div>
-        </div>
         <div id="adminCardPastTorneos" class="adm-card" style="display:none" onclick="showPastTorneosModal()">
           <div class="adm-ico">🏆</div>
           <div>
@@ -2863,7 +2915,7 @@ Maria Lopez,Ana Torres,B</code>
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap;">
       <div>
         <div style="font-family:'Orbitron',monospace;font-size:20px;font-weight:700;letter-spacing:1px;">Reporte Financiero</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:3px;" id="rfSubtitle">Albergue Olímpico Summer Open 2026</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:3px;" id="rfSubtitle">Cidra Open 2026</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button onclick="exportReporteFinanciero()" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:8px 14px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer;">⬇ Excel</button>
@@ -2900,7 +2952,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Reporte por Categoría — Albergue Olímpico Summer Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Reporte por Categoría — Cidra Open 2026</div>
         <div id="inscReporteTotalEl" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscReporteModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -2944,7 +2996,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Gestionar Inscritos — Albergue Olímpico Summer Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Gestionar Inscritos — Cidra Open 2026</div>
         <div id="inscAdminModalTotal" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscAdminModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -3026,7 +3078,7 @@ Maria Lopez,Ana Torres,B</code>
       • <strong style="color:#f59e0b;">Reembolsos</strong>: pueden tomar <strong>5 a 7 días laborales</strong> en procesarse vía ATH Móvil.<br>
       • <strong style="color:var(--accent);">Créditos</strong>: se aplican automáticamente al inscribirte en el siguiente evento.<br>
       • Las categorías no canceladas permanecen activas en tu inscripción.<br>
-      • Fecha límite para cancelaciones: <strong>jueves 2 de julio · 8:00 p.m.</strong>
+      • Fecha límite para cancelaciones: <strong>jueves 13 de agosto · 8:00 p.m.</strong>
     </div>
     <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:14px;cursor:pointer;">
       <input type="checkbox" id="cancelTermsCheck" style="margin-top:2px;accent-color:var(--accent);" onchange="cancelUpdateSubmitBtn()">
@@ -3561,8 +3613,8 @@ Maria Lopez,Ana Torres,B</code>
       <div id="nextEventCard" style="background:linear-gradient(145deg,rgba(56,189,248,0.08),rgba(129,140,248,0.07));border:1px solid rgba(129,140,248,0.22);border-radius:20px;padding:36px 28px 32px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:-50px;left:50%;transform:translateX(-50%);width:300px;height:300px;background:radial-gradient(circle,rgba(129,140,248,0.09),transparent 70%);pointer-events:none;"></div>
         <div id="nextEventOverline" style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--purple);margin-bottom:14px;">Próximo torneo</div>
-        <img id="nextEventLogo" src="Logo_Albergue_Olimpico_Summer_Open_2026.svg" alt="Albergue Olímpico Summer Open 2026"
-          style="width:120px;height:120px;object-fit:contain;border-radius:50%;margin-bottom:16px;filter:drop-shadow(0 4px 20px rgba(129,140,248,0.4));"
+        <img id="nextEventLogo" alt=""
+          style="width:120px;height:120px;object-fit:contain;border-radius:50%;margin-bottom:16px;filter:drop-shadow(0 4px 20px rgba(129,140,248,0.4));display:none;"
           onerror="this.style.display='none'">
         <div id="nextEventName" style="font-size:clamp(20px,5vw,28px);font-weight:800;color:var(--text);line-height:1.2;margin-bottom:6px;"></div>
         <div id="nextEventDates" style="font-size:14px;color:var(--muted);margin-bottom:28px;"></div>
@@ -3608,17 +3660,33 @@ Maria Lopez,Ana Torres,B</code>
     </div>
 
     <!-- Torneo activo — siempre visible -->
-    <div id="inscTorneoCard" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
-      <img src="Logo_Albergue_Olimpico_Summer_Open_2026.svg" alt="Albergue Olímpico Summer Open 2026" style="width:80px;height:80px;object-fit:contain;flex-shrink:0;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.4);" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'">
-      <span style="font-size:28px;display:none;">🏓</span>
-      <div>
-        <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:2px;">Torneo Activo</div>
-        <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px;">Sáb 4 &amp; Dom 5 de julio · Salinas, PR</div>
-        <div id="inscDeadlineLabel" style="font-size:12px;color:#fb923c;font-weight:600;margin-bottom:4px;">⏰ Fecha límite de inscripción: jue. 2 julio · 8:00 p.m.</div>
-        <a href="https://maps.google.com/?q=Albergue+Ol%C3%ADmpico+Salinas+Puerto+Rico" target="_blank" rel="noopener"
-          style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:var(--accent);font-size:13px;font-weight:600;transition:opacity 0.15s;"
+    <div id="inscTorneoCard">
+      <div class="cidra-banner">
+        <div class="cidra-year">2026</div>
+        <div class="cidra-eyebrow">Tenis de Mesa • Puerto Rico</div>
+        <div class="cidra-lockup">
+          <div class="cidra-word">CIDRA</div>
+          <div class="cidra-div"></div>
+          <div class="cidra-open">OPEN</div>
+        </div>
+        <div class="cidra-meta">
+          15, 16, 22 y 23 de agosto de 2026<br>
+          Cancha Juanito Cabello, Cidra PR
+        </div>
+        <button class="cidra-cta" onclick="inscSwitchTab('form');document.getElementById('inscActiveTorneoUI')?.scrollIntoView({behavior:'smooth',block:'start'})">
+          INSCRÍBETE YA
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.18);border-radius:12px;padding:12px 18px;margin-bottom:20px;">
+        <div style="font-size:13px;color:var(--muted);">
+          <strong style="color:var(--text);">Parte 1:</strong> 15 &amp; 16 ago &nbsp;·&nbsp;
+          <strong style="color:var(--text);">Parte 2:</strong> 22 &amp; 23 ago
+        </div>
+        <div id="inscDeadlineLabel" style="font-size:12px;color:#fb923c;font-weight:600;">⏰ Fecha límite: jue. 13 agosto · 8:00 p.m.</div>
+        <a href="https://maps.google.com/?q=Cancha+Juanito+Cabello+Cidra+Puerto+Rico" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:var(--accent);font-size:13px;font-weight:600;transition:opacity 0.15s;margin-left:auto;"
           onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">
-          📍 ¿Cómo llegar? — Albergue Olímpico, Salinas, PR
+          📍 ¿Cómo llegar?
         </a>
       </div>
     </div>
@@ -3691,15 +3759,15 @@ Maria Lopez,Ana Torres,B</code>
       <div style="background:var(--card2);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:24px;margin-bottom:16px;">
         <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Antes de inscribirte</div>
         <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Reglamento del Torneo</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Debes leer y aceptar el reglamento del Albergue Olímpico Summer Open 2026 para proceder con tu inscripción.</p>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Debes leer y aceptar el reglamento del Cidra Open 2026 para proceder con tu inscripción.</p>
 
         <button onclick="openReglamentoModal()"
           style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:14px 16px;cursor:pointer;text-align:left;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:20px;transition:border-color 0.15s;"
           onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(56,189,248,0.25)'">
           <span style="font-size:22px;flex-shrink:0;">📋</span>
           <div style="flex:1;">
-            <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Ver Reglamento Albergue Olímpico Summer Open 2026</div>
-            <div style="font-size:12px;color:var(--muted);">Fecha límite: Jueves 2 de julio · 8:00 p.m. · ATH Business /fprtm</div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Ver Reglamento Cidra Open 2026</div>
+            <div style="font-size:12px;color:var(--muted);">Fecha límite: Jueves 13 de agosto · 8:00 p.m. · ATH Business /fprtm</div>
           </div>
           <span style="color:var(--accent);font-size:16px;">→</span>
         </button>
@@ -3708,7 +3776,7 @@ Maria Lopez,Ana Torres,B</code>
           <input type="checkbox" id="inscReglamentoCheck" onchange="inscUpdateReglamentoBtn()"
             style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:var(--accent);cursor:pointer;">
           <span style="font-size:13px;color:var(--text);line-height:1.5;">
-            He leído y <strong style="color:var(--text);">acepto el reglamento</strong> del Albergue Olímpico Summer Open 2026, incluyendo las reglas de participación, políticas de pago y responsabilidad personal.
+            He leído y <strong style="color:var(--text);">acepto el reglamento</strong> del Cidra Open 2026, incluyendo las reglas de participación, políticas de pago y responsabilidad personal.
           </span>
         </label>
 
@@ -3907,7 +3975,7 @@ Maria Lopez,Ana Torres,B</code>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;">
         <div>
           <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">INSCRITOS</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:1px;">Albergue Olímpico Summer Open 2026</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:1px;">Cidra Open 2026</div>
         </div>
         <div id="inscritosSectionBadge" style="display:none;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);font-family:'Orbitron',monospace;font-size:17px;letter-spacing:1px;padding:5px 14px;border-radius:20px;white-space:nowrap;"></div>
       </div>
@@ -4003,8 +4071,8 @@ Maria Lopez,Ana Torres,B</code>
     <div id="regFormBody" style="display:none;">
       <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:20px 24px;margin-bottom:28px;">
         <div style="font-size:11px;color:var(--accent);font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Registro de Participante</div>
-        <div style="font-size:18px;font-weight:700;color:var(--text);">Albergue Olímpico Summer Open 2026</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Sáb 4 &amp; Dom 5 de julio · Salinas, PR</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);">Cidra Open 2026</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">15, 16, 22 y 23 de agosto · Cidra, PR</div>
       </div>
 
       <input type="hidden" id="regFormToken">
@@ -4104,7 +4172,7 @@ Maria Lopez,Ana Torres,B</code>
     <div id="regFormSuccess" style="display:none;text-align:center;padding:40px 0;">
       <div style="font-size:56px;margin-bottom:16px;">✅</div>
       <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:1px;color:#4ade80;margin-bottom:12px;">¡Solicitud Enviada!</div>
-      <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el Albergue Olímpico Summer Open 2026.</p>
+      <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el Cidra Open 2026.</p>
     </div>
   </div>
 </div>
@@ -4170,14 +4238,14 @@ Maria Lopez,Ana Torres,B</code>
 </div>
 
 <!-- ══════════════════════════════════════════
-     REGLAMENTO MODAL — TRUJILLO ALTO OPEN 2026
+     REGLAMENTO MODAL — CIDRA OPEN 2026
 ═══════════════════════════════════════════ -->
 <div id="reglamentoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1200;overflow-y:auto;padding:16px;">
   <div style="max-width:680px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:28px 28px 36px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div>
         <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">REGLAMENTO</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Albergue Olímpico Summer Open 2026 · Sáb 4 &amp; Dom 5 de julio</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Cidra Open 2026 · 15, 16, 22 y 23 de agosto</div>
       </div>
       <button onclick="closeReglamentoModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
     </div>
@@ -4188,7 +4256,8 @@ Maria Lopez,Ana Torres,B</code>
 
       <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.15);border-radius:10px;padding:16px 18px;margin-bottom:24px;">
         <strong style="color:var(--accent);">1. FECHA</strong><br>
-        4 y 5 de julio de 2026.
+        15, 16, 22 y 23 de agosto de 2026.<br>
+        <span style="font-size:13px;color:var(--muted);">Parte 1: 15 y 16 de agosto &nbsp;·&nbsp; Parte 2: 22 y 23 de agosto</span>
       </div>
 
       <div style="margin-bottom:18px;">
@@ -4198,98 +4267,138 @@ Maria Lopez,Ana Torres,B</code>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">3. SEDE</strong><br>
-        Albergue Olímpico, Salinas, Puerto Rico · 12 mesas (sábado) · 22 mesas (domingo).
+        Cancha Juanito Cabello — Cidra, Puerto Rico · 10 mesas de competencia.
       </div>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">4. ELEGIBILIDAD</strong><br>
-        La participación está abierta a toda persona miembro de la FPTM y jugadores invitados.
+        La participación estará abierta a todos los miembros activos de la FPRTM y a los jugadores invitados autorizados por el Comité Organizador.
       </div>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">5. EVENTOS</strong>
         <div style="margin-top:12px;">
-          <div style="font-weight:600;color:var(--text);margin-bottom:8px;">Sábado 4 de julio</div>
+          <div style="font-weight:600;color:var(--text);margin-bottom:8px;">Sábado 15 de agosto</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
-            <li>1800 puntos o menos – 9:00 a.m. | máx. 30 jugadores</li>
-            <li>1700 puntos o menos – 9:00 a.m. | máx. 30 jugadores</li>
-            <li>1500 puntos o menos – 11:00 a.m. | máx. 30 jugadores</li>
-            <li>7 o Menos Abierto – 12:30 p.m. | menores de 8 años al 31-dic-2026 · Trofeos</li>
-            <li>Seniors: 40 años o más (Mixto) – 12:30 p.m.</li>
-            <li>11 o Menos Masculino – 12:30 p.m. | menores de 12 años al 31-dic-2026</li>
-            <li>11 o Menos Femenino – 12:30 p.m. | menores de 12 años al 31-dic-2026</li>
-            <li>15 o Menos Masculino – 12:30 p.m. | menores de 16 años al 31-dic-2026</li>
-            <li>15 o Menos Femenino – 12:30 p.m. | menores de 16 años al 31-dic-2026</li>
+            <li>Rating 1800 o menos – 9:00 a.m.</li>
+            <li>Abierto (Open Individual) – 11:30 a.m.</li>
+            <li>15 años o menos Masculino – 2:00 p.m. | menores de 16 al 31-dic-2026</li>
+            <li>15 años o menos Femenino – 2:00 p.m. | menores de 16 al 31-dic-2026</li>
           </ol>
-          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 5 de julio</div>
+          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 16 de agosto</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
-            <li>1950 puntos o menos – 9:00 a.m. | máx. 30 jugadores</li>
-            <li>1600 puntos o menos – 9:00 a.m. | máx. 30 jugadores</li>
-            <li>9 o Menos Masculino – 12:30 p.m. | menores de 10 años al 31-dic-2026 · Trofeos</li>
-            <li>9 o Menos Femenino – 12:30 p.m. | menores de 10 años al 31-dic-2026 · Trofeos</li>
-            <li>13 o Menos Masculino – 12:30 p.m. | menores de 14 años al 31-dic-2026</li>
-            <li>13 o Menos Femenino – 12:30 p.m. | menores de 14 años al 31-dic-2026</li>
-            <li>Sub-21 Mixto – 12:30 p.m. | menores de 21 años al 31-dic-2026</li>
+            <li>Rating 1900 o menos – 9:00 a.m.</li>
+            <li>11 años o menos Masculino – 11:30 a.m. | menores de 12 al 31-dic-2026</li>
+            <li>11 años o menos Femenino – 11:30 a.m. | menores de 12 al 31-dic-2026</li>
+            <li>Dobles Abierto – 2:00 p.m.</li>
+          </ol>
+          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Sábado 22 de agosto</div>
+          <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
+            <li>Rating 1700 o menos – 9:00 a.m.</li>
+            <li>Rating 1500 o menos – 11:30 a.m.</li>
+            <li>Seniors: 40 años o más (Mixto) – 2:00 p.m.</li>
+          </ol>
+          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 23 de agosto</div>
+          <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
+            <li>Rating 1600 o menos – 9:00 a.m.</li>
+            <li>7 años o menos Abierto – 11:00 a.m. | menores de 8 al 31-dic-2026 · Trofeos</li>
+            <li>9 años o menos Masculino – 11:00 a.m. | menores de 10 al 31-dic-2026 · Trofeos</li>
+            <li>9 años o menos Femenino – 11:00 a.m. | menores de 10 al 31-dic-2026 · Trofeos</li>
+            <li>13 años o menos Masculino – 2:00 p.m. | menores de 14 al 31-dic-2026</li>
+            <li>13 años o menos Femenino – 2:00 p.m. | menores de 14 al 31-dic-2026</li>
           </ol>
           <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#f59e0b;margin-top:12px;">
-            ⚠ Máx. 2 categorías por día · Las categorías del mismo día no pueden coincidir en horario · Categorías de Rating: máx. 30 jugadores.
+            ⚠ Máximo 2 categorías por día, siempre que no coincidan en horario.
           </div>
         </div>
       </div>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">6. REGLAS</strong><br>
-        Es responsabilidad del jugador, padre, madre o entrenador inscribir al participante en la categoría correspondiente a su edad. El evento se conducirá bajo el reglamento vigente de la Federación Internacional de Tenis de Mesa y normas federativas. Toda decisión del Comité Técnico será final. En caso de empate en la fase de grupos, se aplicarán los criterios de desempate establecidos por la ITTF y la FPTM.
+        Es responsabilidad del jugador, padre, madre o entrenador inscribir al participante en la categoría correspondiente a su edad y nivel de rating. El evento se conducirá bajo el reglamento vigente de la Federación Internacional de Tenis de Mesa y normas federativas. Toda decisión del Comité Técnico será final. En caso de empate en la fase de grupos, se aplicarán los criterios de desempate establecidos por la ITTF y la FPRTM.
       </div>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">7. FORMATO DE COMPETENCIA</strong><br>
-        Se jugará una fase de grupos (3 jugadores por grupo o 2 jugadores por grupo, asignando 1 mesa por grupo). Todos los jugadores avanzarán a una llave de eliminación sencilla.
+        Se jugará una fase de grupos (3 jugadores por grupo, asignando 1 mesa por grupo). Todos los jugadores avanzarán a una llave de eliminación sencilla. Para Dobles Abierto se jugará el mismo formato: grupos de 3 parejas + eliminación sencilla.
+      </div>
+
+      <div style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.22);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
+        <strong style="color:var(--purple);">8. POLÍTICA DE ASCENSO</strong><br>
+        Para participar en una categoría superior a la natural del jugador, este debe estar inscrito en su categoría natural primero.
+        <ul style="padding-left:18px;margin:8px 0 0;font-size:13px;color:var(--muted);line-height:1.8;">
+          <li><strong style="color:var(--text);">Rating:</strong> un jugador de 1705 pts (categoría natural: Rating 1800) puede inscribirse en Rating 1900, siempre que también esté inscrito en Rating 1800.</li>
+          <li><strong style="color:var(--text);">Edad:</strong> un jugador de 13 años que desee participar en U15 debe estar inscrito en U13 también.</li>
+        </ul>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">El sistema de inscripción aplica esta regla automáticamente y te ofrecerá añadir tu categoría natural.</div>
       </div>
 
       <div style="margin-bottom:18px;">
-        <strong style="color:var(--accent);">8. PREMIACIÓN</strong><br>
-        En todas las categorías no se jugarán partidos para definir la 3ra. y 4ta. posición; se premiarán dos terceros lugares. Las categorías de 7 años o menos y 9 años o menos serán premiadas con trofeos para los primeros cuatro lugares.
+        <strong style="color:var(--accent);">9. PREMIACIÓN</strong><br>
+        En todas las categorías no se jugarán partidos para definir la 3ra. y 4ta. posición; se premiarán dos terceros lugares. Las categorías de 7 años o menos y 9 años o menos serán premiadas con trofeos para los primeros cuatro lugares más medallas para 5°-8°.
+        <div style="margin-top:12px;font-size:13px;color:var(--muted);line-height:1.9;">
+          <div style="color:var(--text);font-weight:600;margin-bottom:4px;">Sábado 15 de agosto</div>
+          Rating 1800 o menos — 1ro: $60 | 2do: $55 | 3ro: $50 (x2)<br>
+          Abierto — 1ro: $100 | 2do: $85 | 3ro: $70 (x2)<br>
+          15 o menos Masculino — 1ro: $40 | 2do: $35 | 3ro: $30 (x2)<br>
+          15 o menos Femenino — 1ro: $40 | 2do: $35 | 3ro: $30 (x2)
+          <div style="color:var(--text);font-weight:600;margin:10px 0 4px;">Domingo 16 de agosto</div>
+          Rating 1900 o menos — 1ro: $70 | 2do: $60 | 3ro: $55 (x2)<br>
+          11 o menos Masculino — 1ro: $30 | 2do: $25 | 3ro: $20 (x2)<br>
+          11 o menos Femenino — 1ro: $30 | 2do: $25 | 3ro: $20 (x2)<br>
+          Dobles Abierto — 1ro: $120 | 2do: $100 | 3ro: $80 (x2)
+          <div style="color:var(--text);font-weight:600;margin:10px 0 4px;">Sábado 22 de agosto</div>
+          Rating 1700 o menos — 1ro: $55 | 2do: $50 | 3ro: $45 (x2)<br>
+          Rating 1500 o menos — 1ro: $45 | 2do: $40 | 3ro: $35 (x2)<br>
+          Seniors 40 años o más — 1ro: $35 | 2do: $25 | 3ro: $20 (x2)
+          <div style="color:var(--text);font-weight:600;margin:10px 0 4px;">Domingo 23 de agosto</div>
+          Rating 1600 o menos — 1ro: $50 | 2do: $45 | 3ro: $40 (x2)<br>
+          7 o menos Abierto — Trofeo 1° al 4° + Medalla 5°-8°<br>
+          9 o menos Masculino — Trofeo 1° al 4° + Medalla 5°-8°<br>
+          9 o menos Femenino — Trofeo 1° al 4° + Medalla 5°-8°<br>
+          13 o menos Masculino — 1ro: $35 | 2do: $30 | 3ro: $25 (x2)<br>
+          13 o menos Femenino — 1ro: $35 | 2do: $30 | 3ro: $25 (x2)
+        </div>
       </div>
 
       <div style="margin-bottom:18px;">
-        <strong style="color:var(--accent);">9. ITINERARIO</strong><br>
-        Los jugadores deben estar <strong>45 minutos antes</strong> para verificación y registro, y <strong>20 minutos antes</strong> listos para jugar. El torneo contará con 18 mesas; para las categorías de 9:00 a.m., los grupos se irán llamando conforme las mesas estén disponibles.
+        <strong style="color:var(--accent);">10. ITINERARIO</strong><br>
+        Los jugadores deben estar presentes <strong>45 minutos antes</strong> de la hora de comienzo de su evento para verificación y registro, y listos en su mesa <strong>20 minutos antes</strong> del comienzo de los partidos. Para las categorías de las 9:00 a.m., los grupos se irán llamando a medida que las mesas estén disponibles.
       </div>
 
       <div style="margin-bottom:18px;">
-        <strong style="color:var(--accent);">10. INSCRIPCIONES</strong><br>
-        La hoja de inscripción será aceptada solo si está debidamente cumplimentada, incluyendo el pago de inscripción. Inscripciones en: ratings.ttmpr.xyz · Máximo 2 categorías por día sin coincidir en horario (máx. 4 en total entre sábado y domingo) · Categorías de Rating: máx. 30 jugadores; las categorías por edad no tienen límite de jugadores.
+        <strong style="color:var(--accent);">11. INSCRIPCIONES</strong><br>
+        La inscripción será aceptada únicamente si se completa correctamente y se realiza el pago correspondiente. Inscripciones en: ratings.ttmpr.xyz · Límite de participación: máximo 2 categorías por día, siempre que no coincidan en horario.
       </div>
 
       <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
-        <strong style="color:#ef4444;">11. FECHA LÍMITE</strong><br>
-        <strong style="color:var(--text);font-size:15px;">Jueves 2 de julio de 2026 · 8:00 p.m.</strong>
+        <strong style="color:#ef4444;">12. FECHA LÍMITE</strong><br>
+        <strong style="color:var(--text);font-size:15px;">Por anunciar</strong>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">La fecha límite oficial será anunciada próximamente por la Federación.</div>
       </div>
 
       <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
-        <strong style="color:var(--green);">12. MÉTODO DE PAGO</strong><br>
-        Las inscripciones serán aceptadas exclusivamente a través de <strong>ATH Móvil Business /fprtm</strong>.
+        <strong style="color:var(--green);">13. MÉTODO DE PAGO</strong><br>
+        Las inscripciones solo serán aceptadas a través de <strong>ATH Móvil Business /fprtm</strong>.
       </div>
 
       <div style="margin-bottom:18px;">
-        <strong style="color:var(--accent);">13. RESPONSABILIDAD</strong><br>
-        Cada jugador asumirá todo riesgo personal por lesión o daño en relación al torneo. La FPTM, el Comité Organizador y las empresas auspiciadoras quedan liberados de toda indemnización.
+        <strong style="color:var(--accent);">14. RESPONSABILIDAD</strong><br>
+        Cada jugador participará bajo su propia responsabilidad por cualquier lesión, accidente o daño que pudiera sufrir en relación con el torneo. La Federación Puertorriqueña de Tenis de Mesa, los miembros del Comité Organizador y las Empresas Auspiciadoras quedan liberados de toda indemnización por demandas presentadas por tales causas.
       </div>
 
       <div style="margin-bottom:24px;">
-        <strong style="color:var(--accent);">14. IMPREVISTOS</strong><br>
-        La FPTM se reserva la facultad de realizar modificaciones necesarias según el criterio del Comité Organizador.
+        <strong style="color:var(--accent);">15. IMPREVISTOS</strong><br>
+        La Federación Puertorriqueña de Tenis de Mesa se reserva la facultad de realizar en cualquier momento las modificaciones necesarias, según el criterio del Comité Organizador.
       </div>
 
       <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:13px;color:var(--muted);line-height:1.9;">
-        <strong style="color:var(--text);display:block;margin-bottom:8px;">Notas adicionales</strong>
+        <strong style="color:var(--text);display:block;margin-bottom:8px;">Notas generales</strong>
         <ul style="padding-left:18px;margin:0;">
-          <li>Participantes deben estar al corriente con la cuota anual de membresía ($20.00). De lo contrario, cargo adicional de $10.00 por no miembro.</li>
-          <li>El pago de inscripción solo se acepta a través de ATH Business /fprtm.</li>
+          <li>Los participantes deben estar al corriente en el pago de su cuota anual de membresía federativa ($20.00). Los jugadores que no sean miembros activos podrán participar pagando un fee adicional de no miembro de $10.00.</li>
+          <li>Los jugadores que le corresponda arbitrar y se nieguen a cumplir deben buscar un árbitro sustituto o pagar $2.00. Quienes se vayan sin arbitrar o buscar sustituto tendrán una multa de $5.00 y no podrán participar en próximos torneos hasta que la paguen.</li>
           <li>No se jugarán partidos para definir 3er y 4to lugar — se premiarán dos terceros lugares.</li>
-          <li>Trofeos para los primeros cuatro lugares en 7 años o menos y 9 años o menos.</li>
-          <li>Jugadores que les corresponda arbitrar y se nieguen deben conseguir sustituto o pagar $2.00. Quienes abandonen sin arbitrar ni conseguir sustituto recibirán multa de $5.00 y no podrán participar en futuros torneos hasta pagar.</li>
+          <li>El Comité Organizador se reserva el derecho de realizar ajustes para garantizar la fluidez del torneo.</li>
         </ul>
       </div>
 
@@ -6608,7 +6717,7 @@ async function subirGuardarBorrador() {
     }
   }
 
-  // Generate column name for this tournament: "Albergue Olímpico Summer Open 2026" → "rating_albergue_olimpico_open_2026"
+  // Generate column name for this tournament: "Cidra Open 2026" → "rating_cidra_open_2026"
   const colName = 'rating_' + nombre.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 
   try {
@@ -9665,29 +9774,95 @@ async function loadDirectoryData() {
 // ══════════════════════════════════════════
 // INSCRIPCIONES — CONSTANTS
 // ══════════════════════════════════════════
-// Albergue Olímpico Summer Open 2026 — Sáb 4 & Dom 5 de julio, Salinas, PR
-// Rule: max 2 categories per day · no same-slot conflicts · max 4 total
-// ratingGroup: identifies rating-capped categories for same-day conflict logic
-const INSC_CATEGORIES = [
-  // ── Sábado 4 de julio ──
-  { id: 'ev8',  name: '1800 o Menos',            desc: 'Premiación: $60 · $55 · $50 · $50 · máx 30 jugadores',           price: 20, slot: 'SAB-900',  maxRating: 1800, maxPlayers: 30, ratingGroup: 'rating', stadiumId: '1800-under' },
-  { id: 'ev16', name: '1700 o Menos',            desc: 'Premiación: $55 · $50 · $45 · $45 · máx 30 jugadores',           price: 20, slot: 'SAB-900',  maxRating: 1700, maxPlayers: 30, ratingGroup: 'rating', stadiumId: '1700-under' },
-  { id: 'ev7',  name: '1500 o Menos',            desc: 'Premiación: $45 · $40 · $35 · $35 · máx 30 jugadores',           price: 20, slot: 'SAB-1100', maxRating: 1500, maxPlayers: 30, ratingGroup: 'rating', stadiumId: '1500-under' },
-  { id: 'ev1',  name: '7 o Menos Abierto',       desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                               price: 11, slot: 'SAB-1230', maxAge: 7,                                              stadiumId: '7u---open' },
-  { id: 'ev2',  name: 'Seniors – 40 años o más', desc: 'Premiación: $35 · $30 · $25 · $25 · Mixto',                     price: 20, slot: 'SAB-1230', minAge: 40,                                             stadiumId: 'seniors---40' },
-  { id: 'ev3',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 · $20 · menores de 12 al 31-dic',   price: 20, slot: 'SAB-1230', maxAge: 11, sex: 'M',                                   stadiumId: '11u---masculino' },
-  { id: 'ev4',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 · $20 · menores de 12 al 31-dic',   price: 20, slot: 'SAB-1230', maxAge: 11, sex: 'F',                                   stadiumId: '11u---femenino' },
-  { id: 'ev5',  name: '15 o Menos Masculino',    desc: 'Premiación: $40 · $35 · $30 · $30 · menores de 16 al 31-dic',   price: 20, slot: 'SAB-1230', maxAge: 15, sex: 'M',                                   stadiumId: '15u---masculino' },
-  { id: 'ev6',  name: '15 o Menos Femenino',     desc: 'Premiación: $40 · $35 · $30 · $30 · menores de 16 al 31-dic',   price: 20, slot: 'SAB-1230', maxAge: 15, sex: 'F',                                   stadiumId: '15u---femenino' },
-  // ── Domingo 5 de julio ──
-  { id: 'ev10', name: '1950 o Menos',            desc: 'Premiación: $70 · $60 · $55 · $55 · máx 30 jugadores',           price: 20, slot: 'DOM-900',  maxRating: 1950, maxPlayers: 30, ratingGroup: 'rating', stadiumId: '1950-under' },
-  { id: 'ev9',  name: '1600 o Menos',            desc: 'Premiación: $50 · $45 · $40 · $40 · máx 30 jugadores',           price: 20, slot: 'DOM-900',  maxRating: 1600, maxPlayers: 30, ratingGroup: 'rating', stadiumId: '1600-under' },
-  { id: 'ev11', name: '9 o Menos Masculino',     desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                               price: 20, slot: 'DOM-1230', maxAge: 9,  sex: 'M',                                   stadiumId: '9u---masculino' },
-  { id: 'ev12', name: '9 o Menos Femenino',      desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                               price: 20, slot: 'DOM-1230', maxAge: 9,  sex: 'F',                                   stadiumId: '9u---femenino' },
-  { id: 'ev13', name: '13 o Menos Masculino',    desc: 'Premiación: $35 · $30 · $25 · $25 · menores de 14 al 31-dic',   price: 20, slot: 'DOM-1230', maxAge: 13, sex: 'M',                                   stadiumId: '13u---masculino' },
-  { id: 'ev14', name: '13 o Menos Femenino',     desc: 'Premiación: $35 · $30 · $25 · $25 · menores de 14 al 31-dic',   price: 20, slot: 'DOM-1230', maxAge: 13, sex: 'F',                                   stadiumId: '13u---femenino' },
-  { id: 'ev15', name: 'Sub-21 Mixto',            desc: 'Premiación: $65 · $55 · $45 · $45 · menores de 21 al 31-dic',   price: 20, slot: 'DOM-1230', maxAge: 21,                                             stadiumId: 'sub21---abierto' },
+// Cidra Open de Tenis de Mesa 2026 — 15, 16, 22 y 23 de agosto
+// Cancha Juanito Cabello, Cidra PR · 10 mesas
+const TORNEO_ACTIVO       = 'Cidra Open 2026';
+const TORNEO_SEDE         = 'Cancha Juanito Cabello, Cidra, PR';
+const TORNEO_FECHAS_LABEL = '15, 16, 22 y 23 de agosto';
+const TORNEO_MAPS_URL     = 'https://maps.google.com/?q=Cancha+Juanito+Cabello+Cidra+Puerto+Rico';
+
+// The four competition days (2 weekends). Day key = slot prefix.
+const INSC_DAYS = [
+  { key: 'S15', label: 'Sábado 15 de agosto',  short: 'Sáb 15', parte: 1 },
+  { key: 'D16', label: 'Domingo 16 de agosto', short: 'Dom 16', parte: 1 },
+  { key: 'S22', label: 'Sábado 22 de agosto',  short: 'Sáb 22', parte: 2 },
+  { key: 'D23', label: 'Domingo 23 de agosto', short: 'Dom 23', parte: 2 },
 ];
+const INSC_DAY_BY_KEY = Object.fromEntries(INSC_DAYS.map(d => [d.key, d]));
+// Slot format is "<DAYKEY>-<TIME>", so the day is the prefix before the dash.
+function catDayKey(cat)   { return String(cat?.slot || '').split('-')[0]; }
+function catDayLabel(cat) { return INSC_DAY_BY_KEY[catDayKey(cat)]?.label || ''; }
+
+// Rule: max 2 categories per day · no same-slot conflicts
+// ratingGroup: identifies rating-capped categories for the ascenso policy
+const INSC_CATEGORIES = [
+  // ── Sábado 15 de agosto ──
+  { id: 'ev1',  name: '1800 o Menos',            desc: 'Premiación: $60 · $55 · $50 (x2)',                            price: 20, slot: 'S15-900',  maxRating: 1800, ratingGroup: 'rating', stadiumId: '1800-under' },
+  { id: 'ev2',  name: 'Abierto (Open Individual)', desc: 'Premiación: $100 · $85 · $70 (x2) · Todos los niveles',     price: 25, slot: 'S15-1130', openDivision: true,                     stadiumId: 'abierto---open' },
+  { id: 'ev3',  name: '15 o Menos Masculino',    desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S15-1400', maxAge: 15, sex: 'M',                   stadiumId: '15u---masculino' },
+  { id: 'ev4',  name: '15 o Menos Femenino',     desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S15-1400', maxAge: 15, sex: 'F',                   stadiumId: '15u---femenino' },
+  // ── Domingo 16 de agosto ──
+  { id: 'ev5',  name: '1900 o Menos',            desc: 'Premiación: $70 · $60 · $55 (x2)',                            price: 20, slot: 'D16-900',  maxRating: 1900, ratingGroup: 'rating', stadiumId: '1900-under' },
+  { id: 'ev6',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1130', maxAge: 11, sex: 'M',                   stadiumId: '11u---masculino' },
+  { id: 'ev7',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1130', maxAge: 11, sex: 'F',                   stadiumId: '11u---femenino' },
+  { id: 'ev8',  name: 'Dobles Abierto',          desc: 'Premiación: $120 · $100 · $80 (x2) · $40 por pareja (una sola inscripción)', price: 40, slot: 'D16-1400', openDivision: true, dobles: true, stadiumId: 'dobles---abierto' },
+  // ── Sábado 22 de agosto ──
+  { id: 'ev9',  name: '1700 o Menos',            desc: 'Premiación: $55 · $50 · $45 (x2)',                            price: 20, slot: 'S22-900',  maxRating: 1700, ratingGroup: 'rating', stadiumId: '1700-under' },
+  { id: 'ev10', name: '1500 o Menos',            desc: 'Premiación: $45 · $40 · $35 (x2)',                            price: 20, slot: 'S22-1130', maxRating: 1500, ratingGroup: 'rating', stadiumId: '1500-under' },
+  { id: 'ev11', name: 'Seniors – 40 años o más', desc: 'Premiación: $35 · $25 · $20 (x2) · Mixto',                    price: 20, slot: 'S22-1400', minAge: 40,                             stadiumId: 'seniors---40' },
+  // ── Domingo 23 de agosto ──
+  { id: 'ev12', name: '1600 o Menos',            desc: 'Premiación: $50 · $45 · $40 (x2)',                            price: 20, slot: 'D23-900',  maxRating: 1600, ratingGroup: 'rating', stadiumId: '1600-under' },
+  { id: 'ev13', name: '7 o Menos Abierto',       desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                             price: 11, slot: 'D23-1100', maxAge: 7,                              stadiumId: '7u---abierto' },
+  { id: 'ev14', name: '9 o Menos Masculino',     desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                             price: 20, slot: 'D23-1100', maxAge: 9,  sex: 'M',                   stadiumId: '9u---masculino' },
+  { id: 'ev15', name: '9 o Menos Femenino',      desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                             price: 20, slot: 'D23-1100', maxAge: 9,  sex: 'F',                   stadiumId: '9u---femenino' },
+  { id: 'ev16', name: '13 o Menos Masculino',    desc: 'Premiación: $35 · $30 · $25 (x2) · menores de 14 al 31-dic', price: 20, slot: 'D23-1400', maxAge: 13, sex: 'M',                   stadiumId: '13u---masculino' },
+  { id: 'ev17', name: '13 o Menos Femenino',     desc: 'Premiación: $35 · $30 · $25 (x2) · menores de 14 al 31-dic', price: 20, slot: 'D23-1400', maxAge: 13, sex: 'F',                   stadiumId: '13u---femenino' },
+];
+
+// ── POLÍTICA DE ASCENSO ────────────────────────────────────────────────────
+// To enter a category above your natural one you must also be registered in
+// your natural category. Natural = the tightest category you still qualify
+// for (lowest rating cap ≥ your rating; lowest age cap you still fit).
+// The Open division and Seniors sit outside the ladder and are exempt.
+function inscNaturalRatingCat(rating) {
+  if (rating === null || rating === undefined) return null;
+  return INSC_CATEGORIES
+    .filter(c => c.maxRating && c.maxRating >= rating)
+    .sort((a, b) => a.maxRating - b.maxRating)[0] || null;
+}
+function inscNaturalAgeCat(dob, sex) {
+  if (!dob) return null;
+  const s = (sex || '').toUpperCase();
+  return INSC_CATEGORIES
+    .filter(c => c.maxAge && inscCatEligibleStatic(c, { rating: null, sex: s, dob }))
+    .sort((a, b) => a.maxAge - b.maxAge)[0] || null;
+}
+// Returns the category that must accompany `cat`, or null when none applies.
+function inscAscensoRequirement(cat, { rating, dob, sex }) {
+  if (!cat || cat.openDivision || cat.minAge) return null;
+  let natural = null;
+  if (cat.maxRating)  natural = inscNaturalRatingCat(rating);
+  else if (cat.maxAge) natural = inscNaturalAgeCat(dob, sex);
+  if (!natural || natural.id === cat.id) return null;
+  // Same time slot ⇒ impossible to satisfy, so the rule cannot apply.
+  if (natural.slot === cat.slot) return null;
+  return natural;
+}
+
+const INSC_SLOT_LABELS = {
+  'S15-900':  'Sáb 15 agosto · 9:00 a.m.',
+  'S15-1130': 'Sáb 15 agosto · 11:30 a.m.',
+  'S15-1400': 'Sáb 15 agosto · 2:00 p.m.',
+  'D16-900':  'Dom 16 agosto · 9:00 a.m.',
+  'D16-1130': 'Dom 16 agosto · 11:30 a.m.',
+  'D16-1400': 'Dom 16 agosto · 2:00 p.m.',
+  'S22-900':  'Sáb 22 agosto · 9:00 a.m.',
+  'S22-1130': 'Sáb 22 agosto · 11:30 a.m.',
+  'S22-1400': 'Sáb 22 agosto · 2:00 p.m.',
+  'D23-900':  'Dom 23 agosto · 9:00 a.m.',
+  'D23-1100': 'Dom 23 agosto · 11:00 a.m.',
+  'D23-1400': 'Dom 23 agosto · 2:00 p.m.',
+};
 
 const CLUBS_LIST = [
   'Aguilas de la Montaña Utuado',
@@ -9763,14 +9938,6 @@ function normalizeClub(raw) {
   return { club: s, escuela: null };
 }
 
-const INSC_SLOT_LABELS = {
-  'SAB-900':  'Sáb 4 julio · 9:00 a.m.',
-  'SAB-1100': 'Sáb 4 julio · 11:00 a.m.',
-  'SAB-1230': 'Sáb 4 julio · 12:30 p.m.',
-  'DOM-900':  'Dom 5 julio · 9:00 a.m.',
-  'DOM-1230': 'Dom 5 julio · 12:30 p.m.',
-};
-
 // Multas por no arbitrar (Reglamento Art. 9) — se aplican en el próximo torneo
 const INSC_MULTAS = {
   84593: { monto: 5, razon: 'Multa por no arbitrar en torneo anterior' },
@@ -9832,6 +9999,7 @@ const inscState = {
   existingInsc: null,    // existing insc_registro row if player already inscribed
   multa: null,           // { monto, razon } if player has a pending fine
   availableCredit: null, // approved credit row from a cancelled previous registration
+  doblesPareja: {},      // cat.id → partner name typed for a doubles event
   _dobFromDb: false,
   _sexFromDb: false,
   _clubFromDb: false,
@@ -9858,7 +10026,9 @@ function inscUpdateProgress(step) {
 // ══════════════════════════════════════════
 let inscripcionesOpen = false;
 let inscSbSynced = false;   // true once a successful Supabase round-trip happens
-const INSC_DEADLINE = new Date('2026-07-02T20:00:00-04:00'); // jue. 2 julio · 8:00 p.m. AST
+// Cidra Open 2026 — el reglamento aún no fija fecha límite; placeholder: jueves
+// antes de la Parte 1. Ajustar cuando la federación la anuncie oficialmente.
+const INSC_DEADLINE = new Date('2026-08-13T20:00:00-04:00'); // jue. 13 agosto · 8:00 p.m. AST
 
 async function loadInscripcionesConfig() {
   // Show locally-cached value instantly while network resolves
@@ -9896,7 +10066,7 @@ function applyInscripcionesState() {
   const effectivelyOpen = inscripcionesOpen && !deadlinePassed;
   if (cerradasMsg) {
     cerradasMsg.innerHTML = deadlinePassed
-      ? 'La fecha límite de inscripción (jue. 2 julio · 8:00 p.m.) ya pasó.<br>Para información contacta a la FPTM.'
+      ? 'La fecha límite de inscripción (jue. 13 agosto · 8:00 p.m.) ya pasó.<br>Para información contacta a la FPTM.'
       : 'El periodo de inscripción para este torneo ha finalizado.<br>Para información contacta a la FPTM.';
   }
 
@@ -9989,8 +10159,12 @@ const UPCOMING_EVENTS = [
     target: new Date('2026-07-04T08:00:00'), end: new Date('2026-07-05T23:59:59'),
     logo: 'Logo_Albergue_Olimpico_Summer_Open_2026.svg',
     mapsUrl: 'https://maps.google.com/?q=Albergue+Ol%C3%ADmpico+Salinas+Puerto+Rico' },
-  { name: 'Cidra Open', dateLabel: 'Partes 1 & 2 · Agosto 2026',
-    target: new Date('2026-08-15T08:00:00'), end: new Date('2026-08-16T23:59:59') },
+  { name: 'Cidra Open 2026 · Parte 1', dateLabel: 'Sábado 15 & Domingo 16 de agosto · Cidra, PR',
+    target: new Date('2026-08-15T09:00:00'), end: new Date('2026-08-16T23:59:59'),
+    mapsUrl: TORNEO_MAPS_URL },
+  { name: 'Cidra Open 2026 · Parte 2', dateLabel: 'Sábado 22 & Domingo 23 de agosto · Cidra, PR',
+    target: new Date('2026-08-22T09:00:00'), end: new Date('2026-08-23T23:59:59'),
+    mapsUrl: TORNEO_MAPS_URL },
 ];
 const FINISHED_BADGE_DAYS = 7; // días que se muestra "Torneo finalizado" tras el evento
 
@@ -10072,70 +10246,6 @@ function initNextEventCountdown() {
   }
   tick();
   _countdownTimer = setInterval(tick, 60000);
-}
-
-// ══════════════════════════════════════════
-// MIGRAR INSCRITOS — Trujillo Alto → Albergue Olímpico
-// ══════════════════════════════════════════
-async function migrarInscripcionesDesdeTraujillo() {
-  if (!isAdmin()) { showLogin(); return; }
-  const OLD_TORNEO = 'Trujillo Alto Open 2026';
-  const NEW_TORNEO = 'Albergue Olímpico Summer Open 2026';
-
-  const card = document.getElementById('adminCardMigrar');
-  if (card) { card.style.opacity = '0.5'; card.style.pointerEvents = 'none'; }
-
-  try {
-    // 1. Fetch old registrations
-    const { data: old_rows, error: e1 } = await _supabase
-      .from('insc_registro').select('*').eq('torneo', OLD_TORNEO);
-    if (e1) throw new Error(e1.message);
-    if (!old_rows || old_rows.length === 0) {
-      alert('No se encontraron inscripciones en "' + OLD_TORNEO + '".');
-      return;
-    }
-
-    // 2. Fetch existing new-torneo registrations to avoid duplicates
-    const { data: new_rows, error: e2 } = await _supabase
-      .from('insc_registro').select('member_id').eq('torneo', NEW_TORNEO);
-    if (e2) throw new Error(e2.message);
-    const already = new Set((new_rows || []).map(r => String(r.member_id)));
-
-    // 3. Build rows to insert (skip those already registered)
-    const toInsert = old_rows
-      .filter(r => !already.has(String(r.member_id)))
-      .map(({ id, created_at, ...rest }) => ({
-        ...rest,
-        torneo:     NEW_TORNEO,
-        updated_at: new Date().toISOString(),
-      }));
-
-    const skipped = old_rows.length - toInsert.length;
-
-    if (toInsert.length === 0) {
-      alert(`Todos los ${old_rows.length} jugador(es) de "${OLD_TORNEO}" ya están inscritos en el nuevo torneo.`);
-      return;
-    }
-
-    // 4. Insert in batches of 50
-    const BATCH = 50;
-    for (let i = 0; i < toInsert.length; i += BATCH) {
-      const { error: e3 } = await _supabase
-        .from('insc_registro').insert(toInsert.slice(i, i + BATCH));
-      if (e3) throw new Error(e3.message);
-    }
-
-    const msg = `✅ Migración completa.\n\n`
-      + `• ${toInsert.length} inscripción(es) restablecida(s) desde "${OLD_TORNEO}".\n`
-      + (skipped ? `• ${skipped} jugador(es) omitidos (ya estaban inscritos en el nuevo torneo).` : '');
-    alert(msg);
-    await loadCatCounts();
-    applyInscripcionesState();
-  } catch(e) {
-    alert('Error durante la migración:\n' + e.message);
-  } finally {
-    if (card) { card.style.opacity = ''; card.style.pointerEvents = ''; }
-  }
 }
 
 async function toggleInscripciones() {
@@ -10433,7 +10543,7 @@ function renderPastDetailGestionar() {
 
   rows.forEach((row, i) => {
     const cats = Array.isArray(row.categorias) ? row.categorias : [];
-    const catNames = cats.map(c => c.name).join(', ') || '—';
+    const catNames = cats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja}${c.rating_combinado != null ? ` · comb. ★${c.rating_combinado}` : ''})` : '')).join(', ') || '—';
     const fecha = row.created_at
       ? new Date(row.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric', year: 'numeric' })
       : '—';
@@ -10633,6 +10743,7 @@ function inscSelectPlayer(id) {
   inscState.dob = null;
   inscState.existingInsc = null;
   inscState.availableCredit = null;
+  inscState.doblesPareja = {};
   inscState._dobFromDb = false;
   inscState.multa = INSC_MULTAS[p.id] || null;
   const normalizedSex = normSexForForm(p.sex);
@@ -10732,7 +10843,7 @@ function renderInscPlayerCard(p) {
       yainEl.style.color = 'var(--muted)';
     } else if (existing) {
       yainEl.style.display = '';
-      const catNames = (existing.categorias || []).map(c => c.name).join(', ');
+      const catNames = (existing.categorias || []).map(c => c.name + (c.pareja ? ` · pareja: ${c.pareja}${c.rating_combinado != null ? ` (★${c.rating_combinado})` : ''}` : '')).join(', ');
       const cancelPending  = existing.cancel_requested && existing.cancel_status !== 'rejected';
       const cancelApproved = existing.cancel_status === 'approved';
       if (cancelApproved) {
@@ -10772,7 +10883,7 @@ async function fetchPlayerDob(memberId) {
 async function fetchExistingInscripcion(memberId) {
   try {
     const data = await sbGet('insc_registro',
-      `?torneo=eq.Albergue%20Ol%C3%ADmpico%20Summer%20Open%202026&member_id=eq.${memberId}&select=*&limit=1`);
+      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&member_id=eq.${memberId}&select=*&limit=1`);
     return data?.[0] || null;
   } catch(e) { return null; }
 }
@@ -10781,18 +10892,39 @@ async function fetchExistingInscripcion(memberId) {
 // INSCRIPCIONES — CATEGORY COUNTS (capacity)
 // ══════════════════════════════════════════
 let _catCounts = {}; // catId → number of players currently registered
+// A doubles pair is ONE registration: the player who submits it claims their
+// partner. Both sides are then taken — neither can enter doubles again nor be
+// picked by anyone else. catId → Map(playerId → { role, conNombre, conId }).
+let _doblesTaken = {};
 
 async function loadCatCounts() {
   try {
     const data = await sbGet('insc_registro',
-      '?torneo=eq.Albergue%20Ol%C3%ADmpico%20Summer%20Open%202026&select=categorias');
+      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&select=member_id,categorias`);
     _catCounts = {};
+    _doblesTaken = {};
+    INSC_CATEGORIES.filter(c => c.dobles).forEach(c => { _doblesTaken[c.id] = new Map(); });
     (data || []).forEach(row => {
       (Array.isArray(row.categorias) ? row.categorias : []).forEach(c => {
         _catCounts[c.id] = (_catCounts[c.id] || 0) + 1;
+        const taken = _doblesTaken[c.id];
+        if (!taken) return;
+        const owner = ALL_PLAYERS.find(p => String(p.id) === String(row.member_id));
+        if (row.member_id != null) {
+          taken.set(String(row.member_id), { role: 'titular', conNombre: c.pareja || '—', conId: c.pareja_id ?? null });
+        }
+        if (c.pareja_id != null) {
+          taken.set(String(c.pareja_id), { role: 'pareja', conNombre: owner?.name || 'otro jugador', conId: row.member_id ?? null });
+        }
       });
     });
   } catch(e) { /* silent — capacity check skipped if fetch fails */ }
+}
+
+// Is this player already committed to a doubles event (either side of a pair)?
+function doblesTakenFor(catId, playerId) {
+  if (playerId == null) return null;
+  return _doblesTaken[catId]?.get(String(playerId)) || null;
 }
 
 // ══════════════════════════════════════════
@@ -10820,7 +10952,7 @@ async function loadInscStats() {
   if (errorEl)   errorEl.style.display   = 'none';
   try {
     const rows = await sbGet('insc_registro',
-      '?torneo=eq.Albergue%20Ol%C3%ADmpico%20Summer%20Open%202026&select=member_id,categorias');
+      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&select=member_id,categorias`);
 
     const counts      = {};   // catId → número de inscritos
     const ratings      = {};  // catId → [rating, ...]
@@ -10985,6 +11117,16 @@ function inscCatEligible(cat) {
     }
   }
 
+  // Doubles: one registration covers the pair, so both sides are already taken
+  if (cat.dobles) {
+    const taken = doblesTakenFor(cat.id, p.id);
+    if (taken) {
+      return { ok: false, doblesTaken: taken, reason: taken.role === 'pareja'
+        ? `Ya estás inscrito en dobles como pareja de ${taken.conNombre}.`
+        : `Ya inscribiste esta pareja con ${taken.conNombre}.` };
+    }
+  }
+
   // Conflict with already-inscribed categories (slot and day cap)
   const existingCats = (inscState.existingInsc?.categorias || [])
     .map(c => INSC_CATEGORIES.find(ec => ec.id === c.id)).filter(Boolean);
@@ -10993,15 +11135,36 @@ function inscCatEligible(cat) {
     if (sameSlot) {
       return { ok: false, reason: `Ya inscrito en otra categoría a esta misma hora.` };
     }
-    const catDay = cat.slot.startsWith('SAB') ? 'SAB' : 'DOM';
-    const dayCount = existingCats.filter(ec => ec.slot.startsWith(catDay)).length;
+    const day = catDayKey(cat);
+    const dayCount = existingCats.filter(ec => catDayKey(ec) === day).length;
     if (dayCount >= 2) {
-      const dayLabel = catDay === 'SAB' ? 'sábado' : 'domingo';
-      return { ok: false, reason: `Máximo de 2 categorías por día (${dayLabel}) alcanzado.` };
+      return { ok: false, reason: `Máximo de 2 categorías el ${catDayLabel(cat).toLowerCase()}.` };
     }
   }
 
+  // Política de ascenso — locked until the natural category is taken
+  const missing = inscAscensoMissing(cat);
+  if (missing) {
+    return { ok: false, reason: `Primero selecciona tu categoría natural: ${missing.name}.`, ascensoLock: missing };
+  }
+
   return { ok: true };
+}
+
+// Is the ascenso requirement for `cat` already satisfied by the player's
+// existing registrations plus what they have selected in this session?
+function inscAscensoMissing(cat) {
+  const p = inscState.player;
+  if (!p) return null;
+  const req = inscAscensoRequirement(cat, {
+    rating: p.rating,
+    dob: inscState.dob,
+    sex: (inscState.sex || p.sex || '').toUpperCase(),
+  });
+  if (!req) return null;
+  const has = (inscState.existingInsc?.categorias || []).some(c => c.id === req.id)
+           || inscState.selectedCats.has(req.id);
+  return has ? null : req;
 }
 
 // ══════════════════════════════════════════
@@ -11019,13 +11182,18 @@ function inscRenderCategories() {
     const elig       = isExisting ? { ok: true } : inscCatEligible(cat);
     const disabled   = isExisting || !elig.ok;
 
-    const border  = isExisting ? '#22c55e' : sel ? 'var(--accent)' : !elig.ok ? 'rgba(255,255,255,0.05)' : 'var(--border)';
-    const bg      = isExisting ? 'rgba(34,197,94,0.07)' : sel ? 'rgba(56,189,248,0.08)' : !elig.ok ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)';
-    const opacity = !elig.ok && !isExisting ? '0.45' : '1';
+    // Locked by the ascenso policy → reads as "do this first", not "you don't qualify"
+    const locked = !isExisting && !elig.ok && !!elig.ascensoLock;
+
+    const border  = isExisting ? '#22c55e' : sel ? 'var(--accent)' : locked ? 'rgba(129,140,248,0.35)' : !elig.ok ? 'rgba(255,255,255,0.05)' : 'var(--border)';
+    const bg      = isExisting ? 'rgba(34,197,94,0.07)' : sel ? 'rgba(56,189,248,0.08)' : locked ? 'rgba(129,140,248,0.05)' : !elig.ok ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)';
+    const opacity = !elig.ok && !isExisting ? (locked ? '0.8' : '0.45') : '1';
     const cursor  = disabled ? 'default' : 'pointer';
 
     const checkEl = isExisting
       ? `<span style="font-size:14px;flex-shrink:0;">✅</span>`
+      : locked
+      ? `<span style="font-size:13px;flex-shrink:0;line-height:1.35;">🔒</span>`
       : `<div style="width:18px;height:18px;border-radius:4px;border:1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'};background:${sel ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           ${sel ? '<span style="color:#fff;font-size:11px;font-weight:700">✓</span>' : ''}
         </div>`;
@@ -11033,12 +11201,15 @@ function inscRenderCategories() {
     const count    = _catCounts[cat.id] || 0;
     const capBadge = cat.maxPlayers && !isExisting
       ? ` <span style="color:${count >= cat.maxPlayers ? '#ef4444' : 'var(--muted)'};">(${count}/${cat.maxPlayers})</span>` : '';
-    const nameColor = isExisting ? '#86efac' : !elig.ok ? 'var(--muted)' : 'var(--text)';
+    const nameColor = isExisting ? '#86efac' : locked ? 'var(--text)' : !elig.ok ? 'var(--muted)' : 'var(--text)';
     const subText  = isExisting
       ? `<span style="color:#4ade80;font-size:10px;font-weight:600;">Ya inscrito · $${cat.price}</span>`
+      : locked
+      ? `<span style="color:#a5b4fc;font-size:10px;font-weight:600;">Requiere: ${elig.ascensoLock.name}</span>
+         <span style="color:var(--muted);font-size:10px;"> · $${cat.price} · ${(INSC_SLOT_LABELS[cat.slot] || cat.slot).split('·').pop().trim()}</span>`
       : `<span style="color:var(--muted);font-size:10px;">${!elig.ok ? elig.reason : cat.desc} · $${cat.price}${capBadge} · ${(INSC_SLOT_LABELS[cat.slot] || cat.slot).split('·').pop().trim()}</span>`;
 
-    return `<div onclick="${disabled ? '' : `inscToggleCat('${cat.id}')`}"
+    return `<div onclick="${disabled ? '' : `inscToggleCat('${cat.id}')`}"${locked ? ` title="Política de ascenso: primero debes seleccionar ${elig.ascensoLock.name}."` : ''}
       style="display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border-radius:9px;border:1.5px solid ${border};background:${bg};cursor:${cursor};opacity:${opacity};transition:all .15s;margin-bottom:5px;">
       <div style="margin-top:1px;">${checkEl}</div>
       <div style="flex:1;min-width:0;">
@@ -11048,15 +11219,6 @@ function inscRenderCategories() {
     </div>`;
   };
 
-  const sabCats = INSC_CATEGORIES.filter(c => c.slot.startsWith('SAB'));
-  const domCats = INSC_CATEGORIES.filter(c => c.slot.startsWith('DOM'));
-
-  // Derive day header from first slot in each group via INSC_SLOT_LABELS
-  const _fmtDay = slot => (INSC_SLOT_LABELS[slot] || '').split('·')[0].trim()
-    .replace(/^Sáb\s+/i, 'Sábado ').replace(/^Dom\s+/i, 'Domingo ') || 'Sábado';
-  const sabDayLabel = _fmtDay(sabCats[0]?.slot);
-  const domDayLabel = _fmtDay(domCats[0]?.slot) || 'Domingo';
-
   let html = '';
   if (existingIds.size > 0) {
     html += `<div style="margin-bottom:10px;padding:8px 12px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:8px;font-size:12px;color:var(--muted);">
@@ -11064,18 +11226,118 @@ function inscRenderCategories() {
     </div>`;
   }
 
-  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;">
-    <div>
-      <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);">🗓 ${sabDayLabel}</div>
-      ${sabCats.map(buildCatCard).join('')}
-    </div>
-    <div>
-      <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);">🗓 ${domDayLabel}</div>
-      ${domCats.map(buildCatCard).join('')}
-    </div>
+  html += `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;font-size:11.5px;color:#f59e0b;line-height:1.5;">
+    ⚠ Máx. 2 categorías por día, sin coincidir en horario · Para subir de categoría debes estar inscrito también en tu categoría natural.
   </div>`;
 
+  // One block per competition day, grouped by weekend (Parte 1 / Parte 2).
+  // Doubles is pulled out into its own block — it needs a partner.
+  [1, 2].forEach(parte => {
+    const days = INSC_DAYS.filter(d => d.parte === parte);
+    html += `<div style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.12em;margin:${parte === 1 ? '0' : '18px'} 0 8px;">
+        Parte ${parte} — ${parte === 1 ? '15 y 16 de agosto' : '22 y 23 de agosto'}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;">`;
+    days.forEach(d => {
+      const cats = INSC_CATEGORIES.filter(c => catDayKey(c) === d.key && !c.dobles);
+      html += `<div>
+        <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);">🗓 ${d.label}</div>
+        ${cats.map(buildCatCard).join('')}
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  // ── Dobles ──────────────────────────────────────────────────────────────
+  const doblesCats = INSC_CATEGORIES.filter(c => c.dobles);
+  if (doblesCats.length) {
+    html += `<div style="margin-top:20px;padding:14px;border:1px solid rgba(52,211,153,0.28);background:rgba(52,211,153,0.05);border-radius:12px;">
+      <div style="font-size:10px;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px;">👥 Dobles</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+        Se juega en pareja y se inscribe <strong style="color:var(--text);">una sola vez</strong>: quien la registre selecciona a su compañero/a y paga los $40 de la pareja. El compañero queda inscrito automáticamente.
+      </div>
+      ${doblesCats.map(cat => {
+        const isExisting = existingIds.has(cat.id);
+        const sel = inscState.selectedCats.has(cat.id);
+
+        // Claimed as someone else's partner (or already registered the pair)
+        const taken = !isExisting && inscState.player ? doblesTakenFor(cat.id, inscState.player.id) : null;
+        if (taken) {
+          return `<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:9px;border:1.5px solid rgba(34,197,94,0.35);background:rgba(34,197,94,0.07);">
+            <span style="font-size:14px;flex-shrink:0;">✅</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:12px;font-weight:600;color:#86efac;line-height:1.3;">${cat.name}</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px;">
+                ${taken.role === 'pareja'
+                  ? `Ya estás inscrito como pareja de <strong style="color:var(--text);">${taken.conNombre}</strong> — no necesitas hacer nada más.`
+                  : `Ya inscribiste esta pareja con <strong style="color:var(--text);">${taken.conNombre}</strong>.`}
+              </div>
+            </div>
+          </div>`;
+        }
+        if (!sel && !isExisting) return buildCatCard(cat);
+
+        const me       = inscState.player;
+        const savedRow = (inscState.existingInsc?.categorias || []).find(c => c.id === cat.id);
+        const partnerId = isExisting ? (savedRow?.pareja_id ?? '') : (inscState.doblesPareja[cat.id] ?? '');
+        const partner   = ALL_PLAYERS.find(p => String(p.id) === String(partnerId));
+        const lockField = isExisting ? 'disabled' : '';
+        const fieldCss  = `width:100%;background:var(--card);border:1px solid rgba(52,211,153,0.35);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;box-sizing:border-box;`;
+
+        // Combined rating — shown once both slots are filled
+        const myRating = me?.rating ?? null;
+        const paRating = partner ? (partner.rating ?? null) : (isExisting ? (savedRow?.pareja_rating ?? null) : null);
+        const combined = (myRating !== null && paRating !== null) ? myRating + paRating : null;
+        const partnerName = partner?.name || savedRow?.pareja || '';
+
+        // Players already committed to this doubles event (either side of an
+        // existing pair) are not offered — a pair is registered only once.
+        const options = ALL_PLAYERS
+          .filter(p => !me || p.id !== me.id)
+          .filter(p => !doblesTakenFor(cat.id, p.id))
+          .slice()
+          .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+          .map(p => `<option value="${p.id}"${String(p.id) === String(partnerId) ? ' selected' : ''}>${p.name}${p.rating ? ` · ★${p.rating}` : ''}</option>`)
+          .join('');
+
+        return buildCatCard(cat) + `
+          <div style="margin:4px 0 0 26px;display:flex;flex-direction:column;gap:8px;">
+            <div>
+              <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px;">Encasillado 1 — Jugador</label>
+              <select disabled style="${fieldCss}opacity:.75;">
+                <option>${me ? `${me.name}${me.rating ? ` · ★${me.rating}` : ''}` : '—'}</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px;">Encasillado 2 — Pareja ${isExisting ? '(ya registrada)' : '*'}</label>
+              <select id="inscPareja_${cat.id}" ${lockField}
+                onchange="inscSetDoblesPareja('${cat.id}', this.value)"
+                style="${fieldCss}${isExisting ? 'opacity:.75;' : ''}">
+                <option value="">— Selecciona tu pareja —</option>
+                ${isExisting && partnerName && !partner ? `<option value="" selected>${partnerName}</option>` : ''}
+                ${options}
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:8px;padding:8px 12px;">
+              <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;">Rating combinado</span>
+              <span style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:${combined !== null ? '#34d399' : 'var(--muted)'};">
+                ${combined !== null ? `★ ${combined}` : '—'}
+              </span>
+            </div>
+            ${combined !== null ? `<div style="font-size:10px;color:var(--muted);margin-top:-2px;">${me.name} (${myRating}) + ${partnerName} (${paRating})</div>` : ''}
+            ${isExisting ? '' : '<div style="font-size:10px;color:var(--muted);">Los $40 cubren a la pareja completa. Tu compañero/a no debe inscribirse por separado.</div>'}
+          </div>`;
+      }).join('')}
+    </div>`;
+  }
+
   container.innerHTML = html;
+}
+
+// Partner picked for a doubles event — re-render so the combined rating updates
+function inscSetDoblesPareja(catId, playerId) {
+  inscState.doblesPareja[catId] = playerId || '';
+  inscRenderCategories();
 }
 
 // ══════════════════════════════════════════
@@ -11094,34 +11356,44 @@ function inscToggleCat(id) {
   }
 
   if (inscState.selectedCats.has(id)) {
+    // Removing a category that another selected one depends on? Warn first.
+    const dependents = [...inscState.selectedCats]
+      .map(selId => INSC_CATEGORIES.find(c => c.id === selId))
+      .filter(c => c && c.id !== id && inscAscensoRequirement(c, {
+        rating: inscState.player?.rating,
+        dob: inscState.dob,
+        sex: (inscState.sex || inscState.player?.sex || '').toUpperCase(),
+      })?.id === id);
+    if (dependents.length) {
+      alert(`No puedes quitar "${cat.name}": es tu categoría natural y la necesitas para participar en ${dependents.map(d => `"${d.name}"`).join(', ')}.`);
+      return;
+    }
     inscState.selectedCats.delete(id);
   } else {
-    const catDay = cat.slot.startsWith('SAB') ? 'SAB' : cat.slot.startsWith('DOM') ? 'DOM' : null;
+    const day = catDayKey(cat);
+    const dayLabel = catDayLabel(cat).toLowerCase();
 
-    if (catDay) {
-      const existingDayCats = (inscState.existingInsc?.categorias || [])
-        .map(c => INSC_CATEGORIES.find(ec => ec.id === c.id))
-        .filter(c => c && c.slot.startsWith(catDay));
-      const newDayCats = [...inscState.selectedCats]
-        .map(selId => INSC_CATEGORIES.find(c => c.id === selId))
-        .filter(c => c && c.slot.startsWith(catDay));
-      const sameDayCats = [...existingDayCats, ...newDayCats];
+    const existingDayCats = (inscState.existingInsc?.categorias || [])
+      .map(c => INSC_CATEGORIES.find(ec => ec.id === c.id))
+      .filter(c => c && catDayKey(c) === day);
+    const newDayCats = [...inscState.selectedCats]
+      .map(selId => INSC_CATEGORIES.find(c => c.id === selId))
+      .filter(c => c && catDayKey(c) === day);
+    const sameDayCats = [...existingDayCats, ...newDayCats];
 
-      // Block same-slot (same start time) conflict
-      const sameSlot = sameDayCats.find(c => c.slot === cat.slot);
-      if (sameSlot) {
-        const dayLabel = catDay === 'SAB' ? 'sábado' : 'domingo';
-        alert(`"${sameSlot.name}" y "${cat.name}" comienzan a la misma hora el ${dayLabel} — no puedes inscribirte en ambas.`);
-        return;
-      }
-
-      // Block exceeding 2 per day
-      if (sameDayCats.length >= 2) {
-        const dayLabel = catDay === 'SAB' ? 'sábado' : 'domingo';
-        alert(`Ya tienes 2 categorías el ${dayLabel}. No puedes añadir "${cat.name}".`);
-        return;
-      }
+    // Block same-slot (same start time) conflict
+    const sameSlot = sameDayCats.find(c => c.slot === cat.slot);
+    if (sameSlot) {
+      alert(`"${sameSlot.name}" y "${cat.name}" comienzan a la misma hora el ${dayLabel} — no puedes inscribirte en ambas.`);
+      return;
     }
+
+    // Block exceeding 2 per day
+    if (sameDayCats.length >= 2) {
+      alert(`Ya tienes 2 categorías el ${dayLabel}. No puedes añadir "${cat.name}".`);
+      return;
+    }
+
     inscState.selectedCats.add(id);
   }
   inscRenderCategories();
@@ -11225,6 +11497,7 @@ function inscResetForm() {
   inscState.existingInsc = null;
   inscState.multa = null;
   inscState.selectedCats = new Set();
+  inscState.doblesPareja = {};
   inscState._dobFromDb = false;
   inscState._sexFromDb = false;
   inscState._clubFromDb = false;
@@ -11335,6 +11608,43 @@ async function inscSometerInscripcion() {
     return;
   }
 
+  // Doubles requires picking a partner
+  for (const c of newCats.filter(c => c.dobles)) {
+    const pid = String(inscState.doblesPareja[c.id] || '');
+    if (!pid || !ALL_PLAYERS.some(x => String(x.id) === pid)) {
+      if (msg) msg.textContent = `Selecciona tu pareja en el encasillado 2 para ${c.name}.`;
+      document.getElementById(`inscPareja_${c.id}`)?.focus();
+      return;
+    }
+  }
+
+  // Re-check doubles claims against the server — someone may have taken this
+  // player or their partner while the form was open.
+  const doblesSel = newCats.filter(c => c.dobles);
+  if (doblesSel.length) {
+    await loadCatCounts();
+    for (const c of doblesSel) {
+      const pid  = String(inscState.doblesPareja[c.id] || '');
+      const mine = doblesTakenFor(c.id, p.id);
+      if (mine) {
+        if (msg) msg.textContent = mine.role === 'pareja'
+          ? `Ya estás inscrito en ${c.name} como pareja de ${mine.conNombre}.`
+          : `Ya inscribiste una pareja en ${c.name} con ${mine.conNombre}.`;
+        inscState.selectedCats.delete(c.id);
+        inscRenderCategories(); inscUpdateTotals();
+        return;
+      }
+      const theirs = doblesTakenFor(c.id, pid);
+      if (theirs) {
+        const nm = ALL_PLAYERS.find(x => String(x.id) === pid)?.name || 'Esa persona';
+        if (msg) msg.textContent = `${nm} acaba de ser inscrito/a en ${c.name} con ${theirs.conNombre}. Escoge otra pareja.`;
+        inscState.doblesPareja[c.id] = '';
+        inscRenderCategories();
+        return;
+      }
+    }
+  }
+
   if (msg) msg.textContent = '';
 
   const clubVal  = (document.getElementById('inscClubInput')?.value || '').trim();
@@ -11365,7 +11675,7 @@ async function inscSometerInscripcion() {
       method:  'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({
-        torneo:     'Albergue Olímpico Summer Open 2026',
+        torneo:     TORNEO_ACTIVO,
         member_id:  memberId,
         nombre:     p.name,
         fptm_id:    fptmId,
@@ -11373,7 +11683,31 @@ async function inscSometerInscripcion() {
         dob:        dobVal || null,
         club:       clubVal || null,
         categorias: [
-          ...mergedCats.map(c => ({ id: c.id, name: c.name, price: c.price })),
+          ...mergedCats.map(c => {
+            const row = { id: c.id, name: c.name, price: c.price };
+            // mergedCats mixes plain DB rows with INSC_CATEGORIES entries — look
+            // the definition up so `dobles` is detected for both.
+            if (INSC_CATEGORIES.find(x => x.id === c.id)?.dobles) {
+              if (c.pareja) {
+                // Already saved on a previous submission — keep it untouched
+                row.pareja = c.pareja;
+                if (c.pareja_id)     row.pareja_id     = c.pareja_id;
+                if (c.pareja_rating != null) row.pareja_rating = c.pareja_rating;
+                if (c.rating_combinado != null) row.rating_combinado = c.rating_combinado;
+              } else {
+                const partner = ALL_PLAYERS.find(x => String(x.id) === String(inscState.doblesPareja[c.id] || ''));
+                if (partner) {
+                  row.pareja        = partner.name;
+                  row.pareja_id     = partner.id;
+                  row.pareja_rating = partner.rating ?? null;
+                  if (p.rating != null && partner.rating != null) {
+                    row.rating_combinado = p.rating + partner.rating;
+                  }
+                }
+              }
+            }
+            return row;
+          }),
           ...(multaMonto > 0 ? [{ id: 'multa', name: inscState.multa.razon, price: multaMonto }] : []),
         ],
         base:       existing?.base ?? base,
@@ -11389,6 +11723,8 @@ async function inscSometerInscripcion() {
 
     // Mark credit as used (fire-and-forget)
     if (creditRow) markCreditUsed(creditRow.id);
+    // Refresh counts so a newly claimed doubles partner is immediately taken
+    loadCatCounts();
 
     // Show success panel
     const fp = document.getElementById('inscFormPanel');
@@ -11404,7 +11740,7 @@ async function inscSometerInscripcion() {
 
     if (nameEl) nameEl.textContent = `${p.name} · FPTM-${fptmId}`;
 
-    const allCatNames = mergedCats.map(c => c.name).join(' · ');
+    const allCatNames = mergedCats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja}${c.rating_combinado != null ? ` · ★${c.rating_combinado}` : ''})` : '')).join(' · ');
     if (catsEl) catsEl.innerHTML = allCatNames
       ? `<span style="color:var(--accent);">${allCatNames}</span>`
       : '';
@@ -11464,7 +11800,7 @@ async function loadInscritosSection() {
   if (badge) badge.style.display = 'none';
 
   try {
-    const data = await sbGet('insc_registro', '?torneo=eq.Albergue%20Ol%C3%ADmpico%20Summer%20Open%202026&order=created_at.asc');
+    const data = await sbGet('insc_registro', `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=created_at.asc`);
     if (!data || !data.length) {
       content.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--muted);font-size:14px;">Aún no hay inscritos.</div>';
       return;
@@ -11643,7 +11979,7 @@ async function exportInscripcionesStadium() {
     const { data: inscs, error: inscsErr } = await _supabase
       .from('insc_registro')
       .select('*')
-      .eq('torneo', 'Albergue Olímpico Summer Open 2026')
+      .eq('torneo', TORNEO_ACTIVO)
       .order('created_at', { ascending: true });
     if (inscsErr) throw new Error(inscsErr.message);
     if (!inscs || !inscs.length) { alert('No hay inscritos para exportar.'); return; }
@@ -11749,7 +12085,7 @@ async function sincronizarInscripcionesDB() {
     const { data: inscs, error } = await _supabase
       .from('insc_registro')
       .select('member_id, dob, sex, club')
-      .eq('torneo', 'Albergue Olímpico Summer Open 2026')
+      .eq('torneo', TORNEO_ACTIVO)
       .not('member_id', 'is', null);
     if (error) throw new Error(error.message);
 
@@ -11811,7 +12147,7 @@ async function showReporteFinancieroModal() {
   try {
     const { data: rows, error } = await _supabase
       .from('insc_registro').select('*')
-      .eq('torneo', 'Albergue Olímpico Summer Open 2026').order('created_at', { ascending: true });
+      .eq('torneo', TORNEO_ACTIVO).order('created_at', { ascending: true });
     if (error) throw new Error(error.message);
     _rfData = rows || [];
     _renderReporteFinanciero();
@@ -11995,7 +12331,7 @@ function _renderReporteFinanciero() {
           <tbody>
             ${rows.map(r => {
               const allCats = Array.isArray(r.categorias) ? r.categorias : [];
-              const cats = allCats.filter(c => c.id !== 'multa' && c.id !== 'credito').map(c => c.name).join(', ');
+              const cats = allCats.filter(c => c.id !== 'multa' && c.id !== 'credito').map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja}${c.rating_combinado != null ? ` · comb. ★${c.rating_combinado}` : ''})` : '')).join(', ');
               const multa = allCats.find(c => c.id === 'multa');
               const creditos = allCats.filter(c => c.id === 'credito');
               const creditHtml = creditos.map(c => `<span style="color:#a78bfa;font-size:11px;display:block;">- Crédito: ${c.name} (-$${Math.abs(c.price).toFixed(2)})</span>`).join('');
@@ -12121,7 +12457,7 @@ function exportReporteFinanciero() {
   const pendientes = _rfData.filter(r=>!r.pagado).length;
 
   const summaryData = [
-    ['Reporte Financiero — Albergue Olímpico Summer Open 2026'],
+    [`Reporte Financiero — ${TORNEO_ACTIVO}`],
     ['Generado:', new Date().toLocaleString('es-PR')],
     [],
     ['Métrica','Valor'],
@@ -12240,7 +12576,7 @@ function printReporteFinanciero() {
 
   const win = window.open('', '_blank', 'width=960,height=800');
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <title>Reporte Financiero — Albergue Olímpico Summer Open 2026</title>
+    <title>Reporte Financiero — ${TORNEO_ACTIVO}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <style>
       body { font-family: Inter, sans-serif; background: #fff; color: #111; margin: 0; padding: 24px; font-size: 13px; }
@@ -12264,7 +12600,7 @@ function printReporteFinanciero() {
     </style>
   </head><body>
     <h1>Reporte Financiero</h1>
-    <div class="rf-subtitle">Albergue Olímpico Summer Open 2026 &nbsp;·&nbsp; Generado: ${date}</div>
+    <div class="rf-subtitle">${TORNEO_ACTIVO} &nbsp;·&nbsp; Generado: ${date}</div>
     ${html}
   </body></html>`);
   win.document.close();
@@ -12282,7 +12618,7 @@ async function showInscReporteModal() {
   try {
     const { data: inscs, error: e1 } = await _supabase
       .from('insc_registro').select('*')
-      .eq('torneo', 'Albergue Olímpico Summer Open 2026').order('created_at', { ascending: true });
+      .eq('torneo', TORNEO_ACTIVO).order('created_at', { ascending: true });
     if (e1) throw new Error(e1.message);
     _inscReporteData = inscs || [];
 
@@ -12486,8 +12822,9 @@ async function showInscLogisticaModal() {
         dob: dobIso,
         sex,
         club: p['Club'] || '—',
-        eligibleSab: eligibleCats.filter(c => c.slot.startsWith('SAB')),
-        eligibleDom: eligibleCats.filter(c => c.slot.startsWith('DOM')),
+        eligibleByDay: Object.fromEntries(
+          INSC_DAYS.map(d => [d.key, eligibleCats.filter(c => catDayKey(c) === d.key)])
+        ),
         eligibleIds: new Set(eligibleCats.map(c => c.id)),
       };
     });
@@ -12564,11 +12901,14 @@ function renderInscLogistica(filterCatId) {
        </div>`
     : `<div style="margin-bottom:14px;font-size:13px;color:var(--muted);">Todos los miembros activos · ${rows.length} jugador${rows.length !== 1 ? 'es' : ''}</div>`;
 
+  const DAY_PILL_COLORS = {
+    S15: ['rgba(56,189,248,0.12)',  'var(--accent)', 'rgba(56,189,248,0.3)'],
+    D16: ['rgba(167,139,250,0.12)', '#a78bfa',       'rgba(167,139,250,0.3)'],
+    S22: ['rgba(52,211,153,0.12)',  '#34d399',       'rgba(52,211,153,0.3)'],
+    D23: ['rgba(251,146,60,0.12)',  '#fb923c',       'rgba(251,146,60,0.3)'],
+  };
   const catPill = (c) => {
-    const isSab = c.slot.startsWith('SAB');
-    const bg    = isSab ? 'rgba(56,189,248,0.12)'   : 'rgba(167,139,250,0.12)';
-    const color = isSab ? 'var(--accent)'            : '#a78bfa';
-    const bdr   = isSab ? 'rgba(56,189,248,0.3)'    : 'rgba(167,139,250,0.3)';
+    const [bg, color, bdr] = DAY_PILL_COLORS[catDayKey(c)] || ['rgba(255,255,255,0.06)', 'var(--muted)', 'var(--border)'];
     return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;margin:2px;background:${bg};color:${color};border:1px solid ${bdr};">${c.name}</span>`;
   };
 
@@ -12579,15 +12919,17 @@ function renderInscLogistica(filterCatId) {
         <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">#</th>
         <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">Jugador</th>
         <th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Rating</th>
-        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Elegibles Sábado</th>
-        <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">Elegibles Domingo</th>
+        ${INSC_DAYS.map(d => `<th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">${d.short}</th>`).join('')}
       </tr>
     </thead>
     <tbody>`;
 
   rows.forEach((r, i) => {
-    const sabPills = r.eligibleSab.map(c => catPill(c)).join('') || '<span style="color:var(--muted);font-size:11px;">—</span>';
-    const domPills = r.eligibleDom.map(c => catPill(c)).join('') || '<span style="color:var(--muted);font-size:11px;">—</span>';
+    const dayCells = INSC_DAYS.map(d => {
+      const pills = (r.eligibleByDay?.[d.key] || []).map(c => catPill(c)).join('')
+        || '<span style="color:var(--muted);font-size:11px;">—</span>';
+      return `<td style="padding:10px 10px;">${pills}</td>`;
+    }).join('');
     html += `
       <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"
           onmouseover="this.style.background='rgba(56,189,248,0.04)'"
@@ -12600,8 +12942,7 @@ function renderInscLogistica(filterCatId) {
         <td style="padding:10px 10px;text-align:right;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap;">
           ${r.rating !== null ? r.rating : '<span style="color:var(--muted);font-weight:400;">—</span>'}
         </td>
-        <td style="padding:10px 10px;">${sabPills}</td>
-        <td style="padding:10px 10px;">${domPills}</td>
+        ${dayCells}
       </tr>`;
   });
 
@@ -12620,7 +12961,7 @@ function exportInscLogisticaCSV() {
   if (!rows.length) { alert('No hay datos para exportar.'); return; }
 
   const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
-  const headers = ['Nombre','FPTM-ID','Rating','Fecha Nac.','Sexo','Elegibles SAB','Elegibles DOM'];
+  const headers = ['Nombre','FPTM-ID','Rating','Fecha Nac.','Sexo', ...INSC_DAYS.map(d => `Elegibles ${d.short}`)];
   const lines = [headers.map(esc).join(',')];
   rows.forEach(r => {
     lines.push([
@@ -12629,8 +12970,7 @@ function exportInscLogisticaCSV() {
       r.rating ?? '',
       r.dob ?? '',
       r.sex ?? '',
-      r.eligibleSab.map(c => c.name).join(' | '),
-      r.eligibleDom.map(c => c.name).join(' | '),
+      ...INSC_DAYS.map(d => (r.eligibleByDay?.[d.key] || []).map(c => c.name).join(' | ')),
     ].map(esc).join(','));
   });
 
@@ -12877,7 +13217,7 @@ async function updateCancelBadge() {
     const { data } = await _supabase
       .from('insc_registro')
       .select('id')
-      .eq('torneo', 'Albergue Olímpico Summer Open 2026')
+      .eq('torneo', TORNEO_ACTIVO)
       .eq('cancel_requested', true)
       .eq('cancel_status', 'pending');
     const count = data?.length || 0;
@@ -12897,7 +13237,7 @@ async function loadInscAdminTable() {
     const { data, error } = await _supabase
       .from('insc_registro')
       .select('*')
-      .eq('torneo', 'Albergue Olímpico Summer Open 2026')
+      .eq('torneo', TORNEO_ACTIVO)
       .order('created_at', { ascending: true });
     if (error) throw new Error(error.message);
     _inscAdminData = data || [];
@@ -12995,7 +13335,7 @@ function renderInscAdminTable() {
 
   rows.forEach((row, i) => {
     const cats = Array.isArray(row.categorias) ? row.categorias : [];
-    const catNames = cats.map(c => c.name).join(', ') || '—';
+    const catNames = cats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja}${c.rating_combinado != null ? ` · comb. ★${c.rating_combinado}` : ''})` : '')).join(', ') || '—';
     const fecha = row.created_at
       ? new Date(row.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric' })
       : '—';
