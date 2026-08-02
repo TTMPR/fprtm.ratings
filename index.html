@@ -9486,6 +9486,7 @@ const inscState = {
   existingInsc: null,    // existing insc_registro row if player already inscribed
   multa: null,           // { monto, razon } if player has a pending fine
   availableCredit: null, // approved credit row from a cancelled previous registration
+  doblesPareja: {},      // cat.id → partner name typed for a doubles event
   _dobFromDb: false,
   _sexFromDb: false,
   _clubFromDb: false,
@@ -9977,7 +9978,7 @@ function renderPastDetailGestionar() {
 
   rows.forEach((row, i) => {
     const cats = Array.isArray(row.categorias) ? row.categorias : [];
-    const catNames = cats.map(c => c.name).join(', ') || '—';
+    const catNames = cats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja})` : '')).join(', ') || '—';
     const fecha = row.created_at
       ? new Date(row.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric', year: 'numeric' })
       : '—';
@@ -10177,6 +10178,7 @@ function inscSelectPlayer(id) {
   inscState.dob = null;
   inscState.existingInsc = null;
   inscState.availableCredit = null;
+  inscState.doblesPareja = {};
   inscState._dobFromDb = false;
   inscState.multa = INSC_MULTAS[p.id] || null;
   const normalizedSex = normSexForForm(p.sex);
@@ -10276,7 +10278,7 @@ function renderInscPlayerCard(p) {
       yainEl.style.color = 'var(--muted)';
     } else if (existing) {
       yainEl.style.display = '';
-      const catNames = (existing.categorias || []).map(c => c.name).join(', ');
+      const catNames = (existing.categorias || []).map(c => c.name + (c.pareja ? ` · pareja: ${c.pareja}` : '')).join(', ');
       const cancelPending  = existing.cancel_requested && existing.cancel_status !== 'rejected';
       const cancelApproved = existing.cancel_status === 'approved';
       if (cancelApproved) {
@@ -10539,6 +10541,12 @@ function inscCatEligible(cat) {
     }
   }
 
+  // Política de ascenso — locked until the natural category is taken
+  const missing = inscAscensoMissing(cat);
+  if (missing) {
+    return { ok: false, reason: `Primero selecciona tu categoría natural: ${missing.name}.`, ascensoLock: missing };
+  }
+
   return { ok: true };
 }
 
@@ -10573,13 +10581,18 @@ function inscRenderCategories() {
     const elig       = isExisting ? { ok: true } : inscCatEligible(cat);
     const disabled   = isExisting || !elig.ok;
 
-    const border  = isExisting ? '#22c55e' : sel ? 'var(--accent)' : !elig.ok ? 'rgba(255,255,255,0.05)' : 'var(--border)';
-    const bg      = isExisting ? 'rgba(34,197,94,0.07)' : sel ? 'rgba(56,189,248,0.08)' : !elig.ok ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)';
-    const opacity = !elig.ok && !isExisting ? '0.45' : '1';
+    // Locked by the ascenso policy → reads as "do this first", not "you don't qualify"
+    const locked = !isExisting && !elig.ok && !!elig.ascensoLock;
+
+    const border  = isExisting ? '#22c55e' : sel ? 'var(--accent)' : locked ? 'rgba(129,140,248,0.35)' : !elig.ok ? 'rgba(255,255,255,0.05)' : 'var(--border)';
+    const bg      = isExisting ? 'rgba(34,197,94,0.07)' : sel ? 'rgba(56,189,248,0.08)' : locked ? 'rgba(129,140,248,0.05)' : !elig.ok ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)';
+    const opacity = !elig.ok && !isExisting ? (locked ? '0.8' : '0.45') : '1';
     const cursor  = disabled ? 'default' : 'pointer';
 
     const checkEl = isExisting
       ? `<span style="font-size:14px;flex-shrink:0;">✅</span>`
+      : locked
+      ? `<span style="font-size:13px;flex-shrink:0;line-height:1.35;">🔒</span>`
       : `<div style="width:18px;height:18px;border-radius:4px;border:1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'};background:${sel ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           ${sel ? '<span style="color:#fff;font-size:11px;font-weight:700">✓</span>' : ''}
         </div>`;
@@ -10587,12 +10600,15 @@ function inscRenderCategories() {
     const count    = _catCounts[cat.id] || 0;
     const capBadge = cat.maxPlayers && !isExisting
       ? ` <span style="color:${count >= cat.maxPlayers ? '#ef4444' : 'var(--muted)'};">(${count}/${cat.maxPlayers})</span>` : '';
-    const nameColor = isExisting ? '#86efac' : !elig.ok ? 'var(--muted)' : 'var(--text)';
+    const nameColor = isExisting ? '#86efac' : locked ? 'var(--text)' : !elig.ok ? 'var(--muted)' : 'var(--text)';
     const subText  = isExisting
       ? `<span style="color:#4ade80;font-size:10px;font-weight:600;">Ya inscrito · $${cat.price}</span>`
+      : locked
+      ? `<span style="color:#a5b4fc;font-size:10px;font-weight:600;">Requiere: ${elig.ascensoLock.name}</span>
+         <span style="color:var(--muted);font-size:10px;"> · $${cat.price} · ${(INSC_SLOT_LABELS[cat.slot] || cat.slot).split('·').pop().trim()}</span>`
       : `<span style="color:var(--muted);font-size:10px;">${!elig.ok ? elig.reason : cat.desc} · $${cat.price}${capBadge} · ${(INSC_SLOT_LABELS[cat.slot] || cat.slot).split('·').pop().trim()}</span>`;
 
-    return `<div onclick="${disabled ? '' : `inscToggleCat('${cat.id}')`}"
+    return `<div onclick="${disabled ? '' : `inscToggleCat('${cat.id}')`}"${locked ? ` title="Política de ascenso: primero debes seleccionar ${elig.ascensoLock.name}."` : ''}
       style="display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border-radius:9px;border:1.5px solid ${border};background:${bg};cursor:${cursor};opacity:${opacity};transition:all .15s;margin-bottom:5px;">
       <div style="margin-top:1px;">${checkEl}</div>
       <div style="flex:1;min-width:0;">
@@ -10613,7 +10629,8 @@ function inscRenderCategories() {
     ⚠ Máx. 2 categorías por día, sin coincidir en horario · Para subir de categoría debes estar inscrito también en tu categoría natural.
   </div>`;
 
-  // One block per competition day, grouped by weekend (Parte 1 / Parte 2)
+  // One block per competition day, grouped by weekend (Parte 1 / Parte 2).
+  // Doubles is pulled out into its own block — it needs a partner.
   [1, 2].forEach(parte => {
     const days = INSC_DAYS.filter(d => d.parte === parte);
     html += `<div style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.12em;margin:${parte === 1 ? '0' : '18px'} 0 8px;">
@@ -10621,7 +10638,7 @@ function inscRenderCategories() {
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;">`;
     days.forEach(d => {
-      const cats = INSC_CATEGORIES.filter(c => catDayKey(c) === d.key);
+      const cats = INSC_CATEGORIES.filter(c => catDayKey(c) === d.key && !c.dobles);
       html += `<div>
         <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);">🗓 ${d.label}</div>
         ${cats.map(buildCatCard).join('')}
@@ -10629,6 +10646,32 @@ function inscRenderCategories() {
     });
     html += `</div>`;
   });
+
+  // ── Dobles ──────────────────────────────────────────────────────────────
+  const doblesCats = INSC_CATEGORIES.filter(c => c.dobles);
+  if (doblesCats.length) {
+    html += `<div style="margin-top:20px;padding:14px;border:1px solid rgba(52,211,153,0.28);background:rgba(52,211,153,0.05);border-radius:12px;">
+      <div style="font-size:10px;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px;">👥 Dobles</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+        Se juega en pareja. Cada jugador se inscribe por separado e indica con quién jugará.
+      </div>
+      ${doblesCats.map(cat => {
+        const isExisting = existingIds.has(cat.id);
+        const sel = inscState.selectedCats.has(cat.id);
+        const savedPareja = (inscState.existingInsc?.categorias || []).find(c => c.id === cat.id)?.pareja || '';
+        const showInput = sel || isExisting;
+        return buildCatCard(cat) + (showInput ? `
+          <div style="margin:2px 0 0 26px;">
+            <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px;">Nombre de tu pareja ${isExisting ? '(ya registrado)' : '*'}</label>
+            <input id="inscPareja_${cat.id}" value="${(inscState.doblesPareja[cat.id] ?? savedPareja).replace(/"/g, '&quot;')}"
+              ${isExisting ? 'disabled' : ''} placeholder="Nombre y apellido de tu compañero/a"
+              oninput="inscState.doblesPareja['${cat.id}']=this.value"
+              style="width:100%;background:var(--card);border:1px solid ${isExisting ? 'var(--border)' : 'rgba(52,211,153,0.35)'};border-radius:7px;padding:7px 10px;color:var(--text);font-size:12px;box-sizing:border-box;${isExisting ? 'opacity:.6;' : ''}">
+            ${isExisting ? '' : '<div style="font-size:10px;color:var(--muted);margin-top:3px;">Si aún no tienes pareja, escribe «Por asignar» y el comité te ubicará.</div>'}
+          </div>` : '');
+      }).join('')}
+    </div>`;
+  }
 
   container.innerHTML = html;
 }
@@ -10685,29 +10728,6 @@ function inscToggleCat(id) {
     if (sameDayCats.length >= 2) {
       alert(`Ya tienes 2 categorías el ${dayLabel}. No puedes añadir "${cat.name}".`);
       return;
-    }
-
-    // Política de ascenso — offer to add the natural category alongside
-    const missing = inscAscensoMissing(cat);
-    if (missing) {
-      const natDay = catDayLabel(missing).toLowerCase();
-      const natDayCount = [
-        ...(inscState.existingInsc?.categorias || []).map(c => INSC_CATEGORIES.find(ec => ec.id === c.id)),
-        ...[...inscState.selectedCats].map(selId => INSC_CATEGORIES.find(c => c.id === selId)),
-        cat,
-      ].filter(c => c && catDayKey(c) === catDayKey(missing)).length;
-
-      if (natDayCount >= 2) {
-        alert(`Para inscribirte en "${cat.name}" también debes estar en tu categoría natural "${missing.name}" (${natDay}), pero ya tienes 2 categorías ese día. Libera un espacio primero.`);
-        return;
-      }
-      const ok = confirm(
-        `Política de ascenso\n\n` +
-        `Para participar en "${cat.name}" también debes inscribirte en tu categoría natural: "${missing.name}" (${natDay}, $${missing.price}).\n\n` +
-        `¿Añadir ambas categorías?`
-      );
-      if (!ok) return;
-      inscState.selectedCats.add(missing.id);
     }
 
     inscState.selectedCats.add(id);
@@ -10813,6 +10833,7 @@ function inscResetForm() {
   inscState.existingInsc = null;
   inscState.multa = null;
   inscState.selectedCats = new Set();
+  inscState.doblesPareja = {};
   inscState._dobFromDb = false;
   inscState._sexFromDb = false;
   inscState._clubFromDb = false;
@@ -10923,6 +10944,16 @@ async function inscSometerInscripcion() {
     return;
   }
 
+  // Doubles requires naming a partner
+  for (const c of newCats.filter(c => c.dobles)) {
+    const pareja = (inscState.doblesPareja[c.id] || '').trim();
+    if (!pareja) {
+      if (msg) msg.textContent = `Indica el nombre de tu pareja para ${c.name} (o escribe «Por asignar»).`;
+      document.getElementById(`inscPareja_${c.id}`)?.focus();
+      return;
+    }
+  }
+
   if (msg) msg.textContent = '';
 
   const clubVal  = (document.getElementById('inscClubInput')?.value || '').trim();
@@ -10961,7 +10992,16 @@ async function inscSometerInscripcion() {
         dob:        dobVal || null,
         club:       clubVal || null,
         categorias: [
-          ...mergedCats.map(c => ({ id: c.id, name: c.name, price: c.price })),
+          ...mergedCats.map(c => {
+            const row = { id: c.id, name: c.name, price: c.price };
+            // mergedCats mixes plain DB rows with INSC_CATEGORIES entries — look
+            // the definition up so `dobles` is detected for both.
+            if (INSC_CATEGORIES.find(x => x.id === c.id)?.dobles) {
+              const pareja = c.pareja || (inscState.doblesPareja[c.id] || '').trim();
+              if (pareja) row.pareja = pareja;
+            }
+            return row;
+          }),
           ...(multaMonto > 0 ? [{ id: 'multa', name: inscState.multa.razon, price: multaMonto }] : []),
         ],
         base:       existing?.base ?? base,
@@ -10992,7 +11032,7 @@ async function inscSometerInscripcion() {
 
     if (nameEl) nameEl.textContent = `${p.name} · FPTM-${fptmId}`;
 
-    const allCatNames = mergedCats.map(c => c.name).join(' · ');
+    const allCatNames = mergedCats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja})` : '')).join(' · ');
     if (catsEl) catsEl.innerHTML = allCatNames
       ? `<span style="color:var(--accent);">${allCatNames}</span>`
       : '';
@@ -11583,7 +11623,7 @@ function _renderReporteFinanciero() {
           <tbody>
             ${rows.map(r => {
               const allCats = Array.isArray(r.categorias) ? r.categorias : [];
-              const cats = allCats.filter(c => c.id !== 'multa' && c.id !== 'credito').map(c => c.name).join(', ');
+              const cats = allCats.filter(c => c.id !== 'multa' && c.id !== 'credito').map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja})` : '')).join(', ');
               const multa = allCats.find(c => c.id === 'multa');
               const creditos = allCats.filter(c => c.id === 'credito');
               const creditHtml = creditos.map(c => `<span style="color:#a78bfa;font-size:11px;display:block;">- Crédito: ${c.name} (-$${Math.abs(c.price).toFixed(2)})</span>`).join('');
@@ -12587,7 +12627,7 @@ function renderInscAdminTable() {
 
   rows.forEach((row, i) => {
     const cats = Array.isArray(row.categorias) ? row.categorias : [];
-    const catNames = cats.map(c => c.name).join(', ') || '—';
+    const catNames = cats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja})` : '')).join(', ') || '—';
     const fecha = row.created_at
       ? new Date(row.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric' })
       : '—';
