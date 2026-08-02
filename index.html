@@ -974,7 +974,9 @@
 
   /* ─── CIDRA OPEN 2026 BANNER ─── */
   .cidra-banner {
-    --cg: #177d5a;
+    /* Paleta tomada del logo oficial: azul marino + rojo */
+    --cg: #002460;
+    --cr: #cc000c;
     position: relative; overflow: hidden;
     background: #f5f7f6;
     border-radius: 16px;
@@ -1006,7 +1008,7 @@
   }
   .cidra-div { width: 1px; align-self: stretch; background: #d3dad6; }
   .cidra-open {
-    font-size: clamp(20px, 5.5vw, 28px); font-weight: 700; color: var(--cg);
+    font-size: clamp(20px, 5.5vw, 28px); font-weight: 700; color: var(--cr);
     letter-spacing: 0.15em; line-height: 1;
   }
   .cidra-meta {
@@ -1015,14 +1017,20 @@
   }
   .cidra-cta {
     position: relative; z-index: 1;
-    display: inline-block; background: var(--cg); color: #fff;
+    display: inline-block; background: var(--cr); color: #fff;
     border: none; border-radius: 999px; padding: 12px 28px;
     font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 700;
     letter-spacing: 0.09em; cursor: pointer; transition: filter .15s, transform .12s;
   }
   .cidra-cta:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  .cidra-logo {
+    position: relative; z-index: 1;
+    display: block; width: 100%; max-width: 330px; height: auto;
+    margin: 0 0 14px -6px;
+  }
   @media (max-width: 440px) {
     .cidra-banner { padding: 20px 18px 20px 26px; }
+    .cidra-logo { max-width: 250px; margin-bottom: 10px; }
     .cidra-banner::before { width: 8px; }
     .cidra-year { font-size: 42px; right: 12px; top: -2px; }
     .cidra-eyebrow { font-size: 9.5px; letter-spacing: 0.16em; }
@@ -3614,7 +3622,7 @@ Maria Lopez,Ana Torres,B</code>
         <div style="position:absolute;top:-50px;left:50%;transform:translateX(-50%);width:300px;height:300px;background:radial-gradient(circle,rgba(129,140,248,0.09),transparent 70%);pointer-events:none;"></div>
         <div id="nextEventOverline" style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--purple);margin-bottom:14px;">Próximo torneo</div>
         <img id="nextEventLogo" alt=""
-          style="width:120px;height:120px;object-fit:contain;border-radius:50%;margin-bottom:16px;filter:drop-shadow(0 4px 20px rgba(129,140,248,0.4));display:none;"
+          style="max-width:230px;max-height:130px;width:auto;height:auto;object-fit:contain;margin:0 auto 16px;filter:drop-shadow(0 4px 20px rgba(129,140,248,0.35));display:none;"
           onerror="this.style.display='none'">
         <div id="nextEventName" style="font-size:clamp(20px,5vw,28px);font-weight:800;color:var(--text);line-height:1.2;margin-bottom:6px;"></div>
         <div id="nextEventDates" style="font-size:14px;color:var(--muted);margin-bottom:28px;"></div>
@@ -3662,12 +3670,17 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Torneo activo — siempre visible -->
     <div id="inscTorneoCard">
       <div class="cidra-banner">
-        <div class="cidra-year">2026</div>
-        <div class="cidra-eyebrow">Tenis de Mesa • Puerto Rico</div>
-        <div class="cidra-lockup">
-          <div class="cidra-word">CIDRA</div>
-          <div class="cidra-div"></div>
-          <div class="cidra-open">OPEN</div>
+        <!-- Official artwork when present; typographic lockup as fallback -->
+        <img id="cidraLogo" class="cidra-logo" src="Logo_Cidra_Open_2026.png"
+             alt="Cidra Open 2026" onerror="cidraLogoFallback(this)">
+        <div id="cidraTextHead" style="display:none">
+          <div class="cidra-year">2026</div>
+          <div class="cidra-eyebrow">Tenis de Mesa • Puerto Rico</div>
+          <div class="cidra-lockup">
+            <div class="cidra-word">CIDRA</div>
+            <div class="cidra-div"></div>
+            <div class="cidra-open">OPEN</div>
+          </div>
         </div>
         <div class="cidra-meta">
           15, 16, 22 y 23 de agosto de 2026<br>
@@ -9780,6 +9793,9 @@ const TORNEO_ACTIVO       = 'Cidra Open 2026';
 const TORNEO_SEDE         = 'Cancha Juanito Cabello, Cidra, PR';
 const TORNEO_FECHAS_LABEL = '15, 16, 22 y 23 de agosto';
 const TORNEO_MAPS_URL     = 'https://maps.google.com/?q=Cancha+Juanito+Cabello+Cidra+Puerto+Rico';
+// Official artwork — drop the file at the repo root. Falls back to .svg and
+// then to the typographic lockup if the file isn't there.
+const TORNEO_LOGO         = 'Logo_Cidra_Open_2026.png';
 
 // The four competition days (2 weekends). Day key = slot prefix.
 const INSC_DAYS = [
@@ -10161,10 +10177,10 @@ const UPCOMING_EVENTS = [
     mapsUrl: 'https://maps.google.com/?q=Albergue+Ol%C3%ADmpico+Salinas+Puerto+Rico' },
   { name: 'Cidra Open 2026 · Parte 1', dateLabel: 'Sábado 15 & Domingo 16 de agosto · Cidra, PR',
     target: new Date('2026-08-15T09:00:00'), end: new Date('2026-08-16T23:59:59'),
-    mapsUrl: TORNEO_MAPS_URL },
+    logo: TORNEO_LOGO, mapsUrl: TORNEO_MAPS_URL },
   { name: 'Cidra Open 2026 · Parte 2', dateLabel: 'Sábado 22 & Domingo 23 de agosto · Cidra, PR',
     target: new Date('2026-08-22T09:00:00'), end: new Date('2026-08-23T23:59:59'),
-    mapsUrl: TORNEO_MAPS_URL },
+    logo: TORNEO_LOGO, mapsUrl: TORNEO_MAPS_URL },
 ];
 const FINISHED_BADGE_DAYS = 7; // días que se muestra "Torneo finalizado" tras el evento
 
@@ -11332,6 +11348,19 @@ function inscRenderCategories() {
   }
 
   container.innerHTML = html;
+}
+
+// Tournament artwork: try PNG, then SVG, then fall back to the typographic
+// lockup so the banner always reads correctly even without the asset.
+function cidraLogoFallback(img) {
+  if (!img.dataset.triedSvg) {
+    img.dataset.triedSvg = '1';
+    img.src = TORNEO_LOGO.replace(/\.png$/i, '.svg');
+    return;
+  }
+  img.style.display = 'none';
+  const head = document.getElementById('cidraTextHead');
+  if (head) head.style.display = '';
 }
 
 // Partner picked for a doubles event — re-render so the combined rating updates
