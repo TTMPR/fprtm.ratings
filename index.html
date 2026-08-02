@@ -9292,7 +9292,7 @@ const INSC_CATEGORIES = [
   { id: 'ev5',  name: '1900 o Menos',            desc: 'Premiación: $70 · $60 · $55 (x2)',                            price: 20, slot: 'D16-900',  maxRating: 1900, ratingGroup: 'rating', stadiumId: '1900-under' },
   { id: 'ev6',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1130', maxAge: 11, sex: 'M',                   stadiumId: '11u---masculino' },
   { id: 'ev7',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1130', maxAge: 11, sex: 'F',                   stadiumId: '11u---femenino' },
-  { id: 'ev8',  name: 'Dobles Abierto',          desc: 'Premiación: $120 · $100 · $80 (x2) por pareja · $40 por pareja ($20 c/u)', price: 20, slot: 'D16-1400', openDivision: true, dobles: true, stadiumId: 'dobles---abierto' },
+  { id: 'ev8',  name: 'Dobles Abierto',          desc: 'Premiación: $120 · $100 · $80 (x2) · $40 por pareja (una sola inscripción)', price: 40, slot: 'D16-1400', openDivision: true, dobles: true, stadiumId: 'dobles---abierto' },
   // ── Sábado 22 de agosto ──
   { id: 'ev9',  name: '1700 o Menos',            desc: 'Premiación: $55 · $50 · $45 (x2)',                            price: 20, slot: 'S22-900',  maxRating: 1700, ratingGroup: 'rating', stadiumId: '1700-under' },
   { id: 'ev10', name: '1500 o Menos',            desc: 'Premiación: $45 · $40 · $35 (x2)',                            price: 20, slot: 'S22-1130', maxRating: 1500, ratingGroup: 'rating', stadiumId: '1500-under' },
@@ -10327,18 +10327,39 @@ async function fetchExistingInscripcion(memberId) {
 // INSCRIPCIONES — CATEGORY COUNTS (capacity)
 // ══════════════════════════════════════════
 let _catCounts = {}; // catId → number of players currently registered
+// A doubles pair is ONE registration: the player who submits it claims their
+// partner. Both sides are then taken — neither can enter doubles again nor be
+// picked by anyone else. catId → Map(playerId → { role, conNombre, conId }).
+let _doblesTaken = {};
 
 async function loadCatCounts() {
   try {
     const data = await sbGet('insc_registro',
-      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&select=categorias`);
+      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&select=member_id,categorias`);
     _catCounts = {};
+    _doblesTaken = {};
+    INSC_CATEGORIES.filter(c => c.dobles).forEach(c => { _doblesTaken[c.id] = new Map(); });
     (data || []).forEach(row => {
       (Array.isArray(row.categorias) ? row.categorias : []).forEach(c => {
         _catCounts[c.id] = (_catCounts[c.id] || 0) + 1;
+        const taken = _doblesTaken[c.id];
+        if (!taken) return;
+        const owner = ALL_PLAYERS.find(p => String(p.id) === String(row.member_id));
+        if (row.member_id != null) {
+          taken.set(String(row.member_id), { role: 'titular', conNombre: c.pareja || '—', conId: c.pareja_id ?? null });
+        }
+        if (c.pareja_id != null) {
+          taken.set(String(c.pareja_id), { role: 'pareja', conNombre: owner?.name || 'otro jugador', conId: row.member_id ?? null });
+        }
       });
     });
   } catch(e) { /* silent — capacity check skipped if fetch fails */ }
+}
+
+// Is this player already committed to a doubles event (either side of a pair)?
+function doblesTakenFor(catId, playerId) {
+  if (playerId == null) return null;
+  return _doblesTaken[catId]?.get(String(playerId)) || null;
 }
 
 // ══════════════════════════════════════════
@@ -10526,6 +10547,16 @@ function inscCatEligible(cat) {
     }
   }
 
+  // Doubles: one registration covers the pair, so both sides are already taken
+  if (cat.dobles) {
+    const taken = doblesTakenFor(cat.id, p.id);
+    if (taken) {
+      return { ok: false, doblesTaken: taken, reason: taken.role === 'pareja'
+        ? `Ya estás inscrito en dobles como pareja de ${taken.conNombre}.`
+        : `Ya inscribiste esta pareja con ${taken.conNombre}.` };
+    }
+  }
+
   // Conflict with already-inscribed categories (slot and day cap)
   const existingCats = (inscState.existingInsc?.categorias || [])
     .map(c => INSC_CATEGORIES.find(ec => ec.id === c.id)).filter(Boolean);
@@ -10653,11 +10684,27 @@ function inscRenderCategories() {
     html += `<div style="margin-top:20px;padding:14px;border:1px solid rgba(52,211,153,0.28);background:rgba(52,211,153,0.05);border-radius:12px;">
       <div style="font-size:10px;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px;">👥 Dobles</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">
-        Se juega en pareja. Cada jugador se inscribe por separado e indica con quién jugará.
+        Se juega en pareja y se inscribe <strong style="color:var(--text);">una sola vez</strong>: quien la registre selecciona a su compañero/a y paga los $40 de la pareja. El compañero queda inscrito automáticamente.
       </div>
       ${doblesCats.map(cat => {
         const isExisting = existingIds.has(cat.id);
         const sel = inscState.selectedCats.has(cat.id);
+
+        // Claimed as someone else's partner (or already registered the pair)
+        const taken = !isExisting && inscState.player ? doblesTakenFor(cat.id, inscState.player.id) : null;
+        if (taken) {
+          return `<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:9px;border:1.5px solid rgba(34,197,94,0.35);background:rgba(34,197,94,0.07);">
+            <span style="font-size:14px;flex-shrink:0;">✅</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:12px;font-weight:600;color:#86efac;line-height:1.3;">${cat.name}</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px;">
+                ${taken.role === 'pareja'
+                  ? `Ya estás inscrito como pareja de <strong style="color:var(--text);">${taken.conNombre}</strong> — no necesitas hacer nada más.`
+                  : `Ya inscribiste esta pareja con <strong style="color:var(--text);">${taken.conNombre}</strong>.`}
+              </div>
+            </div>
+          </div>`;
+        }
         if (!sel && !isExisting) return buildCatCard(cat);
 
         const me       = inscState.player;
@@ -10673,8 +10720,11 @@ function inscRenderCategories() {
         const combined = (myRating !== null && paRating !== null) ? myRating + paRating : null;
         const partnerName = partner?.name || savedRow?.pareja || '';
 
+        // Players already committed to this doubles event (either side of an
+        // existing pair) are not offered — a pair is registered only once.
         const options = ALL_PLAYERS
           .filter(p => !me || p.id !== me.id)
+          .filter(p => !doblesTakenFor(cat.id, p.id))
           .slice()
           .sort((a, b) => a.name.localeCompare(b.name, 'es'))
           .map(p => `<option value="${p.id}"${String(p.id) === String(partnerId) ? ' selected' : ''}>${p.name}${p.rating ? ` · ★${p.rating}` : ''}</option>`)
@@ -10705,7 +10755,7 @@ function inscRenderCategories() {
               </span>
             </div>
             ${combined !== null ? `<div style="font-size:10px;color:var(--muted);margin-top:-2px;">${me.name} (${myRating}) + ${partnerName} (${paRating})</div>` : ''}
-            ${isExisting ? '' : '<div style="font-size:10px;color:var(--muted);">Cada jugador de la pareja se inscribe por separado ($20 c/u · $40 la pareja).</div>'}
+            ${isExisting ? '' : '<div style="font-size:10px;color:var(--muted);">Los $40 cubren a la pareja completa. Tu compañero/a no debe inscribirse por separado.</div>'}
           </div>`;
       }).join('')}
     </div>`;
@@ -10998,6 +11048,33 @@ async function inscSometerInscripcion() {
     }
   }
 
+  // Re-check doubles claims against the server — someone may have taken this
+  // player or their partner while the form was open.
+  const doblesSel = newCats.filter(c => c.dobles);
+  if (doblesSel.length) {
+    await loadCatCounts();
+    for (const c of doblesSel) {
+      const pid  = String(inscState.doblesPareja[c.id] || '');
+      const mine = doblesTakenFor(c.id, p.id);
+      if (mine) {
+        if (msg) msg.textContent = mine.role === 'pareja'
+          ? `Ya estás inscrito en ${c.name} como pareja de ${mine.conNombre}.`
+          : `Ya inscribiste una pareja en ${c.name} con ${mine.conNombre}.`;
+        inscState.selectedCats.delete(c.id);
+        inscRenderCategories(); inscUpdateTotals();
+        return;
+      }
+      const theirs = doblesTakenFor(c.id, pid);
+      if (theirs) {
+        const nm = ALL_PLAYERS.find(x => String(x.id) === pid)?.name || 'Esa persona';
+        if (msg) msg.textContent = `${nm} acaba de ser inscrito/a en ${c.name} con ${theirs.conNombre}. Escoge otra pareja.`;
+        inscState.doblesPareja[c.id] = '';
+        inscRenderCategories();
+        return;
+      }
+    }
+  }
+
   if (msg) msg.textContent = '';
 
   const clubVal  = (document.getElementById('inscClubInput')?.value || '').trim();
@@ -11076,6 +11153,8 @@ async function inscSometerInscripcion() {
 
     // Mark credit as used (fire-and-forget)
     if (creditRow) markCreditUsed(creditRow.id);
+    // Refresh counts so a newly claimed doubles partner is immediately taken
+    loadCatCounts();
 
     // Show success panel
     const fp = document.getElementById('inscFormPanel');
