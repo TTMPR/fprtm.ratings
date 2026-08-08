@@ -11267,8 +11267,15 @@ function inscRenderCategories() {
   // ── Dobles ──────────────────────────────────────────────────────────────
   const doblesCats = INSC_CATEGORIES.filter(c => c.dobles);
   if (doblesCats.length) {
+    // Doubles sits outside the day grid, so its day/time is called out here
+    const dCat  = doblesCats[0];
+    const dDia  = catDayLabel(dCat);
+    const dHora = (INSC_SLOT_LABELS[dCat.slot] || '').split('·').pop().trim();
     html += `<div style="margin-top:20px;padding:14px;border:1px solid rgba(52,211,153,0.28);background:rgba(52,211,153,0.05);border-radius:12px;">
-      <div style="font-size:10px;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px;">👥 Dobles</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+        <span style="font-size:10px;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:0.12em;">👥 Dobles</span>
+        <span style="background:rgba(52,211,153,0.18);border:1px solid rgba(52,211,153,0.45);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;color:#34d399;white-space:nowrap;">🗓 ${dDia} · ${dHora}</span>
+      </div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">
         Se juega en pareja y se inscribe <strong style="color:var(--text);">una sola vez</strong>: quien la registre selecciona a su compañero/a y paga los $40 de la pareja. El compañero queda inscrito automáticamente.
       </div>
@@ -11835,13 +11842,22 @@ async function loadInscritosSection() {
       return;
     }
 
-    // Group by category
+    // Group by category. A doubles entry is one pair, so it lists as a single
+    // row carrying both names and the combined rating.
     const byCat = {};
     INSC_CATEGORIES.forEach(c => { byCat[c.id] = { cat: c, players: [] }; });
     data.forEach(row => {
       const cats = Array.isArray(row.categorias) ? row.categorias : [];
       cats.forEach(c => {
-        if (byCat[c.id]) byCat[c.id].players.push({ nombre: row.nombre, fptm_id: row.fptm_id, pagado: !!row.pagado });
+        if (!byCat[c.id]) return;
+        const esDobles = !!INSC_CATEGORIES.find(x => x.id === c.id)?.dobles;
+        byCat[c.id].players.push({
+          nombre:    row.nombre,
+          fptm_id:   row.fptm_id,
+          pagado:    !!row.pagado,
+          pareja:    esDobles ? (c.pareja || null) : null,
+          combinado: esDobles ? (c.rating_combinado ?? null) : null,
+        });
       });
     });
     _inscritosByCategory = byCat;
@@ -11903,23 +11919,34 @@ function inscritoSelectTab(catId) {
   }
 
   const slotLabel = INSC_SLOT_LABELS[entry.cat.slot] || entry.cat.slot;
+  const esDobles  = !!entry.cat.dobles;
+  const unidad    = esDobles ? 'pareja' : 'inscrito';
   let html = `
-    <div style="font-size:11px;color:var(--muted);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:14px;">${slotLabel} &nbsp;·&nbsp; ${entry.players.length} inscrito${entry.players.length !== 1 ? 's' : ''}</div>
+    <div style="font-size:11px;color:var(--muted);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:14px;">${slotLabel} &nbsp;·&nbsp; ${entry.players.length} ${unidad}${entry.players.length !== 1 ? 's' : ''}</div>
     <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">`;
 
   entry.players.forEach((pl, i) => {
+    // Doubles lists the pair on one row, with its combined rating underneath
+    const nombreHTML = esDobles && pl.pareja
+      ? `${pl.nombre} <span style="color:var(--muted);font-weight:400;margin:0 2px;">/</span> ${pl.pareja}`
+      : pl.nombre;
+    const subHTML = esDobles
+      ? (pl.combinado != null
+          ? `<div style="font-size:11px;color:#34d399;font-weight:600;margin-top:2px;">Rating combinado ★ ${pl.combinado}</div>`
+          : '')
+      : (pl.fptm_id ? `<div style="font-size:11px;color:var(--muted);margin-top:1px;">${pl.fptm_id}</div>` : '');
     html += `
       <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;
                   ${i > 0 ? 'border-top:1px solid var(--border);' : ''}
                   background:${i % 2 === 0 ? 'rgba(255,255,255,0.025)' : 'transparent'}">
-        <div style="width:26px;height:26px;border-radius:50%;background:rgba(56,189,248,0.1);
-                    color:var(--accent);font-size:11px;font-weight:700;
+        <div style="width:26px;height:26px;border-radius:50%;background:${esDobles ? 'rgba(52,211,153,0.12)' : 'rgba(56,189,248,0.1)'};
+                    color:${esDobles ? '#34d399' : 'var(--accent)'};font-size:11px;font-weight:700;
                     display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i + 1}</div>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;">
-            ${pl.nombre}${!pl.pagado ? '<span class="dot-pending" title="Pago pendiente de confirmación"></span>' : ''}
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;flex-wrap:wrap;">
+            ${nombreHTML}${!pl.pagado ? '<span class="dot-pending" title="Pago pendiente de confirmación"></span>' : ''}
           </div>
-          ${pl.fptm_id ? `<div style="font-size:11px;color:var(--muted);margin-top:1px;">${pl.fptm_id}</div>` : ''}
+          ${subHTML}
         </div>
       </div>`;
   });
