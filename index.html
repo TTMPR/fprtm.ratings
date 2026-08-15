@@ -13531,6 +13531,11 @@ function renderInscAdminTable() {
             style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:5px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px;">
             ✕ Rechazar
           </button>` : ''}
+          ${cats.some(c => INSC_CATEGORIES.find(x => x.id === c.id)?.dobles) ? `
+          <button onclick="openEditPareja(${row.id})" title="Cambiar los integrantes de la pareja"
+            style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34d399;padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;margin-right:6px;">
+            Pareja
+          </button>` : ''}
           <button onclick="openEditInscripcion(${row.id})"
             style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;margin-right:6px;">
             Editar
@@ -13545,6 +13550,139 @@ function renderInscAdminTable() {
 
   html += '</tbody></table></div>';
   tableEl.innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// EDITAR PAREJA DE DOBLES (admin)
+// ══════════════════════════════════════════
+// A doubles entry lives on one registration: the titular owns the row (and the
+// payment) and the partner is stored inside the category. Swapping the partner
+// is a field edit; swapping the titular means moving the entry to another row.
+let _parejaCtx = null;   // { rowId, catId }
+
+function openEditPareja(rowId) {
+  const row = _inscAdminData.find(r => r.id === rowId);
+  if (!row) return;
+  const cats = Array.isArray(row.categorias) ? row.categorias : [];
+  const entry = cats.find(c => INSC_CATEGORIES.find(x => x.id === c.id)?.dobles);
+  if (!entry) { alert('Esta inscripción no tiene un evento de dobles.'); return; }
+
+  _parejaCtx = { rowId, catId: entry.id };
+  const opts = sel => ALL_PLAYERS.slice()
+    .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+    .map(p => `<option value="${p.id}"${String(p.id) === String(sel) ? ' selected' : ''}>${p.name}${p.rating ? ` · ★${p.rating}` : ''}</option>`)
+    .join('');
+
+  document.getElementById('parejaCatName').textContent = entry.name;
+  document.getElementById('parejaTitular').innerHTML = opts(row.member_id);
+  document.getElementById('parejaCompanero').innerHTML =
+    `<option value="">— Sin pareja —</option>` + opts(entry.pareja_id);
+  document.getElementById('parejaMsg').textContent = '';
+  document.getElementById('parejaWarn').style.display = 'none';
+  document.getElementById('parejaOrigTitular').textContent = row.nombre || '—';
+  updateParejaPreview();
+  document.getElementById('editParejaModal').style.display = 'flex';
+}
+
+function updateParejaPreview() {
+  const t = ALL_PLAYERS.find(p => String(p.id) === document.getElementById('parejaTitular').value);
+  const c = ALL_PLAYERS.find(p => String(p.id) === document.getElementById('parejaCompanero').value);
+  const comb = (t?.rating != null && c?.rating != null) ? t.rating + c.rating : null;
+  document.getElementById('parejaPreview').innerHTML = t
+    ? `${t.name}${c ? ` <span style="color:var(--muted)">/</span> ${c.name}` : ''}
+       ${comb != null ? `<span style="color:#34d399;font-weight:700;margin-left:8px;">★ ${comb}</span>` : ''}`
+    : '—';
+  // Moving the entry to a different row is the non-obvious case; call it out
+  const row = _parejaCtx && _inscAdminData.find(r => r.id === _parejaCtx.rowId);
+  const movesRow = row && t && String(t.id) !== String(row.member_id);
+  const warn = document.getElementById('parejaWarn');
+  warn.style.display = movesRow ? '' : 'none';
+  if (movesRow) {
+    warn.innerHTML = `⚠ El titular cambia. El evento de dobles y su cargo de $${INSC_CATEGORIES.find(x=>x.id===_parejaCtx.catId)?.price ?? 40} `
+      + `se moverán de <strong>${row.nombre}</strong> a <strong>${t.name}</strong>. `
+      + `Si ${row.nombre} ya pagó, coordina el ajuste manualmente.`;
+  }
+}
+
+async function saveEditPareja() {
+  if (!_parejaCtx) return;
+  const msg = document.getElementById('parejaMsg');
+  const { rowId, catId } = _parejaCtx;
+  const row = _inscAdminData.find(r => r.id === rowId);
+  const def = INSC_CATEGORIES.find(x => x.id === catId);
+  const titular   = ALL_PLAYERS.find(p => String(p.id) === document.getElementById('parejaTitular').value);
+  const companero = ALL_PLAYERS.find(p => String(p.id) === document.getElementById('parejaCompanero').value);
+  if (!row || !def || !titular) { msg.textContent = 'Selecciona el jugador titular.'; msg.style.color = 'var(--red)'; return; }
+  if (companero && String(companero.id) === String(titular.id)) {
+    msg.textContent = 'El titular y la pareja no pueden ser la misma persona.'; msg.style.color = 'var(--red)'; return;
+  }
+
+  msg.textContent = 'Guardando…'; msg.style.color = 'var(--muted)';
+  try {
+    const catRow = { id: def.id, name: def.name, price: def.price };
+    if (companero) {
+      catRow.pareja        = companero.name;
+      catRow.pareja_id     = companero.id;
+      catRow.pareja_rating = companero.rating ?? null;
+      if (titular.rating != null && companero.rating != null) {
+        catRow.rating_combinado = titular.rating + companero.rating;
+      }
+    }
+
+    if (String(titular.id) === String(row.member_id)) {
+      // Same owner — just rewrite the doubles entry in place
+      const cats = (row.categorias || []).map(c => c.id === catId ? catRow : c);
+      const { error } = await _supabase.from('insc_registro')
+        .update({ categorias: cats, updated_at: new Date().toISOString() }).eq('id', row.id);
+      if (error) throw error;
+    } else {
+      // New titular: drop the entry from this row and attach it to theirs
+      const restantes = (row.categorias || []).filter(c => c.id !== catId);
+      const dest = _inscAdminData.find(r => String(r.member_id) === String(titular.id));
+
+      if (dest) {
+        if ((dest.categorias || []).some(c => c.id === catId)) {
+          throw new Error(`${titular.name} ya tiene ${def.name} en su inscripción.`);
+        }
+        const { error: e1 } = await _supabase.from('insc_registro').update({
+          categorias: [...(dest.categorias || []), catRow],
+          total: Number(dest.total || 0) + def.price,
+          updated_at: new Date().toISOString(),
+        }).eq('id', dest.id);
+        if (e1) throw e1;
+      } else {
+        // Titular has no registration yet — create one carrying just this event
+        const { error: e1 } = await _supabase.from('insc_registro').insert({
+          torneo: TORNEO_ACTIVO, member_id: titular.id, nombre: titular.name,
+          fptm_id: String(titular.id), categorias: [catRow], base: 0,
+          total: def.price, updated_at: new Date().toISOString(),
+        });
+        if (e1) throw e1;
+      }
+
+      if (restantes.length) {
+        const { error: e2 } = await _supabase.from('insc_registro').update({
+          categorias: restantes,
+          total: Math.max(0, Number(row.total || 0) - def.price),
+          updated_at: new Date().toISOString(),
+        }).eq('id', row.id);
+        if (e2) throw e2;
+      } else {
+        // Nothing else left on the old row
+        const { error: e2 } = await _supabase.from('insc_registro').delete().eq('id', row.id);
+        if (e2) throw e2;
+      }
+    }
+
+    msg.textContent = '✓ Pareja actualizada'; msg.style.color = 'var(--green)';
+    await loadCatCounts();
+    setTimeout(async () => {
+      document.getElementById('editParejaModal').style.display = 'none';
+      await showInscAdminModal();
+    }, 700);
+  } catch (e) {
+    msg.textContent = 'Error: ' + e.message; msg.style.color = 'var(--red)';
+  }
 }
 
 // ── Pago toggle ───────────────────────────
@@ -14139,6 +14277,50 @@ async function submitPublicReg() {
 </div>
 
 <!-- ══ WHATSAPP CHANNEL ANNOUNCEMENT ══ -->
+<!-- ══════════════════════════════════════════
+     EDITAR PAREJA DE DOBLES (admin)
+═══════════════════════════════════════════ -->
+<div id="editParejaModal" role="dialog" aria-modal="true" aria-labelledby="parejaTitle"
+  style="display:none;position:fixed;inset:0;z-index:1600;background:rgba(0,0,0,0.84);
+         align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;max-width:440px;width:100%;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+      <div>
+        <div id="parejaTitle" style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px;">Cambiar pareja</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;"><span id="parejaCatName"></span> &middot; inscrita por <span id="parejaOrigTitular"></span></div>
+      </div>
+      <button onclick="document.getElementById('editParejaModal').style.display='none'" aria-label="Cerrar"
+        style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:18px;">
+      <div>
+        <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Encasillado 1 &mdash; Titular (dueño de la inscripción)</label>
+        <select id="parejaTitular" onchange="updateParejaPreview()"
+          style="width:100%;background:var(--card);border:1px solid rgba(52,211,153,0.35);border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;box-sizing:border-box;"></select>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Encasillado 2 &mdash; Pareja</label>
+        <select id="parejaCompanero" onchange="updateParejaPreview()"
+          style="width:100%;background:var(--card);border:1px solid rgba(52,211,153,0.35);border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;box-sizing:border-box;"></select>
+      </div>
+      <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:9px;padding:10px 13px;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:3px;">Pareja resultante</div>
+        <div id="parejaPreview" style="font-size:14px;font-weight:600;color:var(--text);">&mdash;</div>
+      </div>
+      <div id="parejaWarn" style="display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:9px;padding:10px 13px;font-size:12px;color:#f59e0b;line-height:1.55;"></div>
+    </div>
+
+    <div id="parejaMsg" style="font-size:12px;margin-top:12px;min-height:16px;"></div>
+    <div style="display:flex;gap:8px;margin-top:6px;">
+      <button onclick="saveEditPareja()"
+        style="flex:1;background:var(--grad);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Guardar</button>
+      <button onclick="document.getElementById('editParejaModal').style.display='none'"
+        style="background:none;border:1px solid var(--border);border-radius:10px;padding:11px 18px;color:var(--muted);font-size:13px;cursor:pointer;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════════
      EXPORTAR A STADIUM — ELEGIR PARTE
 ═══════════════════════════════════════════ -->
