@@ -2576,11 +2576,11 @@ Maria Lopez,Ana Torres,B</code>
           </div>
           <span id="cancelBadge" class="adm-badge" style="display:none;background:#f59e0b;color:#000">0</span>
         </div>
-        <div id="adminCardExportar" class="adm-card" onclick="exportInscripcionesStadium()">
+        <div id="adminCardExportar" class="adm-card" onclick="showExportStadiumModal()">
           <div class="adm-ico">📤</div>
           <div>
             <div class="adm-title">Exportar Inscritos</div>
-            <div class="adm-desc">CSV para Stadium Compete</div>
+            <div class="adm-desc">CSV para Stadium — por parte</div>
           </div>
         </div>
         <div id="adminCardReporte" class="adm-card" onclick="showInscReporteModal()">
@@ -12083,7 +12083,9 @@ function catNameToStadiumId(name) {
   return s.replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 
-async function exportInscripcionesStadium() {
+// parte: 1 | 2 | null (todas). Stadium se carga por fin de semana, así que
+// cada archivo lleva solo las categorías que ese jugador juega en esa parte.
+async function exportInscripcionesStadium(parte = null) {
   if (!currentUser) { showLogin(); return; }
   try {
     // Fetch all inscriptions
@@ -12137,14 +12139,18 @@ async function exportInscripcionesStadium() {
       const membId  = insc.member_id ? `fptm|${insc.member_id}` : '';
       const clubId  = matchClubId(insc.club || p['Club'] || '');
 
-      // Map each registered category to its Stadium Compete event slug
+      // Map each registered category to its Stadium Compete event slug,
+      // keeping only the ones played in the requested part
       const cats   = Array.isArray(insc.categorias) ? insc.categorias : [];
       const events = cats
         .filter(c => c.id !== 'credito' && c.id !== 'multa')
-        .map(c => {
-          const def = INSC_CATEGORIES.find(ic => ic.id === c.id);
-          return def?.stadiumId || catNameToStadiumId(c.name);
+        .map(c => ({ c, def: INSC_CATEGORIES.find(ic => ic.id === c.id) }))
+        .filter(({ def }) => {
+          if (!parte) return true;                    // exportar todo
+          if (!def) return false;                     // sin día conocido → fuera
+          return INSC_DAY_BY_KEY[catDayKey(def)]?.parte === parte;
         })
+        .map(({ c, def }) => def?.stadiumId || catNameToStadiumId(c.name))
         .filter(Boolean)
         .join(',');
 
@@ -12167,22 +12173,48 @@ async function exportInscripcionesStadium() {
       ];
     });
 
-    const csv = [headers, ...rows]
+    // A player with nothing scheduled in this part shouldn't be uploaded to it
+    const EVENTS_COL = headers.indexOf('events');
+    const exportRows = parte ? rows.filter(r => r[EVENTS_COL]) : rows;
+    if (!exportRows.length) {
+      alert(`No hay inscritos con categor\u00edas en la Parte ${parte}.`);
+      return;
+    }
+
+    const csv = [headers, ...exportRows]
       .map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
       .join('\n');
 
+    const slug   = TORNEO_ACTIVO.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const sufijo = parte ? `_parte${parte}` : '';
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url;
-    a.download = `inscritos_albergue_olimpico_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `inscritos_${slug}${sufijo}_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    const omitidos = rows.length - exportRows.length;
+    const dias = parte === 1 ? '15 y 16 de agosto' : parte === 2 ? '22 y 23 de agosto' : null;
+    alert(`\u2705 CSV generado${dias ? ` \u2014 Parte ${parte} (${dias})` : ' \u2014 todas las categor\u00edas'}\n\n`
+      + `\u2022 ${exportRows.length} jugador(es) exportado(s)\n`
+      + (omitidos ? `\u2022 ${omitidos} omitido(s): no juegan en esta parte` : ''));
   } catch(e) {
     alert('Error al exportar: ' + e.message);
   }
+}
+
+// Elige qu\u00e9 fin de semana subir a Stadium antes de generar el CSV
+function showExportStadiumModal() {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('exportStadiumModal').style.display = 'flex';
+}
+function exportStadiumParte(parte) {
+  document.getElementById('exportStadiumModal').style.display = 'none';
+  exportInscripcionesStadium(parte);
 }
 
 // ══════════════════════════════════════════
@@ -14107,6 +14139,55 @@ async function submitPublicReg() {
 </div>
 
 <!-- ══ WHATSAPP CHANNEL ANNOUNCEMENT ══ -->
+<!-- ══════════════════════════════════════════
+     EXPORTAR A STADIUM — ELEGIR PARTE
+═══════════════════════════════════════════ -->
+<div id="exportStadiumModal" role="dialog" aria-modal="true" aria-labelledby="expStadiumTitle"
+  style="display:none;position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,0.82);
+         align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;
+              max-width:420px;width:100%;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+      <div id="expStadiumTitle" style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px;">Exportar a Stadium</div>
+      <button onclick="document.getElementById('exportStadiumModal').style.display='none'"
+        aria-label="Cerrar" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0 0 18px;">
+      Cada archivo incluye solo las categorías que el jugador juega en ese fin de semana.
+      Quien no compita en la parte elegida no aparece en el archivo.
+    </p>
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <button onclick="exportStadiumParte(1)"
+        style="display:flex;align-items:center;gap:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
+        <span style="font-size:20px;">1&#65039;&#8419;</span>
+        <span style="flex:1;">
+          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Parte 1</span>
+          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">S&aacute;bado 15 y domingo 16 de agosto</span>
+        </span>
+        <span style="color:var(--accent);font-size:13px;font-weight:700;">&darr; CSV</span>
+      </button>
+      <button onclick="exportStadiumParte(2)"
+        style="display:flex;align-items:center;gap:12px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.3);border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
+        <span style="font-size:20px;">2&#65039;&#8419;</span>
+        <span style="flex:1;">
+          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Parte 2</span>
+          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">S&aacute;bado 22 y domingo 23 de agosto</span>
+        </span>
+        <span style="color:#34d399;font-size:13px;font-weight:700;">&darr; CSV</span>
+      </button>
+      <button onclick="exportStadiumParte(null)"
+        style="display:flex;align-items:center;gap:12px;background:none;border:1px solid var(--border);border-radius:11px;padding:12px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
+        <span style="font-size:18px;">&#128203;</span>
+        <span style="flex:1;">
+          <span style="display:block;font-size:13px;font-weight:600;color:var(--muted);">Todo el torneo</span>
+          <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px;">Las 4 fechas en un solo archivo</span>
+        </span>
+        <span style="color:var(--muted);font-size:12px;font-weight:700;">&darr; CSV</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════════
      POP-UP: EL TORNEO SE JUEGA EN STADIUMTT
 ═══════════════════════════════════════════ -->
