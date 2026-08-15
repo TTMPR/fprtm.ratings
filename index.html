@@ -2576,11 +2576,11 @@ Maria Lopez,Ana Torres,B</code>
           </div>
           <span id="cancelBadge" class="adm-badge" style="display:none;background:#f59e0b;color:#000">0</span>
         </div>
-        <div id="adminCardExportar" class="adm-card" onclick="exportInscripcionesStadium()">
+        <div id="adminCardExportar" class="adm-card" onclick="showExportStadiumModal()">
           <div class="adm-ico">📤</div>
           <div>
             <div class="adm-title">Exportar Inscritos</div>
-            <div class="adm-desc">CSV para Stadium Compete</div>
+            <div class="adm-desc">CSV para Stadium — por parte</div>
           </div>
         </div>
         <div id="adminCardReporte" class="adm-card" onclick="showInscReporteModal()">
@@ -4315,9 +4315,9 @@ Maria Lopez,Ana Torres,B</code>
           <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 16 de agosto</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
             <li>Rating 1900 o menos – 9:00 a.m.</li>
-            <li>11 años o menos Masculino – 11:30 a.m. | menores de 12 al 31-dic-2026</li>
-            <li>11 años o menos Femenino – 11:30 a.m. | menores de 12 al 31-dic-2026</li>
-            <li>Dobles Abierto – 2:00 p.m.</li>
+            <li>Dobles Abierto – 11:30 a.m.</li>
+            <li>11 años o menos Masculino – 2:00 p.m. | menores de 12 al 31-dic-2026</li>
+            <li>11 años o menos Femenino – 2:00 p.m. | menores de 12 al 31-dic-2026</li>
           </ol>
           <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Sábado 22 de agosto</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
@@ -9869,14 +9869,14 @@ function catDayLabel(cat) { return INSC_DAY_BY_KEY[catDayKey(cat)]?.label || '';
 const INSC_CATEGORIES = [
   // ── Sábado 15 de agosto ──
   { id: 'ev1',  name: '1800 o Menos',            desc: 'Premiación: $60 · $55 · $50 (x2)',                            price: 20, slot: 'S15-900',  maxRating: 1800, ratingGroup: 'rating', stadiumId: '1800-under' },
-  { id: 'ev2',  name: 'Abierto (Open Individual)', desc: 'Premiación: $100 · $85 · $70 (x2) · Todos los niveles',     price: 25, slot: 'S15-1130', openDivision: true,                     stadiumId: 'abierto---open' },
+  { id: 'ev2',  name: 'Abierto (Open Individual)', desc: 'Premiación: $100 · $85 · $70 (x2) · Todos los niveles',     price: 25, slot: 'S15-1130', openDivision: true,                     stadiumId: 'open-singles' },
   { id: 'ev3',  name: '15 o Menos Masculino',    desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S15-1400', maxAge: 15, sex: 'M',                   stadiumId: '15u---masculino' },
   { id: 'ev4',  name: '15 o Menos Femenino',     desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S15-1400', maxAge: 15, sex: 'F',                   stadiumId: '15u---femenino' },
   // ── Domingo 16 de agosto ──
   { id: 'ev5',  name: '1900 o Menos',            desc: 'Premiación: $70 · $60 · $55 (x2)',                            price: 20, slot: 'D16-900',  maxRating: 1900, ratingGroup: 'rating', stadiumId: '1900-under' },
-  { id: 'ev6',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1130', maxAge: 11, sex: 'M',                   stadiumId: '11u---masculino' },
-  { id: 'ev7',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1130', maxAge: 11, sex: 'F',                   stadiumId: '11u---femenino' },
-  { id: 'ev8',  name: 'Dobles Abierto',          desc: 'Premiación: $120 · $100 · $80 (x2) · $40 por pareja (una sola inscripción)', price: 40, slot: 'D16-1400', openDivision: true, dobles: true, stadiumId: 'dobles---abierto' },
+  { id: 'ev6',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1400', maxAge: 11, sex: 'M',                   stadiumId: '11u---masculino' },
+  { id: 'ev7',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1400', maxAge: 11, sex: 'F',                   stadiumId: '11u---femenino' },
+  { id: 'ev8',  name: 'Dobles Abierto',          desc: 'Premiación: $120 · $100 · $80 (x2) · $40 por pareja (una sola inscripción)', price: 40, slot: 'D16-1130', openDivision: true, dobles: true, stadiumId: 'dobles-abierto' },
   // ── Sábado 22 de agosto ──
   { id: 'ev9',  name: '1700 o Menos',            desc: 'Premiación: $55 · $50 · $45 (x2)',                            price: 20, slot: 'S22-900',  maxRating: 1700, ratingGroup: 'rating', stadiumId: '1700-under' },
   { id: 'ev10', name: '1500 o Menos',            desc: 'Premiación: $45 · $40 · $35 (x2)',                            price: 20, slot: 'S22-1130', maxRating: 1500, ratingGroup: 'rating', stadiumId: '1500-under' },
@@ -12083,7 +12083,9 @@ function catNameToStadiumId(name) {
   return s.replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 
-async function exportInscripcionesStadium() {
+// parte: 1 | 2 | null (todas). Stadium se carga por fin de semana, así que
+// cada archivo lleva solo las categorías que ese jugador juega en esa parte.
+async function exportInscripcionesStadium(parte = null) {
   if (!currentUser) { showLogin(); return; }
   try {
     // Fetch all inscriptions
@@ -12137,14 +12139,18 @@ async function exportInscripcionesStadium() {
       const membId  = insc.member_id ? `fptm|${insc.member_id}` : '';
       const clubId  = matchClubId(insc.club || p['Club'] || '');
 
-      // Map each registered category to its Stadium Compete event slug
+      // Map each registered category to its Stadium Compete event slug,
+      // keeping only the ones played in the requested part
       const cats   = Array.isArray(insc.categorias) ? insc.categorias : [];
       const events = cats
         .filter(c => c.id !== 'credito' && c.id !== 'multa')
-        .map(c => {
-          const def = INSC_CATEGORIES.find(ic => ic.id === c.id);
-          return def?.stadiumId || catNameToStadiumId(c.name);
+        .map(c => ({ c, def: INSC_CATEGORIES.find(ic => ic.id === c.id) }))
+        .filter(({ def }) => {
+          if (!parte) return true;                    // exportar todo
+          if (!def) return false;                     // sin día conocido → fuera
+          return INSC_DAY_BY_KEY[catDayKey(def)]?.parte === parte;
         })
+        .map(({ c, def }) => def?.stadiumId || catNameToStadiumId(c.name))
         .filter(Boolean)
         .join(',');
 
@@ -12167,22 +12173,48 @@ async function exportInscripcionesStadium() {
       ];
     });
 
-    const csv = [headers, ...rows]
+    // A player with nothing scheduled in this part shouldn't be uploaded to it
+    const EVENTS_COL = headers.indexOf('events');
+    const exportRows = parte ? rows.filter(r => r[EVENTS_COL]) : rows;
+    if (!exportRows.length) {
+      alert(`No hay inscritos con categor\u00edas en la Parte ${parte}.`);
+      return;
+    }
+
+    const csv = [headers, ...exportRows]
       .map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
       .join('\n');
 
+    const slug   = TORNEO_ACTIVO.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const sufijo = parte ? `_parte${parte}` : '';
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url;
-    a.download = `inscritos_albergue_olimpico_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `inscritos_${slug}${sufijo}_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    const omitidos = rows.length - exportRows.length;
+    const dias = parte === 1 ? '15 y 16 de agosto' : parte === 2 ? '22 y 23 de agosto' : null;
+    alert(`\u2705 CSV generado${dias ? ` \u2014 Parte ${parte} (${dias})` : ' \u2014 todas las categor\u00edas'}\n\n`
+      + `\u2022 ${exportRows.length} jugador(es) exportado(s)\n`
+      + (omitidos ? `\u2022 ${omitidos} omitido(s): no juegan en esta parte` : ''));
   } catch(e) {
     alert('Error al exportar: ' + e.message);
   }
+}
+
+// Elige qu\u00e9 fin de semana subir a Stadium antes de generar el CSV
+function showExportStadiumModal() {
+  if (!currentUser) { showLogin(); return; }
+  document.getElementById('exportStadiumModal').style.display = 'flex';
+}
+function exportStadiumParte(parte) {
+  document.getElementById('exportStadiumModal').style.display = 'none';
+  exportInscripcionesStadium(parte);
 }
 
 // ══════════════════════════════════════════
@@ -13499,6 +13531,11 @@ function renderInscAdminTable() {
             style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:5px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px;">
             ✕ Rechazar
           </button>` : ''}
+          ${cats.some(c => INSC_CATEGORIES.find(x => x.id === c.id)?.dobles) ? `
+          <button onclick="openEditPareja(${row.id})" title="Cambiar los integrantes de la pareja"
+            style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34d399;padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;margin-right:6px;">
+            Pareja
+          </button>` : ''}
           <button onclick="openEditInscripcion(${row.id})"
             style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;margin-right:6px;">
             Editar
@@ -13513,6 +13550,139 @@ function renderInscAdminTable() {
 
   html += '</tbody></table></div>';
   tableEl.innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// EDITAR PAREJA DE DOBLES (admin)
+// ══════════════════════════════════════════
+// A doubles entry lives on one registration: the titular owns the row (and the
+// payment) and the partner is stored inside the category. Swapping the partner
+// is a field edit; swapping the titular means moving the entry to another row.
+let _parejaCtx = null;   // { rowId, catId }
+
+function openEditPareja(rowId) {
+  const row = _inscAdminData.find(r => r.id === rowId);
+  if (!row) return;
+  const cats = Array.isArray(row.categorias) ? row.categorias : [];
+  const entry = cats.find(c => INSC_CATEGORIES.find(x => x.id === c.id)?.dobles);
+  if (!entry) { alert('Esta inscripción no tiene un evento de dobles.'); return; }
+
+  _parejaCtx = { rowId, catId: entry.id };
+  const opts = sel => ALL_PLAYERS.slice()
+    .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+    .map(p => `<option value="${p.id}"${String(p.id) === String(sel) ? ' selected' : ''}>${p.name}${p.rating ? ` · ★${p.rating}` : ''}</option>`)
+    .join('');
+
+  document.getElementById('parejaCatName').textContent = entry.name;
+  document.getElementById('parejaTitular').innerHTML = opts(row.member_id);
+  document.getElementById('parejaCompanero').innerHTML =
+    `<option value="">— Sin pareja —</option>` + opts(entry.pareja_id);
+  document.getElementById('parejaMsg').textContent = '';
+  document.getElementById('parejaWarn').style.display = 'none';
+  document.getElementById('parejaOrigTitular').textContent = row.nombre || '—';
+  updateParejaPreview();
+  document.getElementById('editParejaModal').style.display = 'flex';
+}
+
+function updateParejaPreview() {
+  const t = ALL_PLAYERS.find(p => String(p.id) === document.getElementById('parejaTitular').value);
+  const c = ALL_PLAYERS.find(p => String(p.id) === document.getElementById('parejaCompanero').value);
+  const comb = (t?.rating != null && c?.rating != null) ? t.rating + c.rating : null;
+  document.getElementById('parejaPreview').innerHTML = t
+    ? `${t.name}${c ? ` <span style="color:var(--muted)">/</span> ${c.name}` : ''}
+       ${comb != null ? `<span style="color:#34d399;font-weight:700;margin-left:8px;">★ ${comb}</span>` : ''}`
+    : '—';
+  // Moving the entry to a different row is the non-obvious case; call it out
+  const row = _parejaCtx && _inscAdminData.find(r => r.id === _parejaCtx.rowId);
+  const movesRow = row && t && String(t.id) !== String(row.member_id);
+  const warn = document.getElementById('parejaWarn');
+  warn.style.display = movesRow ? '' : 'none';
+  if (movesRow) {
+    warn.innerHTML = `⚠ El titular cambia. El evento de dobles y su cargo de $${INSC_CATEGORIES.find(x=>x.id===_parejaCtx.catId)?.price ?? 40} `
+      + `se moverán de <strong>${row.nombre}</strong> a <strong>${t.name}</strong>. `
+      + `Si ${row.nombre} ya pagó, coordina el ajuste manualmente.`;
+  }
+}
+
+async function saveEditPareja() {
+  if (!_parejaCtx) return;
+  const msg = document.getElementById('parejaMsg');
+  const { rowId, catId } = _parejaCtx;
+  const row = _inscAdminData.find(r => r.id === rowId);
+  const def = INSC_CATEGORIES.find(x => x.id === catId);
+  const titular   = ALL_PLAYERS.find(p => String(p.id) === document.getElementById('parejaTitular').value);
+  const companero = ALL_PLAYERS.find(p => String(p.id) === document.getElementById('parejaCompanero').value);
+  if (!row || !def || !titular) { msg.textContent = 'Selecciona el jugador titular.'; msg.style.color = 'var(--red)'; return; }
+  if (companero && String(companero.id) === String(titular.id)) {
+    msg.textContent = 'El titular y la pareja no pueden ser la misma persona.'; msg.style.color = 'var(--red)'; return;
+  }
+
+  msg.textContent = 'Guardando…'; msg.style.color = 'var(--muted)';
+  try {
+    const catRow = { id: def.id, name: def.name, price: def.price };
+    if (companero) {
+      catRow.pareja        = companero.name;
+      catRow.pareja_id     = companero.id;
+      catRow.pareja_rating = companero.rating ?? null;
+      if (titular.rating != null && companero.rating != null) {
+        catRow.rating_combinado = titular.rating + companero.rating;
+      }
+    }
+
+    if (String(titular.id) === String(row.member_id)) {
+      // Same owner — just rewrite the doubles entry in place
+      const cats = (row.categorias || []).map(c => c.id === catId ? catRow : c);
+      const { error } = await _supabase.from('insc_registro')
+        .update({ categorias: cats, updated_at: new Date().toISOString() }).eq('id', row.id);
+      if (error) throw error;
+    } else {
+      // New titular: drop the entry from this row and attach it to theirs
+      const restantes = (row.categorias || []).filter(c => c.id !== catId);
+      const dest = _inscAdminData.find(r => String(r.member_id) === String(titular.id));
+
+      if (dest) {
+        if ((dest.categorias || []).some(c => c.id === catId)) {
+          throw new Error(`${titular.name} ya tiene ${def.name} en su inscripción.`);
+        }
+        const { error: e1 } = await _supabase.from('insc_registro').update({
+          categorias: [...(dest.categorias || []), catRow],
+          total: Number(dest.total || 0) + def.price,
+          updated_at: new Date().toISOString(),
+        }).eq('id', dest.id);
+        if (e1) throw e1;
+      } else {
+        // Titular has no registration yet — create one carrying just this event
+        const { error: e1 } = await _supabase.from('insc_registro').insert({
+          torneo: TORNEO_ACTIVO, member_id: titular.id, nombre: titular.name,
+          fptm_id: String(titular.id), categorias: [catRow], base: 0,
+          total: def.price, updated_at: new Date().toISOString(),
+        });
+        if (e1) throw e1;
+      }
+
+      if (restantes.length) {
+        const { error: e2 } = await _supabase.from('insc_registro').update({
+          categorias: restantes,
+          total: Math.max(0, Number(row.total || 0) - def.price),
+          updated_at: new Date().toISOString(),
+        }).eq('id', row.id);
+        if (e2) throw e2;
+      } else {
+        // Nothing else left on the old row
+        const { error: e2 } = await _supabase.from('insc_registro').delete().eq('id', row.id);
+        if (e2) throw e2;
+      }
+    }
+
+    msg.textContent = '✓ Pareja actualizada'; msg.style.color = 'var(--green)';
+    await loadCatCounts();
+    setTimeout(async () => {
+      document.getElementById('editParejaModal').style.display = 'none';
+      await showInscAdminModal();
+    }, 700);
+  } catch (e) {
+    msg.textContent = 'Error: ' + e.message; msg.style.color = 'var(--red)';
+  }
 }
 
 // ── Pago toggle ───────────────────────────
@@ -14107,6 +14277,99 @@ async function submitPublicReg() {
 </div>
 
 <!-- ══ WHATSAPP CHANNEL ANNOUNCEMENT ══ -->
+<!-- ══════════════════════════════════════════
+     EDITAR PAREJA DE DOBLES (admin)
+═══════════════════════════════════════════ -->
+<div id="editParejaModal" role="dialog" aria-modal="true" aria-labelledby="parejaTitle"
+  style="display:none;position:fixed;inset:0;z-index:1600;background:rgba(0,0,0,0.84);
+         align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;max-width:440px;width:100%;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+      <div>
+        <div id="parejaTitle" style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px;">Cambiar pareja</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;"><span id="parejaCatName"></span> &middot; inscrita por <span id="parejaOrigTitular"></span></div>
+      </div>
+      <button onclick="document.getElementById('editParejaModal').style.display='none'" aria-label="Cerrar"
+        style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:18px;">
+      <div>
+        <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Encasillado 1 &mdash; Titular (dueño de la inscripción)</label>
+        <select id="parejaTitular" onchange="updateParejaPreview()"
+          style="width:100%;background:var(--card);border:1px solid rgba(52,211,153,0.35);border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;box-sizing:border-box;"></select>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Encasillado 2 &mdash; Pareja</label>
+        <select id="parejaCompanero" onchange="updateParejaPreview()"
+          style="width:100%;background:var(--card);border:1px solid rgba(52,211,153,0.35);border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;box-sizing:border-box;"></select>
+      </div>
+      <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:9px;padding:10px 13px;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:3px;">Pareja resultante</div>
+        <div id="parejaPreview" style="font-size:14px;font-weight:600;color:var(--text);">&mdash;</div>
+      </div>
+      <div id="parejaWarn" style="display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:9px;padding:10px 13px;font-size:12px;color:#f59e0b;line-height:1.55;"></div>
+    </div>
+
+    <div id="parejaMsg" style="font-size:12px;margin-top:12px;min-height:16px;"></div>
+    <div style="display:flex;gap:8px;margin-top:6px;">
+      <button onclick="saveEditPareja()"
+        style="flex:1;background:var(--grad);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Guardar</button>
+      <button onclick="document.getElementById('editParejaModal').style.display='none'"
+        style="background:none;border:1px solid var(--border);border-radius:10px;padding:11px 18px;color:var(--muted);font-size:13px;cursor:pointer;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     EXPORTAR A STADIUM — ELEGIR PARTE
+═══════════════════════════════════════════ -->
+<div id="exportStadiumModal" role="dialog" aria-modal="true" aria-labelledby="expStadiumTitle"
+  style="display:none;position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,0.82);
+         align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;
+              max-width:420px;width:100%;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+      <div id="expStadiumTitle" style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px;">Exportar a Stadium</div>
+      <button onclick="document.getElementById('exportStadiumModal').style.display='none'"
+        aria-label="Cerrar" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0 0 18px;">
+      Cada archivo incluye solo las categorías que el jugador juega en ese fin de semana.
+      Quien no compita en la parte elegida no aparece en el archivo.
+    </p>
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <button onclick="exportStadiumParte(1)"
+        style="display:flex;align-items:center;gap:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
+        <span style="font-size:20px;">1&#65039;&#8419;</span>
+        <span style="flex:1;">
+          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Parte 1</span>
+          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">S&aacute;bado 15 y domingo 16 de agosto</span>
+        </span>
+        <span style="color:var(--accent);font-size:13px;font-weight:700;">&darr; CSV</span>
+      </button>
+      <button onclick="exportStadiumParte(2)"
+        style="display:flex;align-items:center;gap:12px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.3);border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
+        <span style="font-size:20px;">2&#65039;&#8419;</span>
+        <span style="flex:1;">
+          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Parte 2</span>
+          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">S&aacute;bado 22 y domingo 23 de agosto</span>
+        </span>
+        <span style="color:#34d399;font-size:13px;font-weight:700;">&darr; CSV</span>
+      </button>
+      <button onclick="exportStadiumParte(null)"
+        style="display:flex;align-items:center;gap:12px;background:none;border:1px solid var(--border);border-radius:11px;padding:12px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
+        <span style="font-size:18px;">&#128203;</span>
+        <span style="flex:1;">
+          <span style="display:block;font-size:13px;font-weight:600;color:var(--muted);">Todo el torneo</span>
+          <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px;">Las 4 fechas en un solo archivo</span>
+        </span>
+        <span style="color:var(--muted);font-size:12px;font-weight:700;">&darr; CSV</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════════
      POP-UP: EL TORNEO SE JUEGA EN STADIUMTT
 ═══════════════════════════════════════════ -->
