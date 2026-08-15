@@ -12776,7 +12776,12 @@ async function showInscReporteModal() {
     if (e1) throw new Error(e1.message);
     _inscReporteData = inscs || [];
 
-    const memberIds = _inscReporteData.map(i => i.member_id).filter(Boolean);
+    // Include doubles partners — they may not have a registration of their own
+    const memberIds = [...new Set([
+      ..._inscReporteData.map(i => i.member_id),
+      ..._inscReporteData.flatMap(i => (Array.isArray(i.categorias) ? i.categorias : [])
+        .map(c => c.pareja_id)),
+    ].filter(Boolean))];
     const { data: players, error: e2 } = await _supabase
       .from('Base de Datos')
       .select('"Member ID","First Name","Last Name","Rating","New Rating","Club"')
@@ -12818,6 +12823,19 @@ async function showInscReporteModal() {
   }
 }
 
+// "Jerall Antonio Montijo Rivera" → "Jerall Montijo". Uses the split
+// First/Last Name columns when the player row is known; otherwise falls back
+// to positional guessing on the stored full name.
+function nombreCorto(nombreCompleto, playerRow) {
+  const first = (playerRow?.['First Name'] || '').trim().split(/\s+/)[0];
+  const last  = (playerRow?.['Last Name']  || '').trim().split(/\s+/)[0];
+  if (first && last) return `${first} ${last}`;
+  const t = String(nombreCompleto || '').trim().split(/\s+/).filter(Boolean);
+  if (t.length >= 4) return `${t[0]} ${t[2]}`;   // nombre nombre apellido apellido
+  if (t.length === 3) return `${t[0]} ${t[1]}`;  // nombre apellido apellido
+  return t.join(' ');
+}
+
 function renderInscReporte(catId) {
   _inscReporteActiveCat = catId;
 
@@ -12832,21 +12850,33 @@ function renderInscReporte(catId) {
   });
 
   const cat = INSC_CATEGORIES.find(c => c.id === catId);
+  const esDobles  = !!cat?.dobles;
   const contentEl = document.getElementById('inscReporteContent');
 
   // Collect players in this category
   const entries = [];
   _inscReporteData.forEach(row => {
     const cats = Array.isArray(row.categorias) ? row.categorias : [];
-    if (!cats.find(c => c.id === catId)) return;
+    const entry = cats.find(c => c.id === catId);
+    if (!entry) return;
     const p = _inscReportePlayers[row.member_id] || {};
     const rating = p['New Rating'] ?? p['Rating'] ?? null;
-    entries.push({
+    const base = {
       nombre: row.nombre || `${p['First Name'] || ''} ${p['Last Name'] || ''}`.trim() || '—',
       fptmId: row.fptm_id || row.member_id || '',
       rating: rating !== null && rating !== '' ? Number(rating) : null,
       club:   row.club || p['Club'] || '—',
-    });
+    };
+    if (esDobles) {
+      // Short form on both sides so the pair can be pasted into Stadium
+      const pRow = entry.pareja_id ? _inscReportePlayers[entry.pareja_id] : null;
+      base.pareja    = entry.pareja || null;
+      base.parejaRat = entry.pareja_rating ?? null;
+      base.rating    = entry.rating_combinado ?? base.rating;
+      base.copyText  = nombreCorto(base.nombre, p)
+        + (entry.pareja ? ` / ${nombreCorto(entry.pareja, pRow)}` : '');
+    }
+    entries.push(base);
   });
 
   // Sort by rating desc (nulls last)
@@ -12876,13 +12906,23 @@ function renderInscReporte(catId) {
         ${spotsLeft !== null ? `<span style="font-weight:400;color:var(--muted);"> · ${spotsLeft} cupos restantes</span>` : ''}
       </div>
     </div>
+    ${esDobles ? `
+    <div style="display:flex;align-items:center;gap:10px;background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.25);border-radius:10px;padding:10px 14px;margin-bottom:12px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--muted);flex:1;min-width:180px;">
+        Formato listo para pegar en Stadium — una pareja por línea.
+      </span>
+      <button onclick="copiarParejas()" id="btnCopiarParejas"
+        style="background:rgba(52,211,153,0.16);border:1px solid rgba(52,211,153,0.45);border-radius:8px;padding:7px 15px;color:#34d399;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
+        Copiar ${entries.length} pareja${entries.length !== 1 ? 's' : ''}
+      </button>
+    </div>` : ''}
     <div style="overflow-x:auto;">
     <table style="width:100%;border-collapse:collapse;font-size:13px;">
       <thead>
         <tr style="border-bottom:1px solid var(--border);">
           <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;">#</th>
-          <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">Jugador</th>
-          <th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600;">Rating</th>
+          <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">${esDobles ? 'Pareja' : 'Jugador'}</th>
+          <th style="text-align:right;padding:8px 10px;color:var(--muted);font-weight:600;">${esDobles ? 'Combinado' : 'Rating'}</th>
           <th style="text-align:left;padding:8px 10px;color:var(--muted);font-weight:600;">Club</th>
         </tr>
       </thead>
@@ -12895,8 +12935,13 @@ function renderInscReporte(catId) {
           onmouseout="this.style.background='transparent'">
         <td style="padding:10px 10px;color:var(--muted);font-weight:600;">${i + 1}</td>
         <td style="padding:10px 10px;">
-          <div style="font-weight:600;color:var(--text);">${e.nombre}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:1px;">${e.fptmId}</div>
+          ${esDobles ? `
+            <div style="font-weight:600;color:var(--text);font-family:monospace;font-size:13px;">${e.copyText}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px;">${e.nombre}${e.pareja ? ` &amp; ${e.pareja}` : ' · sin pareja'}</div>
+          ` : `
+            <div style="font-weight:600;color:var(--text);">${e.nombre}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px;">${e.fptmId}</div>
+          `}
         </td>
         <td style="padding:10px 10px;text-align:right;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--accent);">
           ${e.rating !== null ? e.rating : '<span style="color:var(--muted);font-weight:400;">—</span>'}
@@ -12907,6 +12952,22 @@ function renderInscReporte(catId) {
 
   html += '</tbody></table></div>';
   contentEl.innerHTML = html;
+  _parejasCopiables = esDobles ? entries.map(e => e.copyText) : [];
+}
+
+let _parejasCopiables = [];
+
+// Copia las parejas, una por línea, para pegarlas en Stadium
+async function copiarParejas() {
+  const texto = _parejasCopiables.join('\n');
+  const btn = document.getElementById('btnCopiarParejas');
+  try {
+    await navigator.clipboard.writeText(texto);
+    if (btn) { const t = btn.textContent; btn.textContent = '✓ Copiado'; setTimeout(() => btn.textContent = t, 1600); }
+  } catch (_) {
+    // Portapapeles bloqueado (http, permisos) → mostrar para copiar a mano
+    window.prompt('Copia las parejas:', texto);
+  }
 }
 
 function closeInscReporteModal() {
