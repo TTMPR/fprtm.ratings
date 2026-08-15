@@ -9868,14 +9868,14 @@ function catDayLabel(cat) { return INSC_DAY_BY_KEY[catDayKey(cat)]?.label || '';
 // ratingGroup: identifies rating-capped categories for the ascenso policy
 const INSC_CATEGORIES = [
   // ── Sábado 15 de agosto ──
-  { id: 'ev1',  name: '1800 o Menos',            desc: 'Premiación: $60 · $55 · $50 (x2)',                            price: 20, slot: 'S15-900',  maxRating: 1800, ratingGroup: 'rating', stadiumId: '1800-under' },
-  { id: 'ev2',  name: 'Abierto (Open Individual)', desc: 'Premiación: $100 · $85 · $70 (x2) · Todos los niveles',     price: 25, slot: 'S15-1130', openDivision: true,                     stadiumId: 'open-singles' },
-  { id: 'ev3',  name: '15 o Menos Masculino',    desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S15-1400', maxAge: 15, sex: 'M',                   stadiumId: '15u---masculino' },
-  { id: 'ev4',  name: '15 o Menos Femenino',     desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S15-1400', maxAge: 15, sex: 'F',                   stadiumId: '15u---femenino' },
+  { id: 'ev1',  name: '1800 o Menos',            desc: 'Premiación: $60 · $55 · $50 (x2)',                            price: 20, slot: 'S15-900',  maxRating: 1800, ratingGroup: 'rating', stadiumId: '1800-under', stadiumVerified: true },
+  { id: 'ev2',  name: 'Abierto (Open Individual)', desc: 'Premiación: $100 · $85 · $70 (x2) · Todos los niveles',     price: 25, slot: 'S15-1130', openDivision: true,                     stadiumId: 'abierto', stadiumVerified: true },
+  { id: 'ev3',  name: '15 o Menos Masculino',    desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S15-1400', maxAge: 15, sex: 'M',                   stadiumId: '15u---masculino', stadiumVerified: true },
+  { id: 'ev4',  name: '15 o Menos Femenino',     desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S15-1400', maxAge: 15, sex: 'F',                   stadiumId: '15u---femenino', stadiumVerified: true },
   // ── Domingo 16 de agosto ──
-  { id: 'ev5',  name: '1900 o Menos',            desc: 'Premiación: $70 · $60 · $55 (x2)',                            price: 20, slot: 'D16-900',  maxRating: 1900, ratingGroup: 'rating', stadiumId: '1900-under' },
-  { id: 'ev6',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1400', maxAge: 11, sex: 'M',                   stadiumId: '11u---masculino' },
-  { id: 'ev7',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1400', maxAge: 11, sex: 'F',                   stadiumId: '11u---femenino' },
+  { id: 'ev5',  name: '1900 o Menos',            desc: 'Premiación: $70 · $60 · $55 (x2)',                            price: 20, slot: 'D16-900',  maxRating: 1900, ratingGroup: 'rating', stadiumId: '1900-under', stadiumVerified: true },
+  { id: 'ev6',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1400', maxAge: 11, sex: 'M',                   stadiumId: '11u---masculino', stadiumVerified: true },
+  { id: 'ev7',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1400', maxAge: 11, sex: 'F',                   stadiumId: '11u---femenino', stadiumVerified: true },
   { id: 'ev8',  name: 'Dobles Abierto',          desc: 'Premiación: $120 · $100 · $80 (x2) · $40 por pareja (una sola inscripción)', price: 40, slot: 'D16-1130', openDivision: true, dobles: true, stadiumId: 'dobles-abierto' },
   // ── Sábado 22 de agosto ──
   { id: 'ev9',  name: '1700 o Menos',            desc: 'Premiación: $55 · $50 · $45 (x2)',                            price: 20, slot: 'S22-900',  maxRating: 1700, ratingGroup: 'rating', stadiumId: '1700-under' },
@@ -12129,6 +12129,8 @@ async function exportInscripcionesStadium(parte = null) {
       'membershipIds', 'clubId', 'events'
     ];
 
+    const omitidas = new Set();   // categorías sin event id confirmado en Stadium
+
     const rows = inscs.map(insc => {
       const p       = playerMap[insc.member_id] || {};
       const nameParts = (insc.nombre || '').split(' ');
@@ -12144,14 +12146,18 @@ async function exportInscripcionesStadium(parte = null) {
       const cats   = Array.isArray(insc.categorias) ? insc.categorias : [];
       const events = cats
         .filter(c => c.id !== 'credito' && c.id !== 'multa')
-        .map(c => ({ c, def: INSC_CATEGORIES.find(ic => ic.id === c.id) }))
-        .filter(({ def }) => {
-          if (!parte) return true;                    // exportar todo
-          if (!def) return false;                     // sin día conocido → fuera
-          return INSC_DAY_BY_KEY[catDayKey(def)]?.parte === parte;
+        .map(c => INSC_CATEGORIES.find(ic => ic.id === c.id))
+        .filter(def => {
+          if (!def) return false;
+          // Doubles pairs are entered by hand in Stadium
+          if (def.dobles) return false;
+          // Never upload an unconfirmed event id — Stadium mis-assigns players
+          // when the id doesn't match one of its events.
+          if (!def.stadiumVerified) { omitidas.add(def.name); return false; }
+          if (parte && INSC_DAY_BY_KEY[catDayKey(def)]?.parte !== parte) return false;
+          return true;
         })
-        .map(({ c, def }) => def?.stadiumId || catNameToStadiumId(c.name))
-        .filter(Boolean)
+        .map(def => def.stadiumId)
         .join(',');
 
       return [
@@ -12173,11 +12179,12 @@ async function exportInscripcionesStadium(parte = null) {
       ];
     });
 
-    // A player with nothing scheduled in this part shouldn't be uploaded to it
+    // A row with no events would let Stadium enrol the player in everything
     const EVENTS_COL = headers.indexOf('events');
-    const exportRows = parte ? rows.filter(r => r[EVENTS_COL]) : rows;
+    const exportRows = rows.filter(r => r[EVENTS_COL]);
     if (!exportRows.length) {
-      alert(`No hay inscritos con categor\u00edas en la Parte ${parte}.`);
+      alert(`No hay nada que exportar${parte ? ` para la Parte ${parte}` : ''}.`
+        + (omitidas.size ? `\n\nSin event id confirmado en Stadium:\n\u2022 ${[...omitidas].join('\n\u2022 ')}` : ''));
       return;
     }
 
@@ -12201,7 +12208,11 @@ async function exportInscripcionesStadium(parte = null) {
     const dias = parte === 1 ? '15 y 16 de agosto' : parte === 2 ? '22 y 23 de agosto' : null;
     alert(`\u2705 CSV generado${dias ? ` \u2014 Parte ${parte} (${dias})` : ' \u2014 todas las categor\u00edas'}\n\n`
       + `\u2022 ${exportRows.length} jugador(es) exportado(s)\n`
-      + (omitidos ? `\u2022 ${omitidos} omitido(s): no juegan en esta parte` : ''));
+      + (omitidos ? `\u2022 ${omitidos} jugador(es) sin eventos exportables\n` : '')
+      + `\u2022 Dobles no se incluye \u2014 se entra a mano en Stadium`
+      + (omitidas.size
+          ? `\n\n\u26a0 Estas categor\u00edas NO se exportaron porque su event id a\u00fan no est\u00e1\nconfirmado en Stadium:\n\u2022 ${[...omitidas].join('\n\u2022 ')}`
+          : ''));
   } catch(e) {
     alert('Error al exportar: ' + e.message);
   }
