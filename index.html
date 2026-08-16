@@ -2568,6 +2568,18 @@ Maria Lopez,Ana Torres,B</code>
             <div id="inscAdminSync" style="font-size:11px;margin-top:3px;color:var(--muted)"></div>
           </div>
         </div>
+        <div class="adm-card" style="align-items:flex-start;cursor:default;" onclick="event.stopPropagation()">
+          <div class="adm-ico">🗓</div>
+          <div style="flex:1;min-width:0;">
+            <div class="adm-title">Parte que acepta inscripciones</div>
+            <div class="adm-desc" id="parteAbiertaDesc">—</div>
+            <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+              <button id="btnParte1" onclick="setParteAbierta('1')" style="border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Parte 1</button>
+              <button id="btnParte2" onclick="setParteAbierta('2')" style="border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Parte 2</button>
+              <button id="btnParteTodas" onclick="setParteAbierta('todas')" style="border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Todas</button>
+            </div>
+          </div>
+        </div>
         <div id="adminCardGestionar" class="adm-card" onclick="showInscAdminModal()">
           <div class="adm-ico">🧾</div>
           <div>
@@ -9895,25 +9907,33 @@ const INSC_CATEGORIES = [
 // your natural category. Natural = the tightest category you still qualify
 // for (lowest rating cap ≥ your rating; lowest age cap you still fit).
 // The Open division and Seniors sit outside the ladder and are exempt.
-function inscNaturalRatingCat(rating) {
+// Candidatas para "categoría natural": las que el jugador YA tiene inscritas
+// (aunque su parte esté cerrada) más las que puede inscribir ahora. Así la regla
+// se mantiene entre partes: quien jugó su natural en la Parte 1 puede ascender
+// en la Parte 2, y a quien nunca pudo inscribirla no se le exige lo imposible.
+function inscCandidatasNaturales(yaInscritas = []) {
+  const inscritas = new Set(yaInscritas);
+  return INSC_CATEGORIES.filter(c => inscritas.has(c.id) || catParteAbierta(c));
+}
+function inscNaturalRatingCat(rating, yaInscritas) {
   if (rating === null || rating === undefined) return null;
-  return INSC_CATEGORIES
+  return inscCandidatasNaturales(yaInscritas)
     .filter(c => c.maxRating && c.maxRating >= rating)
     .sort((a, b) => a.maxRating - b.maxRating)[0] || null;
 }
-function inscNaturalAgeCat(dob, sex) {
+function inscNaturalAgeCat(dob, sex, yaInscritas) {
   if (!dob) return null;
   const s = (sex || '').toUpperCase();
-  return INSC_CATEGORIES
+  return inscCandidatasNaturales(yaInscritas)
     .filter(c => c.maxAge && inscCatEligibleStatic(c, { rating: null, sex: s, dob }))
     .sort((a, b) => a.maxAge - b.maxAge)[0] || null;
 }
 // Returns the category that must accompany `cat`, or null when none applies.
-function inscAscensoRequirement(cat, { rating, dob, sex }) {
+function inscAscensoRequirement(cat, { rating, dob, sex, yaInscritas }) {
   if (!cat || cat.openDivision || cat.minAge) return null;
   let natural = null;
-  if (cat.maxRating)  natural = inscNaturalRatingCat(rating);
-  else if (cat.maxAge) natural = inscNaturalAgeCat(dob, sex);
+  if (cat.maxRating)  natural = inscNaturalRatingCat(rating, yaInscritas);
+  else if (cat.maxAge) natural = inscNaturalAgeCat(dob, sex, yaInscritas);
   if (!natural || natural.id === cat.id) return null;
   // Same time slot ⇒ impossible to satisfy, so the rule cannot apply.
   if (natural.slot === cat.slot) return null;
@@ -10099,12 +10119,37 @@ let inscripcionesOpen = false;
 let inscSbSynced = false;   // true once a successful Supabase round-trip happens
 // Cidra Open 2026 — el reglamento aún no fija fecha límite; placeholder: jueves
 // antes de la Parte 1. Ajustar cuando la federación la anuncie oficialmente.
-const INSC_DEADLINE = new Date('2026-08-13T20:00:00-04:00'); // jue. 13 agosto · 8:00 p.m. AST
+// Fecha límite por parte — la Parte 2 se inscribe después de jugada la Parte 1
+const INSC_DEADLINES = {
+  1: new Date('2026-08-13T20:00:00-04:00'), // jue. 13 agosto · 8:00 p.m. AST
+  2: new Date('2026-08-20T20:00:00-04:00'), // jue. 20 agosto · 8:00 p.m. AST
+};
+// Qué parte acepta inscripciones ahora: '1' | '2' | 'todas'
+let INSC_PARTE_ABIERTA = 'todas';
+
+function inscParteAbiertaNum() {
+  return INSC_PARTE_ABIERTA === '1' ? 1 : INSC_PARTE_ABIERTA === '2' ? 2 : null;
+}
+// ¿Se puede inscribir en esta categoría ahora mismo?
+function catParteAbierta(cat) {
+  const n = inscParteAbiertaNum();
+  if (!n) return true;
+  return INSC_DAY_BY_KEY[catDayKey(cat)]?.parte === n;
+}
+function inscDeadlineActual() {
+  return INSC_DEADLINES[inscParteAbiertaNum() ?? 2];
+}
+function inscDeadlineLabelTxt() {
+  return inscDeadlineActual().toLocaleDateString('es-PR',
+    { weekday: 'short', day: 'numeric', month: 'long' }) + ' · 8:00 p.m.';
+}
 
 async function loadInscripcionesConfig() {
   // Show locally-cached value instantly while network resolves
   const cached = localStorage.getItem('inscripciones_open');
   if (cached !== null) inscripcionesOpen = cached === 'true';
+  const cachedParte = localStorage.getItem('insc_parte_abierta');
+  if (cachedParte) INSC_PARTE_ABIERTA = cachedParte;
   applyInscripcionesState();
 
   // Supabase is the source of truth for all devices
@@ -10114,6 +10159,11 @@ async function loadInscripcionesConfig() {
       inscripcionesOpen = data[0].value === 'true';
       localStorage.setItem('inscripciones_open', String(inscripcionesOpen));
       inscSbSynced = true;
+    }
+    const dp = await sbGet('app_settings', '?key=eq.insc_parte_abierta&select=value');
+    if (dp && dp.length && dp[0].value) {
+      INSC_PARTE_ABIERTA = dp[0].value;
+      localStorage.setItem('insc_parte_abierta', INSC_PARTE_ABIERTA);
     }
   } catch(e) {
     console.warn('loadInscripcionesConfig (Supabase):', e.message);
@@ -10129,7 +10179,7 @@ function applyInscripcionesState() {
   const activeUI      = document.getElementById('inscActiveTorneoUI');
   const torneoCard    = document.getElementById('inscTorneoCard');
 
-  const deadlinePassed = Date.now() > INSC_DEADLINE.getTime();
+  const deadlinePassed = Date.now() > inscDeadlineActual().getTime();
   const deadlineLabel  = document.getElementById('inscDeadlineLabel');
   const cerradasMsg    = document.getElementById('inscCerradasMsg');
   if (deadlineLabel) deadlineLabel.style.display = deadlinePassed ? 'none' : '';
@@ -10214,6 +10264,24 @@ function applyInscripcionesState() {
   }
   if (cardEl)  cardEl.style.borderColor = effectivelyOpen ? 'var(--border)' : 'rgba(239,68,68,0.4)';
   if (iconEl)  iconEl.textContent       = effectivelyOpen ? '📋' : '🔒';
+
+  // Selector de parte abierta
+  const parteDesc = document.getElementById('parteAbiertaDesc');
+  if (parteDesc) {
+    const etq = { '1': 'Parte 1 · 15 y 16 de agosto', '2': 'Parte 2 · 22 y 23 de agosto',
+                  'todas': 'Todas las categorías del torneo' }[INSC_PARTE_ABIERTA] || '—';
+    parteDesc.innerHTML = `${etq}<br><span style="font-size:11px;">Cierra: ${inscDeadlineLabelTxt()}</span>`;
+  }
+  [['btnParte1','1'],['btnParte2','2'],['btnParteTodas','todas']].forEach(([id, val]) => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    const on = INSC_PARTE_ABIERTA === val;
+    b.style.background  = on ? 'var(--accent)' : 'transparent';
+    b.style.color       = on ? '#0b1220' : 'var(--muted)';
+    b.style.border      = `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`;
+  });
+  const dl = document.getElementById('inscDeadlineLabel');
+  if (dl && !deadlinePassed) dl.textContent = `⏰ Fecha límite: ${inscDeadlineLabelTxt()}`;
 
   applyTorneoArchivoAdminCards();
 
@@ -10317,6 +10385,26 @@ function initNextEventCountdown() {
   }
   tick();
   _countdownTimer = setInterval(tick, 60000);
+}
+
+// Elegir qué parte del torneo acepta inscripciones
+async function setParteAbierta(valor) {
+  if (!isAdmin()) { showLogin(); return; }
+  INSC_PARTE_ABIERTA = valor;
+  localStorage.setItem('insc_parte_abierta', valor);
+  applyInscripcionesState();
+  if (document.getElementById('inscripcionesPage')?.style.display !== 'none') {
+    inscState.selectedCats = new Set();
+    if (document.getElementById('inscCatList')) inscRenderCategories();
+  }
+  try {
+    const { error } = await _supabase.from('app_settings')
+      .upsert({ key: 'insc_parte_abierta', value: valor, updated_at: new Date().toISOString() },
+              { onConflict: 'key' });
+    if (error) throw error;
+  } catch (e) {
+    alert('No se pudo guardar en Supabase: ' + e.message);
+  }
 }
 
 async function toggleInscripciones() {
@@ -11188,6 +11276,12 @@ function inscCatEligible(cat) {
     }
   }
 
+  // Sólo se puede inscribir en la parte abierta
+  if (!catParteAbierta(cat)) {
+    const n = INSC_DAY_BY_KEY[catDayKey(cat)]?.parte;
+    return { ok: false, reason: `Inscripciones de la Parte ${n} cerradas.` };
+  }
+
   // Doubles: one registration covers the pair, so both sides are already taken
   if (cat.dobles) {
     const taken = doblesTakenFor(cat.id, p.id);
@@ -11227,10 +11321,12 @@ function inscCatEligible(cat) {
 function inscAscensoMissing(cat) {
   const p = inscState.player;
   if (!p) return null;
+  const yaInscritas = (inscState.existingInsc?.categorias || []).map(c => c.id);
   const req = inscAscensoRequirement(cat, {
     rating: p.rating,
     dob: inscState.dob,
     sex: (inscState.sex || p.sex || '').toUpperCase(),
+    yaInscritas,
   });
   if (!req) return null;
   const has = (inscState.existingInsc?.categorias || []).some(c => c.id === req.id)
@@ -11303,7 +11399,24 @@ function inscRenderCategories() {
 
   // One block per competition day, grouped by weekend (Parte 1 / Parte 2).
   // Doubles is pulled out into its own block — it needs a partner.
+  const parteAbierta = inscParteAbiertaNum();
   [1, 2].forEach(parte => {
+    // Una parte cerrada sólo se muestra si el jugador ya tiene algo inscrito ahí
+    const cerrada = parteAbierta !== null && parteAbierta !== parte;
+    const inscritasEnParte = INSC_CATEGORIES.filter(c =>
+      existingIds.has(c.id) && INSC_DAY_BY_KEY[catDayKey(c)]?.parte === parte);
+    if (cerrada && !inscritasEnParte.length) return;
+    if (cerrada) {
+      html += `<div style="margin:18px 0 8px;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:9px;">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:5px;">
+          Parte ${parte} — cerrada · ya inscrito
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);line-height:1.5;">
+          ${inscritasEnParte.map(c => c.name).join(' · ')}
+        </div>
+      </div>`;
+      return;
+    }
     const days = INSC_DAYS.filter(d => d.parte === parte);
     html += `<div style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.12em;margin:${parte === 1 ? '0' : '18px'} 0 8px;">
         Parte ${parte} — ${parte === 1 ? '15 y 16 de agosto' : '22 y 23 de agosto'}
@@ -11320,7 +11433,7 @@ function inscRenderCategories() {
   });
 
   // ── Dobles ──────────────────────────────────────────────────────────────
-  const doblesCats = INSC_CATEGORIES.filter(c => c.dobles);
+  const doblesCats = INSC_CATEGORIES.filter(c => c.dobles && (catParteAbierta(c) || existingIds.has(c.id)));
   if (doblesCats.length) {
     // Doubles sits outside the day grid, so its day/time is called out here
     const dCat  = doblesCats[0];
@@ -11454,6 +11567,7 @@ function inscToggleCat(id) {
         rating: inscState.player?.rating,
         dob: inscState.dob,
         sex: (inscState.sex || inscState.player?.sex || '').toUpperCase(),
+        yaInscritas: (inscState.existingInsc?.categorias || []).map(x => x.id),
       })?.id === id);
     if (dependents.length) {
       alert(`No puedes quitar "${cat.name}": es tu categoría natural y la necesitas para participar en ${dependents.map(d => `"${d.name}"`).join(', ')}.`);
@@ -13651,14 +13765,15 @@ function renderInscAdminTable() {
         <td style="padding:10px 10px;font-family:'Orbitron',monospace;font-size:12px;color:var(--accent);">${row.referencia || '—'}</td>
         <td style="padding:10px 10px;text-align:right;font-weight:600;color:var(--text);">$${(row.total || 0).toFixed(2)}</td>
         <td style="padding:10px 10px;text-align:center;">
-          <button onclick="togglePagado(${row.id}, ${!!row.pagado})"
-            title="${row.pagado ? 'Marcar como pendiente' : 'Confirmar pago'}"
-            style="border:none;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;
-                   background:${row.pagado ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.1)'};
-                   color:${row.pagado ? '#4ade80' : '#ef4444'};
-                   border:1px solid ${row.pagado ? 'rgba(34,197,94,0.35)' : 'rgba(239,68,68,0.3)'};">
-            ${row.pagado ? '✓ Pagado' : '● Pendiente'}
-          </button>
+          ${(() => {
+            const st = estadoPago(row);
+            return `<button onclick="openPagoModal(${row.id})" title="Registrar pago o abono"
+              style="border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;
+                     background:${st.bg};color:${st.color};border:1px solid ${st.borde};white-space:nowrap;">
+              ${st.etiqueta}
+            </button>${st.balance > 0 && st.pagado > 0
+              ? `<div style="font-size:10px;color:#f59e0b;margin-top:3px;">debe $${st.balance.toFixed(2)}</div>` : ''}`;
+          })()}
         </td>
         <td style="padding:10px 10px;text-align:right;color:var(--muted);white-space:nowrap;">${fecha}</td>
         <td style="padding:10px 10px;text-align:right;white-space:nowrap;">
@@ -13826,17 +13941,77 @@ async function saveEditPareja() {
 }
 
 // ── Pago toggle ───────────────────────────
-async function togglePagado(id, currentValue) {
+// Estado de pago derivado: pagado / parcial / pendiente
+function estadoPago(row) {
+  const total  = Number(row.total || 0);
+  const pagado = Number(row.monto_pagado ?? (row.pagado ? total : 0)) || 0;
+  const balance = Math.max(0, total - pagado);
+  // total 0 = cubierto por crédito, nada que cobrar
+  if (total <= 0 || pagado >= total) {
+    return { estado:'pagado', pagado, total, balance:0, etiqueta:'✓ Pagado',
+             bg:'rgba(34,197,94,0.15)', color:'#4ade80', borde:'rgba(34,197,94,0.35)' };
+  }
+  if (pagado > 0) {
+    return { estado:'parcial', pagado, total, balance,
+             etiqueta:`◐ Parcial $${pagado.toFixed(0)}/$${total.toFixed(0)}`,
+             bg:'rgba(245,158,11,0.12)', color:'#f59e0b', borde:'rgba(245,158,11,0.4)' };
+  }
+  return { estado:'pendiente', pagado:0, total, balance:total, etiqueta:'● Pendiente',
+           bg:'rgba(239,68,68,0.1)', color:'#ef4444', borde:'rgba(239,68,68,0.3)' };
+}
+
+let _pagoRowId = null;
+
+function openPagoModal(id) {
+  const row = _inscAdminData.find(r => r.id === id);
+  if (!row) return;
+  _pagoRowId = id;
+  const st = estadoPago(row);
+  document.getElementById('pagoNombre').textContent = row.nombre || '—';
+  document.getElementById('pagoTotal').textContent  = `$${st.total.toFixed(2)}`;
+  document.getElementById('pagoMonto').value = st.pagado ? st.pagado.toFixed(2) : '';
+  document.getElementById('pagoMsg').textContent = '';
+  pagoActualizarBalance();
+  document.getElementById('pagoModal').style.display = 'flex';
+}
+
+function pagoActualizarBalance() {
+  const row = _inscAdminData.find(r => r.id === _pagoRowId);
+  if (!row) return;
+  const total = Number(row.total || 0);
+  const val   = parseFloat(document.getElementById('pagoMonto').value) || 0;
+  const bal   = Math.max(0, total - val);
+  const el = document.getElementById('pagoBalance');
+  el.textContent = bal > 0 ? `Debe $${bal.toFixed(2)}` : (val > total ? `Sobrepago de $${(val-total).toFixed(2)}` : 'Saldado');
+  el.style.color = bal > 0 ? '#f59e0b' : val > total ? '#a78bfa' : 'var(--green)';
+}
+
+function pagoSetTotal() {
+  const row = _inscAdminData.find(r => r.id === _pagoRowId);
+  if (!row) return;
+  document.getElementById('pagoMonto').value = Number(row.total || 0).toFixed(2);
+  pagoActualizarBalance();
+}
+
+async function guardarPago() {
+  const row = _inscAdminData.find(r => r.id === _pagoRowId);
+  if (!row) return;
+  const msg = document.getElementById('pagoMsg');
+  const monto = Math.max(0, parseFloat(document.getElementById('pagoMonto').value) || 0);
+  const total = Number(row.total || 0);
+  msg.textContent = 'Guardando…'; msg.style.color = 'var(--muted)';
   try {
-    const { error } = await _supabase
-      .from('insc_registro')
-      .update({ pagado: !currentValue })
-      .eq('id', id);
+    const { error } = await _supabase.from('insc_registro')
+      .update({ monto_pagado: monto, pagado: monto >= total && total > 0 })
+      .eq('id', row.id);
     if (error) throw new Error(error.message);
+    document.getElementById('pagoModal').style.display = 'none';
     await loadInscAdminTable();
     loadInscritosSection();
   } catch(e) {
-    alert('Error al actualizar pago: ' + e.message);
+    msg.textContent = 'Error: ' + e.message
+      + (/monto_pagado/.test(e.message) ? ' — corre add_monto_pagado.sql en Supabase.' : '');
+    msg.style.color = 'var(--red)';
   }
 }
 
@@ -14417,6 +14592,52 @@ async function submitPublicReg() {
 </div>
 
 <!-- ══ WHATSAPP CHANNEL ANNOUNCEMENT ══ -->
+<!-- ══════════════════════════════════════════
+     REGISTRAR PAGO / ABONO (admin)
+═══════════════════════════════════════════ -->
+<div id="pagoModal" role="dialog" aria-modal="true" aria-labelledby="pagoTitle"
+  style="display:none;position:fixed;inset:0;z-index:1600;background:rgba(0,0,0,0.84);
+         align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;max-width:380px;width:100%;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div id="pagoTitle" style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px;">Registrar pago</div>
+        <div id="pagoNombre" style="font-size:13px;color:var(--muted);margin-top:3px;"></div>
+      </div>
+      <button onclick="document.getElementById('pagoModal').style.display='none'" aria-label="Cerrar"
+        style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 14px;margin:16px 0 12px;">
+      <span style="font-size:12px;color:var(--muted);">Total a pagar</span>
+      <span id="pagoTotal" style="font-family:'Orbitron',monospace;font-size:17px;font-weight:700;color:var(--text);">$0.00</span>
+    </div>
+
+    <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Monto recibido</label>
+    <div style="display:flex;gap:8px;">
+      <input id="pagoMonto" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0.00"
+        oninput="pagoActualizarBalance()"
+        style="flex:1;background:var(--card);border:1px solid rgba(56,189,248,0.35);border-radius:8px;padding:10px 12px;color:var(--text);font-size:15px;box-sizing:border-box;">
+      <button onclick="pagoSetTotal()"
+        style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.35);border-radius:8px;padding:0 14px;color:#4ade80;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;">
+        Pag&oacute; todo
+      </button>
+    </div>
+    <div id="pagoBalance" style="font-size:13px;font-weight:700;margin-top:9px;">&mdash;</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">
+      Deja el monto en 0 para marcarlo como pendiente. Un monto menor al total lo deja como pago parcial.
+    </div>
+
+    <div id="pagoMsg" style="font-size:12px;margin-top:12px;min-height:16px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="guardarPago()"
+        style="flex:1;background:var(--grad);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Guardar</button>
+      <button onclick="document.getElementById('pagoModal').style.display='none'"
+        style="background:none;border:1px solid var(--border);border-radius:10px;padding:11px 18px;color:var(--muted);font-size:13px;cursor:pointer;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════════
      EDITAR PAREJA DE DOBLES (admin)
 ═══════════════════════════════════════════ -->
