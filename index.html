@@ -12228,6 +12228,74 @@ function exportStadiumParte(parte) {
   exportInscripcionesStadium(parte);
 }
 
+// Doubles CSV: one row per pair. Stadium has no team import, so each pair goes
+// in as a single entry named "Nombre Apellido / Nombre Apellido", seeded by the
+// pair's combined rating.
+async function exportDoblesStadium() {
+  if (!currentUser) { showLogin(); return; }
+  const def = INSC_CATEGORIES.find(c => c.dobles);
+  if (!def) { alert('No hay evento de dobles configurado.'); return; }
+  try {
+    const { data: inscs, error } = await _supabase
+      .from('insc_registro').select('*')
+      .eq('torneo', TORNEO_ACTIVO).order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+
+    const conDobles = (inscs || [])
+      .map(r => ({ row: r, ent: (Array.isArray(r.categorias) ? r.categorias : []).find(c => c.id === def.id) }))
+      .filter(x => x.ent);
+    if (!conDobles.length) { alert('No hay parejas inscritas en Dobles Abierto.'); return; }
+
+    // Player rows for both sides, so names shorten from First/Last Name
+    const ids = [...new Set(conDobles.flatMap(x => [x.row.member_id, x.ent.pareja_id]).filter(Boolean))];
+    const { data: players } = await _supabase.from('Base de Datos')
+      .select('"Member ID","First Name","Last Name","Rating","New Rating"')
+      .in('"Member ID"', ids);
+    const pmap = {};
+    (players || []).forEach(p => { pmap[p['Member ID']] = p; });
+
+    const sinPareja = [];
+    const headers = ['id','firstName','lastName','rating','sex','dob','email',
+                     'address','city','state','country','zipCode','membershipIds','clubId','events'];
+
+    const rows = conDobles.map(({ row, ent }) => {
+      const n1 = nombreCorto(row.nombre, pmap[row.member_id]);
+      const n2 = ent.pareja ? nombreCorto(ent.pareja, pmap[ent.pareja_id]) : '';
+      if (!n2) sinPareja.push(n1);
+      // Stadium renders "firstName lastName", so the slash rides on lastName
+      return ['', n1, n2 ? `/ ${n2}` : '', ent.rating_combinado ?? '', '', '', '',
+              '', '', '', '', '', '', '', def.stadiumId];
+    }).filter(r => r[2]);   // pares incompletos no se suben
+
+    if (!rows.length) {
+      alert('Ninguna pareja está completa todavía.');
+      return;
+    }
+
+    const csv = [headers, ...rows]
+      .map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const slug = TORNEO_ACTIVO.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dobles_${slug}_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    alert(`✅ CSV de Dobles generado\n\n`
+      + `• ${rows.length} pareja(s)\n`
+      + `• Ejemplo: ${rows[0][1]} ${rows[0][2]}\n`
+      + `• event id: ${def.stadiumId}\n`
+      + (sinPareja.length ? `\n⚠ Sin pareja asignada (excluidos):\n• ${sinPareja.join('\n• ')}` : '')
+      + `\n\nNota: el event id "${def.stadiumId}" aún no está confirmado contra Stadium.`
+      + ` Prueba con este archivo antes de subir el resto.`);
+  } catch (e) {
+    alert('Error al exportar dobles: ' + e.message);
+  }
+}
+
 // ══════════════════════════════════════════
 // SINCRONIZAR INSCRIPCIONES → BASE DE DATOS
 // ══════════════════════════════════════════
@@ -14428,6 +14496,15 @@ async function submitPublicReg() {
           <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">S&aacute;bado 22 y domingo 23 de agosto</span>
         </span>
         <span style="color:#34d399;font-size:13px;font-weight:700;">&darr; CSV</span>
+      </button>
+      <button onclick="document.getElementById('exportStadiumModal').style.display='none';exportDoblesStadium()"
+        style="display:flex;align-items:center;gap:12px;background:rgba(204,0,12,0.07);border:1px solid rgba(204,0,12,0.3);border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
+        <span style="font-size:20px;">&#128101;</span>
+        <span style="flex:1;">
+          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Dobles Abierto</span>
+          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">Una fila por pareja, con nombre corto</span>
+        </span>
+        <span style="color:#f87171;font-size:13px;font-weight:700;">&darr; CSV</span>
       </button>
       <button onclick="exportStadiumParte(null)"
         style="display:flex;align-items:center;gap:12px;background:none;border:1px solid var(--border);border-radius:11px;padding:12px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
