@@ -10124,17 +10124,28 @@ const INSC_DEADLINES = {
   1: new Date('2026-08-13T20:00:00-04:00'), // jue. 13 agosto · 8:00 p.m. AST
   2: new Date('2026-08-20T20:00:00-04:00'), // jue. 20 agosto · 8:00 p.m. AST
 };
-// Qué parte acepta inscripciones ahora: '1' | '2' | 'todas'
-let INSC_PARTE_ABIERTA = 'todas';
+// Qué parte acepta inscripciones ahora: '1' | '2' | 'todas'.
+// La Parte 1 ya cerró, así que el valor por defecto es la Parte 2; el admin
+// puede cambiarlo y su elección se guarda en app_settings.
+let INSC_PARTE_ABIERTA = '2';
 
 function inscParteAbiertaNum() {
   return INSC_PARTE_ABIERTA === '1' ? 1 : INSC_PARTE_ABIERTA === '2' ? 2 : null;
 }
+// Última fecha de competencia de cada parte, para no dejar inscribir en un
+// fin de semana ya jugado aunque el admin deje el selector en "todas".
+const INSC_PARTE_FIN = {
+  1: new Date('2026-08-16T23:59:59-04:00'),
+  2: new Date('2026-08-23T23:59:59-04:00'),
+};
 // ¿Se puede inscribir en esta categoría ahora mismo?
 function catParteAbierta(cat) {
+  const parteCat = INSC_DAY_BY_KEY[catDayKey(cat)]?.parte;
+  if (!parteCat) return true;
+  if (Date.now() > INSC_PARTE_FIN[parteCat].getTime()) return false;  // ya se jugó
   const n = inscParteAbiertaNum();
   if (!n) return true;
-  return INSC_DAY_BY_KEY[catDayKey(cat)]?.parte === n;
+  return parteCat === n;
 }
 function inscDeadlineActual() {
   return INSC_DEADLINES[inscParteAbiertaNum() ?? 2];
@@ -11393,6 +11404,14 @@ function inscRenderCategories() {
     </div>`;
   }
 
+  const _pn = inscParteAbiertaNum();
+  if (_pn) {
+    html += `<div style="margin-bottom:10px;padding:9px 13px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);border-radius:8px;font-size:12px;color:var(--text);line-height:1.5;">
+      🗓 <strong>Inscripciones abiertas — Parte ${_pn}</strong>
+      <span style="color:var(--muted);">· ${_pn === 1 ? '15 y 16' : '22 y 23'} de agosto.
+      Las categorías del otro fin de semana no están disponibles.</span>
+    </div>`;
+  }
   html += `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;font-size:11.5px;color:#f59e0b;line-height:1.5;">
     ⚠ Máx. 2 categorías por día, sin coincidir en horario · Para subir de categoría debes estar inscrito también en tu categoría natural.
   </div>`;
