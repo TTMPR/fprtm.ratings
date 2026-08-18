@@ -3098,7 +3098,7 @@ Maria Lopez,Ana Torres,B</code>
       • <strong style="color:#f59e0b;">Reembolsos</strong>: pueden tomar <strong>5 a 7 días laborales</strong> en procesarse vía ATH Móvil.<br>
       • <strong style="color:var(--accent);">Créditos</strong>: se aplican automáticamente al inscribirte en el siguiente evento.<br>
       • Las categorías no canceladas permanecen activas en tu inscripción.<br>
-      • Fecha límite para cancelaciones: <strong>jueves 13 de agosto · 8:00 p.m.</strong>
+      • Fecha límite para cancelaciones: <strong class="deadline-txt">—</strong>
     </div>
     <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:14px;cursor:pointer;">
       <input type="checkbox" id="cancelTermsCheck" style="margin-top:2px;accent-color:var(--accent);" onchange="cancelUpdateSubmitBtn()">
@@ -3707,7 +3707,7 @@ Maria Lopez,Ana Torres,B</code>
           <strong style="color:var(--text);">Parte 1:</strong> 15 &amp; 16 ago &nbsp;·&nbsp;
           <strong style="color:var(--text);">Parte 2:</strong> 22 &amp; 23 ago
         </div>
-        <div id="inscDeadlineLabel" style="font-size:12px;color:#fb923c;font-weight:600;">⏰ Fecha límite: jue. 13 agosto · 8:00 p.m.</div>
+        <div id="inscDeadlineLabel" style="font-size:12px;color:#fb923c;font-weight:600;">⏰ Fecha límite: <span class="deadline-txt">—</span></div>
         <a href="https://maps.google.com/?q=Cancha+Juanito+Cabello+Cidra+Puerto+Rico" target="_blank" rel="noopener"
           style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:var(--accent);font-size:13px;font-weight:600;transition:opacity 0.15s;margin-left:auto;"
           onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">
@@ -3806,7 +3806,7 @@ Maria Lopez,Ana Torres,B</code>
           <span style="font-size:22px;flex-shrink:0;">📋</span>
           <div style="flex:1;">
             <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Ver Reglamento Cidra Open 2026</div>
-            <div style="font-size:12px;color:var(--muted);">Fecha límite: Jueves 13 de agosto · 8:00 p.m. · ATH Business /fprtm</div>
+            <div style="font-size:12px;color:var(--muted);">Fecha límite: <span class="deadline-txt">—</span> · ATH Business /fprtm</div>
           </div>
           <span style="color:var(--accent);font-size:16px;">→</span>
         </button>
@@ -4433,8 +4433,8 @@ Maria Lopez,Ana Torres,B</code>
 
       <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
         <strong style="color:#ef4444;">13. FECHA LÍMITE</strong><br>
-        <strong style="color:var(--text);font-size:15px;">Por anunciar</strong>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px;">La fecha límite oficial será anunciada próximamente por la Federación.</div>
+        <strong class="deadline-txt" style="color:var(--text);font-size:15px;">—</strong>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">Después de esta hora no se aceptan inscripciones ni cambios.</div>
       </div>
 
       <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
@@ -10143,7 +10143,7 @@ let inscSbSynced = false;   // true once a successful Supabase round-trip happen
 // Fecha límite por parte — la Parte 2 se inscribe después de jugada la Parte 1
 const INSC_DEADLINES = {
   1: new Date('2026-08-13T20:00:00-04:00'), // jue. 13 agosto · 8:00 p.m. AST
-  2: new Date('2026-08-20T20:00:00-04:00'), // jue. 20 agosto · 8:00 p.m. AST
+  2: new Date('2026-08-19T20:00:00-04:00'), // mié. 19 agosto · 8:00 p.m. AST
 };
 // Qué parte acepta inscripciones ahora: '1' | '2' | 'todas'.
 // La Parte 1 ya cerró, así que el valor por defecto es la Parte 2; el admin
@@ -10171,9 +10171,17 @@ function catParteAbierta(cat) {
 function inscDeadlineActual() {
   return INSC_DEADLINES[inscParteAbiertaNum() ?? 2];
 }
+// Siempre en hora de Puerto Rico: la fecha límite es local al torneo, no al
+// dispositivo de quien mira (en UTC, las 8:00 p.m. caen al día siguiente).
 function inscDeadlineLabelTxt() {
-  return inscDeadlineActual().toLocaleDateString('es-PR',
-    { weekday: 'short', day: 'numeric', month: 'long' }) + ' · 8:00 p.m.';
+  const d = inscDeadlineActual();
+  const TZ = 'America/Puerto_Rico';
+  const fecha = d.toLocaleDateString('es-PR',
+    { weekday: 'long', day: 'numeric', month: 'long', timeZone: TZ });
+  const hora = d.toLocaleTimeString('es-PR',
+    { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TZ })
+    .replace(/\s?a\.?\s?m\.?/i, ' a.m.').replace(/\s?p\.?\s?m\.?/i, ' p.m.');
+  return `${fecha} · ${hora}`;
 }
 
 async function loadInscripcionesConfig() {
@@ -10219,7 +10227,7 @@ function applyInscripcionesState() {
   const effectivelyOpen = inscripcionesOpen && !deadlinePassed;
   if (cerradasMsg) {
     cerradasMsg.innerHTML = deadlinePassed
-      ? 'La fecha límite de inscripción (jue. 13 agosto · 8:00 p.m.) ya pasó.<br>Para información contacta a la FPTM.'
+      ? `La fecha límite de inscripción (${inscDeadlineLabelTxt()}) ya pasó.<br>Para información contacta a la FPTM.`
       : 'El periodo de inscripción para este torneo ha finalizado.<br>Para información contacta a la FPTM.';
   }
 
@@ -10312,8 +10320,8 @@ function applyInscripcionesState() {
     b.style.color       = on ? '#0b1220' : 'var(--muted)';
     b.style.border      = `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`;
   });
-  const dl = document.getElementById('inscDeadlineLabel');
-  if (dl && !deadlinePassed) dl.textContent = `⏰ Fecha límite: ${inscDeadlineLabelTxt()}`;
+  // Todas las menciones de la fecha límite salen de un solo lugar
+  document.querySelectorAll('.deadline-txt').forEach(el => { el.textContent = inscDeadlineLabelTxt(); });
 
   applyTorneoArchivoAdminCards();
 
