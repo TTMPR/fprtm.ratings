@@ -3756,7 +3756,7 @@ Maria Lopez,Ana Torres,B</code>
         <div id="inscStatsLoading" style="text-align:center;padding:16px 0;color:var(--muted);font-size:13px;">Cargando estadísticas...</div>
         <div id="inscStatsContent" style="display:none;">
           <div id="inscStatsSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:22px;"></div>
-          <div style="margin-bottom:24px;">
+          <div id="inscStatsCapacityWrap" style="margin-bottom:24px;">
             <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em;">Cupos por categoría (Rating)</div>
             <canvas id="inscStatsCapacityChart" height="170"></canvas>
           </div>
@@ -9911,11 +9911,11 @@ const INSC_CATEGORIES = [
   { id: 'ev7',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1400', maxAge: 11, sex: 'F',                   stadiumId: '11u---femenino', stadiumVerified: true },
   { id: 'ev8',  name: 'Dobles Abierto',          desc: 'Premiación: $120 · $100 · $80 (x2) · $40 por pareja (una sola inscripción)', price: 40, slot: 'D16-1130', openDivision: true, dobles: true, stadiumId: 'dobles-abierto' },
   // ── Sábado 22 de agosto ──
-  { id: 'ev9',  name: '1700 o Menos',            desc: 'Premiación: $55 · $50 · $45 (x2)',                            price: 20, slot: 'S22-900',  maxRating: 1700, ratingGroup: 'rating', stadiumId: '1700-under' },
-  { id: 'ev10', name: '1500 o Menos',            desc: 'Premiación: $45 · $40 · $35 (x2)',                            price: 20, slot: 'S22-1130', maxRating: 1500, ratingGroup: 'rating', stadiumId: '1500-under' },
+  { id: 'ev9',  name: '1700 o Menos',            desc: 'Premiación: $55 · $50 · $45 (x2)',                            price: 20, slot: 'S22-900',  maxRating: 1700, maxPlayers: 36, capPrivado: true, ratingGroup: 'rating', stadiumId: '1700-under' },
+  { id: 'ev10', name: '1500 o Menos',            desc: 'Premiación: $45 · $40 · $35 (x2)',                            price: 20, slot: 'S22-1130', maxRating: 1500, maxPlayers: 36, capPrivado: true, ratingGroup: 'rating', stadiumId: '1500-under' },
   { id: 'ev11', name: 'Seniors – 40 años o más', desc: 'Premiación: $35 · $25 · $20 (x2) · Mixto',                    price: 20, slot: 'S22-1400', minAge: 40,                             stadiumId: 'seniors---40' },
   // ── Domingo 23 de agosto ──
-  { id: 'ev12', name: '1600 o Menos',            desc: 'Premiación: $50 · $45 · $40 (x2)',                            price: 20, slot: 'D23-900',  maxRating: 1600, ratingGroup: 'rating', stadiumId: '1600-under' },
+  { id: 'ev12', name: '1600 o Menos',            desc: 'Premiación: $50 · $45 · $40 (x2)',                            price: 20, slot: 'D23-900',  maxRating: 1600, maxPlayers: 36, capPrivado: true, ratingGroup: 'rating', stadiumId: '1600-under' },
   { id: 'ev13', name: '7 o Menos Abierto',       desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                             price: 11, slot: 'D23-1100', maxAge: 7,                              stadiumId: '7u---abierto' },
   { id: 'ev14', name: '9 o Menos Masculino',     desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                             price: 20, slot: 'D23-1100', maxAge: 9,  sex: 'M',                   stadiumId: '9u---masculino' },
   { id: 'ev15', name: '9 o Menos Femenino',      desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                             price: 20, slot: 'D23-1100', maxAge: 9,  sex: 'F',                   stadiumId: '9u---femenino' },
@@ -11185,8 +11185,10 @@ async function loadInscStats() {
     }
 
     // Cupos por categoría — solo categorías con límite de Rating
-    const capCats = INSC_CATEGORIES.filter(c => c.maxPlayers);
-    const capCtx  = document.getElementById('inscStatsCapacityChart')?.getContext('2d');
+    const capCats = INSC_CATEGORIES.filter(c => c.maxPlayers && !c.capPrivado);
+    const capWrap = document.getElementById('inscStatsCapacityWrap');
+    if (capWrap) capWrap.style.display = capCats.length ? '' : 'none';
+    const capCtx  = capCats.length ? document.getElementById('inscStatsCapacityChart')?.getContext('2d') : null;
     if (capCtx) {
       if (_inscStatsCapacityChart) _inscStatsCapacityChart.destroy();
       _inscStatsCapacityChart = new Chart(capCtx, {
@@ -11304,7 +11306,9 @@ function inscCatEligible(cat) {
   if (cat.maxPlayers) {
     const count = _catCounts[cat.id] || 0;
     if (count >= cat.maxPlayers) {
-      return { ok: false, reason: `Lleno — cupo máximo de ${cat.maxPlayers} jugadores alcanzado.` };
+      return { ok: false, reason: cat.capPrivado
+        ? 'Categoría llena. Comunícate con la FPTM.'
+        : `Lleno — cupo máximo de ${cat.maxPlayers} jugadores alcanzado.` };
     }
   }
 
@@ -11398,7 +11402,7 @@ function inscRenderCategories() {
         </div>`;
 
     const count    = _catCounts[cat.id] || 0;
-    const capBadge = cat.maxPlayers && !isExisting
+    const capBadge = cat.maxPlayers && !cat.capPrivado && !isExisting
       ? ` <span style="color:${count >= cat.maxPlayers ? '#ef4444' : 'var(--muted)'};">(${count}/${cat.maxPlayers})</span>` : '';
     const nameColor = isExisting ? '#86efac' : locked ? 'var(--text)' : !elig.ok ? 'var(--muted)' : 'var(--text)';
     const subText  = isExisting
