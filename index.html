@@ -10008,6 +10008,16 @@ const INSC_MULTAS = {
   81482: { monto: 5, razon: 'Multa por no arbitrar en torneo anterior' },
 };
 
+// Una multa se cobra una sola vez, en la primera inscripción del torneo.
+// Si el jugador ya está inscrito, quedó saldada (o el admin la condonó) y no
+// debe seguir apareciendo como pendiente ni sumarse al total.
+function inscMultaPendiente() {
+  const p = inscState.player;
+  if (!p) return null;
+  if (inscState.existingInsc) return null;
+  return INSC_MULTAS[p.id] || null;
+}
+
 // Normalize sex from DB (may be 'Male', 'Female', 'Masculino', etc.) → 'M' | 'F' | ''
 function normSexForForm(raw) {
   const v = (raw || '').toString().trim().toUpperCase();
@@ -10060,7 +10070,6 @@ const inscState = {
   sex: '',
   club: '',
   existingInsc: null,    // existing insc_registro row if player already inscribed
-  multa: null,           // { monto, razon } if player has a pending fine
   availableCredit: null, // approved credit row from a cancelled previous registration
   doblesPareja: {},      // cat.id → partner name typed for a doubles event
   _dobFromDb: false,
@@ -10895,7 +10904,6 @@ function inscSelectPlayer(id) {
   inscState.availableCredit = null;
   inscState.doblesPareja = {};
   inscState._dobFromDb = false;
-  inscState.multa = INSC_MULTAS[p.id] || null;
   const normalizedSex = normSexForForm(p.sex);
   inscState.sex = normalizedSex;
   inscState._sexFromDb = !!normalizedSex;
@@ -10975,7 +10983,7 @@ function renderInscPlayerCard(p) {
 
   // Multa
   const multaEl = document.getElementById('inscCardMulta');
-  const multa = inscState.multa;
+  const multa = inscMultaPendiente();
   if (multaEl) {
     if (multa) {
       multaEl.style.display = '';
@@ -11616,7 +11624,7 @@ function inscUpdateTotals() {
   const isMember = p && p.member;
   const hasExisting = !!inscState.existingInsc;
   const base = hasExisting ? 0 : (isMember ? 0 : 10);
-  const multaMonto = inscState.multa?.monto || 0;
+  const multaMonto = inscMultaPendiente()?.monto || 0;
 
   let catTotal = 0;
   inscState.selectedCats.forEach(id => {
@@ -11703,7 +11711,6 @@ function inscResetForm() {
   inscState.sex = '';
   inscState.club = '';
   inscState.existingInsc = null;
-  inscState.multa = null;
   inscState.selectedCats = new Set();
   inscState.doblesPareja = {};
   inscState._dobFromDb = false;
@@ -11858,7 +11865,7 @@ async function inscSometerInscripcion() {
   const clubVal  = (document.getElementById('inscClubInput')?.value || '').trim();
   const isMember   = p.member;
   const base       = existing ? 0 : (isMember ? 0 : 10);
-  const multaMonto = existing ? 0 : (inscState.multa?.monto || 0); // multa only charged once
+  const multaMonto = inscMultaPendiente()?.monto || 0; // se cobra una sola vez
   const newTotal   = base + newCats.reduce((s, c) => s + c.price, 0) + multaMonto;
 
   // Merge with existing categories
@@ -11916,7 +11923,7 @@ async function inscSometerInscripcion() {
             }
             return row;
           }),
-          ...(multaMonto > 0 ? [{ id: 'multa', name: inscState.multa.razon, price: multaMonto }] : []),
+          ...(multaMonto > 0 ? [{ id: 'multa', name: INSC_MULTAS[p.id].razon, price: multaMonto }] : []),
         ],
         base:       existing?.base ?? base,
         total:      accTotal,
