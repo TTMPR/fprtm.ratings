@@ -2566,6 +2566,7 @@ Maria Lopez,Ana Torres,B</code>
             <div class="adm-title">Inscripciones</div>
             <div class="adm-desc" id="inscAdminStatus">Cargando...</div>
             <div id="inscAdminSync" style="font-size:11px;margin-top:3px;color:var(--muted)"></div>
+            <button id="btnProrroga" onclick="event.stopPropagation();toggleProrroga()" style="display:none;margin-top:7px;border:1px solid var(--border);border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;"></button>
           </div>
         </div>
         <div class="adm-card" style="align-items:flex-start;cursor:default;" onclick="event.stopPropagation()">
@@ -10105,6 +10106,8 @@ const INSC_DEADLINES = {
   1: new Date('2026-08-13T20:00:00-04:00'), // jue. 13 agosto · 8:00 p.m. AST
   2: new Date('2026-08-19T20:00:00-04:00'), // mié. 19 agosto · 8:00 p.m. AST
 };
+// Override del admin: mantener abiertas aunque la fecha límite ya pasó.
+let INSC_IGNORAR_DEADLINE = false;
 // Qué parte acepta inscripciones ahora: '1' | '2' | 'todas'.
 // La Parte 1 ya cerró, así que el valor por defecto es la Parte 2; el admin
 // puede cambiarlo y su elección se guarda en app_settings.
@@ -10150,6 +10153,8 @@ async function loadInscripcionesConfig() {
   if (cached !== null) inscripcionesOpen = cached === 'true';
   const cachedParte = localStorage.getItem('insc_parte_abierta');
   if (cachedParte) INSC_PARTE_ABIERTA = cachedParte;
+  const cachedIgn = localStorage.getItem('insc_ignorar_deadline');
+  if (cachedIgn !== null) INSC_IGNORAR_DEADLINE = cachedIgn === 'true';
   applyInscripcionesState();
 
   // Supabase is the source of truth for all devices
@@ -10159,6 +10164,11 @@ async function loadInscripcionesConfig() {
       inscripcionesOpen = data[0].value === 'true';
       localStorage.setItem('inscripciones_open', String(inscripcionesOpen));
       inscSbSynced = true;
+    }
+    const di = await sbGet('app_settings', '?key=eq.insc_ignorar_deadline&select=value');
+    if (di && di.length) {
+      INSC_IGNORAR_DEADLINE = di[0].value === 'true';
+      localStorage.setItem('insc_ignorar_deadline', String(INSC_IGNORAR_DEADLINE));
     }
     const dp = await sbGet('app_settings', '?key=eq.insc_parte_abierta&select=value');
     if (dp && dp.length && dp[0].value) {
@@ -10182,9 +10192,9 @@ function applyInscripcionesState() {
   const deadlinePassed = Date.now() > inscDeadlineActual().getTime();
   const deadlineLabel  = document.getElementById('inscDeadlineLabel');
   const cerradasMsg    = document.getElementById('inscCerradasMsg');
-  if (deadlineLabel) deadlineLabel.style.display = deadlinePassed ? 'none' : '';
-  // Treat deadline-expired as closed (admin override still works)
-  const effectivelyOpen = inscripcionesOpen && !deadlinePassed;
+  if (deadlineLabel) deadlineLabel.style.display = (deadlinePassed && !INSC_IGNORAR_DEADLINE) ? 'none' : '';
+  // La fecha límite cierra sola, pero el admin puede mantenerlas abiertas
+  const effectivelyOpen = inscripcionesOpen && (!deadlinePassed || INSC_IGNORAR_DEADLINE);
   if (cerradasMsg) {
     cerradasMsg.innerHTML = deadlinePassed
       ? `La fecha límite de inscripción (${inscDeadlineLabelTxt()}) ya pasó.<br>Para información contacta a la FPTM.`
@@ -10250,13 +10260,28 @@ function applyInscripcionesState() {
   const cardEl   = document.getElementById('inscAdminCard');
   const iconEl   = document.getElementById('inscAdminIcon');
   if (statusEl) {
-    if (deadlinePassed && inscripcionesOpen) {
+    if (!inscripcionesOpen) {
+      statusEl.textContent = 'Cerradas — clic para abrir';
+      statusEl.style.color = '#ef4444';
+    } else if (deadlinePassed && !INSC_IGNORAR_DEADLINE) {
       statusEl.textContent = 'Fecha límite expiró · Cerradas para el público';
       statusEl.style.color = '#f59e0b';
+    } else if (deadlinePassed) {
+      statusEl.textContent = 'Abiertas por prórroga — clic para cerrar';
+      statusEl.style.color = 'var(--green)';
     } else {
-      statusEl.textContent = inscripcionesOpen ? 'Abiertas — clic para cerrar' : 'Cerradas — clic para abrir';
-      statusEl.style.color = inscripcionesOpen ? 'var(--green)' : '#ef4444';
+      statusEl.textContent = 'Abiertas — clic para cerrar';
+      statusEl.style.color = 'var(--green)';
     }
+  }
+  // Botón de prórroga: sólo tiene sentido una vez pasada la fecha límite
+  const extBtn = document.getElementById('btnProrroga');
+  if (extBtn) {
+    extBtn.style.display = deadlinePassed ? '' : 'none';
+    extBtn.textContent = INSC_IGNORAR_DEADLINE ? 'Respetar fecha límite' : 'Extender: abrir igual';
+    extBtn.style.background  = INSC_IGNORAR_DEADLINE ? 'rgba(245,158,11,0.16)' : 'transparent';
+    extBtn.style.borderColor = INSC_IGNORAR_DEADLINE ? 'rgba(245,158,11,0.5)' : 'var(--border)';
+    extBtn.style.color       = INSC_IGNORAR_DEADLINE ? '#f59e0b' : 'var(--muted)';
   }
   if (syncEl) {
     syncEl.textContent = inscSbSynced ? '● Sincronizado (global)' : '⚠ Solo local — corre create_app_settings.sql';
@@ -10387,6 +10412,20 @@ function initNextEventCountdown() {
   _countdownTimer = setInterval(tick, 60000);
 }
 
+// Mantener las inscripciones abiertas después de la fecha límite
+async function toggleProrroga() {
+  if (!isAdmin()) { showLogin(); return; }
+  INSC_IGNORAR_DEADLINE = !INSC_IGNORAR_DEADLINE;
+  localStorage.setItem('insc_ignorar_deadline', String(INSC_IGNORAR_DEADLINE));
+  applyInscripcionesState();
+  try {
+    const { error } = await _supabase.from('app_settings')
+      .upsert({ key: 'insc_ignorar_deadline', value: String(INSC_IGNORAR_DEADLINE),
+                updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    if (error) throw error;
+  } catch (e) { alert('No se pudo guardar en Supabase: ' + e.message); }
+}
+
 // Elegir qué parte del torneo acepta inscripciones
 async function setParteAbierta(valor) {
   if (!isAdmin()) { showLogin(); return; }
@@ -10412,6 +10451,14 @@ async function toggleInscripciones() {
   // Flip immediately — visual feedback without waiting for network
   inscripcionesOpen = !inscripcionesOpen;
   localStorage.setItem('inscripciones_open', String(inscripcionesOpen));
+  // Cerrar a mano cancela cualquier prórroga, para que "cerradas" no sea ambiguo
+  if (!inscripcionesOpen && INSC_IGNORAR_DEADLINE) {
+    INSC_IGNORAR_DEADLINE = false;
+    localStorage.setItem('insc_ignorar_deadline', 'false');
+    _supabase.from('app_settings').upsert(
+      { key: 'insc_ignorar_deadline', value: 'false', updated_at: new Date().toISOString() },
+      { onConflict: 'key' }).then(() => {}, () => {});
+  }
 
   // Opening inscripciones implies the torneo is active — un-archive automatically,
   // otherwise the archived placeholder keeps overriding the open state.
