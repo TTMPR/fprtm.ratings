@@ -10,6 +10,8 @@
   gtag('config', 'G-MLVW8PYN6C');
 </script>
 <meta charset="UTF-8">
+<!-- App de un solo archivo: sin esto el navegador puede servir una versión vieja tras un deploy -->
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ratings FPTM — Sistema Oficial de Tenis de Mesa de Puerto Rico</title>
 <meta name="description" content="Sistema oficial de ratings de la Federación Puertorriqueña de Tenis de Mesa (FPTM): rankings de jugadores, resultados de torneos, inscripciones, membresías y clubes de tenis de mesa en Puerto Rico.">
@@ -2511,6 +2513,7 @@ Maria Lopez,Ana Torres,B</code>
 
     <!-- ── Solicitudes & Aprobaciones ── -->
     <div class="adm-section">
+      <div id="appVersionStamp" style="font-size:11px;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;"></div>
       <div class="adm-section-title">🔔 Solicitudes & Aprobaciones</div>
       <div class="adm-grid">
         <div id="adminCardDraftResults" class="adm-card" style="display:none;border-color:rgba(56,189,248,0.3)" onclick="showDraftResultsModal()">
@@ -9739,6 +9742,17 @@ function showWaAnnouncement(delay = 400) {
 document.addEventListener('DOMContentLoaded', async () => {
   // ── Aviso del canal de WhatsApp ──
   showWaAnnouncement(1200);
+
+  // ── Sello de versión (detecta un index.html cacheado tras un deploy) ──
+  const _vs = document.getElementById('appVersionStamp');
+  if (_vs) {
+    const lm = new Date(document.lastModified);
+    _vs.innerHTML = `<span>Versión cargada: <strong style="color:var(--text)">`
+      + `${isNaN(lm) ? '—' : lm.toLocaleString('es-PR')}</strong></span>`
+      + `<button onclick="location.reload(true)" style="background:none;border:1px solid var(--border);`
+      + `border-radius:6px;padding:2px 9px;color:var(--muted);font-size:11px;cursor:pointer;`
+      + `font-family:'Inter',sans-serif;">Recargar</button>`;
+  }
 
   // ── Restore sidebar collapsed state ──
   if (localStorage.getItem('sidebarCollapsed') === 'true') {
