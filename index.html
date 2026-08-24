@@ -8542,7 +8542,8 @@ async function showPlayerMatches(playerId, playerName, ratingInicio) {
         <div class="pm-match-num">${idx + 1}</div>
         <div style="flex:1;min-width:0">
           <div class="match-opp">${oppName}</div>
-          <div class="match-opp-rating">Rating oponente: ${oppRat ?? '—'}</div>
+          <div class="match-opp-rating">Rating oponente: ${oppRat ?? '—'}${
+            m.categoria ? ` <span style="color:var(--accent);">· ${m.categoria}</span>` : ''}</div>
         </div>
         <span class="match-result-badge ${rowClass}">${gano ? 'GANÓ' : 'PERDIÓ'}</span>
         <div class="pm-pts-col">
