@@ -8821,7 +8821,7 @@ function renderCategoriaDetalle(cat) {
   const claves = Object.keys(grupos).sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
   if (claves.length) {
     html += `<div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:18px 0 10px;">Fase de grupos</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;">`;
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start;">`;
     claves.forEach(g => {
       const parts = grupos[g];
       const tabla = {};
