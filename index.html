@@ -8725,18 +8725,27 @@ async function bfAplicar() {
   const btn = document.getElementById('bfAplicar');
   const out = document.getElementById('bfResumen');
   btn.disabled = true; btn.textContent = 'Aplicando…';
-  let ok = 0; const errores = [];
+  let ok = 0, bloqueados = 0; const errores = [];
   for (const u of _bfPlan.updates) {
-    const { error } = await _supabase.from('partidos').update(u.patch).eq('id', u.id);
+    // .select() devuelve las filas realmente escritas: sin política de UPDATE
+    // la RLS deja el update en cero filas y Supabase no reporta error.
+    const { data, error } = await _supabase.from('partidos')
+      .update(u.patch).eq('id', u.id).select('id');
     if (error) { errores.push(error.message); if (errores.length > 3) break; }
+    else if (!data || !data.length) { bloqueados++; if (bloqueados > 3) break; }
     else ok++;
-    if (ok % 25 === 0) btn.textContent = `Aplicando… ${ok}/${_bfPlan.updates.length}`;
+    if ((ok + bloqueados) % 25 === 0) btn.textContent = `Aplicando… ${ok + bloqueados}/${_bfPlan.updates.length}`;
   }
   btn.disabled = false; btn.textContent = 'Aplicar';
-  out.innerHTML = errores.length
-    ? `<span style="color:var(--red)">${ok} aplicados, luego falló: ${errores[0]}</span>`
-    : `<span style="color:var(--green)">✓ ${ok} partido(s) completados. Abre el torneo y revisa "Grupos y llaves".</span>`;
-  if (!errores.length) { btn.style.display = 'none'; _evPartidos = null; }
+  if (errores.length) {
+    out.innerHTML = `<span style="color:var(--red)">${ok} aplicados, luego falló: ${errores[0]}</span>`;
+  } else if (bloqueados) {
+    out.innerHTML = `<span style="color:var(--red)">La base rechazó las escrituras (${bloqueados} sin efecto).<br>`
+      + `Falta la política de UPDATE en <code>partidos</code>: corre <strong>fix_rls_torneos_borrar.sql</strong>.</span>`;
+  } else {
+    out.innerHTML = `<span style="color:var(--green)">✓ ${ok} partido(s) completados. Abre el torneo y revisa "Grupos y llaves".</span>`;
+    btn.style.display = 'none'; _evPartidos = null;
+  }
 }
 
 // ══════════════════════════════════════════
