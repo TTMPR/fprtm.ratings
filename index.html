@@ -2282,8 +2282,12 @@
           <input type="text" id="subirTorneoNombre" placeholder="Ej: Cidra Open 2026">
         </div>
         <div class="edit-field">
-          <label>Categoría *</label>
-          <input type="text" id="subirCategoria" placeholder="Ej: 1800 Under, 11U Masculino, Sub21 Abierto…">
+          <label>Categoría <span style="color:var(--muted);font-weight:400;">(opcional)</span></label>
+          <input type="text" id="subirCategoria" placeholder="Déjalo vacío si el CSV trae la columna del evento">
+          <div style="font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5;">
+            El CSV de Stadium trae todos los eventos juntos y la categoría se detecta por partido.
+            Solo llena este campo si tu archivo es de una sola categoría y no incluye esa columna.
+          </div>
         </div>
         <div class="edit-field">
           <label>Fecha del torneo *</label>
@@ -2393,12 +2397,31 @@ Maria Lopez,Ana Torres,B</code>
     </div>
   </div>
 
-  <div class="evento-search-wrap">
-    <input id="eventoSearchInput" type="text" placeholder="🔍 Buscar participante..." oninput="filterEventoRows()">
+  <!-- Dos vistas: por participante o por categoría -->
+  <div style="max-width:1100px;margin:0 auto 18px;padding:0 24px;display:flex;gap:6px;">
+    <button id="evTabPart" onclick="eventoSetVista('participantes')"
+      style="flex:1;padding:10px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#0b1220;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;">
+      Participantes
+    </button>
+    <button id="evTabCat" onclick="eventoSetVista('categorias')"
+      style="flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;">
+      Grupos y llaves
+    </button>
   </div>
 
-  <div class="evento-grid" id="eventoGrid">
-    <div style="text-align:center;padding:40px;color:var(--muted)">Cargando resultados...</div>
+  <div id="evVistaParticipantes">
+    <div class="evento-search-wrap">
+      <input id="eventoSearchInput" type="text" placeholder="🔍 Buscar participante..." oninput="filterEventoRows()">
+    </div>
+
+    <div class="evento-grid" id="eventoGrid">
+      <div style="text-align:center;padding:40px;color:var(--muted)">Cargando resultados...</div>
+    </div>
+  </div>
+
+  <div id="evVistaCategorias" style="display:none;max-width:1100px;margin:0 auto;padding:0 24px 60px;">
+    <div id="evCatPills" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;margin-bottom:6px;"></div>
+    <div id="evCatContent"><div style="text-align:center;padding:40px;color:var(--muted)">Cargando…</div></div>
   </div>
 </div>
 
@@ -2660,6 +2683,13 @@ Maria Lopez,Ana Torres,B</code>
           <div>
             <div class="adm-title">Reparar Partidos</div>
             <div class="adm-desc">Recuperar partidos de torneos publicados</div>
+          </div>
+        </div>
+        <div class="adm-card" onclick="showBackfillModal()">
+          <div class="adm-ico">🗂</div>
+          <div>
+            <div class="adm-title">Rellenar Histórico</div>
+            <div class="adm-desc">Añadir grupos, rondas y marcadores a torneos viejos</div>
           </div>
         </div>
         <div class="adm-card" onclick="exportRankings()">
@@ -3726,10 +3756,10 @@ Maria Lopez,Ana Torres,B</code>
         onmouseout="this.style.borderColor='rgba(204,0,12,0.3)';this.style.background='rgba(204,0,12,0.08)'">
         <span style="font-size:20px;flex-shrink:0;">🏓</span>
         <span style="flex:1;min-width:0;">
-          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Grupos, llaves y resultados en vivo</span>
-          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">Parte 2 en StadiumTT</span>
+          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Resultados del torneo</span>
+          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">Llaves y resultados finales en StadiumTT</span>
         </span>
-        <span style="color:#f87171;font-size:13px;font-weight:700;white-space:nowrap;">Ir al torneo →</span>
+        <span style="color:#f87171;font-size:13px;font-weight:700;white-space:nowrap;">Ver resultados →</span>
       </a>
     </div>
 
@@ -6521,6 +6551,58 @@ function buildDatalist() {
 // ══════════════════════════════════════════
 // SUBIR RESULTADOS — flujo 2 pasos
 // ══════════════════════════════════════════
+// Stadium lista varios proveedores y el orden cambia entre exportaciones:
+//   "fptm|10074,stadium-tt|1194249"  ó  "stadium-tt|1194201,fptm|82512"
+// Hay que tomar SIEMPRE el id de la federación, nunca el último del texto.
+// Acepta la variante "fprtm|" que aparece en algunos registros.
+function idFptm(raw) {
+  const m = String(raw || '').match(/\b(?:fptm|fprtm)\|(\d+)/i);
+  return m ? m[1] : null;
+}
+
+// Dobles no puntúa: Stadium además lo exporta sin ids de jugador.
+function esCategoriaDobles(raw) {
+  const cat = catDesdeEvento(raw);
+  return INSC_CATEGORIES.some(c => c.dobles && c.name === cat)
+      || /doble/i.test(String(raw || ''));
+}
+
+// "Fase de Grupos" + "Group 2 (A vs. B)" → { fase:'grupos', grupo:'2' }
+// "Llave Principal" + "Quarterfinal #3"  → { fase:'llave', ronda:'Quarterfinal', orden:3 }
+function faseYRonda(drawName, description) {
+  const d = String(drawName || '').trim();
+  const t = String(description || '').trim();
+  const fase = /grupo/i.test(d) ? 'grupos'
+             : /round\s*robin/i.test(d) ? 'roundrobin'
+             : /llave|main|draw/i.test(d) ? 'llave' : null;
+  const g = t.match(/^Group\s+(\S+)/i);
+  if (g) return { fase: fase || 'grupos', grupo: g[1], ronda: null, orden: null };
+  const n = t.match(/#\s*(\d+)\s*$/);
+  const ronda = t.replace(/\s*#\s*\d+\s*$/, '').trim() || null;
+  return { fase, grupo: null, ronda, orden: n ? Number(n[1]) : null };
+}
+
+// Convierte el valor de la columna de evento de Stadium ("1700U", "13U - Femenino",
+// o un stadiumId) al nombre de categoría que usamos. Si no lo reconoce devuelve
+// el valor tal cual, para no perder la información.
+function catDesdeEvento(raw) {
+  const v = String(raw || '').trim();
+  if (!v) return null;
+  const norm = t => String(t).toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '');
+  // Stadium a veces nombra el evento en dos idiomas ("Open Singles (Abierto)"),
+  // así que probamos el texto completo, sin paréntesis y lo de adentro.
+  const dentro = (v.match(/\(([^)]*)\)/) || [])[1] || '';
+  const claves = [v, v.replace(/\([^)]*\)/g, ''), dentro].map(norm).filter(Boolean);
+  const hit = INSC_CATEGORIES.find(c => {
+    const suyas = [c.stadiumId, c.name, String(c.name).replace(/\([^)]*\)/g, '')]
+      .filter(Boolean).map(norm);
+    return claves.some(k => suyas.includes(k));
+  });
+  return hit ? hit.name : v;
+}
+
 let subirCsvRows = [];   // parsed rows from the uploaded CSV
 let subirPending = [];   // computed pendingResults for subirPage
 
@@ -6533,11 +6615,6 @@ function subirPaso2() {
   if (!nombre) {
     msgEl.style.color = 'var(--red)';
     msgEl.textContent = 'El nombre del torneo es requerido.';
-    return;
-  }
-  if (!categoria) {
-    msgEl.style.color = 'var(--red)';
-    msgEl.textContent = 'La categoría es requerida.';
     return;
   }
   if (!fecha) {
@@ -6619,14 +6696,22 @@ function subirLoadFile(file) {
       const iWin  = col('winnerMembershipIds');
       const iLos  = col('loserMembershipIds');
       const iDesc = col('description');
+      // Stadium exporta todos los eventos en un mismo archivo; la columna del
+      // evento permite separar por categoría sin subir un CSV por cada una.
+      const iEvt = ['eventName','event','eventTitle','eventId','division','category','categoria']
+        .map(n => col(n)).find(ix => ix >= 0) ?? -1;
+      const iDraw = col('drawName');   // Fase de Grupos / Llave Principal / Round Robin
+      const iSco  = col('scores');     // "9,-6,-6,4,5"
 
       subirCsvRows = [];
       for (let i = 1; i < lines.length; i++) {
         const parts = parseLine(lines[i]);
+        // Dobles no cuenta para ratings y Stadium lo exporta sin ids de jugador
+        if (iEvt >= 0 && esCategoriaDobles(parts[iEvt])) continue;
         const rawW = (parts[iWin] || '').trim();
         const rawL = (parts[iLos] || '').trim();
-        const membW = rawW.split('|').pop()?.trim();
-        const membL = rawL.split('|').pop()?.trim();
+        const membW = idFptm(rawW);
+        const membL = idFptm(rawL);
         if (!membW || !membL || isNaN(Number(membW)) || isNaN(Number(membL))) {
           // Track any skip where at least one side has a non-empty value
           if (rawW || rawL) {
@@ -6638,7 +6723,13 @@ function subirLoadFile(file) {
         // Winner is always pA; check description for retired/walkover
         const desc = iDesc >= 0 ? (parts[iDesc] || '') : '';
         const retired = /retired|retir|walkover|w\/o/i.test(desc);
-        subirCsvRows.push({ pA: `#${membW}`, pB: `#${membL}`, win: 'A', retired });
+        const cat = iEvt >= 0 ? catDesdeEvento(parts[iEvt]) : null;
+        const fr  = faseYRonda(iDraw >= 0 ? parts[iDraw] : '', desc);
+        subirCsvRows.push({
+          pA: `#${membW}`, pB: `#${membL}`, win: 'A', retired, cat,
+          ...fr,
+          marcador: iSco >= 0 ? (parts[iSco] || '').trim() || null : null,
+        });
       }
     } else {
       // ── Legacy simple format: playerA, playerB, A/B ──
@@ -6664,7 +6755,17 @@ function subirLoadFile(file) {
             ${skippedRows.map(r => `<div style="margin-top:4px;font-family:'Orbitron',monospace;">${r}</div>`).join('')}
            </div>`
         : '';
-      st.innerHTML = `✓ ${subirCsvRows.length} partido${subirCsvRows.length !== 1 ? 's' : ''} detectado${subirCsvRows.length !== 1 ? 's' : ''} en "${file.name}"${isStadium ? ' (formato Stadium Compete)' : ''}${skippedHtml}`;
+      // Desglose por categoría, para verificar antes de procesar
+      const porCat = {};
+      subirCsvRows.forEach(r => { const k = r.cat || '(sin categoría)'; porCat[k] = (porCat[k] || 0) + 1; });
+      const cats = Object.entries(porCat).sort((a, b) => b[1] - a[1]);
+      const catsHtml = (cats.length > 1 || (cats.length === 1 && cats[0][0] !== '(sin categoría)'))
+        ? `<div style="margin-top:8px;font-size:12px;line-height:1.7;">
+             <strong>${cats.length} categoría${cats.length !== 1 ? 's' : ''} detectada${cats.length !== 1 ? 's' : ''}:</strong><br>
+             ${cats.map(([n, c]) => `• ${n} — ${c} partido${c !== 1 ? 's' : ''}`).join('<br>')}
+           </div>`
+        : '';
+      st.innerHTML = `✓ ${subirCsvRows.length} partido${subirCsvRows.length !== 1 ? 's' : ''} detectado${subirCsvRows.length !== 1 ? 's' : ''} en "${file.name}"${isStadium ? ' (formato Stadium Compete)' : ''}${catsHtml}${skippedHtml}`;
       document.getElementById('subirProcesarBtn').style.display = '';
     }
     document.getElementById('subirDropLabel').textContent = file.name;
@@ -6694,7 +6795,13 @@ function subirProcesarCsv() {
     subirPending.push({
       pA: pA.name, pB: pB.name, rA: pA.rating, rB: pB.rating,
       aGain, bGain, winner: row.win === 'A' ? pA.name : pB.name,
-      idA: pA.id, idB: pB.id, retired
+      idA: pA.id, idB: pB.id, retired,
+      ...(row.cat ? { cat: row.cat } : {}),
+      ...(row.fase ? { fase: row.fase } : {}),
+      ...(row.ronda ? { ronda: row.ronda } : {}),
+      ...(row.grupo ? { grupo: row.grupo } : {}),
+      ...(row.orden != null ? { orden: row.orden } : {}),
+      ...(row.marcador ? { marcador: row.marcador } : {})
     });
   }
 
@@ -6975,7 +7082,9 @@ async function draftPublicar() {
           rating_a_despues: r.rA + r.aGain,
           rating_b_despues: r.rB + r.bGain,
           fecha:            draft.torneo_fecha,
-          categoria:        draft.torneo_categoria || null,
+          categoria:        r.cat || draft.torneo_categoria || null,
+          fase: r.fase ?? null, ronda: r.ronda ?? null,
+          grupo: r.grupo ?? null, orden: r.orden ?? null, marcador: r.marcador ?? null,
         }));
         // Insert in batches of 100
         for (let i = 0; i < partidoRows.length; i += 100) {
@@ -7144,7 +7253,9 @@ async function resyncPartidosDraft(draftId, torneoIdsStr, btn) {
         rating_a_despues: r.rA + r.aGain,
         rating_b_despues: r.rB + r.bGain,
         fecha:            draft.torneo_fecha,
-        categoria:        draft.torneo_categoria || null,
+        categoria:        r.cat || draft.torneo_categoria || null,
+        fase: r.fase ?? null, ronda: r.ronda ?? null,
+        grupo: r.grupo ?? null, orden: r.orden ?? null, marcador: r.marcador ?? null,
       };
     });
 
@@ -7233,7 +7344,9 @@ async function subirApplyRatings() {
           rating_a_despues: r.rA + r.aGain,
           rating_b_despues: r.rB + r.bGain,
           fecha,
-          categoria:        categoria || null,
+          categoria:        r.cat || categoria || null,
+          fase: r.fase ?? null, ronda: r.ronda ?? null,
+          grupo: r.grupo ?? null, orden: r.orden ?? null, marcador: r.marcador ?? null,
           ...(r.retired ? { notas: 'retired' } : {})
         });
       } catch(e) { console.warn('Error guardando partido:', e.message); }
@@ -8358,6 +8471,8 @@ async function openTorneoEvento(torneoIds, nombre, fecha) {
   // Accept either a single ID (from player history links) or an array
   const ids = Array.isArray(torneoIds) ? torneoIds : [torneoIds];
   currentEventoTorneoId = ids;
+  _evPartidos = null; _evCatActiva = null;
+  eventoSetVista('participantes');
   showPage('torneoEvento');
   setDocTitle(nombre);
 
@@ -8445,6 +8560,333 @@ function renderEventoRows(rows) {
   }).join('');
 }
 
+// ══════════════════════════════════════════
+// RELLENAR HISTÓRICO — categoría, fase, ronda y marcador
+// ══════════════════════════════════════════
+// Cruza los partidos ya guardados de un torneo con su CSV original de
+// Stadium y completa SOLO los campos descriptivos. Nunca toca ratings.
+let _bfTorneos = [];
+let _bfPlan    = null;   // { updates:[{id, patch}], sinCsv, sinPartido }
+
+async function showBackfillModal() {
+  if (!isAdmin()) { showLogin(); return; }
+  document.getElementById('backfillModal').style.display = 'flex';
+  document.getElementById('bfResumen').innerHTML = '';
+  document.getElementById('bfAplicar').style.display = 'none';
+  document.getElementById('bfFile').value = '';
+  _bfPlan = null;
+  const sel = document.getElementById('bfTorneo');
+  sel.innerHTML = '<option>Cargando…</option>';
+  try {
+    _bfTorneos = await sbGetActive('torneos', '?select=id,nombre,fecha&order=fecha.desc&limit=200');
+    sel.innerHTML = _bfTorneos.map(t =>
+      `<option value="${t.id}">${t.nombre} — ${t.fecha || 's/f'}</option>`).join('')
+      || '<option value="">No hay torneos</option>';
+  } catch (e) {
+    sel.innerHTML = `<option value="">Error: ${e.message}</option>`;
+  }
+}
+
+async function bfAnalizar() {
+  const torneoId = document.getElementById('bfTorneo').value;
+  const file = document.getElementById('bfFile').files[0];
+  const out = document.getElementById('bfResumen');
+  document.getElementById('bfAplicar').style.display = 'none';
+  _bfPlan = null;
+  if (!torneoId) { out.innerHTML = '<span style="color:var(--red)">Escoge un torneo.</span>'; return; }
+  if (!file)     { out.innerHTML = '<span style="color:var(--red)">Escoge el CSV de Stadium.</span>'; return; }
+  out.innerHTML = '<span style="color:var(--muted)">Analizando…</span>';
+
+  try {
+    const texto = await file.text();
+    const filas = bfParseCsv(texto);
+    if (!filas.length) throw new Error('El CSV no tiene partidos con id de la federación.');
+
+    const partidos = await sbGetActive('partidos',
+      `?torneo_id=eq.${torneoId}&order=id.asc&limit=5000`);
+    if (!partidos.length) throw new Error('Ese torneo no tiene partidos guardados.');
+
+    // Cola por pareja ganador→perdedor: si se enfrentaron dos veces,
+    // se emparejan en el orden en que aparecen.
+    const cola = new Map();
+    filas.forEach(f => {
+      const k = `${f.win}>${f.los}`;
+      if (!cola.has(k)) cola.set(k, []);
+      cola.get(k).push(f);
+    });
+
+    const updates = [];
+    let sinCsv = 0;
+    for (const m of partidos) {
+      const perd = m.ganador_id === m.jugador_a_id ? m.jugador_b_id : m.jugador_a_id;
+      const k = `${m.ganador_id}>${perd}`;
+      const q = cola.get(k);
+      if (!q || !q.length) { sinCsv++; continue; }
+      const f = q.shift();
+      const patch = {};
+      if (f.cat      && !m.categoria) patch.categoria = f.cat;
+      if (f.fase     && !m.fase)      patch.fase      = f.fase;
+      if (f.ronda    && !m.ronda)     patch.ronda     = f.ronda;
+      if (f.grupo    && !m.grupo)     patch.grupo     = f.grupo;
+      if (f.orden != null && m.orden == null) patch.orden = f.orden;
+      if (f.marcador && !m.marcador)  patch.marcador  = f.marcador;
+      if (Object.keys(patch).length) updates.push({ id: m.id, patch });
+    }
+    const sinPartido = [...cola.values()].reduce((n, q) => n + q.length, 0);
+    // Si una misma pareja (mismo ganador) jugó en dos categorías, el orden de
+    // la base y el del CSV podrían no coincidir y las etiquetas cruzarse.
+    const ambiguas = [];
+    const porPar = new Map();
+    filas.forEach(f => {
+      const k = `${f.win}>${f.los}`;
+      if (!porPar.has(k)) porPar.set(k, new Set());
+      porPar.get(k).add(f.cat || '—');
+    });
+    porPar.forEach((cats, k) => { if (cats.size > 1) ambiguas.push(`${k} (${[...cats].join(' / ')})`); });
+
+    _bfPlan = { updates, sinCsv, sinPartido, torneoId };
+    const cats = new Set(filas.map(f => f.cat).filter(Boolean));
+    out.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;line-height:1.75;">
+        <div><strong style="color:var(--green)">${updates.length}</strong> partido(s) se completarán</div>
+        <div style="color:var(--muted)">${partidos.length} partidos guardados · ${filas.length} filas en el CSV · ${cats.size} categoría(s)</div>
+        ${sinCsv ? `<div style="color:#f59e0b">⚠ ${sinCsv} partido(s) sin fila equivalente en el CSV — se dejan como están</div>` : ''}
+        ${sinPartido ? `<div style="color:#f59e0b">⚠ ${sinPartido} fila(s) del CSV sin partido guardado (¿otro torneo o dobles?)</div>` : ''}
+        ${ambiguas.length ? `<div style="color:#f59e0b">⚠ ${ambiguas.length} pareja(s) jugaron en más de una categoría; su etiqueta podría quedar cruzada:<br><span style="font-size:11px">${ambiguas.slice(0,4).join('<br>')}</span></div>` : ''}
+        <div style="color:var(--muted);font-size:11.5px;margin-top:6px">Solo se escriben campos vacíos. Los ratings no se tocan.</div>
+      </div>`;
+    if (updates.length) document.getElementById('bfAplicar').style.display = '';
+  } catch (e) {
+    out.innerHTML = `<span style="color:var(--red)">Error: ${e.message}</span>`;
+  }
+}
+
+// Mismo formato que la subida de resultados, pero sin calcular nada
+function bfParseCsv(texto) {
+  const lines = texto.split(/\r?\n/).filter(l => l.trim());
+  if (!lines.length) return [];
+  const pl = l => {
+    const o = []; let c = '', q = false;
+    for (const ch of l) {
+      if (ch === '"') q = !q;
+      else if (ch === ',' && !q) { o.push(c.trim()); c = ''; }
+      else c += ch;
+    }
+    o.push(c.trim()); return o;
+  };
+  const H = pl(lines[0]);
+  const col = n => H.findIndex(h => h.trim().toLowerCase() === n.toLowerCase());
+  const iW = col('winnerMembershipIds'), iL = col('loserMembershipIds');
+  if (iW < 0 || iL < 0) throw new Error('No parece un export de partidos de Stadium.');
+  const iE = ['eventName','event','eventTitle','division','category','categoria']
+    .map(n => col(n)).find(ix => ix >= 0) ?? -1;
+  const iD = col('description'), iDr = col('drawName'), iS = col('scores');
+
+  const out = [];
+  for (let i = 1; i < lines.length; i++) {
+    const p = pl(lines[i]);
+    if (iE >= 0 && esCategoriaDobles(p[iE])) continue;
+    const win = idFptm(p[iW]), los = idFptm(p[iL]);
+    if (!win || !los) continue;
+    const fr = faseYRonda(iDr >= 0 ? p[iDr] : '', iD >= 0 ? p[iD] : '');
+    out.push({
+      win: Number(win), los: Number(los),
+      cat: iE >= 0 ? catDesdeEvento(p[iE]) : null,
+      ...fr,
+      marcador: iS >= 0 ? (p[iS] || '').trim() || null : null,
+    });
+  }
+  return out;
+}
+
+async function bfAplicar() {
+  if (!_bfPlan || !_bfPlan.updates.length) return;
+  const btn = document.getElementById('bfAplicar');
+  const out = document.getElementById('bfResumen');
+  btn.disabled = true; btn.textContent = 'Aplicando…';
+  let ok = 0; const errores = [];
+  for (const u of _bfPlan.updates) {
+    const { error } = await _supabase.from('partidos').update(u.patch).eq('id', u.id);
+    if (error) { errores.push(error.message); if (errores.length > 3) break; }
+    else ok++;
+    if (ok % 25 === 0) btn.textContent = `Aplicando… ${ok}/${_bfPlan.updates.length}`;
+  }
+  btn.disabled = false; btn.textContent = 'Aplicar';
+  out.innerHTML = errores.length
+    ? `<span style="color:var(--red)">${ok} aplicados, luego falló: ${errores[0]}</span>`
+    : `<span style="color:var(--green)">✓ ${ok} partido(s) completados. Abre el torneo y revisa "Grupos y llaves".</span>`;
+  if (!errores.length) { btn.style.display = 'none'; _evPartidos = null; }
+}
+
+// ══════════════════════════════════════════
+// TORNEO — VISTA POR CATEGORÍA (grupos y llaves)
+// ══════════════════════════════════════════
+let _evPartidos = null;   // todos los partidos del torneo, cacheados
+let _evCatActiva = null;
+
+function eventoSetVista(v) {
+  const esCat = v === 'categorias';
+  document.getElementById('evVistaParticipantes').style.display = esCat ? 'none' : '';
+  document.getElementById('evVistaCategorias').style.display    = esCat ? '' : 'none';
+  const on  = b => { b.style.background='var(--accent)'; b.style.color='#0b1220'; b.style.borderColor='var(--accent)'; b.style.fontWeight='700'; };
+  const off = b => { b.style.background='transparent'; b.style.color='var(--muted)'; b.style.borderColor='var(--border)'; b.style.fontWeight='600'; };
+  const bp = document.getElementById('evTabPart'), bc = document.getElementById('evTabCat');
+  esCat ? (on(bc), off(bp)) : (on(bp), off(bc));
+  if (esCat) cargarVistaCategorias();
+}
+
+async function cargarVistaCategorias() {
+  if (_evPartidos) return renderEvCategorias();
+  const cont = document.getElementById('evCatContent');
+  try {
+    const ids = currentEventoTorneoId;
+    const filtro = ids.length === 1 ? `torneo_id=eq.${ids[0]}` : `torneo_id=in.(${ids.join(',')})`;
+    _evPartidos = await sbGetActive('partidos', `?${filtro}&order=id.asc&limit=3000`);
+    renderEvCategorias();
+  } catch (e) {
+    cont.innerHTML = `<div style="color:var(--red);padding:24px;text-align:center">Error: ${e.message}</div>`;
+  }
+}
+
+function renderEvCategorias() {
+  const cats = [...new Set(_evPartidos.map(m => m.categoria).filter(Boolean))];
+  const pills = document.getElementById('evCatPills');
+  if (!cats.length) {
+    pills.innerHTML = '';
+    document.getElementById('evCatContent').innerHTML =
+      '<div style="text-align:center;padding:40px;color:var(--muted);line-height:1.6">Este torneo no tiene los partidos separados por categoría.<br><span style="font-size:12px">Solo los torneos subidos con el desglose de Stadium tienen grupos y llaves.</span></div>';
+    return;
+  }
+  // Ordenar según el itinerario, y dejar al final lo que no reconozcamos
+  const orden = INSC_CATEGORIES.map(c => c.name);
+  cats.sort((a, b) => {
+    const ia = orden.indexOf(a), ib = orden.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+  });
+  if (!_evCatActiva || !cats.includes(_evCatActiva)) _evCatActiva = cats[0];
+  pills.innerHTML = cats.map(c => {
+    const on = c === _evCatActiva;
+    return `<button onclick="_evCatActiva=${JSON.stringify(c).replace(/"/g,'&quot;')};renderEvCategorias()"
+      style="padding:7px 15px;border-radius:20px;white-space:nowrap;cursor:pointer;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:${on?700:600};
+             border:1px solid ${on?'var(--accent)':'var(--border)'};background:${on?'var(--accent)':'transparent'};color:${on?'#0b1220':'var(--muted)'};">
+      ${c}</button>`;
+  }).join('');
+  document.getElementById('evCatContent').innerHTML = renderCategoriaDetalle(_evCatActiva);
+}
+
+const _nombreJug = id => ALL_PLAYERS.find(p => p.id === id)?.name || `#${id}`;
+
+// "9,-6,-6,4,5" → "11-9, 6-11, 6-11, 11-4, 11-5" desde la vista del ganador
+function formatearMarcador(m) {
+  if (!m) return '';
+  return String(m).split(',').map(x => {
+    const n = parseInt(String(x).trim(), 10);
+    if (isNaN(n)) return null;
+    const p = Math.abs(n);
+    const alto = Math.max(11, p + 2);
+    return n < 0 ? `${p}-${alto}` : `${alto}-${p}`;
+  }).filter(Boolean).join(', ');
+}
+
+const ORDEN_RONDAS = ['Round of 128','Round of 64','Round of 32','Round of 16',
+                      'Quarterfinal','Semifinal','Final','3rd Place'];
+const RONDA_ES = { 'Round of 128':'Ronda de 128','Round of 64':'Ronda de 64',
+  'Round of 32':'Ronda de 32','Round of 16':'Ronda de 16','Quarterfinal':'Cuartos de final',
+  'Semifinal':'Semifinal','Final':'Final','3rd Place':'Tercer lugar' };
+
+function renderCategoriaDetalle(cat) {
+  const ms = _evPartidos.filter(m => m.categoria === cat);
+  if (!ms.length) return '<div style="padding:30px;text-align:center;color:var(--muted)">Sin partidos.</div>';
+
+  const filaPartido = (m, mostrarRonda) => {
+    const gid = m.ganador_id;
+    const gName = _nombreJug(gid);
+    const pName = _nombreJug(gid === m.jugador_a_id ? m.jugador_b_id : m.jugador_a_id);
+    const sc = formatearMarcador(m.marcador);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;flex-wrap:wrap;">
+      ${mostrarRonda && m.orden != null ? `<span style="color:var(--muted);font-size:11px;width:24px;flex-shrink:0;">#${m.orden}</span>` : ''}
+      <span style="flex:1;min-width:120px;"><strong style="color:var(--green);">${gName}</strong>
+        <span style="color:var(--muted);margin:0 6px;">def.</span>${pName}</span>
+      ${sc ? `<span style="font-family:'Orbitron',monospace;font-size:11.5px;color:var(--accent);white-space:nowrap;">${sc}</span>` : ''}
+      ${m.notas === 'retired' ? '<span style="font-size:10px;color:var(--orange);">retiro</span>' : ''}
+    </div>`;
+  };
+
+  let html = '';
+
+  // ── Fase de grupos: tabla de posiciones + partidos ──
+  const grupos = {};
+  ms.filter(m => m.fase === 'grupos' || m.fase === 'roundrobin')
+    .forEach(m => { const g = m.grupo || '—'; (grupos[g] = grupos[g] || []).push(m); });
+  const claves = Object.keys(grupos).sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
+  if (claves.length) {
+    html += `<div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:18px 0 10px;">Fase de grupos</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start;">`;
+    claves.forEach(g => {
+      const parts = grupos[g];
+      const tabla = {};
+      parts.forEach(m => {
+        [m.jugador_a_id, m.jugador_b_id].forEach(id => {
+          if (id != null && !tabla[id]) tabla[id] = { id, g: 0, p: 0 };
+        });
+        if (m.ganador_id != null) {
+          const perd = m.ganador_id === m.jugador_a_id ? m.jugador_b_id : m.jugador_a_id;
+          if (tabla[m.ganador_id]) tabla[m.ganador_id].g++;
+          if (tabla[perd]) tabla[perd].p++;
+        }
+      });
+      const pos = Object.values(tabla).sort((a, b) => b.g - a.g || a.p - b.p);
+      html += `<div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+        <div style="padding:10px 14px;background:rgba(56,189,248,0.06);font-size:12px;font-weight:700;color:var(--accent);">Grupo ${g}</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+          <thead><tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:6px 12px;color:var(--muted);font-weight:600;">#</th>
+            <th style="text-align:left;padding:6px 8px;color:var(--muted);font-weight:600;">Jugador</th>
+            <th style="text-align:center;padding:6px 8px;color:var(--muted);font-weight:600;">G</th>
+            <th style="text-align:center;padding:6px 12px;color:var(--muted);font-weight:600;">P</th>
+          </tr></thead>
+          <tbody>${pos.map((r, i) => `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+            <td style="padding:7px 12px;color:var(--muted);">${i + 1}</td>
+            <td style="padding:7px 8px;font-weight:${i === 0 ? 700 : 500};color:${i === 0 ? 'var(--text)' : 'var(--muted)'};">${_nombreJug(r.id)}</td>
+            <td style="padding:7px 8px;text-align:center;color:var(--green);font-weight:700;">${r.g}</td>
+            <td style="padding:7px 12px;text-align:center;color:var(--muted);">${r.p}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+        <div style="border-top:1px solid var(--border);">${parts.map(m => filaPartido(m, false)).join('')}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // ── Llave principal, por rondas ──
+  const llave = ms.filter(m => m.fase === 'llave' || (!m.fase && m.ronda));
+  if (llave.length) {
+    const porRonda = {};
+    llave.forEach(m => { const r = m.ronda || 'Otros'; (porRonda[r] = porRonda[r] || []).push(m); });
+    const rondas = Object.keys(porRonda).sort((a, b) => {
+      const ia = ORDEN_RONDAS.indexOf(a), ib = ORDEN_RONDAS.indexOf(b);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+    html += `<div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px;">Llave principal</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;align-items:start;">`;
+    rondas.forEach(r => {
+      const lista = porRonda[r].slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+      const esFinal = r === 'Final';
+      html += `<div style="background:var(--card2);border:1px solid ${esFinal ? 'rgba(250,204,21,0.4)' : 'var(--border)'};border-radius:12px;overflow:hidden;">
+        <div style="padding:10px 14px;background:${esFinal ? 'rgba(250,204,21,0.08)' : 'rgba(129,140,248,0.06)'};font-size:12px;font-weight:700;color:${esFinal ? '#facc15' : 'var(--purple)'};">
+          ${esFinal ? '🏆 ' : ''}${RONDA_ES[r] || r}
+          <span style="color:var(--muted);font-weight:400;"> · ${lista.length}</span>
+        </div>
+        ${lista.map(m => filaPartido(m, true)).join('')}
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  if (!html) html = '<div style="padding:30px;text-align:center;color:var(--muted)">Sin desglose de grupos ni llaves para esta categoría.</div>';
+  return html;
+}
+
 async function showPlayerMatches(playerId, playerName, ratingInicio) {
   const modal = document.getElementById('playerMatchesModal');
   document.getElementById('pmTitle').textContent = playerName;
@@ -8506,7 +8948,8 @@ async function showPlayerMatches(playerId, playerName, ratingInicio) {
         <div class="pm-match-num">${idx + 1}</div>
         <div style="flex:1;min-width:0">
           <div class="match-opp">${oppName}</div>
-          <div class="match-opp-rating">Rating oponente: ${oppRat ?? '—'}</div>
+          <div class="match-opp-rating">Rating oponente: ${oppRat ?? '—'}${
+            m.categoria ? ` <span style="color:var(--accent);">· ${m.categoria}</span>` : ''}</div>
         </div>
         <span class="match-result-badge ${rowClass}">${gano ? 'GANÓ' : 'PERDIÓ'}</span>
         <div class="pm-pts-col">
@@ -9741,34 +10184,6 @@ async function rejectClubChange(id) {
 }
 
 // ══════════════════════════════════════════
-// Clave propia de la Parte 2: quien cerró el aviso de la Parte 1 debe ver este
-const STADIUM_POPUP_KEY = 'stadiumPopupSeen_cidra2026_p2';
-
-// Se muestra una vez por día para no fastidiar a quien vuelve a entrar
-function maybeShowStadiumPopup() {
-  const today = new Date().toISOString().slice(0, 10);
-  let seen = null;
-  try { seen = localStorage.getItem(STADIUM_POPUP_KEY); } catch (_) {}
-  if (seen === today) return false;
-  setTimeout(() => {
-    const el = document.getElementById('stadiumPopup');
-    if (!el) return;
-    el.style.display = 'flex';
-    try { localStorage.setItem(STADIUM_POPUP_KEY, today); } catch (_) {}
-    document.addEventListener('keydown', _stadiumEsc);
-  }, 800);
-  return true;
-}
-
-function _stadiumEsc(e) { if (e.key === 'Escape') closeStadiumPopup(); }
-
-function closeStadiumPopup() {
-  const el = document.getElementById('stadiumPopup');
-  if (el) el.style.display = 'none';
-  document.removeEventListener('keydown', _stadiumEsc);
-  showWaAnnouncement(500);   // el aviso de WhatsApp entra después
-}
-
 function showWaAnnouncement(delay = 400) {
   setTimeout(() => {
     const el = document.getElementById('waChannelAnnouncement');
@@ -9780,12 +10195,10 @@ function showWaAnnouncement(delay = 400) {
 // INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
-  // ── "El torneo se juega en StadiumTT" — una vez al día ──
-  // Va primero; el aviso de WhatsApp espera a que se cierre para no deslizarse
-  // por detrás del modal.
+  // ── Aviso del canal de WhatsApp ──
   document.querySelectorAll('[data-stadium-link]')
     .forEach(a => a.setAttribute('href', TORNEO_STADIUM_URL));
-  if (!maybeShowStadiumPopup()) showWaAnnouncement(1200);
+  showWaAnnouncement(1200);
 
   // ── Sello de versión (detecta un index.html cacheado tras un deploy) ──
   const _vs = document.getElementById('appVersionStamp');
@@ -14800,6 +15213,48 @@ async function submitPublicReg() {
 </div>
 
 <!-- ══════════════════════════════════════════
+     RELLENAR HISTÓRICO (admin)
+═══════════════════════════════════════════ -->
+<div id="backfillModal" role="dialog" aria-modal="true" aria-labelledby="bfTitle"
+  style="display:none;position:fixed;inset:0;z-index:1600;background:rgba(0,0,0,0.84);
+         align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;max-width:520px;width:100%;padding:24px;margin:24px auto;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+      <div>
+        <div id="bfTitle" style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px;">Rellenar histórico</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;">Completa torneos ya publicados con su CSV original</div>
+      </div>
+      <button onclick="document.getElementById('backfillModal').style.display='none'" aria-label="Cerrar"
+        style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin:14px 0 16px;">
+      Cruza los partidos guardados con el export de Stadium y añade categoría, fase,
+      grupo, ronda y marcador. <strong style="color:var(--text);">Solo escribe campos vacíos
+      y nunca modifica ratings</strong>, así que puedes correrlo sin riesgo.
+    </p>
+
+    <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Torneo</label>
+    <select id="bfTorneo" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;box-sizing:border-box;margin-bottom:12px;"></select>
+
+    <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">CSV de partidos de Stadium</label>
+    <input id="bfFile" type="file" accept=".csv,text/csv"
+      style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-size:12.5px;box-sizing:border-box;margin-bottom:14px;">
+
+    <button onclick="bfAnalizar()"
+      style="width:100%;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:9px;padding:10px;color:var(--accent);font-size:13.5px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">
+      Analizar
+    </button>
+
+    <div id="bfResumen" style="font-size:13px;margin-top:14px;"></div>
+
+    <button id="bfAplicar" onclick="bfAplicar()" style="display:none;width:100%;margin-top:12px;background:var(--grad);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">
+      Aplicar
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      EXPORTAR A STADIUM — ELEGIR PARTE
 ═══════════════════════════════════════════ -->
 <div id="exportStadiumModal" role="dialog" aria-modal="true" aria-labelledby="expStadiumTitle"
@@ -14854,50 +15309,6 @@ async function submitPublicReg() {
         <span style="color:var(--muted);font-size:12px;font-weight:700;">&darr; CSV</span>
       </button>
     </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     POP-UP: LA PARTE 2 SE JUEGA EN STADIUMTT
-═══════════════════════════════════════════ -->
-<div id="stadiumPopup" role="dialog" aria-modal="true" aria-labelledby="stadiumPopupTitle"
-  style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.85);
-         align-items:center;justify-content:center;padding:18px;">
-  <div style="background:#f5f7f6;border-radius:20px;max-width:400px;width:100%;
-              padding:26px 24px 22px;text-align:center;position:relative;
-              box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:stadiumPop .3s ease;">
-    <style>@keyframes stadiumPop{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:none}}</style>
-    <button onclick="closeStadiumPopup()" aria-label="Cerrar"
-      style="position:absolute;top:10px;right:12px;background:none;border:none;
-             color:#8d9599;font-size:22px;line-height:1;cursor:pointer;padding:4px;">&times;</button>
-
-    <img src="Logo_Cidra_Open_2026.png" alt="Cidra Open 2026"
-         style="width:100%;max-width:250px;height:auto;margin:4px auto 14px;display:block;"
-         onerror="this.style.display='none'">
-
-    <div style="display:inline-block;background:rgba(23,125,90,0.12);border:1px solid rgba(23,125,90,0.35);
-                border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;color:#177d5a;
-                margin-bottom:10px;">PARTE 2 &middot; 22 Y 23 DE AGOSTO</div>
-
-    <div id="stadiumPopupTitle" style="font-size:17px;font-weight:800;color:#232323;line-height:1.3;margin-bottom:8px;">
-      El torneo se juega en StadiumTT
-    </div>
-    <p style="font-size:13.5px;color:#4b5257;line-height:1.6;margin:0 0 18px;">
-      Grupos, llaves y resultados en vivo se manejan allí.
-      Tu inscripción ya está registrada aquí — no tienes que inscribirte de nuevo.
-    </p>
-
-    <a data-stadium-link href="#" target="_blank" rel="noopener" onclick="closeStadiumPopup()"
-       style="display:block;background:#cc000c;color:#fff;text-decoration:none;
-              padding:14px;border-radius:12px;font-size:15px;font-weight:700;
-              letter-spacing:.03em;margin-bottom:10px;">
-      Ir al torneo &rarr;
-    </a>
-    <button onclick="closeStadiumPopup()"
-      style="background:none;border:none;color:#6b7280;font-size:13px;cursor:pointer;
-             padding:6px;font-family:'Inter',sans-serif;">
-      Seguir en esta página
-    </button>
   </div>
 </div>
 
