@@ -8600,9 +8600,20 @@ async function showBackfillModal() {
   sel.innerHTML = '<option>Cargando…</option>';
   try {
     _bfTorneos = await sbGetActive('torneos', '?select=id,nombre,fecha&order=fecha.desc&limit=200');
-    sel.innerHTML = _bfTorneos.map(t =>
-      `<option value="${t.id}">${t.nombre} — ${t.fecha || 's/f'}</option>`).join('')
-      || '<option value="">No hay torneos</option>';
+    // Un torneo subido por categoría son varias filas ("Nombre — Categoría"):
+    // hay que rellenarlas todas juntas o solo cruzaría una fracción del CSV.
+    const grupos = [];
+    const porBase = {};
+    _bfTorneos.forEach(t => {
+      const i = t.nombre.indexOf(' \u2014 ');
+      const base = i !== -1 ? t.nombre.slice(0, i) : t.nombre;
+      if (!porBase[base]) { porBase[base] = { base, ids: [], fecha: t.fecha }; grupos.push(porBase[base]); }
+      porBase[base].ids.push(t.id);
+      if (t.fecha && (!porBase[base].fecha || t.fecha < porBase[base].fecha)) porBase[base].fecha = t.fecha;
+    });
+    sel.innerHTML = grupos.map(g =>
+      `<option value="${g.ids.join(',')}">${g.base} — ${g.fecha || 's/f'}${g.ids.length > 1 ? ` (${g.ids.length} partes)` : ''}</option>`
+    ).join('') || '<option value="">No hay torneos</option>';
   } catch (e) {
     sel.innerHTML = `<option value="">Error: ${e.message}</option>`;
   }
@@ -8623,8 +8634,9 @@ async function bfAnalizar() {
     const filas = bfParseCsv(texto);
     if (!filas.length) throw new Error('El CSV no tiene partidos con id de la federación.');
 
-    const partidos = await sbGetActive('partidos',
-      `?torneo_id=eq.${torneoId}&order=id.asc&limit=5000`);
+    const ids = String(torneoId).split(',').filter(Boolean);
+    const filtro = ids.length === 1 ? `torneo_id=eq.${ids[0]}` : `torneo_id=in.(${ids.join(',')})`;
+    const partidos = await sbGetActive('partidos', `?${filtro}&order=id.asc&limit=5000`);
     if (!partidos.length) throw new Error('Ese torneo no tiene partidos guardados.');
 
     // Cola por pareja ganador→perdedor: si se enfrentaron dos veces,
