@@ -2685,6 +2685,13 @@ Maria Lopez,Ana Torres,B</code>
             <div class="adm-desc">Recuperar partidos de torneos publicados</div>
           </div>
         </div>
+        <div class="adm-card" onclick="showBackfillModal()">
+          <div class="adm-ico">🗂</div>
+          <div>
+            <div class="adm-title">Rellenar Histórico</div>
+            <div class="adm-desc">Añadir grupos, rondas y marcadores a torneos viejos</div>
+          </div>
+        </div>
         <div class="adm-card" onclick="exportRankings()">
           <div class="adm-ico">📊</div>
           <div>
@@ -8551,6 +8558,164 @@ function renderEventoRows(rows) {
       <div class="evento-delta ${deltaClass}">${deltaSign}${Math.abs(r.delta)}</div>
     </div>`;
   }).join('');
+}
+
+// ══════════════════════════════════════════
+// RELLENAR HISTÓRICO — categoría, fase, ronda y marcador
+// ══════════════════════════════════════════
+// Cruza los partidos ya guardados de un torneo con su CSV original de
+// Stadium y completa SOLO los campos descriptivos. Nunca toca ratings.
+let _bfTorneos = [];
+let _bfPlan    = null;   // { updates:[{id, patch}], sinCsv, sinPartido }
+
+async function showBackfillModal() {
+  if (!isAdmin()) { showLogin(); return; }
+  document.getElementById('backfillModal').style.display = 'flex';
+  document.getElementById('bfResumen').innerHTML = '';
+  document.getElementById('bfAplicar').style.display = 'none';
+  document.getElementById('bfFile').value = '';
+  _bfPlan = null;
+  const sel = document.getElementById('bfTorneo');
+  sel.innerHTML = '<option>Cargando…</option>';
+  try {
+    _bfTorneos = await sbGetActive('torneos', '?select=id,nombre,fecha&order=fecha.desc&limit=200');
+    sel.innerHTML = _bfTorneos.map(t =>
+      `<option value="${t.id}">${t.nombre} — ${t.fecha || 's/f'}</option>`).join('')
+      || '<option value="">No hay torneos</option>';
+  } catch (e) {
+    sel.innerHTML = `<option value="">Error: ${e.message}</option>`;
+  }
+}
+
+async function bfAnalizar() {
+  const torneoId = document.getElementById('bfTorneo').value;
+  const file = document.getElementById('bfFile').files[0];
+  const out = document.getElementById('bfResumen');
+  document.getElementById('bfAplicar').style.display = 'none';
+  _bfPlan = null;
+  if (!torneoId) { out.innerHTML = '<span style="color:var(--red)">Escoge un torneo.</span>'; return; }
+  if (!file)     { out.innerHTML = '<span style="color:var(--red)">Escoge el CSV de Stadium.</span>'; return; }
+  out.innerHTML = '<span style="color:var(--muted)">Analizando…</span>';
+
+  try {
+    const texto = await file.text();
+    const filas = bfParseCsv(texto);
+    if (!filas.length) throw new Error('El CSV no tiene partidos con id de la federación.');
+
+    const partidos = await sbGetActive('partidos',
+      `?torneo_id=eq.${torneoId}&order=id.asc&limit=5000`);
+    if (!partidos.length) throw new Error('Ese torneo no tiene partidos guardados.');
+
+    // Cola por pareja ganador→perdedor: si se enfrentaron dos veces,
+    // se emparejan en el orden en que aparecen.
+    const cola = new Map();
+    filas.forEach(f => {
+      const k = `${f.win}>${f.los}`;
+      if (!cola.has(k)) cola.set(k, []);
+      cola.get(k).push(f);
+    });
+
+    const updates = [];
+    let sinCsv = 0;
+    for (const m of partidos) {
+      const perd = m.ganador_id === m.jugador_a_id ? m.jugador_b_id : m.jugador_a_id;
+      const k = `${m.ganador_id}>${perd}`;
+      const q = cola.get(k);
+      if (!q || !q.length) { sinCsv++; continue; }
+      const f = q.shift();
+      const patch = {};
+      if (f.cat      && !m.categoria) patch.categoria = f.cat;
+      if (f.fase     && !m.fase)      patch.fase      = f.fase;
+      if (f.ronda    && !m.ronda)     patch.ronda     = f.ronda;
+      if (f.grupo    && !m.grupo)     patch.grupo     = f.grupo;
+      if (f.orden != null && m.orden == null) patch.orden = f.orden;
+      if (f.marcador && !m.marcador)  patch.marcador  = f.marcador;
+      if (Object.keys(patch).length) updates.push({ id: m.id, patch });
+    }
+    const sinPartido = [...cola.values()].reduce((n, q) => n + q.length, 0);
+    // Si una misma pareja (mismo ganador) jugó en dos categorías, el orden de
+    // la base y el del CSV podrían no coincidir y las etiquetas cruzarse.
+    const ambiguas = [];
+    const porPar = new Map();
+    filas.forEach(f => {
+      const k = `${f.win}>${f.los}`;
+      if (!porPar.has(k)) porPar.set(k, new Set());
+      porPar.get(k).add(f.cat || '—');
+    });
+    porPar.forEach((cats, k) => { if (cats.size > 1) ambiguas.push(`${k} (${[...cats].join(' / ')})`); });
+
+    _bfPlan = { updates, sinCsv, sinPartido, torneoId };
+    const cats = new Set(filas.map(f => f.cat).filter(Boolean));
+    out.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;line-height:1.75;">
+        <div><strong style="color:var(--green)">${updates.length}</strong> partido(s) se completarán</div>
+        <div style="color:var(--muted)">${partidos.length} partidos guardados · ${filas.length} filas en el CSV · ${cats.size} categoría(s)</div>
+        ${sinCsv ? `<div style="color:#f59e0b">⚠ ${sinCsv} partido(s) sin fila equivalente en el CSV — se dejan como están</div>` : ''}
+        ${sinPartido ? `<div style="color:#f59e0b">⚠ ${sinPartido} fila(s) del CSV sin partido guardado (¿otro torneo o dobles?)</div>` : ''}
+        ${ambiguas.length ? `<div style="color:#f59e0b">⚠ ${ambiguas.length} pareja(s) jugaron en más de una categoría; su etiqueta podría quedar cruzada:<br><span style="font-size:11px">${ambiguas.slice(0,4).join('<br>')}</span></div>` : ''}
+        <div style="color:var(--muted);font-size:11.5px;margin-top:6px">Solo se escriben campos vacíos. Los ratings no se tocan.</div>
+      </div>`;
+    if (updates.length) document.getElementById('bfAplicar').style.display = '';
+  } catch (e) {
+    out.innerHTML = `<span style="color:var(--red)">Error: ${e.message}</span>`;
+  }
+}
+
+// Mismo formato que la subida de resultados, pero sin calcular nada
+function bfParseCsv(texto) {
+  const lines = texto.split(/\r?\n/).filter(l => l.trim());
+  if (!lines.length) return [];
+  const pl = l => {
+    const o = []; let c = '', q = false;
+    for (const ch of l) {
+      if (ch === '"') q = !q;
+      else if (ch === ',' && !q) { o.push(c.trim()); c = ''; }
+      else c += ch;
+    }
+    o.push(c.trim()); return o;
+  };
+  const H = pl(lines[0]);
+  const col = n => H.findIndex(h => h.trim().toLowerCase() === n.toLowerCase());
+  const iW = col('winnerMembershipIds'), iL = col('loserMembershipIds');
+  if (iW < 0 || iL < 0) throw new Error('No parece un export de partidos de Stadium.');
+  const iE = ['eventName','event','eventTitle','division','category','categoria']
+    .map(n => col(n)).find(ix => ix >= 0) ?? -1;
+  const iD = col('description'), iDr = col('drawName'), iS = col('scores');
+
+  const out = [];
+  for (let i = 1; i < lines.length; i++) {
+    const p = pl(lines[i]);
+    if (iE >= 0 && esCategoriaDobles(p[iE])) continue;
+    const win = idFptm(p[iW]), los = idFptm(p[iL]);
+    if (!win || !los) continue;
+    const fr = faseYRonda(iDr >= 0 ? p[iDr] : '', iD >= 0 ? p[iD] : '');
+    out.push({
+      win: Number(win), los: Number(los),
+      cat: iE >= 0 ? catDesdeEvento(p[iE]) : null,
+      ...fr,
+      marcador: iS >= 0 ? (p[iS] || '').trim() || null : null,
+    });
+  }
+  return out;
+}
+
+async function bfAplicar() {
+  if (!_bfPlan || !_bfPlan.updates.length) return;
+  const btn = document.getElementById('bfAplicar');
+  const out = document.getElementById('bfResumen');
+  btn.disabled = true; btn.textContent = 'Aplicando…';
+  let ok = 0; const errores = [];
+  for (const u of _bfPlan.updates) {
+    const { error } = await _supabase.from('partidos').update(u.patch).eq('id', u.id);
+    if (error) { errores.push(error.message); if (errores.length > 3) break; }
+    else ok++;
+    if (ok % 25 === 0) btn.textContent = `Aplicando… ${ok}/${_bfPlan.updates.length}`;
+  }
+  btn.disabled = false; btn.textContent = 'Aplicar';
+  out.innerHTML = errores.length
+    ? `<span style="color:var(--red)">${ok} aplicados, luego falló: ${errores[0]}</span>`
+    : `<span style="color:var(--green)">✓ ${ok} partido(s) completados. Abre el torneo y revisa "Grupos y llaves".</span>`;
+  if (!errores.length) { btn.style.display = 'none'; _evPartidos = null; }
 }
 
 // ══════════════════════════════════════════
@@ -15044,6 +15209,48 @@ async function submitPublicReg() {
       <button onclick="document.getElementById('editParejaModal').style.display='none'"
         style="background:none;border:1px solid var(--border);border-radius:10px;padding:11px 18px;color:var(--muted);font-size:13px;cursor:pointer;">Cancelar</button>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     RELLENAR HISTÓRICO (admin)
+═══════════════════════════════════════════ -->
+<div id="backfillModal" role="dialog" aria-modal="true" aria-labelledby="bfTitle"
+  style="display:none;position:fixed;inset:0;z-index:1600;background:rgba(0,0,0,0.84);
+         align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;max-width:520px;width:100%;padding:24px;margin:24px auto;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+      <div>
+        <div id="bfTitle" style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px;">Rellenar histórico</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;">Completa torneos ya publicados con su CSV original</div>
+      </div>
+      <button onclick="document.getElementById('backfillModal').style.display='none'" aria-label="Cerrar"
+        style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin:14px 0 16px;">
+      Cruza los partidos guardados con el export de Stadium y añade categoría, fase,
+      grupo, ronda y marcador. <strong style="color:var(--text);">Solo escribe campos vacíos
+      y nunca modifica ratings</strong>, así que puedes correrlo sin riesgo.
+    </p>
+
+    <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Torneo</label>
+    <select id="bfTorneo" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;box-sizing:border-box;margin-bottom:12px;"></select>
+
+    <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">CSV de partidos de Stadium</label>
+    <input id="bfFile" type="file" accept=".csv,text/csv"
+      style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-size:12.5px;box-sizing:border-box;margin-bottom:14px;">
+
+    <button onclick="bfAnalizar()"
+      style="width:100%;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:9px;padding:10px;color:var(--accent);font-size:13.5px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">
+      Analizar
+    </button>
+
+    <div id="bfResumen" style="font-size:13px;margin-top:14px;"></div>
+
+    <button id="bfAplicar" onclick="bfAplicar()" style="display:none;width:100%;margin-top:12px;background:var(--grad);border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">
+      Aplicar
+    </button>
   </div>
 </div>
 
