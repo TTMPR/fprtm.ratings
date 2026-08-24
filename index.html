@@ -4588,7 +4588,9 @@ async function sbGet(table, params = '') {
 // partidos): excluyen filas con deleted_at. Si el SQL de soft delete aún no
 // se aplicó en Supabase (columna inexistente), cae al query sin filtro y el
 // borrado vuelve a ser duro — la app funciona en ambos estados.
-let _softDeleteReady = null;   // null = sin detectar · true/false tras 1ª consulta
+// Por tabla: si una no tiene la columna, las demás deben seguir filtrando.
+// Siendo global, un fallo en `partidos` hacía reaparecer los torneos borrados.
+const _softDeleteReady = {};   // tabla → true/false (ausente = sin detectar)
 
 // Como sbGet pero autenticado con el JWT de la sesión (no la anon key):
 // necesario para tablas cuya RLS exige el email del admin (ej. audit_log).
@@ -4620,15 +4622,15 @@ async function sbGetAuth(table, params = '') {
 }
 
 async function sbGetActive(table, params = '') {
-  if (_softDeleteReady === false) return sbGet(table, params);
+  if (_softDeleteReady[table] === false) return sbGet(table, params);
   try {
     const rows = await sbGet(table, params + (params ? '&' : '?') + 'deleted_at=is.null');
-    _softDeleteReady = true;
+    _softDeleteReady[table] = true;
     return rows;
   } catch (e) {
-    if (_softDeleteReady === null && /deleted_at/.test(e.message)) {
+    if (_softDeleteReady[table] === undefined && /deleted_at/.test(e.message)) {
       console.warn(`[soft-delete] columna deleted_at no existe en ${table} — corre sql/soft_delete_torneos.sql`);
-      _softDeleteReady = false;
+      _softDeleteReady[table] = false;
       return sbGet(table, params);
     }
     throw e;
@@ -8192,7 +8194,7 @@ async function confirmarBorrarTorneo() {
     // 3. Soft delete: marcar deleted_at (papelera 30 días) en vez de borrar.
     //    Si la columna aún no existe (sql/soft_delete_torneos.sql sin aplicar),
     //    cae al borrado duro original.
-    let softDeleted = _softDeleteReady !== false;
+    let softDeleted = _softDeleteReady['torneos'] !== false;
     if (softDeleted) {
       try {
         const ts = new Date().toISOString();
@@ -8221,7 +8223,14 @@ async function confirmarBorrarTorneo() {
       console.log('[borrarTorneo] Torneo eliminado exitosamente.');
     }
 
-    // 4. Actualizar UI
+    // 4. Comprobar que de verdad se fue: si sigue visible, decirlo en claro
+    //    en vez de cerrar el modal como si hubiera funcionado.
+    const quedan = await sbGetActive('torneos', `?id=eq.${torneoId}&select=id`);
+    if (quedan && quedan.length) {
+      throw new Error('El torneo sigue apareciendo tras el borrado. '
+        + 'Revisa los permisos (RLS) de la tabla torneos, o usa borrar_torneo.sql.');
+    }
+
     await loadPlayers();
     hideDeleteTorneoModal();
     await loadTorneosList();
