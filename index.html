@@ -3726,10 +3726,10 @@ Maria Lopez,Ana Torres,B</code>
         onmouseout="this.style.borderColor='rgba(204,0,12,0.3)';this.style.background='rgba(204,0,12,0.08)'">
         <span style="font-size:20px;flex-shrink:0;">🏓</span>
         <span style="flex:1;min-width:0;">
-          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Grupos, llaves y resultados en vivo</span>
-          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">Parte 2 en StadiumTT</span>
+          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Resultados del torneo</span>
+          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">Llaves y resultados finales en StadiumTT</span>
         </span>
-        <span style="color:#f87171;font-size:13px;font-weight:700;white-space:nowrap;">Ir al torneo →</span>
+        <span style="color:#f87171;font-size:13px;font-weight:700;white-space:nowrap;">Ver resultados →</span>
       </a>
     </div>
 
@@ -9741,34 +9741,6 @@ async function rejectClubChange(id) {
 }
 
 // ══════════════════════════════════════════
-// Clave propia de la Parte 2: quien cerró el aviso de la Parte 1 debe ver este
-const STADIUM_POPUP_KEY = 'stadiumPopupSeen_cidra2026_p2';
-
-// Se muestra una vez por día para no fastidiar a quien vuelve a entrar
-function maybeShowStadiumPopup() {
-  const today = new Date().toISOString().slice(0, 10);
-  let seen = null;
-  try { seen = localStorage.getItem(STADIUM_POPUP_KEY); } catch (_) {}
-  if (seen === today) return false;
-  setTimeout(() => {
-    const el = document.getElementById('stadiumPopup');
-    if (!el) return;
-    el.style.display = 'flex';
-    try { localStorage.setItem(STADIUM_POPUP_KEY, today); } catch (_) {}
-    document.addEventListener('keydown', _stadiumEsc);
-  }, 800);
-  return true;
-}
-
-function _stadiumEsc(e) { if (e.key === 'Escape') closeStadiumPopup(); }
-
-function closeStadiumPopup() {
-  const el = document.getElementById('stadiumPopup');
-  if (el) el.style.display = 'none';
-  document.removeEventListener('keydown', _stadiumEsc);
-  showWaAnnouncement(500);   // el aviso de WhatsApp entra después
-}
-
 function showWaAnnouncement(delay = 400) {
   setTimeout(() => {
     const el = document.getElementById('waChannelAnnouncement');
@@ -9780,12 +9752,10 @@ function showWaAnnouncement(delay = 400) {
 // INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
-  // ── "El torneo se juega en StadiumTT" — una vez al día ──
-  // Va primero; el aviso de WhatsApp espera a que se cierre para no deslizarse
-  // por detrás del modal.
+  // ── Aviso del canal de WhatsApp ──
   document.querySelectorAll('[data-stadium-link]')
     .forEach(a => a.setAttribute('href', TORNEO_STADIUM_URL));
-  if (!maybeShowStadiumPopup()) showWaAnnouncement(1200);
+  showWaAnnouncement(1200);
 
   // ── Sello de versión (detecta un index.html cacheado tras un deploy) ──
   const _vs = document.getElementById('appVersionStamp');
@@ -14854,50 +14824,6 @@ async function submitPublicReg() {
         <span style="color:var(--muted);font-size:12px;font-weight:700;">&darr; CSV</span>
       </button>
     </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     POP-UP: LA PARTE 2 SE JUEGA EN STADIUMTT
-═══════════════════════════════════════════ -->
-<div id="stadiumPopup" role="dialog" aria-modal="true" aria-labelledby="stadiumPopupTitle"
-  style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.85);
-         align-items:center;justify-content:center;padding:18px;">
-  <div style="background:#f5f7f6;border-radius:20px;max-width:400px;width:100%;
-              padding:26px 24px 22px;text-align:center;position:relative;
-              box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:stadiumPop .3s ease;">
-    <style>@keyframes stadiumPop{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:none}}</style>
-    <button onclick="closeStadiumPopup()" aria-label="Cerrar"
-      style="position:absolute;top:10px;right:12px;background:none;border:none;
-             color:#8d9599;font-size:22px;line-height:1;cursor:pointer;padding:4px;">&times;</button>
-
-    <img src="Logo_Cidra_Open_2026.png" alt="Cidra Open 2026"
-         style="width:100%;max-width:250px;height:auto;margin:4px auto 14px;display:block;"
-         onerror="this.style.display='none'">
-
-    <div style="display:inline-block;background:rgba(23,125,90,0.12);border:1px solid rgba(23,125,90,0.35);
-                border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;color:#177d5a;
-                margin-bottom:10px;">PARTE 2 &middot; 22 Y 23 DE AGOSTO</div>
-
-    <div id="stadiumPopupTitle" style="font-size:17px;font-weight:800;color:#232323;line-height:1.3;margin-bottom:8px;">
-      El torneo se juega en StadiumTT
-    </div>
-    <p style="font-size:13.5px;color:#4b5257;line-height:1.6;margin:0 0 18px;">
-      Grupos, llaves y resultados en vivo se manejan allí.
-      Tu inscripción ya está registrada aquí — no tienes que inscribirte de nuevo.
-    </p>
-
-    <a data-stadium-link href="#" target="_blank" rel="noopener" onclick="closeStadiumPopup()"
-       style="display:block;background:#cc000c;color:#fff;text-decoration:none;
-              padding:14px;border-radius:12px;font-size:15px;font-weight:700;
-              letter-spacing:.03em;margin-bottom:10px;">
-      Ir al torneo &rarr;
-    </a>
-    <button onclick="closeStadiumPopup()"
-      style="background:none;border:none;color:#6b7280;font-size:13px;cursor:pointer;
-             padding:6px;font-family:'Inter',sans-serif;">
-      Seguir en esta página
-    </button>
   </div>
 </div>
 
