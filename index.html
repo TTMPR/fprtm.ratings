@@ -2282,8 +2282,12 @@
           <input type="text" id="subirTorneoNombre" placeholder="Ej: Cidra Open 2026">
         </div>
         <div class="edit-field">
-          <label>Categoría *</label>
-          <input type="text" id="subirCategoria" placeholder="Ej: 1800 Under, 11U Masculino, Sub21 Abierto…">
+          <label>Categoría <span style="color:var(--muted);font-weight:400;">(opcional)</span></label>
+          <input type="text" id="subirCategoria" placeholder="Déjalo vacío si el CSV trae la columna del evento">
+          <div style="font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5;">
+            El CSV de Stadium trae todos los eventos juntos y la categoría se detecta por partido.
+            Solo llena este campo si tu archivo es de una sola categoría y no incluye esa columna.
+          </div>
         </div>
         <div class="edit-field">
           <label>Fecha del torneo *</label>
@@ -6521,6 +6525,27 @@ function buildDatalist() {
 // ══════════════════════════════════════════
 // SUBIR RESULTADOS — flujo 2 pasos
 // ══════════════════════════════════════════
+// Convierte el valor de la columna de evento de Stadium ("1700U", "13U - Femenino",
+// o un stadiumId) al nombre de categoría que usamos. Si no lo reconoce devuelve
+// el valor tal cual, para no perder la información.
+function catDesdeEvento(raw) {
+  const v = String(raw || '').trim();
+  if (!v) return null;
+  const norm = t => String(t).toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '');
+  // Stadium a veces nombra el evento en dos idiomas ("Open Singles (Abierto)"),
+  // así que probamos el texto completo, sin paréntesis y lo de adentro.
+  const dentro = (v.match(/\(([^)]*)\)/) || [])[1] || '';
+  const claves = [v, v.replace(/\([^)]*\)/g, ''), dentro].map(norm).filter(Boolean);
+  const hit = INSC_CATEGORIES.find(c => {
+    const suyas = [c.stadiumId, c.name, String(c.name).replace(/\([^)]*\)/g, '')]
+      .filter(Boolean).map(norm);
+    return claves.some(k => suyas.includes(k));
+  });
+  return hit ? hit.name : v;
+}
+
 let subirCsvRows = [];   // parsed rows from the uploaded CSV
 let subirPending = [];   // computed pendingResults for subirPage
 
@@ -6533,11 +6558,6 @@ function subirPaso2() {
   if (!nombre) {
     msgEl.style.color = 'var(--red)';
     msgEl.textContent = 'El nombre del torneo es requerido.';
-    return;
-  }
-  if (!categoria) {
-    msgEl.style.color = 'var(--red)';
-    msgEl.textContent = 'La categoría es requerida.';
     return;
   }
   if (!fecha) {
@@ -6619,6 +6639,10 @@ function subirLoadFile(file) {
       const iWin  = col('winnerMembershipIds');
       const iLos  = col('loserMembershipIds');
       const iDesc = col('description');
+      // Stadium exporta todos los eventos en un mismo archivo; la columna del
+      // evento permite separar por categoría sin subir un CSV por cada una.
+      const iEvt = ['eventName','event','eventTitle','eventId','division','category','categoria']
+        .map(n => col(n)).find(ix => ix >= 0) ?? -1;
 
       subirCsvRows = [];
       for (let i = 1; i < lines.length; i++) {
@@ -6638,7 +6662,8 @@ function subirLoadFile(file) {
         // Winner is always pA; check description for retired/walkover
         const desc = iDesc >= 0 ? (parts[iDesc] || '') : '';
         const retired = /retired|retir|walkover|w\/o/i.test(desc);
-        subirCsvRows.push({ pA: `#${membW}`, pB: `#${membL}`, win: 'A', retired });
+        const cat = iEvt >= 0 ? catDesdeEvento(parts[iEvt]) : null;
+        subirCsvRows.push({ pA: `#${membW}`, pB: `#${membL}`, win: 'A', retired, cat });
       }
     } else {
       // ── Legacy simple format: playerA, playerB, A/B ──
@@ -6664,7 +6689,17 @@ function subirLoadFile(file) {
             ${skippedRows.map(r => `<div style="margin-top:4px;font-family:'Orbitron',monospace;">${r}</div>`).join('')}
            </div>`
         : '';
-      st.innerHTML = `✓ ${subirCsvRows.length} partido${subirCsvRows.length !== 1 ? 's' : ''} detectado${subirCsvRows.length !== 1 ? 's' : ''} en "${file.name}"${isStadium ? ' (formato Stadium Compete)' : ''}${skippedHtml}`;
+      // Desglose por categoría, para verificar antes de procesar
+      const porCat = {};
+      subirCsvRows.forEach(r => { const k = r.cat || '(sin categoría)'; porCat[k] = (porCat[k] || 0) + 1; });
+      const cats = Object.entries(porCat).sort((a, b) => b[1] - a[1]);
+      const catsHtml = (cats.length > 1 || (cats.length === 1 && cats[0][0] !== '(sin categoría)'))
+        ? `<div style="margin-top:8px;font-size:12px;line-height:1.7;">
+             <strong>${cats.length} categoría${cats.length !== 1 ? 's' : ''} detectada${cats.length !== 1 ? 's' : ''}:</strong><br>
+             ${cats.map(([n, c]) => `• ${n} — ${c} partido${c !== 1 ? 's' : ''}`).join('<br>')}
+           </div>`
+        : '';
+      st.innerHTML = `✓ ${subirCsvRows.length} partido${subirCsvRows.length !== 1 ? 's' : ''} detectado${subirCsvRows.length !== 1 ? 's' : ''} en "${file.name}"${isStadium ? ' (formato Stadium Compete)' : ''}${catsHtml}${skippedHtml}`;
       document.getElementById('subirProcesarBtn').style.display = '';
     }
     document.getElementById('subirDropLabel').textContent = file.name;
@@ -6694,7 +6729,8 @@ function subirProcesarCsv() {
     subirPending.push({
       pA: pA.name, pB: pB.name, rA: pA.rating, rB: pB.rating,
       aGain, bGain, winner: row.win === 'A' ? pA.name : pB.name,
-      idA: pA.id, idB: pB.id, retired
+      idA: pA.id, idB: pB.id, retired,
+      ...(row.cat ? { cat: row.cat } : {})
     });
   }
 
@@ -6975,7 +7011,7 @@ async function draftPublicar() {
           rating_a_despues: r.rA + r.aGain,
           rating_b_despues: r.rB + r.bGain,
           fecha:            draft.torneo_fecha,
-          categoria:        draft.torneo_categoria || null,
+          categoria:        r.cat || draft.torneo_categoria || null,
         }));
         // Insert in batches of 100
         for (let i = 0; i < partidoRows.length; i += 100) {
@@ -7144,7 +7180,7 @@ async function resyncPartidosDraft(draftId, torneoIdsStr, btn) {
         rating_a_despues: r.rA + r.aGain,
         rating_b_despues: r.rB + r.bGain,
         fecha:            draft.torneo_fecha,
-        categoria:        draft.torneo_categoria || null,
+        categoria:        r.cat || draft.torneo_categoria || null,
       };
     });
 
@@ -7233,7 +7269,7 @@ async function subirApplyRatings() {
           rating_a_despues: r.rA + r.aGain,
           rating_b_despues: r.rB + r.bGain,
           fecha,
-          categoria:        categoria || null,
+          categoria:        r.cat || categoria || null,
           ...(r.retired ? { notas: 'retired' } : {})
         });
       } catch(e) { console.warn('Error guardando partido:', e.message); }
