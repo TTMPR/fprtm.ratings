@@ -2325,9 +2325,14 @@
              ondragleave="this.classList.remove('drag-over')"
              ondrop="subirHandleDrop(event)">
           <div class="upload-icon">📂</div>
-          <div class="upload-label" id="subirDropLabel">Arrastra tu CSV aquí o haz clic para seleccionar</div>
+          <div class="upload-label" id="subirDropLabel">Arrastra tus CSV aquí o haz clic para seleccionar</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5;">
+            Puedes soltar <strong>varios archivos a la vez</strong>. Si el torneo se jugó en
+            varios fines de semana, súbelos todos juntos: los puntos se calculan contra el
+            rating con que el jugador llegó al torneo.
+          </div>
           <div class="upload-hint">Formato: Jugador A, Jugador B, Ganador (A o B)</div>
-          <input type="file" id="subirFileInput" accept=".csv,.txt" style="display:none" onchange="subirHandleFile(event)">
+          <input type="file" id="subirFileInput" accept=".csv,.txt" multiple style="display:none" onchange="subirHandleFile(event)">
         </div>
 
         <div id="subirCsvStatus" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:13px"></div>
@@ -6663,21 +6668,35 @@ function subirBack() {
 }
 
 function subirHandleFile(event) {
-  const file = event.target.files[0];
-  if (file) subirLoadFile(file);
+  subirLoadFiles([...event.target.files]);
 }
 
 function subirHandleDrop(event) {
   event.preventDefault();
   document.getElementById('subirDropArea').classList.remove('drag-over');
-  const file = event.dataTransfer.files[0];
-  if (file) subirLoadFile(file);
+  subirLoadFiles([...event.dataTransfer.files]);
 }
 
-function subirLoadFile(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    const text  = e.target.result.trim();
+// Un torneo de varios fines de semana se exporta en varios CSV, pero los
+// puntos se calculan contra el rating con que el jugador LLEGÓ al torneo.
+// Por eso todos los archivos se unen en una sola tanda: subirlos por
+// separado haría que el segundo partiera de ratings ya modificados.
+async function subirLoadFiles(files) {
+  if (!files || !files.length) return;
+  const textos = await Promise.all(files.map(f => f.text()));
+  // Se conserva el encabezado del primero y se descarta el de los demás
+  const partes = textos.map((t, i) => {
+    const ls = t.trim().split(/\r?\n/).filter(l => l.trim());
+    return i === 0 ? ls : ls.slice(1);
+  });
+  subirLoadTexto(partes.flat().join('\n'),
+    files.length === 1 ? files[0].name : `${files.length} archivos`);
+}
+
+function subirLoadTexto(texto, nombreMostrado) {
+  const file = { name: nombreMostrado };
+  {
+    const text  = texto.trim();
     const lines = text.split(/\r?\n/).filter(l => l.trim());
     const st    = document.getElementById('subirCsvStatus');
     st.style.display = 'block';
@@ -6784,8 +6803,7 @@ function subirLoadFile(file) {
     }
     document.getElementById('subirDropLabel').textContent = file.name;
     document.getElementById('subirResult').classList.remove('show');
-  };
-  reader.readAsText(file, 'UTF-8');
+  }
 }
 
 function subirProcesarCsv() {
