@@ -4626,18 +4626,36 @@ async function sbGetAuth(table, params = '') {
   }
 }
 
+// Borrador (Fase: publish/unpublish). El admin ve todo; el público solo lo
+// publicado. Igual que con deleted_at, si la columna no existe la app sigue
+// funcionando como antes.
+const _publicadoReady = {};   // tabla → true/false (ausente = sin detectar)
+
 async function sbGetActive(table, params = '') {
-  if (_softDeleteReady[table] === false) return sbGet(table, params);
+  const filtros = [];
+  if (_softDeleteReady[table] !== false) filtros.push('deleted_at=is.null');
+  if (!isAdmin() && _publicadoReady[table] !== false) filtros.push('publicado=is.true');
+
+  const conFiltros = filtros.length
+    ? params + (params ? '&' : '?') + filtros.join('&')
+    : params;
   try {
-    const rows = await sbGet(table, params + (params ? '&' : '?') + 'deleted_at=is.null');
-    _softDeleteReady[table] = true;
+    const rows = await sbGet(table, conFiltros);
+    if (_softDeleteReady[table] === undefined) _softDeleteReady[table] = true;
+    if (!isAdmin() && _publicadoReady[table] === undefined) _publicadoReady[table] = true;
     return rows;
   } catch (e) {
+    // Reintenta sin la columna que falte, y recuerda cuál para no repetirlo
+    let reintentar = false;
     if (_softDeleteReady[table] === undefined && /deleted_at/.test(e.message)) {
-      console.warn(`[soft-delete] columna deleted_at no existe en ${table} — corre sql/soft_delete_torneos.sql`);
-      _softDeleteReady[table] = false;
-      return sbGet(table, params);
+      console.warn(`[soft-delete] falta deleted_at en ${table} — corre sql/soft_delete_torneos.sql`);
+      _softDeleteReady[table] = false; reintentar = true;
     }
+    if (_publicadoReady[table] === undefined && /publicado/.test(e.message)) {
+      console.warn(`[borrador] falta publicado en ${table} — corre add_publicado_torneos.sql`);
+      _publicadoReady[table] = false; reintentar = true;
+    }
+    if (reintentar) return sbGetActive(table, params);
     throw e;
   }
 }
@@ -7129,6 +7147,10 @@ async function draftPublicar() {
           if (rErr) historialErrors.push(`resultados_evento[${i}]: ${rErr.message}`);
         }
       }
+
+      // Nace en borrador: solo el admin lo ve hasta darle "Publicar" en
+      // Torneos. Los ratings sí quedan aplicados en este paso.
+      if (torneoId) await marcarBorrador(torneoId);
     }
   } catch(e) { historialErrors.push(`historial: ${e.message}`); }
 
@@ -7147,7 +7169,8 @@ async function draftPublicar() {
     btn.textContent = '✓ Publicar Ratings';
     btn.disabled = false;
   } else {
-    let successMsg = `✓ ${applied} ratings publicados correctamente.`;
+    let successMsg = `✓ ${applied} ratings publicados correctamente.`
+      + ' El torneo quedó en BORRADOR: revísalo en Torneos y dale “Publicar” cuando esté listo.';
     if (historialErrors.length) {
       successMsg += ` ⚠ Historial parcial: ${historialErrors.join('; ')}`;
     }
@@ -8160,6 +8183,51 @@ async function saveEditTorneo() {
 // ══════════════════════════════════════════
 let _deleteTorneoId = null;
 
+// Deja un torneo recién creado en borrador. Silencioso si la columna aún no
+// existe: la app sigue funcionando como antes de add_publicado_torneos.sql.
+async function marcarBorrador(torneoId) {
+  for (const [tabla, col] of [['partidos', 'torneo_id'], ['resultados_evento', 'id_torneo'], ['torneos', 'id']]) {
+    try { await sbPatch(tabla, `${col}=eq.${torneoId}`, { publicado: false }); }
+    catch (e) {
+      if (/publicado/.test(e.message)) { console.warn('[borrador] falta la columna publicado — corre add_publicado_torneos.sql'); return; }
+      console.warn(`[borrador] ${tabla}: ${e.message}`);
+    }
+  }
+}
+
+// Publicar / despublicar un torneo. La bandera se aplica también a sus
+// partidos y snapshots: si solo se ocultara el torneo, sus partidos seguirían
+// apareciendo en los perfiles de los jugadores.
+async function togglePublicado(ids, publicar) {
+  if (!isAdmin()) { showLogin(); return; }
+  const lista = Array.isArray(ids) ? ids : [ids];
+  const filtro = lista.length === 1 ? `eq.${lista[0]}` : `in.(${lista.join(',')})`;
+  const val = !!publicar;
+  const accion = val ? 'Publicar' : 'Despublicar';
+  if (!confirm(`${accion} este torneo?\n\n`
+    + (val ? 'Quedará visible para todo el público, incluidos sus partidos en los perfiles.'
+           : 'Solo tú lo verás. Desaparece de Torneos y sus partidos dejan de contar en los perfiles.'))) return;
+  try {
+    // partidos y resultados_evento pueden no tener la columna todavía
+    for (const [tabla, col] of [['partidos', 'torneo_id'], ['resultados_evento', 'id_torneo']]) {
+      try { await sbPatch(tabla, `${col}=${filtro}`, { publicado: val }); }
+      catch (e) { if (!/publicado/.test(e.message)) throw e; }
+    }
+    await sbPatch('torneos', `id=${filtro}`, { publicado: val });
+
+    // Comprobar: sin política de UPDATE la RLS deja el cambio en cero filas
+    const check = await sbGet('torneos', `?id=${filtro}&select=id,publicado`);
+    if (check.some(t => t.publicado !== val)) {
+      throw new Error('La base no aceptó el cambio. Corre fix_rls_torneos_borrar.sql '
+        + '(falta la política de UPDATE) y add_publicado_torneos.sql.');
+    }
+    _evPartidos = null;
+    await loadTorneosList();
+  } catch (e) {
+    alert('No se pudo ' + accion.toLowerCase() + ': ' + e.message);
+  }
+}
+
 function showDeleteTorneoModal(torneoId) {
   if (!isAdmin()) { showLogin(); return; }
   const t = allTorneos.find(x => x.id == torneoId);
@@ -8434,7 +8502,7 @@ async function loadTorneosList() {
   if (!grid) return;
   grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando torneos...</div>';
   try {
-    allTorneos = await sbGetActive('torneos', '?select=id,nombre,fecha&order=fecha.desc&limit=200');
+    allTorneos = await sbGetActive('torneos', '?select=id,nombre,fecha,publicado&order=fecha.desc&limit=200');
     // Fetch participant IDs to compute unique player counts per torneo
     let playersByTorneo = {};  // id_torneo -> Set of id_jugador
     try {
@@ -8462,6 +8530,8 @@ async function loadTorneosList() {
         groupMap[baseName] = g;
       }
       groupMap[baseName].ids.push(t.id);
+      // Basta con que una parte esté en borrador para que el grupo lo esté
+      if (t.publicado === false) groupMap[baseName].borrador = true;
       // Keep the earliest fecha as the group date
       if (t.fecha && (!groupMap[baseName].fecha || t.fecha < groupMap[baseName].fecha))
         groupMap[baseName].fecha = t.fecha;
@@ -8477,16 +8547,23 @@ async function loadTorneosList() {
         : '—';
       const catBadge   = g.ids.length > 1
         ? ` &nbsp;·&nbsp; <span style="font-size:11px;color:var(--muted);font-family:'Orbitron',monospace">${g.ids.length} categorías</span>` : '';
-      const adminBtns = isAdmin() && g.ids.length === 1 ? `
+      const pubBtn = isAdmin() ? `
+          <button class="torneo-admin-btn" title="${g.borrador ? 'Publicar: hacerlo visible al público' : 'Despublicar: dejarlo solo visible para ti'}"
+            style="border-color:${g.borrador ? 'rgba(34,197,94,0.45)' : 'rgba(245,158,11,0.45)'};color:${g.borrador ? '#4ade80' : '#f59e0b'};"
+            onclick="togglePublicado(${JSON.stringify(g.ids)}, ${g.borrador ? 'true' : 'false'})">
+            ${g.borrador ? '👁 Publicar' : '🚫 Despublicar'}</button>` : '';
+      const adminBtns = isAdmin() ? `
         <div class="torneo-admin-actions" onclick="event.stopPropagation()">
+          ${pubBtn}
+          ${g.ids.length === 1 ? `
           <button class="torneo-admin-btn edit" title="Editar torneo"
             onclick="showEditTorneoModal(${g.ids[0]})">✏️</button>
           <button class="torneo-admin-btn del" title="Borrar torneo"
-            onclick="showDeleteTorneoModal(${g.ids[0]})">🗑️</button>
+            onclick="showDeleteTorneoModal(${g.ids[0]})">🗑️</button>` : ''}
         </div>` : `<div style="color:var(--muted);font-size:20px;margin-top:4px">›</div>`;
       return `<div class="torneo-card" onclick="openTorneoEvento(${JSON.stringify(g.ids)},'${safeNombre}','${g.fecha || ''}')">
         <div class="torneo-card-left">
-          <div class="torneo-card-name">${g.baseName}</div>
+          <div class="torneo-card-name">${g.baseName}${g.borrador ? ` <span style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#f59e0b;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);border-radius:20px;padding:2px 9px;vertical-align:middle;white-space:nowrap;">BORRADOR</span>` : ''}</div>
           <div class="torneo-card-date">📅 ${fechaFmt}${catBadge}</div>
         </div>
         <div class="torneo-card-right">
