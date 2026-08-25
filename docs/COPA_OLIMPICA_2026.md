@@ -54,6 +54,7 @@ Mientras estén cerradas, el admin igual ve el formulario (con un aviso de
 | **Abono parcial protege** | Cualquier monto > 0 evita que la reserva expire sola. |
 | **Lista de espera** | División llena → el equipo entra igual, en espera, y **no paga** hasta tener cupo. |
 | **Invitado sin rating** | El equipo queda en *"división por asignar"* y no ocupa cupo de nadie hasta que el admin le asigne una. |
+| **Cupo sin pareja** | Solo División 1 y solo con rating 2000+. Ocupa cupo desde que se compra. Ver sección 5. |
 | **Precio fijo** | Sin recargo por no tener membresía. |
 
 Divisiones: **D1** 3800+ · $100 · 12 equipos — **D2** 3400–3799 · $80 · 20
@@ -84,10 +85,14 @@ venciendo en menos de 24 horas**. Ese es el número que hay que atender.
 | **⏱ +48 h** | Extiende la reserva de alguien que avisó que va a pagar. |
 | **🎯 Asignar división** | Solo para equipos con invitado sin rating. Fija división y costo; si está llena, ofrece lista de espera. |
 | **✕ Cancelar** | Libera el cupo y promueve de inmediato al primero en espera. |
+| **⚖️ Aprobar / ⬇ Bajar** | Solo en equipos en revisión técnica: la Dirección Técnica decide si acepta la excepción o baja al equipo ajustando el costo. |
+| **🎫 Liberar y dar crédito** | Para el que compró cupo y nunca nombró compañero: libera el cupo y registra el dinero como crédito. |
 | **⟳ Liberar cupos vencidos** | Expira reservas vencidas sin pago y sube la lista de espera. Corre sola en cada inscripción nueva; el botón es para forzarla. |
 | **⬇ CSV** | Todos los equipos con contacto, montos y referencias. |
 
-**Filtro "🔥 Reserva por vencer (24 h)"**: la lista de a quién llamar hoy.
+**Filtro "🔥 Reserva por vencer (24 h)"**: la lista de a quién llamar hoy. La
+insignia de la tarjeta cuenta esas reservas **más** los equipos parados en
+revisión técnica esperando decisión.
 
 ### Conciliar pagos de ATH Móvil
 
@@ -117,7 +122,47 @@ próxima vez que corra "Liberar cupos".
 
 ---
 
-## 5. Tablón "Busco Compañero"
+## 5. Comprar cupo sin tener pareja (División 1)
+
+Un jugador fuerte que quiere asegurar su sitio antes de tener con quién jugar
+puede **comprar el cupo y nombrar al compañero después**.
+
+| Regla | Valor |
+|---|---|
+| Divisiones que lo admiten | Solo **División 1** |
+| Rating mínimo del solicitante | **2000** — verificado contra la base, no contra lo que mande el navegador |
+| Si la división está llena | No se puede reservar (no hay lista de espera para un cupo sin pareja) |
+| Plazo de pago | El mismo de siempre: 48 h o el cupo vuelve al torneo |
+| Plazo para nombrar compañero | Hasta el cierre |
+
+Aparece solo a quien califica: en el encasillado del Jugador 2, cuando el
+Jugador 1 ya está escogido, su rating pasa de 2000 y queda cupo en D1.
+
+**Lo que compra es el cupo, no la división.** Cuando nombra a su compañero:
+
+- **Combinado ≥ 3800** → el equipo queda normal, en División 1.
+- **Combinado < 3800** (o el compañero es un invitado sin rating) → el equipo
+  pasa a **revisión técnica**. Ni sube ni baja solo: es dinero ya cobrado, así
+  que decide la Dirección Técnica desde el panel.
+  - **⚖️ Aprobar excepción** — se queda en División 1 tal cual.
+  - **⬇ Bajar de división** — va a la que le toca por rating combinado, se
+    ajusta el costo y el panel te dice cuánto devolverle. Si la división de
+    destino está llena, queda en lista de espera. El cupo que suelta en D1
+    pasa de inmediato al primero en espera.
+
+**Si llega el cierre sin compañero:** botón **🎫 Liberar y dar crédito** en el
+panel. El cupo vuelve al torneo (entra el primero de la lista de espera) y lo
+pagado queda registrado como crédito a favor del jugador, visible en el panel
+y en el CSV.
+
+> Quien compra cupo **sí puede publicar en "Busco Compañero"** — es quien más
+> lo necesita. Su anuncio lleva una insignia *"Ya tiene cupo en División 1"*,
+> que es el mejor argumento posible para que alguien se le una. La pantalla de
+> confirmación de la reserva le ofrece publicar de una vez.
+
+---
+
+## 6. Tablón "Busco Compañero"
 
 Tercera pestaña, junto a *Inscribirse* y *Ver Inscritos*. Quien no tiene
 pareja publica que busca, y los demás lo ven y le escriben directo.
@@ -178,7 +223,7 @@ anuncio abusivo o duplicado, y reactivarlo.
 
 ---
 
-## 6. Lo que todavía no está
+## 7. Lo que todavía no está
 
 - **Export a Stadium Compete.** Stadium no importa equipos; el torneo se
   cargaría con el truco de dobles (`"Nombre / Nombre"` como una sola entrada,
@@ -192,7 +237,7 @@ anuncio abusivo o duplicado, y reactivarlo.
 
 ---
 
-## 7. Volver a un torneo individual
+## 8. Volver a un torneo individual
 
 El flujo individual por categorías (Cidra, Morovis) sigue intacto en el
 código, solo apagado. Para el próximo torneo de ese tipo:

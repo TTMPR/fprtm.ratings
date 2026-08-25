@@ -3130,10 +3130,12 @@ Maria Lopez,Ana Torres,B</code>
         <option value="">Todos los estados</option>
         <option value="reservado">⏳ Reservados (falta pago)</option>
         <option value="confirmado">✓ Confirmados</option>
+        <option value="esperando_companero">🎟 Esperando compañero</option>
+        <option value="revision_tecnica">⚖️ Revisión técnica</option>
         <option value="lista_espera">📋 Lista de espera</option>
         <option value="pendiente_division">❓ División por asignar</option>
         <option value="vence">🔥 Reserva por vencer (24 h)</option>
-        <option value="expirado">✕ Expirados / cancelados</option>
+        <option value="expirado">✕ Expirados / cancelados / crédito</option>
       </select>
       <button onclick="copaAdminLiberar()" title="Expira reservas vencidas sin pago y promueve la lista de espera"
         style="background:rgba(245,158,11,0.14);border:1px solid rgba(245,158,11,0.42);border-radius:10px;color:#f59e0b;font-size:12.5px;font-weight:700;padding:9px 13px;cursor:pointer;font-family:'Inter',sans-serif;">⟳ Liberar cupos vencidos</button>
@@ -10820,7 +10822,7 @@ const esTorneoEquipos = () => TORNEO_MODO === 'equipos';
 // la tabla, así que la federación puede ajustar cupos sin tocar el código.
 let COPA_DIVISIONES = [
   { division: 'div1', nombre: 'División 1', ratingMin: 3800, ratingMax: null, precio: 100, maxEquipos: 12,
-    premios: '$600 · $500 · $400', orden: 1 },
+    premios: '$600 · $500 · $400', orden: 1, permiteReservaSolo: true, reservaRatingMin: 2000 },
   { division: 'div2', nombre: 'División 2', ratingMin: 3400, ratingMax: 3799, precio:  80, maxEquipos: 20,
     premios: '$350 · $300 · $250', orden: 2 },
   { division: 'div3', nombre: 'División 3', ratingMin: null, ratingMax: 3399, precio:  70, maxEquipos: 32,
@@ -12089,6 +12091,13 @@ const copaState = {
   comp:  { player: null, invitado: '', timer: null },
   cupos: null,      // división → fila de insc_equipos_cupos
   enviando: false,
+  // El formulario hace tres cosas distintas según quién lo llene:
+  //   'equipo'  → inscribir una pareja completa (el caso normal)
+  //   'reserva' → comprar un cupo sin pareja todavía
+  //   'nombrar' → el dueño de un cupo comprado nombra a su compañero
+  modo: 'equipo',
+  cuposSolos: {},   // member_id del capitán → fila del cupo que ya compró
+  cupoPropio: null, // el cupo del capitán seleccionado, si tiene uno
 };
 
 const COPA_ROLES = { cap: 'Jugador 1', comp: 'Jugador 2' };
@@ -12107,6 +12116,8 @@ async function copaCargarConfig() {
         ratingMin: r.rating_min, ratingMax: r.rating_max,
         precio: Number(r.precio), maxEquipos: r.max_equipos,
         premios: premios[r.division] || '', orden: r.orden,
+        permiteReservaSolo: !!r.permite_reserva_solo,
+        reservaRatingMin: r.reserva_rating_min,
       }));
     }
   } catch (e) { /* nos quedamos con la copia local */ }
@@ -12129,7 +12140,47 @@ async function copaCargarCupos() {
   } catch (e) {
     copaState.cupos = null;   // sin datos: la pantalla no promete cupos que no puede verificar
   }
+
+  // Cupos comprados que aún esperan compañero: con esto reconocemos al dueño
+  // cuando vuelve al formulario a nombrar a su pareja.
+  try {
+    const solos = await sbGet('insc_equipos_publico',
+      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&estado=eq.esperando_companero`
+      + `&select=id,division,cap_member_id,cap_nombre,cap_rating`);
+    copaState.cuposSolos = Object.fromEntries(
+      (solos || []).filter(r => r.cap_member_id != null)
+                   .map(r => [String(r.cap_member_id), r]));
+  } catch (e) { copaState.cuposSolos = {}; }
+
   copaRenderCupos();
+}
+
+// ── Reserva de cupo sin pareja ─────────────────────────────────────────────
+// La división que la admite y el rating mínimo salen de la config; el
+// servidor los vuelve a verificar contra el rating federativo.
+function copaDivisionReservable() {
+  return COPA_DIVISIONES.find(d => d.permiteReservaSolo) || null;
+}
+
+function copaPuedeReservar() {
+  const d = copaDivisionReservable();
+  const p = copaState.cap.player;
+  if (!d || !p || copaState.comp.player || copaState.comp.invitado) return null;
+  if (p.rating == null || (d.reservaRatingMin != null && p.rating < d.reservaRatingMin)) return null;
+  const c = copaCuposDe(d.division);
+  if (c && Number(c.ocupados) >= c.max_equipos) return null;   // llena: nada que reservar
+  return d;
+}
+
+// ¿El capitán escogido ya compró un cupo y viene a nombrar compañero?
+function copaDetectarCupo() {
+  const p = copaState.cap.player;
+  copaState.cupoPropio = p ? (copaState.cuposSolos[String(p.id)] || null) : null;
+  if (copaState.cupoPropio) {
+    copaState.modo = 'nombrar';
+  } else if (copaState.modo === 'nombrar') {
+    copaState.modo = 'equipo';
+  }
 }
 
 function copaCuposDe(division) {
@@ -12178,6 +12229,21 @@ function copaRenderSlot(rol) {
   const host = document.getElementById(`copaSlot_${rol}`);
   if (!host) return;
   const st = copaState[rol];
+
+  // Modo reserva: el encasillado 2 no se llena — se llenará más adelante
+  if (rol === 'comp' && copaState.modo === 'reserva') {
+    const d = copaDivisionReservable();
+    host.innerHTML = `<div style="display:flex;align-items:center;gap:12px;background:rgba(250,204,21,0.07);border:1px dashed rgba(250,204,21,0.42);border-radius:11px;padding:13px 15px;">
+      <span style="font-size:20px;flex-shrink:0;">🎟</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13.5px;font-weight:700;color:#facc15;line-height:1.35;">Por definir</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">Reservas el cupo en ${copaEsc(d?.nombre || '')} y nombras a tu compañero después</div>
+      </div>
+      <button type="button" onclick="copaSalirReserva()"
+        style="background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;font-weight:600;padding:6px 10px;cursor:pointer;flex-shrink:0;">Cancelar</button>
+    </div>`;
+    return;
+  }
 
   if (st.player || st.invitado) {
     const nombre  = st.player ? st.player.name : st.invitado;
@@ -12228,7 +12294,25 @@ function copaRenderSlot(rol) {
     <button type="button" onclick="copaMostrarInvitado('${rol}')" id="copaInvitadoBtn_${rol}"
       style="background:none;border:none;color:var(--muted);font-size:11.5px;text-decoration:underline;cursor:pointer;padding:8px 0 0;font-family:'Inter',sans-serif;">
       No aparece en la lista — es jugador invitado
-    </button>`;
+    </button>` + copaBotonReservar(rol);
+}
+
+// Solo se ofrece a quien de verdad puede: encasillado 2, capitán ya escogido,
+// rating por encima del mínimo y cupo libre en la división que lo admite.
+function copaBotonReservar(rol) {
+  if (rol !== 'comp') return '';
+  const d = copaPuedeReservar();
+  if (!d) return '';
+  return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+    <button type="button" onclick="copaModoReserva()"
+      style="width:100%;background:rgba(250,204,21,0.08);border:1px solid rgba(250,204,21,0.4);border-radius:10px;padding:11px 13px;color:#facc15;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;text-align:left;">
+      🎟 Todavía no tengo compañero — reservar mi cupo en ${copaEsc(d.nombre)}
+    </button>
+    <div style="font-size:11px;color:var(--muted);margin-top:7px;line-height:1.55;">
+      Pagas el cupo ahora y nombras a tu compañero antes del cierre. Tu rating
+      (${copaState.cap.player.rating}) supera el mínimo de ${d.reservaRatingMin} que pide la FPTM.
+    </div>
+  </div>`;
 }
 
 function copaEsc(t) {
@@ -12279,16 +12363,35 @@ function copaSeleccionar(rol, id) {
   if (!p) return;
   copaState[rol].player   = p;
   copaState[rol].invitado = '';
-  copaRenderSlot(rol);
+  if (rol === 'cap') copaDetectarCupo();
+  if (rol === 'comp' && copaState.modo === 'reserva') copaState.modo = 'equipo';
+  copaRenderSlots();
   copaRenderVeredicto();
 }
 
 function copaLimpiarSlot(rol) {
   copaState[rol].player   = null;
   copaState[rol].invitado = '';
-  copaRenderSlot(rol);
+  if (rol === 'cap') { copaState.cupoPropio = null; copaState.modo = 'equipo'; }
+  if (rol === 'comp' && copaState.modo === 'reserva') copaState.modo = 'equipo';
+  copaRenderSlots();
   copaRenderVeredicto();
   document.getElementById(`copaSearch_${rol}`)?.focus();
+}
+
+// "Todavía no tengo compañero" → el formulario pasa a comprar el cupo
+function copaModoReserva() {
+  copaState.comp.player = null;
+  copaState.comp.invitado = '';
+  copaState.modo = 'reserva';
+  copaRenderSlots();
+  copaRenderVeredicto();
+}
+
+function copaSalirReserva() {
+  copaState.modo = 'equipo';
+  copaRenderSlots();
+  copaRenderVeredicto();
 }
 
 function copaMostrarInvitado(rol) {
@@ -12330,6 +12433,72 @@ function copaRenderVeredicto() {
   const datos = document.getElementById('copaDatosEquipo');
   const regla = document.getElementById('copaReglamentoWrap');
   if (!host) return;
+
+  // ── Nombrar compañero de un cupo ya comprado ──
+  if (copaState.modo === 'nombrar') {
+    const cupo = copaState.cupoPropio;
+    const d    = COPA_DIVISIONES.find(x => x.division === cupo?.division);
+    const comp = copaState.comp.player;
+    const min  = d?.ratingMin;
+    const comb = (comp && cupo?.cap_rating != null && comp.rating != null)
+      ? cupo.cap_rating + comp.rating : null;
+    const califica = comb != null && (min == null || comb >= min);
+
+    if (datos) datos.style.display = 'none';
+    if (regla) regla.style.display = 'none';
+
+    host.innerHTML = `<div style="background:linear-gradient(150deg,rgba(250,204,21,0.09),rgba(56,189,248,0.05));border:1px solid rgba(250,204,21,0.35);border-radius:14px;padding:18px;">
+      <div style="font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#facc15;margin-bottom:5px;">Ya tienes cupo</div>
+      <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:800;color:var(--text);margin-bottom:9px;">${copaEsc(d?.nombre || 'Cupo reservado')}</div>
+      <div style="font-size:12.5px;color:var(--text);line-height:1.65;">
+        Compraste este cupo sin pareja. Escoge arriba a tu compañero/a y lo cerramos.
+      </div>
+      ${comp ? `<div style="margin-top:12px;background:rgba(0,0,0,0.2);border-radius:9px;padding:10px 13px;font-size:12.5px;color:var(--muted);">
+          ${cupo.cap_rating} + ${comp.rating ?? '—'} =
+          <strong style="font-family:'Orbitron',monospace;font-size:14px;color:var(--text);">${comb ?? '—'}</strong>
+          ${min != null ? ` · mínimo de la división: ${min}` : ''}
+        </div>
+        <div style="margin-top:10px;font-size:12px;font-weight:600;line-height:1.6;color:${califica ? 'var(--green)' : '#f59e0b'};">
+          ${califica
+            ? '✓ La pareja califica — al confirmar, tu equipo queda listo.'
+            : '⚠ La pareja no llega al mínimo de la división.<br><span style="font-weight:400;color:var(--muted);">Puedes someterlo igual: pasa a revisión de la Dirección Técnica, que decide si lo aprueba o lo baja de división ajustando el costo.</span>'}
+        </div>` : ''}
+    </div>`;
+    copaActualizarBoton();
+    return;
+  }
+
+  // ── Comprar cupo sin pareja ──
+  if (copaState.modo === 'reserva') {
+    const d = copaDivisionReservable();
+    const c = d ? copaCuposDe(d.division) : null;
+    const disp = c ? Math.max(0, c.max_equipos - Number(c.ocupados)) : null;
+    if (datos) datos.style.display = '';
+    if (regla) regla.style.display = '';
+
+    host.innerHTML = `<div style="background:linear-gradient(150deg,rgba(250,204,21,0.1),rgba(129,140,248,0.05));border:1px solid rgba(250,204,21,0.38);border-radius:14px;padding:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <div>
+          <div style="font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Reservas cupo en</div>
+          <div style="font-family:'Orbitron',monospace;font-size:19px;font-weight:800;color:var(--text);">${copaEsc(d?.nombre || '')}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Costo del equipo</div>
+          <div style="font-family:'Orbitron',monospace;font-size:22px;font-weight:800;color:#facc15;">$${(d?.precio ?? 0).toFixed(2)}</div>
+        </div>
+      </div>
+      ${disp != null ? `<div style="font-size:12px;color:${disp > 0 ? 'var(--green)' : '#ef4444'};font-weight:600;">${disp > 0 ? `✓ Quedan ${disp} de ${c.max_equipos} cupos` : '✕ División llena'}</div>` : ''}
+      <div style="font-size:11.5px;color:var(--muted);margin-top:11px;line-height:1.6;border-top:1px solid var(--border);padding-top:11px;">
+        <strong style="color:var(--text);">Lo que estás comprando es el cupo, no la división.</strong>
+        Si el compañero que nombres no llega a ${d?.ratingMin ?? '—'} combinado, la Dirección
+        Técnica decide si aprueba la excepción o baja al equipo de división y te devuelve la diferencia.
+        Si llega el cierre y nunca nombraste compañero, se libera el cupo y lo pagado te queda como
+        crédito para el próximo torneo.
+      </div>
+    </div>`;
+    copaActualizarBoton();
+    return;
+  }
 
   if (!copaEquipoListo()) {
     host.innerHTML = `<div style="background:rgba(255,255,255,0.02);border:1px dashed var(--border);border-radius:12px;padding:18px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.6;">
@@ -12413,6 +12582,17 @@ function copaRenderVeredicto() {
 
 // ── Botón de someter ───────────────────────────────────────────────────────
 function copaFaltante() {
+  if (copaState.modo === 'nombrar') {
+    if (!copaState.comp.player && !copaState.comp.invitado) return 'Escoge a tu compañero/a.';
+    return null;
+  }
+  if (copaState.modo === 'reserva') {
+    if (!copaState.cap.player)                                        return 'Escoge tu nombre.';
+    if (!(document.getElementById('copaEmail')?.value || '').trim())  return 'Falta el email de contacto.';
+    if (!(document.getElementById('copaTel')?.value || '').trim())    return 'Falta el teléfono de contacto.';
+    if (!document.getElementById('copaReglamentoCheck')?.checked)     return 'Debes aceptar el reglamento del torneo.';
+    return null;
+  }
   if (!copaEquipoListo())                                       return 'Escoge los dos jugadores del equipo.';
   const capId  = copaState.cap.player?.id;
   const compId = copaState.comp.player?.id;
@@ -12434,6 +12614,11 @@ function copaActualizarBoton() {
   btn.disabled       = !ok;
   btn.style.cursor   = ok ? 'pointer' : 'not-allowed';
   btn.style.opacity  = ok ? '1' : '0.4';
+  if (!copaState.enviando) {
+    btn.textContent = copaState.modo === 'reserva' ? 'Reservar mi Cupo →'
+                    : copaState.modo === 'nombrar' ? 'Confirmar Compañero →'
+                    : 'Inscribir Equipo →';
+  }
 }
 
 // ── Someter el equipo ──────────────────────────────────────────────────────
@@ -12441,6 +12626,9 @@ function copaActualizarBoton() {
 // inscribir_equipo(). Aquí solo evitamos viajes obviamente inútiles y
 // mostramos lo que responda el servidor.
 async function copaInscribirEquipo() {
+  if (copaState.modo === 'reserva') return copaReservarCupo();
+  if (copaState.modo === 'nombrar') return copaConfirmarCompanero();
+
   const msg = document.getElementById('copaFormMsg');
   const btn = document.getElementById('copaSubmitBtn');
   const falta = copaFaltante();
@@ -12489,6 +12677,90 @@ async function copaInscribirEquipo() {
   } finally {
     copaState.enviando = false;
     if (btn) btn.textContent = 'Inscribir Equipo →';
+    copaActualizarBoton();
+  }
+}
+
+// ── Comprar un cupo sin pareja ─────────────────────────────────────────────
+// El rating mínimo lo vuelve a comprobar reservar_cupo_solo() contra el rating
+// federativo: lo de esta pantalla es cortesía, no la barrera.
+async function copaReservarCupo() {
+  const msg = document.getElementById('copaFormMsg');
+  const btn = document.getElementById('copaSubmitBtn');
+  const falta = copaFaltante();
+  if (falta) { if (msg) msg.textContent = falta; return; }
+  if (copaState.enviando) return;
+
+  const d = copaDivisionReservable();
+  if (!d) { if (msg) msg.textContent = 'Ninguna división admite reservar cupo sin pareja.'; return; }
+
+  copaState.enviando = true;
+  copaActualizarBoton();
+  if (msg) msg.textContent = '';
+  if (btn) btn.textContent = 'Reservando...';
+
+  try {
+    const { data, error } = await _supabase.rpc('reservar_cupo_solo', {
+      p_torneo:        TORNEO_ACTIVO,
+      p_member_id:     copaState.cap.player.id,
+      p_nombre:        copaState.cap.player.name,
+      p_division:      d.division,
+      p_email:         (document.getElementById('copaEmail')?.value || '').trim() || null,
+      p_tel:           (document.getElementById('copaTel')?.value || '').trim() || null,
+      p_nombre_equipo: (document.getElementById('copaNombreEquipo')?.value || '').trim() || null,
+      p_club:          (document.getElementById('copaClub')?.value || '').trim() || null,
+    });
+    if (error) throw new Error(error.message);
+    if (!data || data.ok !== true) {
+      if (msg) msg.textContent = data?.error || 'No se pudo reservar el cupo.';
+      await copaCargarCupos();
+      copaRenderVeredicto();
+      return;
+    }
+    await copaCargarCupos();
+    copaMostrarExitoReserva(data);
+  } catch (e) {
+    if (msg) msg.textContent = 'Error al reservar: ' + e.message;
+  } finally {
+    copaState.enviando = false;
+    copaActualizarBoton();
+  }
+}
+
+// ── Nombrar al compañero de un cupo ya comprado ────────────────────────────
+async function copaConfirmarCompanero() {
+  const msg = document.getElementById('copaFormMsg');
+  const btn = document.getElementById('copaSubmitBtn');
+  const falta = copaFaltante();
+  if (falta) { if (msg) msg.textContent = falta; return; }
+  if (copaState.enviando) return;
+
+  copaState.enviando = true;
+  copaActualizarBoton();
+  if (msg) msg.textContent = '';
+  if (btn) btn.textContent = 'Confirmando...';
+
+  const comp = copaState.comp;
+  try {
+    const { data, error } = await _supabase.rpc('nombrar_companero', {
+      p_equipo_id:      copaState.cupoPropio.id,
+      p_torneo:         TORNEO_ACTIVO,
+      p_comp_member_id: comp.player?.id ?? null,
+      p_comp_nombre:    comp.player?.name ?? comp.invitado,
+      p_comp_invitado:  !comp.player,
+    });
+    if (error) throw new Error(error.message);
+    if (!data || data.ok !== true) {
+      if (msg) msg.textContent = data?.error || 'No se pudo confirmar el compañero.';
+      await copaCargarCupos();
+      return;
+    }
+    await copaCargarCupos();
+    copaMostrarExitoCompanero(data);
+  } catch (e) {
+    if (msg) msg.textContent = 'Error: ' + e.message;
+  } finally {
+    copaState.enviando = false;
     copaActualizarBoton();
   }
 }
@@ -12569,9 +12841,131 @@ function copaMostrarExito(res) {
   host.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// ── Éxito: cupo reservado sin pareja ───────────────────────────────────────
+function copaMostrarExitoReserva(res) {
+  const form = document.getElementById('copaFormWrap');
+  const host = document.getElementById('copaSuccessPanel');
+  if (!host) return;
+  if (form) form.style.display = 'none';
+
+  const costo = Number(res.costo) || 0;
+  const expiraTxt = res.reserva_expira
+    ? new Date(res.reserva_expira).toLocaleString('es-PR', {
+        weekday: 'long', day: 'numeric', month: 'long',
+        hour: 'numeric', minute: '2-digit', hour12: true,
+        timeZone: 'America/Puerto_Rico' })
+    : null;
+
+  host.style.display = '';
+  host.innerHTML = `
+    <div style="background:var(--card2);border:1px solid rgba(250,204,21,0.4);border-radius:16px;padding:28px 22px;text-align:center;margin-bottom:16px;">
+      <div style="font-size:44px;margin-bottom:10px;">🎟</div>
+      <div style="font-family:'Orbitron',monospace;font-size:20px;font-weight:800;color:#facc15;margin-bottom:10px;">Cupo reservado</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.65;">
+        Tienes uno de los cupos de <strong>${copaEsc(res.division_nombre)}</strong> a tu nombre.
+        Te falta nombrar a tu compañero/a antes del cierre.
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:15px;margin-top:18px;text-align:left;">
+        <div style="font-size:13.5px;font-weight:700;color:var(--text);">${copaEsc(copaState.cap.player.name)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">Rating ${res.rating} · quedan ${res.cupos_restantes} cupos en la división</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">Confirmación #${res.id}</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.32);border-radius:14px;padding:20px;margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;margin-bottom:8px;">Completa el pago</div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px;">
+        <span style="font-family:'Orbitron',monospace;font-size:30px;font-weight:800;color:var(--text);">$${costo.toFixed(2)}</span>
+        <span style="font-size:12px;color:var(--muted);">por el equipo</span>
+      </div>
+      ${expiraTxt ? `<div style="background:rgba(0,0,0,0.2);border-radius:9px;padding:10px 13px;font-size:12.5px;color:var(--text);line-height:1.6;margin-bottom:14px;">
+        ⏳ Tu cupo está reservado hasta el <strong style="color:#fb923c;">${expiraTxt}</strong>.
+        <span style="color:var(--muted);">Sin el pago, vuelve al torneo.</span>
+      </div>` : ''}
+      <a href="${COPA_ATH_URL}" target="_blank" rel="noopener"
+        style="display:block;background:var(--grad);border-radius:11px;padding:14px;text-align:center;text-decoration:none;color:#fff;font-size:15px;font-weight:800;">
+        Pagar $${costo.toFixed(2)} con ATH Móvil →
+      </a>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:11px;line-height:1.6;">
+        Envía a <strong style="color:var(--text);">ATH Business /fprtm</strong> e incluye
+        <strong style="color:var(--text);">"Copa #${res.id}"</strong> en el concepto.
+      </div>
+    </div>
+
+    <div style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.3);border-radius:13px;padding:16px 18px;margin-bottom:16px;font-size:12.5px;color:var(--text);line-height:1.7;">
+      <strong style="color:#a5b4fc;">Cuando consigas compañero/a</strong><br>
+      Vuelve a esta página, búscate en el encasillado 1 y el sistema reconocerá tu cupo
+      para que lo nombres. Si su rating combinado no llega a ${res.rating_min_division},
+      la Dirección Técnica decide si aprueba la excepción o baja al equipo de división
+      devolviéndote la diferencia.<br>
+      <span style="color:var(--muted);">Si llega el cierre sin compañero, se libera el cupo y lo pagado
+      te queda como crédito para el próximo torneo.</span>
+    </div>
+
+    <button type="button" onclick="copaIrABuscarCompanero()"
+      style="width:100%;background:var(--grad);border:none;border-radius:11px;padding:14px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:8px;">
+      📣 Publicar que busco compañero
+    </button>
+    <button type="button" onclick="copaNuevaInscripcion()"
+      style="width:100%;background:transparent;border:1px solid var(--border);border-radius:11px;padding:13px;color:var(--muted);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+      Volver al formulario
+    </button>`;
+  host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Del cupo comprado al tablón: es el camino natural y evita que el cupo muera
+// esperando a que alguien adivine que está disponible.
+function copaIrABuscarCompanero() {
+  inscSwitchTab('busca');
+  setTimeout(() => {
+    document.getElementById('buscaAbrirFormBtn')?.click();
+    document.getElementById('inscTabBusca')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 350);
+}
+
+// ── Éxito: compañero nombrado ──────────────────────────────────────────────
+function copaMostrarExitoCompanero(res) {
+  const form = document.getElementById('copaFormWrap');
+  const host = document.getElementById('copaSuccessPanel');
+  if (!host) return;
+  if (form) form.style.display = 'none';
+
+  const revision = res.estado === 'revision_tecnica';
+  const nombres = `${copaState.cap.player.name} / ${copaState.comp.player?.name ?? copaState.comp.invitado}`;
+
+  host.style.display = '';
+  host.innerHTML = `
+    <div style="background:var(--card2);border:1px solid ${revision ? 'rgba(245,158,11,0.4)' : 'rgba(34,197,94,0.35)'};border-radius:16px;padding:28px 22px;text-align:center;margin-bottom:16px;">
+      <div style="font-size:44px;margin-bottom:10px;">${revision ? '⚖️' : '✅'}</div>
+      <div style="font-family:'Orbitron',monospace;font-size:20px;font-weight:800;color:${revision ? '#f59e0b' : 'var(--green)'};margin-bottom:10px;">
+        ${revision ? 'En revisión técnica' : '¡Equipo completo!'}
+      </div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.65;">
+        ${revision
+          ? `El rating combinado (<strong>${res.rating_combinado}</strong>) no llega al mínimo de
+             ${copaEsc(res.division_nombre)} (${res.rating_min_division}). La Dirección Técnica
+             decidirá si aprueba la excepción o baja al equipo de división ajustando el costo,
+             y la FPTM te avisa.`
+          : `Tu equipo queda inscrito en <strong>${copaEsc(res.division_nombre)}</strong>.`}
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:15px;margin-top:18px;text-align:left;">
+        <div style="font-size:13.5px;font-weight:700;color:var(--text);line-height:1.5;">${copaEsc(nombres)}</div>
+        ${res.rating_combinado != null ? `<div style="font-size:12px;color:var(--muted);margin-top:5px;">Rating combinado: <strong style="font-family:'Orbitron',monospace;color:var(--accent);">${res.rating_combinado}</strong></div>` : ''}
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">Confirmación #${res.id}</div>
+      </div>
+    </div>
+    <button type="button" onclick="copaNuevaInscripcion()"
+      style="width:100%;background:transparent;border:1px solid var(--border);border-radius:11px;padding:13px;color:var(--muted);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+      Volver al formulario
+    </button>`;
+  host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function copaNuevaInscripcion() {
   copaState.cap  = { player: null, invitado: '', timer: null };
   copaState.comp = { player: null, invitado: '', timer: null };
+  copaState.modo = 'equipo';
+  copaState.cupoPropio = null;
   ['copaNombreEquipo', 'copaClub', 'copaEmail', 'copaTel'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
@@ -12795,13 +13189,18 @@ async function copaAdminCargar() {
 }
 
 const COPA_ESTADOS = {
-  reservado:          { txt: 'Reserva sin pago', color: '#f59e0b' },
-  confirmado:         { txt: 'Pagado',           color: 'var(--green)' },
-  lista_espera:       { txt: 'Lista de espera',  color: '#a5b4fc' },
-  pendiente_division: { txt: 'División por asignar', color: '#a5b4fc' },
-  expirado:           { txt: 'Expirado',         color: 'var(--muted)' },
-  cancelado:          { txt: 'Cancelado',        color: 'var(--muted)' },
+  reservado:           { txt: 'Reserva sin pago', color: '#f59e0b' },
+  confirmado:          { txt: 'Pagado',           color: 'var(--green)' },
+  esperando_companero: { txt: 'Esperando compañero', color: '#facc15' },
+  revision_tecnica:    { txt: 'Revisión técnica', color: '#fb923c' },
+  lista_espera:        { txt: 'Lista de espera',  color: '#a5b4fc' },
+  pendiente_division:  { txt: 'División por asignar', color: '#a5b4fc' },
+  expirado:            { txt: 'Expirado',         color: 'var(--muted)' },
+  cancelado:           { txt: 'Cancelado',        color: 'var(--muted)' },
+  credito:             { txt: 'Crédito a favor',  color: '#a5b4fc' },
 };
+
+const COPA_INACTIVOS = ['expirado', 'cancelado', 'credito'];
 
 const copaHorasRestantes = row => row.reserva_expira
   ? (new Date(row.reserva_expira) - Date.now()) / 3600000 : null;
@@ -12830,7 +13229,7 @@ function copaAdminRender() {
   }
 
   // ── Resumen financiero ──
-  const activos   = _copaAdminData.filter(r => !['expirado', 'cancelado'].includes(r.estado));
+  const activos   = _copaAdminData.filter(r => !COPA_INACTIVOS.includes(r.estado));
   const cobrado   = _copaAdminData.reduce((s, r) => s + (Number(r.monto_pagado) || 0), 0);
   const esperado  = activos.filter(r => r.estado !== 'lista_espera')
                            .reduce((s, r) => s + (Number(r.costo) || 0), 0);
@@ -12848,11 +13247,11 @@ function copaAdminRender() {
   let filas = _copaAdminData.filter(r => {
     if (filtro === 'vence') {
       const h = copaHorasRestantes(r);
-      return r.estado === 'reservado' && h !== null && h <= 24;
+      return ['reservado', 'esperando_companero'].includes(r.estado) && h !== null && h <= 24;
     }
-    if (filtro === 'expirado') return ['expirado', 'cancelado'].includes(r.estado);
+    if (filtro === 'expirado') return COPA_INACTIVOS.includes(r.estado);
     if (filtro)                return r.estado === filtro;
-    return !['expirado', 'cancelado'].includes(r.estado);
+    return !COPA_INACTIVOS.includes(r.estado);
   });
 
   if (q) {
@@ -12877,7 +13276,7 @@ function copaAdminFila(r) {
   const horas = copaHorasRestantes(r);
   const div   = COPA_DIVISIONES.find(d => d.division === r.division);
 
-  const reloj = (r.estado === 'reservado' && horas !== null)
+  const reloj = (['reservado', 'esperando_companero'].includes(r.estado) && horas !== null)
     ? (horas <= 0
         ? `<span style="color:#ef4444;font-weight:700;">reserva vencida</span>`
         : `<span style="color:${horas <= 24 ? '#ef4444' : '#f59e0b'};font-weight:600;">quedan ${horas < 1 ? '<1' : Math.floor(horas)} h para pagar</span>`)
@@ -12892,7 +13291,9 @@ function copaAdminFila(r) {
         <div style="font-size:13.5px;color:var(--text);font-weight:600;line-height:1.45;">
           ${copaEsc(r.cap_nombre)}${r.cap_invitado ? ' <span style="color:#a5b4fc;font-size:10px;">(invitado)</span>' : ''}
           <span style="color:var(--muted);">/</span>
-          ${copaEsc(r.comp_nombre)}${r.comp_invitado ? ' <span style="color:#a5b4fc;font-size:10px;">(invitado)</span>' : ''}
+          ${r.comp_nombre
+            ? `${copaEsc(r.comp_nombre)}${r.comp_invitado ? ' <span style="color:#a5b4fc;font-size:10px;">(invitado)</span>' : ''}`
+            : '<span style="color:#facc15;font-style:italic;">por definir</span>'}
         </div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">
           #${r.id} · ${div ? copaEsc(div.nombre) : 'sin división'}
@@ -12912,12 +13313,17 @@ function copaAdminFila(r) {
     </div>
 
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1px solid var(--border);">
-      ${!['expirado','cancelado'].includes(r.estado) ? `
+      ${!COPA_INACTIVOS.includes(r.estado) ? `
         <button onclick="copaAdminPago(${r.id})" style="${copaBtnAdm('var(--green)')}">💵 Registrar pago</button>
-        ${r.estado === 'reservado' ? `<button onclick="copaAdminExtender(${r.id})" style="${copaBtnAdm('#f59e0b')}">⏱ +${COPA_RESERVA_HORAS} h</button>` : ''}
+        ${['reservado','esperando_companero'].includes(r.estado) ? `<button onclick="copaAdminExtender(${r.id})" style="${copaBtnAdm('#f59e0b')}">⏱ +${COPA_RESERVA_HORAS} h</button>` : ''}
         ${r.estado === 'pendiente_division' ? `<button onclick="copaAdminAsignarDivision(${r.id})" style="${copaBtnAdm('#a5b4fc')}">🎯 Asignar división</button>` : ''}
+        ${r.estado === 'revision_tecnica' ? `
+          <button onclick="copaAdminRevision(${r.id},'aprobar')" style="${copaBtnAdm('var(--green)')}">⚖️ Aprobar excepción</button>
+          <button onclick="copaAdminRevision(${r.id},'bajar')" style="${copaBtnAdm('#fb923c')}">⬇ Bajar de división</button>` : ''}
+        ${r.estado === 'esperando_companero' ? `<button onclick="copaAdminCredito(${r.id})" style="${copaBtnAdm('#a5b4fc')}">🎫 Liberar y dar crédito</button>` : ''}
         <button onclick="copaAdminCancelar(${r.id})" style="${copaBtnAdm('#ef4444')}">✕ Cancelar</button>
-      ` : `<button onclick="copaAdminReactivar(${r.id})" style="${copaBtnAdm('var(--accent)')}">↩ Reactivar</button>`}
+      ` : `${Number(r.credito) > 0 ? `<span style="font-size:11.5px;color:#a5b4fc;font-weight:700;align-self:center;">Crédito a favor: $${Number(r.credito).toFixed(2)}</span>` : ''}
+        <button onclick="copaAdminReactivar(${r.id})" style="${copaBtnAdm('var(--accent)')}">↩ Reactivar</button>`}
     </div>
   </div>`;
 }
@@ -12968,6 +13374,52 @@ async function copaAdminPago(id) {
     reserva_expira: completo ? null : r.reserva_expira,
   }, completo ? 'Pago completo registrado — el equipo queda confirmado.'
               : `Abono de $${monto.toFixed(2)} registrado. El cupo se mantiene.`);
+}
+
+// Resolución de la Dirección Técnica sobre un equipo que no llega al mínimo
+// de su división. 'bajar' recalcula división y costo en el servidor, que es
+// quien sabe si la división de destino tiene cupo.
+async function copaAdminRevision(id, accion) {
+  const r = _copaAdminData.find(x => x.id === id);
+  if (!r) return;
+  const aviso = accion === 'aprobar'
+    ? `¿Aprobar a ${r.cap_nombre} / ${r.comp_nombre} en su división actual?\n\nRating combinado ${r.rating_combinado} — por debajo del mínimo. Queda como excepción de la Dirección Técnica.`
+    : `¿Bajar a ${r.cap_nombre} / ${r.comp_nombre} a la división que le toca por rating combinado (${r.rating_combinado})?\n\nSe ajusta el costo; si pagó de más, hay que devolverle la diferencia.`;
+  if (!confirm(aviso)) return;
+
+  try {
+    const { data, error } = await _supabase.rpc('resolver_revision_tecnica',
+      { p_equipo_id: id, p_torneo: TORNEO_ACTIVO, p_accion: accion });
+    if (error) throw new Error(error.message);
+    if (!data?.ok) { copaAdminMsg(data?.error || 'No se pudo resolver.', false); return; }
+    await copaAdminCargar();
+    copaAdminMsg(accion === 'aprobar'
+      ? 'Excepción aprobada — el equipo se queda en su división.'
+      : `Bajado a ${data.division_nombre} · $${Number(data.costo_nuevo).toFixed(2)}`
+        + (Number(data.diferencia) > 0 ? ` · devuélvele $${Number(data.diferencia).toFixed(2)}` : '')
+        + (data.estado === 'lista_espera' ? ' · quedó en lista de espera' : ''));
+  } catch (e) {
+    copaAdminMsg('Error: ' + e.message, false);
+  }
+}
+
+// Compró cupo, nunca nombró compañero: el cupo vuelve al torneo y lo pagado
+// queda registrado como crédito a su favor.
+async function copaAdminCredito(id) {
+  const r = _copaAdminData.find(x => x.id === id);
+  if (!r) return;
+  const pag = Number(r.monto_pagado) || 0;
+  if (!confirm(`¿Liberar el cupo de ${r.cap_nombre} y dejarle $${pag.toFixed(2)} como crédito?\n\nEl cupo pasa al primero de la lista de espera.`)) return;
+  try {
+    const { data, error } = await _supabase.rpc('liberar_cupo_con_credito',
+      { p_equipo_id: id, p_torneo: TORNEO_ACTIVO });
+    if (error) throw new Error(error.message);
+    if (!data?.ok) { copaAdminMsg(data?.error || 'No se pudo liberar.', false); return; }
+    await copaAdminCargar();
+    copaAdminMsg(`Cupo liberado · crédito de $${Number(data.credito).toFixed(2)} a favor de ${r.cap_nombre}.`);
+  } catch (e) {
+    copaAdminMsg('Error: ' + e.message, false);
+  }
 }
 
 async function copaAdminExtender(id) {
@@ -13040,9 +13492,12 @@ async function copaAdminLiberar(silencioso = false) {
 function copaAdminBadge() {
   const b = document.getElementById('copaAdminBadge');
   if (!b) return;
+  // Lo que hay que atender hoy: reservas por vencer y equipos parados en
+  // revisión técnica esperando que la Dirección Técnica decida.
   const n = _copaAdminData.filter(r => {
     const h = copaHorasRestantes(r);
-    return r.estado === 'reservado' && h !== null && h <= 24;
+    return (['reservado', 'esperando_companero'].includes(r.estado) && h !== null && h <= 24)
+        || r.estado === 'revision_tecnica';
   }).length;
   b.style.display = n ? '' : 'none';
   b.textContent = String(n);
@@ -13051,12 +13506,12 @@ function copaAdminBadge() {
 function copaAdminExportarCSV() {
   const cab = ['id','estado','division','nombre_equipo','club',
                'jugador_1','fptm_1','rating_1','jugador_2','fptm_2','rating_2',
-               'rating_combinado','costo','monto_pagado','referencia','email','telefono','inscrito'];
+               'rating_combinado','costo','monto_pagado','credito','referencia','email','telefono','inscrito'];
   const filas = _copaAdminData.map(r => [
     r.id, r.estado, r.division || '', r.nombre_equipo || '', r.club || '',
     r.cap_nombre, r.cap_member_id ?? '', r.cap_rating ?? '',
-    r.comp_nombre, r.comp_member_id ?? '', r.comp_rating ?? '',
-    r.rating_combinado ?? '', r.costo, r.monto_pagado, r.referencia || '',
+    r.comp_nombre || 'POR DEFINIR', r.comp_member_id ?? '', r.comp_rating ?? '',
+    r.rating_combinado ?? '', r.costo, r.monto_pagado, r.credito ?? 0, r.referencia || '',
     r.cap_email || '', r.cap_tel || '',
     (r.created_at || '').split('T')[0],
   ]);
@@ -13284,6 +13739,9 @@ function buscaRenderLista() {
           <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">
             ${a.club ? copaEsc(a.club) : 'Sin club'}${a.member_id ? ` · FPTM-${a.member_id}` : ''}
           </div>
+          ${a.cupo_division_nombre ? `<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(250,204,21,0.1);border:1px solid rgba(250,204,21,0.38);border-radius:7px;padding:3px 9px;margin-top:6px;font-size:11px;font-weight:700;color:#facc15;">
+            🎟 Ya tiene cupo en ${copaEsc(a.cupo_division_nombre)}
+          </div>` : ''}
           ${a.nota ? `<div style="font-size:12.5px;color:var(--text);margin-top:6px;line-height:1.5;">“${copaEsc(a.nota)}”</div>` : ''}
         </div>
         <div style="text-align:right;flex-shrink:0;">
