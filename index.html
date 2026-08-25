@@ -2659,6 +2659,14 @@ Maria Lopez,Ana Torres,B</code>
             </div>
           </div>
         </div>
+        <div id="adminCardEquipos" class="adm-card" style="display:none;border-color:rgba(56,189,248,0.35)" onclick="showCopaAdminModal()">
+          <div class="adm-ico">👥</div>
+          <div>
+            <div class="adm-title">Gestionar Equipos</div>
+            <div class="adm-desc">Pagos, cupos y lista de espera</div>
+          </div>
+          <span id="copaAdminBadge" class="adm-badge" style="display:none;background:#f59e0b;color:#000">0</span>
+        </div>
         <div id="adminCardGestionar" class="adm-card" onclick="showInscAdminModal()">
           <div class="adm-ico">🧾</div>
           <div>
@@ -3096,6 +3104,62 @@ Maria Lopez,Ana Torres,B</code>
 <!-- ══════════════════════════════════════════
      GESTIONAR INSCRITOS MODAL (admin)
 ═══════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════
+     ADMIN — GESTIONAR EQUIPOS (Copa Olímpica 2026)
+═══════════════════════════════════════════ -->
+<div id="copaAdminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:940px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Gestionar Equipos — Copa Olímpica 2026</div>
+        <div id="copaAdminResumen" style="font-size:12px;color:var(--muted);margin-top:3px;"></div>
+      </div>
+      <button onclick="closeCopaAdminModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+
+    <!-- Cupos por división -->
+    <div id="copaAdminCupos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px;"></div>
+
+    <!-- Barra de herramientas -->
+    <div style="display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+      <input id="copaAdminBuscar" type="text" placeholder="🔍 Buscar por jugador, equipo o club…" oninput="copaAdminRender()"
+        style="flex:1;min-width:180px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:9px 14px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;">
+      <select id="copaAdminFiltro" onchange="copaAdminRender()"
+        style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;cursor:pointer;">
+        <option value="">Todos los estados</option>
+        <option value="reservado">⏳ Reservados (falta pago)</option>
+        <option value="confirmado">✓ Confirmados</option>
+        <option value="lista_espera">📋 Lista de espera</option>
+        <option value="pendiente_division">❓ División por asignar</option>
+        <option value="vence">🔥 Reserva por vencer (24 h)</option>
+        <option value="expirado">✕ Expirados / cancelados</option>
+      </select>
+      <button onclick="copaAdminLiberar()" title="Expira reservas vencidas sin pago y promueve la lista de espera"
+        style="background:rgba(245,158,11,0.14);border:1px solid rgba(245,158,11,0.42);border-radius:10px;color:#f59e0b;font-size:12.5px;font-weight:700;padding:9px 13px;cursor:pointer;font-family:'Inter',sans-serif;">⟳ Liberar cupos vencidos</button>
+      <button onclick="copaAdminExportarCSV()"
+        style="background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.4);border-radius:10px;color:var(--accent);font-size:12.5px;font-weight:700;padding:9px 13px;cursor:pointer;font-family:'Inter',sans-serif;">⬇ CSV</button>
+    </div>
+
+    <div id="copaAdminMsg" style="font-size:12.5px;margin-bottom:10px;min-height:16px;text-align:center;"></div>
+    <div id="copaAdminLista" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
+
+    <!-- ── Tablón "Busco Compañero" ── -->
+    <div style="margin-top:26px;border-top:1px solid var(--border);padding-top:18px;">
+      <div onclick="buscaAdminToggle()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px;">
+        <div>
+          <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:800;color:var(--text);">Busco Compañero</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">Jugadores sin equipo · el contacto de los menores solo se ve aquí</div>
+        </div>
+        <span id="buscaAdminChevron" style="color:var(--muted);font-size:12.5px;white-space:nowrap;">Ver ▾</span>
+      </div>
+      <div id="buscaAdminBody" style="display:none;margin-top:14px;">
+        <div id="buscaAdminLista" style="font-size:13px;color:var(--muted);text-align:center;padding:24px 0;">Cargando...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="inscAdminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
   <div style="max-width:900px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
 
@@ -3756,7 +3820,27 @@ Maria Lopez,Ana Torres,B</code>
         en las llaves de consolación. Se define el 3er lugar en todas las llaves principales.
       </div>
 
-      <div style="margin-top:16px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:11px 14px;font-size:12.5px;color:#f59e0b;font-weight:600;">
+      <!-- Cupos en vivo — lo llena copaRenderCupos() -->
+      <div id="copaCuposLive" style="display:none;margin-top:16px;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:9px;">
+          <span style="font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Cupos disponibles</span>
+          <span id="copaCuposTotal" style="font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--accent);"></span>
+        </div>
+        <div id="copaCuposBars" style="display:grid;gap:7px;"></div>
+      </div>
+
+      <div id="copaCtaWrap" style="display:none;margin-top:16px;">
+        <button type="button" onclick="copaIrAlFormulario()"
+          style="width:100%;background:var(--grad);border:none;border-radius:11px;padding:14px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:800;letter-spacing:.02em;cursor:pointer;">
+          INSCRIBIR MI EQUIPO →
+        </button>
+        <div style="font-size:11px;color:var(--muted);margin-top:9px;line-height:1.5;">
+          Cierre: <strong style="color:#fb923c;" class="deadline-txt">—</strong>
+          &middot; o antes si se llenan los 64 equipos
+        </div>
+      </div>
+
+      <div id="copaProximamente" style="margin-top:16px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:11px 14px;font-size:12.5px;color:#f59e0b;font-weight:600;">
         ⏳ Inscripciones próximamente &middot; el cupo cierra automáticamente al llegar a 64 equipos
       </div>
     </div>
@@ -3815,51 +3899,20 @@ Maria Lopez,Ana Torres,B</code>
 
     <!-- Torneo activo — siempre visible -->
     <div id="inscTorneoCard">
-      <div class="cidra-banner">
-        <!-- Official artwork when present; typographic lockup as fallback -->
-        <img id="cidraLogo" class="cidra-logo" src="Logo_Cidra_Open_2026.png" alt="Cidra Open 2026">
-        <div id="cidraTextHead" style="display:none">
-          <div class="cidra-year">2026</div>
-          <div class="cidra-eyebrow">Tenis de Mesa • Puerto Rico</div>
-          <div class="cidra-lockup">
-            <div class="cidra-word">CIDRA</div>
-            <div class="cidra-div"></div>
-            <div class="cidra-open">OPEN</div>
-          </div>
-        </div>
-        <div class="cidra-meta">
-          15, 16, 22 y 23 de agosto de 2026<br>
-          Cancha Juanito Cabello, Cidra PR
-        </div>
-        <button class="cidra-cta" onclick="inscSwitchTab('form');document.getElementById('inscActiveTorneoUI')?.scrollIntoView({behavior:'smooth',block:'start'})">
-          INSCRÍBETE YA
-        </button>
-      </div>
+      <!-- Franja de sede y fecha límite. El arte y las divisiones ya están
+           arriba en #copaPreview, así que aquí solo va lo logístico. -->
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.18);border-radius:12px;padding:12px 18px;margin-bottom:20px;">
         <div style="font-size:13px;color:var(--muted);">
-          <strong style="color:var(--text);">Parte 1:</strong> 15 &amp; 16 ago &nbsp;·&nbsp;
-          <strong style="color:var(--text);">Parte 2:</strong> 22 &amp; 23 ago
+          <strong style="color:var(--text);">Sáb 19 &amp; Dom 20 de septiembre</strong>
+          &nbsp;·&nbsp; Centro de Convenciones de PR
         </div>
-        <div id="inscDeadlineLabel" style="font-size:12px;color:#fb923c;font-weight:600;">⏰ Fecha límite: <span class="deadline-txt">—</span></div>
-        <a href="https://maps.google.com/?q=Cancha+Juanito+Cabello+Cidra+Puerto+Rico" target="_blank" rel="noopener"
+        <div id="inscDeadlineLabel" style="font-size:12px;color:#fb923c;font-weight:600;">⏰ Cierre: <span class="deadline-txt">—</span></div>
+        <a href="https://maps.google.com/?q=Centro+de+Convenciones+de+Puerto+Rico" target="_blank" rel="noopener"
           style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:var(--accent);font-size:13px;font-weight:600;transition:opacity 0.15s;margin-left:auto;"
           onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">
           📍 ¿Cómo llegar?
         </a>
       </div>
-
-      <!-- Acceso permanente al torneo en StadiumTT -->
-      <a data-stadium-link href="#" target="_blank" rel="noopener"
-        style="display:flex;align-items:center;gap:12px;background:rgba(204,0,12,0.08);border:1px solid rgba(204,0,12,0.3);border-radius:12px;padding:13px 18px;margin-bottom:20px;text-decoration:none;transition:border-color .15s,background .15s;"
-        onmouseover="this.style.borderColor='rgba(204,0,12,0.55)';this.style.background='rgba(204,0,12,0.12)'"
-        onmouseout="this.style.borderColor='rgba(204,0,12,0.3)';this.style.background='rgba(204,0,12,0.08)'">
-        <span style="font-size:20px;flex-shrink:0;">🏓</span>
-        <span style="flex:1;min-width:0;">
-          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Resultados del torneo</span>
-          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">Llaves y resultados finales en StadiumTT</span>
-        </span>
-        <span style="color:#f87171;font-size:13px;font-weight:700;white-space:nowrap;">Ver resultados →</span>
-      </a>
     </div>
 
     <!-- Sub-tabs (hidden when archived) -->
@@ -3872,6 +3925,9 @@ Maria Lopez,Ana Torres,B</code>
       <button id="inscSubTabInscritos" onclick="inscSwitchTab('inscritos')"
         style="flex:1;padding:10px 0;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.18s;background:transparent;color:var(--muted);">
         Ver Inscritos
+      </button>
+      <button id="inscSubTabBusca" onclick="inscSwitchTab('busca')" style="display:none;flex:1;padding:10px 0;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;transition:all 0.18s;background:transparent;color:var(--muted);">
+        Busco Compañero
       </button>
     </div>
 
@@ -3902,6 +3958,116 @@ Maria Lopez,Ana Torres,B</code>
     </div>
 
     <!-- ══ TAB: INSCRIBIRSE ══ -->
+    <!-- ══════════════════════════════════════════
+         INSCRIPCIÓN POR EQUIPOS (Copa Olímpica 2026)
+         Se muestra cuando TORNEO_MODO === 'equipos'. El flujo individual
+         de abajo queda intacto y oculto.
+    ═══════════════════════════════════════════ -->
+    <div id="inscEquiposPanel" style="display:none;">
+
+      <!-- Cerradas (público) -->
+      <div id="copaCerradasBanner" style="display:none;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:32px 24px;text-align:center;margin-bottom:24px;">
+        <div style="font-size:40px;margin-bottom:12px;">🔒</div>
+        <div style="font-family:'Orbitron',monospace;font-size:22px;letter-spacing:0.04em;color:#ef4444;margin-bottom:10px;">Inscripciones Cerradas</div>
+        <p id="copaCerradasMsg" style="font-size:14px;color:var(--muted);line-height:1.6;margin:0;">El periodo de inscripción para la Copa Olímpica 2026 aún no ha abierto.<br>Para información contacta a la FPTM.</p>
+      </div>
+
+      <!-- Vista previa admin -->
+      <div id="copaPreviewBanner" style="display:none;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:12px 16px;margin-bottom:20px;align-items:center;gap:10px;">
+        <span style="font-size:18px;">🔒</span>
+        <span style="font-size:13px;color:var(--accent);font-weight:600;">Vista previa — Inscripciones cerradas para el público</span>
+      </div>
+
+      <!-- ═══ FORMULARIO ═══ -->
+      <div id="copaFormWrap" style="display:none;">
+
+        <!-- Cómo funciona -->
+        <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.22);border-radius:12px;padding:13px 16px;margin-bottom:16px;font-size:12.5px;color:var(--text);line-height:1.65;">
+          <strong style="color:#a5b4fc;">Cómo funciona</strong><br>
+          Una sola persona inscribe al equipo completo. La <strong>división se asigna sola</strong>
+          según el rating combinado de ambos — no se escoge. Tu cupo queda reservado
+          <strong><span id="copaHorasTxt">48</span> horas</strong> para completar el pago.
+        </div>
+
+        <!-- ── Capitán ── -->
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px;">
+            <span style="width:22px;height:22px;border-radius:50%;background:var(--grad);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</span>
+            <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">Jugador 1 — quien inscribe</label>
+          </div>
+          <div id="copaSlot_cap"></div>
+        </div>
+
+        <!-- ── Compañero ── -->
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px;">
+            <span style="width:22px;height:22px;border-radius:50%;background:var(--grad);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</span>
+            <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">Jugador 2 — compañero/a de equipo</label>
+          </div>
+          <div id="copaSlot_comp"></div>
+        </div>
+
+        <!-- ── Veredicto: división, costo y cupo ── -->
+        <div id="copaVeredicto" style="margin-bottom:12px;"></div>
+
+        <!-- ── Datos del equipo ── -->
+        <div id="copaDatosEquipo" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
+            <span style="width:22px;height:22px;border-radius:50%;background:var(--grad);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</span>
+            <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">Datos de contacto</label>
+          </div>
+
+          <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Nombre del equipo <span style="font-weight:400;">(opcional)</span></label>
+          <input type="text" id="copaNombreEquipo" maxlength="60" placeholder="Ej. Los Bravos de Cidra" autocomplete="off"
+            style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;margin-bottom:14px;">
+
+          <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Club o escuela <span style="font-weight:400;">(opcional)</span></label>
+          <input type="text" id="copaClub" list="clubsDatalist" placeholder="Club al que representan" autocomplete="off"
+            style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;margin-bottom:14px;">
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Email de contacto *</label>
+              <input type="email" id="copaEmail" placeholder="tu@email.com" autocomplete="email" oninput="copaActualizarBoton()"
+                style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Teléfono *</label>
+              <input type="tel" id="copaTel" placeholder="787-000-0000" autocomplete="tel" oninput="copaActualizarBoton()"
+                style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;">
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;">
+            Por ahí te avisamos si tu cupo está por vencer o si subes desde la lista de espera.
+          </div>
+        </div>
+
+        <!-- ── Reglamento ── -->
+        <div id="copaReglamentoWrap" style="display:none;margin-bottom:14px;">
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;">
+            <input type="checkbox" id="copaReglamentoCheck" onchange="copaRenderVeredicto()"
+              style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:var(--accent);cursor:pointer;">
+            <span style="font-size:12.5px;color:var(--text);line-height:1.55;">
+              Aceptamos el reglamento de la <strong>Copa Olímpica 2026</strong>: se juega bajo
+              reglamento ITTF y normas federativas, toda decisión del Comité Técnico es final, y
+              cada jugador asume su propio riesgo por lesión o daño. La inscripción no es válida
+              sin el pago correspondiente.
+            </span>
+          </label>
+        </div>
+
+        <div id="copaFormMsg" style="font-size:13px;margin-bottom:12px;min-height:18px;text-align:center;color:#ef4444;line-height:1.5;"></div>
+
+        <button id="copaSubmitBtn" onclick="copaInscribirEquipo()" disabled
+          style="width:100%;background:var(--grad);color:#fff;padding:15px;border-radius:11px;font-family:'Inter',sans-serif;font-size:16px;font-weight:800;border:none;cursor:not-allowed;opacity:0.4;transition:opacity .18s;">
+          Inscribir Equipo →
+        </button>
+      </div>
+
+      <!-- ═══ ÉXITO ═══ -->
+      <div id="copaSuccessPanel" style="display:none;"></div>
+    </div>
+
     <div id="inscTabFormContent">
 
     <!-- Inscripciones cerradas banner (público) -->
@@ -4146,7 +4312,7 @@ Maria Lopez,Ana Torres,B</code>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;">
         <div>
           <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">INSCRITOS</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:1px;">Cidra Open 2026</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:1px;" id="inscritosSubtitulo">—</div>
         </div>
         <div id="inscritosSectionBadge" style="display:none;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);font-family:'Orbitron',monospace;font-size:17px;letter-spacing:1px;padding:5px 14px;border-radius:20px;white-space:nowrap;"></div>
       </div>
@@ -4155,6 +4321,87 @@ Maria Lopez,Ana Torres,B</code>
       </div>
       <div id="inscritosTabContent" style="padding-top:20px;min-height:100px;"></div>
     </div><!-- /inscTabInscritos -->
+
+    <!-- ══════════════════════════════════════════
+         BUSCO COMPAÑERO — tablón de jugadores sin equipo
+    ═══════════════════════════════════════════ -->
+    <div id="inscTabBusca" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:12px;">
+        <div>
+          <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">BUSCO COMPAÑERO</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:1px;" id="buscaSubtitulo">—</div>
+        </div>
+        <div id="buscaBadge" style="display:none;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);font-family:'Orbitron',monospace;font-size:17px;letter-spacing:1px;padding:5px 14px;border-radius:20px;white-space:nowrap;"></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin:0 0 16px;">
+        Jugadores que buscan con quién formar equipo. Escríbeles directo y, cuando cuadren, inscriban el equipo.
+      </p>
+
+      <!-- ── "Soy…" — con esto el tablón calcula la división de cada pareja ── -->
+      <div style="background:linear-gradient(150deg,rgba(56,189,248,0.08),rgba(129,140,248,0.05));border:1px solid rgba(56,189,248,0.26);border-radius:13px;padding:15px 16px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">¿Con quién te conviene?</div>
+        <div style="font-size:12.5px;color:var(--text);line-height:1.6;margin-bottom:11px;">
+          Escoge tu nombre y te digo, con cada jugador de la lista, en qué división caerían y cuánto pagarían.
+        </div>
+        <div id="buscaYoSlot"></div>
+      </div>
+
+      <div id="buscaLista" style="min-height:80px;"></div>
+
+      <!-- ── Publicar ── -->
+      <div style="margin-top:22px;border-top:1px solid var(--border);padding-top:20px;">
+        <button type="button" id="buscaAbrirFormBtn" onclick="buscaAbrirForm()"
+          style="width:100%;background:var(--grad);border:none;border-radius:11px;padding:14px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:800;cursor:pointer;">
+          📣 Publicar que busco equipo
+        </button>
+
+        <div id="buscaForm" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:12px;">
+          <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:10px;">Tu nombre en el sistema FPTM</label>
+          <div id="buscaSlot_yo"></div>
+
+          <div id="buscaFormResto" style="display:none;margin-top:16px;">
+            <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Nota <span style="font-weight:400;">(opcional)</span></label>
+            <input type="text" id="buscaNota" maxlength="120" placeholder="Ej. Disponible los dos días · busco División 2" autocomplete="off"
+              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;margin-bottom:16px;">
+
+            <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:7px;">¿Cómo quieres que te contacten?</label>
+            <div style="display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;">
+              <button type="button" id="buscaCt_whatsapp" onclick="buscaSetContacto('whatsapp')" style="flex:1;min-width:96px;border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">WhatsApp</button>
+              <button type="button" id="buscaCt_email"    onclick="buscaSetContacto('email')"    style="flex:1;min-width:96px;border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Email</button>
+              <button type="button" id="buscaCt_ninguno"  onclick="buscaSetContacto('ninguno')"  style="flex:1;min-width:96px;border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Por la FPTM</button>
+            </div>
+            <input type="text" id="buscaContactoValor" placeholder="787-000-0000" autocomplete="off"
+              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;">
+
+            <div id="buscaAvisoPublico" style="display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:11px 13px;margin-top:11px;font-size:12px;color:#f59e0b;line-height:1.6;">
+              ⚠ Esto queda <strong>visible para cualquiera</strong> que abra la página, no solo para jugadores inscritos.
+              Si prefieres que no, escoge <strong>"Por la FPTM"</strong> y la federación te conecta.
+            </div>
+
+            <div id="buscaMayorWrap" style="display:none;margin-top:11px;">
+              <label style="display:flex;align-items:flex-start;gap:11px;cursor:pointer;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;">
+                <input type="checkbox" id="buscaMayorCheck" onchange="buscaActualizarBoton()" style="width:17px;height:17px;flex-shrink:0;margin-top:1px;accent-color:var(--accent);cursor:pointer;">
+                <span style="font-size:12.5px;color:var(--text);line-height:1.55;">
+                  Confirmo que <strong>tengo 18 años o más</strong>. No tenemos tu fecha de nacimiento en la base,
+                  y no publicamos datos de contacto de menores de edad.
+                </span>
+              </label>
+            </div>
+
+            <div id="buscaMenorAviso" style="display:none;background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.3);border-radius:10px;padding:11px 13px;margin-top:11px;font-size:12px;color:#a5b4fc;line-height:1.6;"></div>
+
+            <div id="buscaFormMsg" style="font-size:12.5px;margin-top:12px;min-height:16px;text-align:center;color:#ef4444;line-height:1.5;"></div>
+
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              <button type="button" onclick="buscaCerrarForm()"
+                style="background:transparent;border:1px solid var(--border);border-radius:10px;padding:13px 18px;color:var(--muted);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Cancelar</button>
+              <button type="button" id="buscaSubmitBtn" onclick="buscaPublicar()" disabled
+                style="flex:1;background:var(--grad);border:none;border-radius:10px;padding:13px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:800;cursor:not-allowed;opacity:.4;">Publicar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /inscTabBusca -->
     </div><!-- /inscActiveTorneoUI -->
 
   </div>
@@ -4242,8 +4489,8 @@ Maria Lopez,Ana Torres,B</code>
     <div id="regFormBody" style="display:none;">
       <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:20px 24px;margin-bottom:28px;">
         <div style="font-size:11px;color:var(--accent);font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Registro de Participante</div>
-        <div style="font-size:18px;font-weight:700;color:var(--text);">Cidra Open 2026</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">15, 16, 22 y 23 de agosto · Cidra, PR</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);" id="regFormTorneo">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="regFormTorneoMeta">—</div>
       </div>
 
       <input type="hidden" id="regFormToken">
@@ -4343,7 +4590,7 @@ Maria Lopez,Ana Torres,B</code>
     <div id="regFormSuccess" style="display:none;text-align:center;padding:40px 0;">
       <div style="font-size:56px;margin-bottom:16px;">✅</div>
       <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:1px;color:#4ade80;margin-bottom:12px;">¡Solicitud Enviada!</div>
-      <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el Cidra Open 2026.</p>
+      <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el <span id="regFormOkTorneo">torneo</span>.</p>
     </div>
   </div>
 </div>
@@ -10495,6 +10742,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   loadInscripcionesConfig();
   loadTorneoArchivoConfig();
+  copaInit();
 
   await loadDirectoryData();
   simAddOpponent();
@@ -10547,17 +10795,52 @@ async function loadDirectoryData() {
 // ══════════════════════════════════════════
 // INSCRIPCIONES — CONSTANTS
 // ══════════════════════════════════════════
-// Cidra Open de Tenis de Mesa 2026 — 15, 16, 22 y 23 de agosto
-// Cancha Juanito Cabello, Cidra PR · 10 mesas
-const TORNEO_ACTIVO       = 'Cidra Open 2026';
-const TORNEO_SEDE         = 'Cancha Juanito Cabello, Cidra, PR';
-const TORNEO_FECHAS_LABEL = '15, 16, 22 y 23 de agosto';
-const TORNEO_MAPS_URL     = 'https://maps.google.com/?q=Cancha+Juanito+Cabello+Cidra+Puerto+Rico';
+// Copa Olímpica 2026 — 19 y 20 de septiembre
+// Centro de Convenciones de Puerto Rico · 24 mesas · COPUR + FPTM
+const TORNEO_ACTIVO       = 'Copa Olímpica 2026';
+const TORNEO_SEDE         = 'Centro de Convenciones de Puerto Rico';
+const TORNEO_FECHAS_LABEL = '19 y 20 de septiembre';
+const TORNEO_MAPS_URL     = 'https://maps.google.com/?q=Centro+de+Convenciones+de+Puerto+Rico';
 // Official artwork — drop the file at the repo root. Falls back to .svg and
 // then to the typographic lockup if the file isn't there.
-const TORNEO_LOGO         = 'Logo_Cidra_Open_2026.png';
-// Parte 2 del torneo en StadiumTT: llaves, grupos y resultados en vivo
-const TORNEO_STADIUM_URL  = 'https://stadiumtt.com/tournament/ee9dcad0-6a17-4f54-9615-d7dcd4106c8a';
+const TORNEO_LOGO         = 'Logo_Copa_Olimpica_2026.png';
+// StadiumTT publica las llaves cuando cierre la inscripción
+const TORNEO_STADIUM_URL  = '';
+
+// Cómo se inscribe este torneo: 'individual' (categorías por jugador, el
+// modelo de Cidra/Morovis) o 'equipos' (parejas de 2, el modelo de la Copa).
+// El flujo individual queda intacto y dormido mientras el modo sea 'equipos'.
+const TORNEO_MODO = 'equipos';
+const esTorneoEquipos = () => TORNEO_MODO === 'equipos';
+
+// ── COPA OLÍMPICA 2026 — DIVISIONES ────────────────────────────────────────
+// Espejo de public.insc_divisiones (sql/create_insc_equipos.sql). Esto es
+// solo para pintar la pantalla: quien decide división, precio y cupo es la
+// base de datos dentro de inscribir_equipo(). Al cargar se refresca contra
+// la tabla, así que la federación puede ajustar cupos sin tocar el código.
+let COPA_DIVISIONES = [
+  { division: 'div1', nombre: 'División 1', ratingMin: 3800, ratingMax: null, precio: 100, maxEquipos: 12,
+    premios: '$600 · $500 · $400', orden: 1 },
+  { division: 'div2', nombre: 'División 2', ratingMin: 3400, ratingMax: 3799, precio:  80, maxEquipos: 20,
+    premios: '$350 · $300 · $250', orden: 2 },
+  { division: 'div3', nombre: 'División 3', ratingMin: null, ratingMax: 3399, precio:  70, maxEquipos: 32,
+    premios: '$220 · $180 · $140', orden: 3 },
+];
+const COPA_MAX_EQUIPOS = 64;
+// Cierre tentativo: viernes 11 de septiembre, 10:00 p.m. AST. Si los 64
+// equipos se llenan antes, el cupo cierra solo y el resto va a lista de espera.
+const COPA_DEADLINE = new Date('2026-09-11T22:00:00-04:00');
+// Ventana para pagar antes de perder el cupo reservado. La autoridad es
+// app_settings.insc_equipos_reserva_horas; esto es el valor por defecto.
+let COPA_RESERVA_HORAS = 48;
+
+// División que le toca a un rating combinado, o null si aún no hay rating.
+function copaDivisionPara(ratingCombinado) {
+  if (ratingCombinado == null) return null;
+  return COPA_DIVISIONES.find(d =>
+    (d.ratingMin == null || ratingCombinado >= d.ratingMin) &&
+    (d.ratingMax == null || ratingCombinado <= d.ratingMax)) || null;
+}
 
 // The four competition days (2 weekends). Day key = slot prefix.
 const INSC_DAYS = [
@@ -10854,6 +11137,8 @@ function catParteAbierta(cat) {
   return parteCat === n;
 }
 function inscDeadlineActual() {
+  // La Copa no se juega por partes: una sola fecha límite para todo el torneo.
+  if (esTorneoEquipos()) return COPA_DEADLINE;
   return INSC_DEADLINES[inscParteAbiertaNum() ?? 2];
 }
 // Siempre en hora de Puerto Rico: la fecha límite es local al torneo, no al
@@ -11031,6 +11316,10 @@ function applyInscripcionesState() {
   document.querySelectorAll('.deadline-txt').forEach(el => { el.textContent = inscDeadlineLabelTxt(); });
 
   applyTorneoArchivoAdminCards();
+
+  // Torneo por equipos: apaga el flujo individual y enciende el de la Copa
+  copaAplicarEstado();
+  copaAplicarAdminCards();
 
   // Start countdown if archived view is visible
   if (torneoArchivado) initNextEventCountdown();
@@ -11783,6 +12072,1470 @@ function renderInscPlayerCard(p) {
     } else {
       yainEl.style.display = 'none';
     }
+  }
+}
+
+// ══════════════════════════════════════════
+// COPA OLÍMPICA 2026 — INSCRIPCIÓN POR EQUIPOS
+// ══════════════════════════════════════════
+// Un equipo son dos jugadores y una sola inscripción. Quien la somete es el
+// "capitán" solo en el sentido administrativo: es a quien le escribimos por
+// el pago. La división NO se escoge — sale del rating combinado — y el cupo
+// lo otorga inscribir_equipo() en Postgres, que es la única autoridad. Lo que
+// esta pantalla calcula es un anticipo para que nadie se lleve sorpresas.
+
+const copaState = {
+  cap:   { player: null, invitado: '', timer: null },
+  comp:  { player: null, invitado: '', timer: null },
+  cupos: null,      // división → fila de insc_equipos_cupos
+  enviando: false,
+};
+
+const COPA_ROLES = { cap: 'Jugador 1', comp: 'Jugador 2' };
+
+// ── Carga de configuración y cupos ─────────────────────────────────────────
+async function copaCargarConfig() {
+  try {
+    const rows = await sbGet('insc_divisiones',
+      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=orden.asc`);
+    if (rows && rows.length) {
+      // Los premios son texto de la convocatoria y no viven en la tabla:
+      // se conservan del arreglo local emparejando por división.
+      const premios = Object.fromEntries(COPA_DIVISIONES.map(d => [d.division, d.premios]));
+      COPA_DIVISIONES = rows.map(r => ({
+        division: r.division, nombre: r.nombre,
+        ratingMin: r.rating_min, ratingMax: r.rating_max,
+        precio: Number(r.precio), maxEquipos: r.max_equipos,
+        premios: premios[r.division] || '', orden: r.orden,
+      }));
+    }
+  } catch (e) { /* nos quedamos con la copia local */ }
+
+  try {
+    const s = await sbGet('app_settings', '?key=eq.insc_equipos_reserva_horas&select=value');
+    const h = parseInt(s?.[0]?.value, 10);
+    if (Number.isFinite(h) && h > 0) COPA_RESERVA_HORAS = h;
+  } catch (e) { /* 48 h por defecto */ }
+
+  const ht = document.getElementById('copaHorasTxt');
+  if (ht) ht.textContent = String(COPA_RESERVA_HORAS);
+}
+
+async function copaCargarCupos() {
+  try {
+    const rows = await sbGet('insc_equipos_cupos',
+      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=orden.asc`);
+    copaState.cupos = Object.fromEntries((rows || []).map(r => [r.division, r]));
+  } catch (e) {
+    copaState.cupos = null;   // sin datos: la pantalla no promete cupos que no puede verificar
+  }
+  copaRenderCupos();
+}
+
+function copaCuposDe(division) {
+  return copaState.cupos?.[division] || null;
+}
+
+// ── Barras de cupos en el hero ─────────────────────────────────────────────
+function copaRenderCupos() {
+  const wrap  = document.getElementById('copaCuposLive');
+  const bars  = document.getElementById('copaCuposBars');
+  const total = document.getElementById('copaCuposTotal');
+  if (!wrap || !bars) return;
+
+  if (!copaState.cupos) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+
+  let libres = 0, tope = 0;
+  bars.innerHTML = COPA_DIVISIONES.map(d => {
+    const c    = copaCuposDe(d.division);
+    const max  = c ? c.max_equipos : d.maxEquipos;
+    const ocup = c ? Number(c.ocupados) : 0;
+    const disp = Math.max(0, max - ocup);
+    const esp  = c ? Number(c.en_espera) : 0;
+    libres += disp; tope += max;
+    const pct   = max ? Math.round(ocup / max * 100) : 0;
+    const lleno = disp === 0;
+    const color = lleno ? '#ef4444' : pct >= 75 ? '#f59e0b' : 'var(--accent)';
+    return `<div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--text);min-width:42px;">D${d.division.replace('div','')}</span>
+      <span style="flex:1;height:7px;background:rgba(255,255,255,0.07);border-radius:10px;overflow:hidden;">
+        <span style="display:block;height:100%;width:${pct}%;background:${color};border-radius:10px;transition:width .4s;"></span>
+      </span>
+      <span style="font-size:11px;color:${lleno ? '#ef4444' : 'var(--muted)'};white-space:nowrap;min-width:74px;text-align:right;">
+        ${lleno ? (esp ? `llena · ${esp} en espera` : 'llena') : `${disp} de ${max}`}
+      </span>
+    </div>`;
+  }).join('');
+
+  if (total) total.textContent = `${libres} / ${tope} equipos`;
+}
+
+// ── Encasillados de jugador ────────────────────────────────────────────────
+function copaRenderSlots() { ['cap', 'comp'].forEach(copaRenderSlot); }
+
+function copaRenderSlot(rol) {
+  const host = document.getElementById(`copaSlot_${rol}`);
+  if (!host) return;
+  const st = copaState[rol];
+
+  if (st.player || st.invitado) {
+    const nombre  = st.player ? st.player.name : st.invitado;
+    const rating  = st.player?.rating;
+    const badge   = st.player
+      ? (st.player.member
+          ? '<span style="color:var(--green);font-size:11px;font-weight:600;">● Miembro FPTM</span>'
+          : '<span style="color:#f59e0b;font-size:11px;font-weight:600;">● Sin membresía activa</span>')
+      : '<span style="color:#a5b4fc;font-size:11px;font-weight:600;">● Jugador invitado</span>';
+    const ratingTxt = st.player
+      ? (rating != null
+          ? `<span style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:var(--accent);">${rating}</span>`
+          : '<span style="font-size:11px;color:#f59e0b;">sin rating</span>')
+      : '<span style="font-size:11px;color:#f59e0b;">sin rating</span>';
+
+    host.innerHTML = `<div style="display:flex;align-items:center;gap:12px;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.3);border-radius:11px;padding:13px 15px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;font-weight:700;color:var(--text);line-height:1.3;">${copaEsc(nombre)}</div>
+        <div style="margin-top:3px;">${badge}${st.player ? ` <span style="color:var(--muted);font-size:11px;">· FPTM-${st.player.id}</span>` : ''}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">${ratingTxt}</div>
+      <button type="button" onclick="copaLimpiarSlot('${rol}')" title="Cambiar jugador"
+        style="background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;font-weight:600;padding:6px 10px;cursor:pointer;flex-shrink:0;">Cambiar</button>
+    </div>`;
+    return;
+  }
+
+  host.innerHTML = `<div style="position:relative;">
+      <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px;pointer-events:none;">⌕</span>
+      <input type="text" id="copaSearch_${rol}" placeholder="Escribe el nombre..." oninput="copaBuscar('${rol}')" autocomplete="off"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px 12px 42px;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);outline:none;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+    <div id="copaResults_${rol}" style="display:none;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:8px;"></div>
+    <div id="copaInvitadoWrap_${rol}" style="display:none;margin-top:10px;">
+      <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Nombre completo del jugador invitado</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="copaInvitadoInput_${rol}" maxlength="60" placeholder="Nombre y apellido" autocomplete="off"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();copaFijarInvitado('${rol}');}"
+          style="flex:1;min-width:0;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;">
+        <button type="button" onclick="copaFijarInvitado('${rol}')"
+          style="background:rgba(129,140,248,0.15);border:1px solid rgba(129,140,248,0.45);border-radius:10px;color:#a5b4fc;font-size:13px;font-weight:700;padding:0 14px;cursor:pointer;white-space:nowrap;">Añadir</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:7px;line-height:1.5;">
+        Sin rating federativo no podemos calcular la división: la FPTM se la asignará a mano antes de confirmar el equipo.
+      </div>
+    </div>
+    <button type="button" onclick="copaMostrarInvitado('${rol}')" id="copaInvitadoBtn_${rol}"
+      style="background:none;border:none;color:var(--muted);font-size:11.5px;text-decoration:underline;cursor:pointer;padding:8px 0 0;font-family:'Inter',sans-serif;">
+      No aparece en la lista — es jugador invitado
+    </button>`;
+}
+
+function copaEsc(t) {
+  return String(t ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function copaBuscar(rol) {
+  const st = copaState[rol];
+  clearTimeout(st.timer);
+  st.timer = setTimeout(() => {
+    const q  = (document.getElementById(`copaSearch_${rol}`)?.value || '').trim().toLowerCase();
+    const rl = document.getElementById(`copaResults_${rol}`);
+    if (!rl) return;
+    if (q.length < 2) { rl.innerHTML = ''; rl.style.display = 'none'; return; }
+
+    // El compañero no puede ser quien ya está en el otro encasillado
+    const otro = rol === 'cap' ? copaState.comp : copaState.cap;
+    const matches = ALL_PLAYERS
+      .filter(p => p.name.toLowerCase().includes(q))
+      .filter(p => !otro.player || String(p.id) !== String(otro.player.id))
+      .slice(0, 8);
+
+    if (!matches.length) { rl.innerHTML = ''; rl.style.display = 'none'; return; }
+    rl.style.display = '';
+    rl.innerHTML = matches.map(p => {
+      const badge = p.member
+        ? '<span style="color:var(--green);font-size:11px;font-weight:600">● Miembro</span>'
+        : '<span style="color:var(--muted);font-size:11px;">● Sin membresía</span>';
+      const rt = p.rating != null
+        ? `<span style="color:var(--muted);font-size:12px;margin-left:6px;">· ${p.rating}</span>`
+        : '<span style="color:#f59e0b;font-size:11px;margin-left:6px;">· sin rating</span>';
+      return `<div onclick="copaSeleccionar('${rol}', ${p.id})"
+        style="padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;"
+        onmouseover="this.style.background='rgba(56,189,248,0.06)'" onmouseout="this.style.background='transparent'">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);">${copaEsc(p.name)}</div>
+          <div style="margin-top:3px;">${badge}${rt}</div>
+        </div>
+        <div style="color:var(--muted);font-size:11px;white-space:nowrap;margin-left:8px;">FPTM-${p.id}</div>
+      </div>`;
+    }).join('');
+  }, 220);
+}
+
+function copaSeleccionar(rol, id) {
+  const p = ALL_PLAYERS.find(x => String(x.id) === String(id));
+  if (!p) return;
+  copaState[rol].player   = p;
+  copaState[rol].invitado = '';
+  copaRenderSlot(rol);
+  copaRenderVeredicto();
+}
+
+function copaLimpiarSlot(rol) {
+  copaState[rol].player   = null;
+  copaState[rol].invitado = '';
+  copaRenderSlot(rol);
+  copaRenderVeredicto();
+  document.getElementById(`copaSearch_${rol}`)?.focus();
+}
+
+function copaMostrarInvitado(rol) {
+  const w = document.getElementById(`copaInvitadoWrap_${rol}`);
+  const b = document.getElementById(`copaInvitadoBtn_${rol}`);
+  if (w) w.style.display = '';
+  if (b) b.style.display = 'none';
+  document.getElementById(`copaInvitadoInput_${rol}`)?.focus();
+}
+
+function copaFijarInvitado(rol) {
+  const v = (document.getElementById(`copaInvitadoInput_${rol}`)?.value || '').trim();
+  if (v.length < 3) {
+    document.getElementById(`copaInvitadoInput_${rol}`)?.focus();
+    return;
+  }
+  copaState[rol].player   = null;
+  copaState[rol].invitado = v;
+  copaRenderSlot(rol);
+  copaRenderVeredicto();
+}
+
+// ── Veredicto: división, costo y cupo ──────────────────────────────────────
+function copaEquipoListo() {
+  const c = copaState.cap, p = copaState.comp;
+  return !!((c.player || c.invitado) && (p.player || p.invitado));
+}
+
+// Rating combinado, o null si algún lado no tiene rating federativo.
+function copaRatingCombinado() {
+  const r1 = copaState.cap.player?.rating;
+  const r2 = copaState.comp.player?.rating;
+  if (r1 == null || r2 == null) return null;
+  return r1 + r2;
+}
+
+function copaRenderVeredicto() {
+  const host = document.getElementById('copaVeredicto');
+  const datos = document.getElementById('copaDatosEquipo');
+  const regla = document.getElementById('copaReglamentoWrap');
+  if (!host) return;
+
+  if (!copaEquipoListo()) {
+    host.innerHTML = `<div style="background:rgba(255,255,255,0.02);border:1px dashed var(--border);border-radius:12px;padding:18px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.6;">
+      Escoge los dos jugadores y aquí verás la <strong style="color:var(--text);">división</strong>,
+      el <strong style="color:var(--text);">costo</strong> y si queda cupo.
+    </div>`;
+    if (datos) datos.style.display = 'none';
+    if (regla) regla.style.display = 'none';
+    copaActualizarBoton();
+    return;
+  }
+
+  if (datos) datos.style.display = '';
+  if (regla) regla.style.display = '';
+
+  const combinado = copaRatingCombinado();
+
+  if (combinado == null) {
+    host.innerHTML = `<div style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.32);border-radius:12px;padding:16px 18px;">
+      <div style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#a5b4fc;margin-bottom:7px;">División pendiente</div>
+      <div style="font-size:12.5px;color:var(--text);line-height:1.65;">
+        Uno de los dos jugadores no tiene rating federativo, así que el rating
+        combinado no se puede calcular todavía. Puedes someter el equipo: la FPTM
+        le asigna la división y te avisa del costo antes de confirmar.
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:9px;">Mientras tanto tu equipo no ocupa cupo de ninguna división.</div>
+    </div>`;
+    copaActualizarBoton();
+    return;
+  }
+
+  const d = copaDivisionPara(combinado);
+  if (!d) {
+    host.innerHTML = `<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.35);border-radius:12px;padding:16px 18px;font-size:12.5px;color:#fca5a5;">
+      No hay división configurada para un rating combinado de ${combinado}. Comunícate con la FPTM.
+    </div>`;
+    copaActualizarBoton();
+    return;
+  }
+
+  const c    = copaCuposDe(d.division);
+  const max  = c ? c.max_equipos : d.maxEquipos;
+  const disp = c ? Math.max(0, max - Number(c.ocupados)) : null;
+  const esp  = c ? Number(c.en_espera) : 0;
+
+  const cupoBox = disp === null
+    ? `<div style="font-size:11.5px;color:var(--muted);">No pudimos verificar el cupo en vivo — al someter te confirmamos el estado.</div>`
+    : disp > 0
+      ? `<div style="font-size:12px;color:var(--green);font-weight:600;">✓ Quedan ${disp} de ${max} cupos en esta división</div>`
+      : `<div style="font-size:12px;color:#f59e0b;font-weight:600;line-height:1.55;">⚠ División llena${esp ? ` · ${esp} equipo${esp !== 1 ? 's' : ''} en espera` : ''}<br>
+         <span style="font-weight:400;color:var(--muted);">Puedes someter: entrarás a la lista de espera y subes automáticamente si se libera un cupo. No pagas hasta que tengas cupo.</span></div>`;
+
+  const r1 = copaState.cap.player?.rating, r2 = copaState.comp.player?.rating;
+
+  host.innerHTML = `<div style="background:linear-gradient(150deg,rgba(56,189,248,0.09),rgba(129,140,248,0.06));border:1px solid rgba(56,189,248,0.3);border-radius:14px;padding:18px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+      <div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Te corresponde</div>
+        <div style="font-family:'Orbitron',monospace;font-size:19px;font-weight:800;color:var(--text);">${copaEsc(d.nombre)}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Costo del equipo</div>
+        <div style="font-family:'Orbitron',monospace;font-size:22px;font-weight:800;color:var(--accent);">$${d.precio.toFixed(2)}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:rgba(0,0,0,0.18);border-radius:9px;padding:9px 12px;font-size:12px;color:var(--muted);margin-bottom:11px;">
+      <span>${r1} + ${r2} =</span>
+      <strong style="font-family:'Orbitron',monospace;font-size:14px;color:var(--text);">${combinado}</strong>
+      <span style="margin-left:auto;font-size:11px;">Premiación: <strong style="color:#facc15;">${copaEsc(d.premios)}</strong></span>
+    </div>
+    ${cupoBox}
+    <div style="font-size:10.5px;color:var(--muted);margin-top:11px;line-height:1.55;border-top:1px solid var(--border);padding-top:10px;">
+      La división sale del rating combinado y no se puede escoger. Los ratings quedan
+      congelados al momento de inscribir: aunque cambien antes del torneo, tu equipo
+      juega y paga lo que ves aquí.
+    </div>
+  </div>`;
+
+  copaActualizarBoton();
+}
+
+// ── Botón de someter ───────────────────────────────────────────────────────
+function copaFaltante() {
+  if (!copaEquipoListo())                                       return 'Escoge los dos jugadores del equipo.';
+  const capId  = copaState.cap.player?.id;
+  const compId = copaState.comp.player?.id;
+  if (capId != null && capId === compId)                        return 'El capitán y su compañero no pueden ser la misma persona.';
+  if (copaState.cap.invitado && copaState.comp.invitado &&
+      copaState.cap.invitado.toLowerCase() === copaState.comp.invitado.toLowerCase())
+                                                                return 'Los dos invitados no pueden tener el mismo nombre.';
+  if (!(document.getElementById('copaEmail')?.value || '').trim())  return 'Falta el email de contacto.';
+  if (!(document.getElementById('copaTel')?.value || '').trim())    return 'Falta el teléfono de contacto.';
+  if (!document.getElementById('copaReglamentoCheck')?.checked)     return 'Debes aceptar el reglamento del torneo.';
+  return null;
+}
+
+function copaActualizarBoton() {
+  const btn = document.getElementById('copaSubmitBtn');
+  if (!btn) return;
+  const falta = copaFaltante();
+  const ok = !falta && !copaState.enviando;
+  btn.disabled       = !ok;
+  btn.style.cursor   = ok ? 'pointer' : 'not-allowed';
+  btn.style.opacity  = ok ? '1' : '0.4';
+}
+
+// ── Someter el equipo ──────────────────────────────────────────────────────
+// La validación de verdad (cupo, duplicados, fecha límite) ocurre dentro de
+// inscribir_equipo(). Aquí solo evitamos viajes obviamente inútiles y
+// mostramos lo que responda el servidor.
+async function copaInscribirEquipo() {
+  const msg = document.getElementById('copaFormMsg');
+  const btn = document.getElementById('copaSubmitBtn');
+  const falta = copaFaltante();
+  if (falta) { if (msg) msg.textContent = falta; return; }
+  if (copaState.enviando) return;
+
+  copaState.enviando = true;
+  copaActualizarBoton();
+  if (msg) msg.textContent = '';
+  if (btn) btn.textContent = 'Inscribiendo...';
+
+  const cap  = copaState.cap;
+  const comp = copaState.comp;
+
+  try {
+    const { data, error } = await _supabase.rpc('inscribir_equipo', {
+      p_torneo:         TORNEO_ACTIVO,
+      p_cap_member_id:  cap.player?.id ?? null,
+      p_cap_nombre:     cap.player?.name ?? cap.invitado,
+      p_cap_rating:     cap.player?.rating ?? null,
+      p_comp_member_id: comp.player?.id ?? null,
+      p_comp_nombre:    comp.player?.name ?? comp.invitado,
+      p_comp_rating:    comp.player?.rating ?? null,
+      p_cap_invitado:   !cap.player,
+      p_comp_invitado:  !comp.player,
+      p_nombre_equipo:  (document.getElementById('copaNombreEquipo')?.value || '').trim() || null,
+      p_club:           (document.getElementById('copaClub')?.value || '').trim() || null,
+      p_cap_email:      (document.getElementById('copaEmail')?.value || '').trim() || null,
+      p_cap_tel:        (document.getElementById('copaTel')?.value || '').trim() || null,
+    });
+    if (error) throw new Error(error.message);
+
+    if (!data || data.ok !== true) {
+      if (msg) msg.textContent = data?.error || 'No se pudo completar la inscripción.';
+      // Cupo agotado o equipo duplicado: los cupos en pantalla ya no son fiables
+      await copaCargarCupos();
+      copaRenderVeredicto();
+      return;
+    }
+
+    await copaCargarCupos();
+    copaMostrarExito(data);
+
+  } catch (e) {
+    if (msg) msg.textContent = 'Error al inscribir: ' + e.message;
+  } finally {
+    copaState.enviando = false;
+    if (btn) btn.textContent = 'Inscribir Equipo →';
+    copaActualizarBoton();
+  }
+}
+
+// ── Pantalla de éxito y pago ───────────────────────────────────────────────
+const COPA_ATH_URL = 'https://pagos.athmovilapp.com/pagoPorCodigo.html?id=686cd0cb-1395-4ebb-96b1-96719cd6f5e9';
+
+function copaMostrarExito(res) {
+  const form = document.getElementById('copaFormWrap');
+  const host = document.getElementById('copaSuccessPanel');
+  if (!host) return;
+  if (form) form.style.display = 'none';
+
+  const nombres = `${copaState.cap.player?.name ?? copaState.cap.invitado} / ${copaState.comp.player?.name ?? copaState.comp.invitado}`;
+  const equipo  = (document.getElementById('copaNombreEquipo')?.value || '').trim();
+  const espera  = res.estado === 'lista_espera';
+  const pend    = res.estado === 'pendiente_division';
+  const costo   = Number(res.costo) || 0;
+
+  const expiraTxt = res.reserva_expira
+    ? new Date(res.reserva_expira).toLocaleString('es-PR', {
+        weekday: 'long', day: 'numeric', month: 'long',
+        hour: 'numeric', minute: '2-digit', hour12: true,
+        timeZone: 'America/Puerto_Rico' })
+    : null;
+
+  const cabecera = espera
+    ? { icono: '⏳', color: '#f59e0b', titulo: 'En lista de espera',
+        sub: `Tu equipo quedó en la posición <strong>#${res.posicion_espera}</strong> de ${copaEsc(res.division_nombre)}. Si se libera un cupo entras automáticamente y te avisamos por email.` }
+    : pend
+    ? { icono: '📋', color: '#a5b4fc', titulo: 'Equipo recibido',
+        sub: 'Como uno de los jugadores es invitado sin rating federativo, la FPTM le asignará división y te confirmará el costo por email antes de cobrar.' }
+    : { icono: '✅', color: 'var(--green)', titulo: '¡Cupo reservado!',
+        sub: `Tu equipo tiene cupo en <strong>${copaEsc(res.division_nombre)}</strong>.` };
+
+  host.style.display = '';
+  host.innerHTML = `
+    <div style="background:var(--card2);border:1px solid ${cabecera.color === 'var(--green)' ? 'rgba(34,197,94,0.35)' : cabecera.color === '#f59e0b' ? 'rgba(245,158,11,0.35)' : 'rgba(129,140,248,0.35)'};border-radius:16px;padding:28px 22px;text-align:center;margin-bottom:16px;">
+      <div style="font-size:44px;margin-bottom:10px;">${cabecera.icono}</div>
+      <div style="font-family:'Orbitron',monospace;font-size:20px;font-weight:800;color:${cabecera.color};margin-bottom:10px;">${cabecera.titulo}</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.65;">${cabecera.sub}</div>
+
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:15px;margin-top:18px;text-align:left;">
+        ${equipo ? `<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:5px;">${copaEsc(equipo)}</div>` : ''}
+        <div style="font-size:13.5px;color:var(--text);font-weight:600;line-height:1.5;">${copaEsc(nombres)}</div>
+        ${res.rating_combinado != null ? `<div style="font-size:12px;color:var(--muted);margin-top:6px;">Rating combinado: <strong style="font-family:'Orbitron',monospace;color:var(--accent);">${res.rating_combinado}</strong>${res.division_nombre ? ` · ${copaEsc(res.division_nombre)}` : ''}</div>` : ''}
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">Confirmación #${res.id}</div>
+      </div>
+    </div>
+
+    ${(!espera && !pend) ? `
+    <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.32);border-radius:14px;padding:20px;margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;margin-bottom:8px;">Completa el pago</div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px;">
+        <span style="font-family:'Orbitron',monospace;font-size:30px;font-weight:800;color:var(--text);">$${costo.toFixed(2)}</span>
+        <span style="font-size:12px;color:var(--muted);">por el equipo</span>
+      </div>
+      ${expiraTxt ? `<div style="background:rgba(0,0,0,0.2);border-radius:9px;padding:10px 13px;font-size:12.5px;color:var(--text);line-height:1.6;margin-bottom:14px;">
+        ⏳ Tu cupo está reservado hasta el <strong style="color:#fb923c;">${expiraTxt}</strong>.
+        <span style="color:var(--muted);">Si no recibimos el pago, el cupo pasa al próximo equipo en espera.</span>
+      </div>` : ''}
+      <a href="${COPA_ATH_URL}" target="_blank" rel="noopener"
+        style="display:block;background:var(--grad);border-radius:11px;padding:14px;text-align:center;text-decoration:none;color:#fff;font-size:15px;font-weight:800;">
+        Pagar $${costo.toFixed(2)} con ATH Móvil →
+      </a>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:11px;line-height:1.6;">
+        Envía a <strong style="color:var(--text);">ATH Business /fprtm</strong> e incluye
+        <strong style="color:var(--text);">"Copa #${res.id}"</strong> en el concepto — así
+        identificamos tu pago sin tener que preguntarte.
+      </div>
+    </div>` : ''}
+
+    <button type="button" onclick="copaNuevaInscripcion()"
+      style="width:100%;background:transparent;border:1px solid var(--border);border-radius:11px;padding:13px;color:var(--muted);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+      Inscribir otro equipo
+    </button>`;
+
+  host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copaNuevaInscripcion() {
+  copaState.cap  = { player: null, invitado: '', timer: null };
+  copaState.comp = { player: null, invitado: '', timer: null };
+  ['copaNombreEquipo', 'copaClub', 'copaEmail', 'copaTel'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const chk = document.getElementById('copaReglamentoCheck'); if (chk) chk.checked = false;
+  const msg = document.getElementById('copaFormMsg');         if (msg) msg.textContent = '';
+  const host = document.getElementById('copaSuccessPanel');   if (host) { host.style.display = 'none'; host.innerHTML = ''; }
+  const form = document.getElementById('copaFormWrap');       if (form) form.style.display = '';
+  copaRenderSlots();
+  copaRenderVeredicto();
+  document.getElementById('inscEquiposPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copaIrAlFormulario() {
+  inscSwitchTab('form');
+  document.getElementById('inscEquiposPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Modo equipos: qué se muestra y qué se apaga ────────────────────────────
+// El flujo individual sigue en el DOM pero no se dibuja: apagarlo aquí, en un
+// solo sitio, evita tener que tocar cada función del flujo viejo.
+function copaAplicarEstado() {
+  if (!esTorneoEquipos()) return;
+
+  const panel   = document.getElementById('inscEquiposPanel');
+  const indiv   = document.getElementById('inscTabFormContent');
+  const stats   = document.getElementById('inscStatsCard');
+  const formW   = document.getElementById('copaFormWrap');
+  const cerrado = document.getElementById('copaCerradasBanner');
+  const previa  = document.getElementById('copaPreviewBanner');
+  const cta     = document.getElementById('copaCtaWrap');
+  const prox    = document.getElementById('copaProximamente');
+  const success = document.getElementById('copaSuccessPanel');
+  if (!panel) return;
+
+  // Las estadísticas por categoría son del flujo individual: no aplican aquí.
+  if (stats) stats.style.display = 'none';
+
+  const deadlinePassed  = Date.now() > inscDeadlineActual().getTime();
+  const effectivelyOpen = inscripcionesOpen && (!deadlinePassed || INSC_IGNORAR_DEADLINE);
+  const admin           = isAdmin();
+  const mostrarForm     = effectivelyOpen || admin;
+  const enExito         = success && success.style.display !== 'none' && success.innerHTML !== '';
+
+  // El panel de equipos vive dentro de la pestaña "Inscribirse"
+  panel.style.display = _inscTabActual === 'form' ? '' : 'none';
+  if (indiv) indiv.style.display = 'none';
+  const btnBusca = document.getElementById('inscSubTabBusca');
+  if (btnBusca) btnBusca.style.display = '';
+
+  if (formW)   formW.style.display   = (mostrarForm && !enExito) ? '' : 'none';
+  if (cerrado) cerrado.style.display = mostrarForm ? 'none' : '';
+  if (previa)  previa.style.display  = (admin && !effectivelyOpen) ? 'flex' : 'none';
+  if (cta)     cta.style.display     = effectivelyOpen ? '' : 'none';
+  if (prox)    prox.style.display    = effectivelyOpen ? 'none' : '';
+
+  const cm = document.getElementById('copaCerradasMsg');
+  if (cm) {
+    cm.innerHTML = deadlinePassed
+      ? `La fecha límite de inscripción (${inscDeadlineLabelTxt()}) ya pasó.<br>Para información contacta a la FPTM.`
+      : 'Las inscripciones de la Copa Olímpica 2026 aún no han abierto.<br>Síguenos en redes para enterarte cuando abran.';
+  }
+}
+
+// ── Listado público de equipos ─────────────────────────────────────────────
+// Sale de insc_equipos_publico, que no tiene email, teléfono, referencia ni
+// montos: aunque alguien lea la llave anon del código, esos datos no existen
+// en la vista. Dentro de cada división van por rating combinado — es el orden
+// con el que la FPTM siembra las llaves.
+async function loadEquiposSection() {
+  const tabsEl  = document.getElementById('inscritosTabs');
+  const content = document.getElementById('inscritosTabContent');
+  const badge   = document.getElementById('inscritosSectionBadge');
+  if (!content) return;
+
+  const sub = document.getElementById('inscritosSubtitulo');
+  if (sub) sub.textContent = TORNEO_ACTIVO;
+  content.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--muted);font-size:14px;">Cargando equipos...</div>';
+  if (tabsEl) tabsEl.innerHTML = '';
+  if (badge)  badge.style.display = 'none';
+
+  try {
+    const rows = await sbGet('insc_equipos_publico',
+      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=created_at.asc`);
+
+    if (!rows || !rows.length) {
+      content.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--muted);font-size:14px;line-height:1.6;">
+        Todavía no hay equipos inscritos.<br><span style="font-size:12.5px;">Sé el primero — el cupo es por orden de llegada.</span>
+      </div>`;
+      return;
+    }
+
+    const total = rows.length;
+    if (badge) { badge.style.display = ''; badge.textContent = `${total} equipo${total !== 1 ? 's' : ''}`; }
+
+    const grupos = COPA_DIVISIONES.map(d => ({
+      def: d,
+      dentro: rows.filter(r => r.division === d.division && r.estado !== 'lista_espera')
+                  .sort((a, b) => (b.rating_combinado ?? 0) - (a.rating_combinado ?? 0)),
+      espera: rows.filter(r => r.division === d.division && r.estado === 'lista_espera'),
+    }));
+    const pendientes = rows.filter(r => !r.division);
+
+    const fila = (r, i, enEspera) => {
+      const equipo = r.nombre_equipo ? `<div style="font-size:13.5px;font-weight:800;color:var(--text);">${copaEsc(r.nombre_equipo)}</div>` : '';
+      const confirmado = r.estado === 'confirmado';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:11px 13px;border-bottom:1px solid var(--border);">
+        <span style="font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:${enEspera ? '#f59e0b' : 'var(--muted)'};min-width:26px;">${enEspera ? '#' + (i + 1) : i + 1}</span>
+        <div style="flex:1;min-width:0;">
+          ${equipo}
+          <div style="font-size:13px;color:${equipo ? 'var(--muted)' : 'var(--text)'};font-weight:${equipo ? '400' : '600'};line-height:1.45;">
+            ${copaEsc(r.cap_nombre)} <span style="color:var(--muted);">/</span> ${copaEsc(r.comp_nombre)}
+          </div>
+          ${r.club ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;">${copaEsc(r.club)}</div>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          ${r.rating_combinado != null ? `<div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--accent);">${r.rating_combinado}</div>` : ''}
+          <div style="font-size:10px;color:${confirmado ? 'var(--green)' : 'var(--muted)'};margin-top:1px;">${confirmado ? '● pagado' : '○ pendiente'}</div>
+        </div>
+      </div>`;
+    };
+
+    content.innerHTML = grupos.map(g => {
+      const c    = copaCuposDe(g.def.division);
+      const max  = c ? c.max_equipos : g.def.maxEquipos;
+      const lleno = g.dentro.length >= max;
+      return `<div style="margin-bottom:22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:9px;">
+          <span style="font-family:'Orbitron',monospace;font-size:14px;font-weight:800;color:var(--text);">${copaEsc(g.def.nombre)}</span>
+          <span style="font-size:11.5px;color:${lleno ? '#ef4444' : 'var(--muted)'};font-weight:600;">${g.dentro.length} / ${max} equipos${lleno ? ' · llena' : ''}</span>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:rgba(255,255,255,0.02);">
+          ${g.dentro.length ? g.dentro.map((r, i) => fila(r, i, false)).join('')
+            : '<div style="padding:20px;text-align:center;font-size:12.5px;color:var(--muted);">Sin equipos todavía</div>'}
+        </div>
+        ${g.espera.length ? `<div style="margin-top:9px;">
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;margin-bottom:6px;">Lista de espera</div>
+          <div style="border:1px solid rgba(245,158,11,0.28);border-radius:12px;overflow:hidden;background:rgba(245,158,11,0.04);">
+            ${g.espera.map((r, i) => fila(r, i, true)).join('')}
+          </div>
+        </div>` : ''}
+      </div>`;
+    }).join('')
+    + (pendientes.length ? `<div style="margin-bottom:22px;">
+        <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:800;color:#a5b4fc;margin-bottom:9px;">División por asignar</div>
+        <div style="border:1px solid rgba(129,140,248,0.28);border-radius:12px;overflow:hidden;background:rgba(129,140,248,0.04);">
+          ${pendientes.map((r, i) => fila(r, i, false)).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:7px;line-height:1.5;">
+          Equipos con algún jugador invitado sin rating federativo. La FPTM les asigna división antes del sorteo.
+        </div>
+      </div>` : '');
+
+  } catch (e) {
+    content.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;line-height:1.6;">
+      No pudimos cargar los equipos.<br>
+      <button type="button" onclick="loadEquiposSection()" style="margin-top:12px;background:transparent;border:1px solid var(--border);border-radius:9px;color:var(--accent);font-size:13px;font-weight:600;padding:8px 16px;cursor:pointer;">⟳ Reintentar</button>
+    </div>`;
+  }
+}
+
+// ── Arranque ───────────────────────────────────────────────────────────────
+let _copaInit = false;
+async function copaInit() {
+  if (!esTorneoEquipos() || _copaInit) return;
+  _copaInit = true;
+
+  // Datalist de clubes para el campo del equipo
+  if (!document.getElementById('clubsDatalist')) {
+    const dl = document.createElement('datalist');
+    dl.id = 'clubsDatalist';
+    dl.innerHTML = [...CLUBS_LIST, ...ESCUELAS_LIST]
+      .map(c => `<option value="${copaEsc(c)}"></option>`).join('');
+    document.body.appendChild(dl);
+  }
+
+  copaRenderSlots();
+  copaRenderVeredicto();
+  await copaCargarConfig();
+  await copaCargarCupos();
+  copaAplicarEstado();
+}
+
+// ══════════════════════════════════════════
+// ADMIN — EQUIPOS (Copa Olímpica 2026)
+// ══════════════════════════════════════════
+// El admin sí lee la tabla base (con email, teléfono y referencia): su sesión
+// va autenticada y la RLS lo permite. Confirmar un pago es lo único que saca
+// un equipo del reloj de expiración, así que es la acción principal.
+
+let _copaAdminData = [];
+
+async function showCopaAdminModal() {
+  if (!isAdmin()) { showLogin(); return; }
+  const modal = document.getElementById('copaAdminModal');
+  if (modal) modal.style.display = '';
+  await copaAdminCargar();
+}
+
+function closeCopaAdminModal() {
+  const modal = document.getElementById('copaAdminModal');
+  if (modal) modal.style.display = 'none';
+  _copaAdminData = [];
+}
+
+async function copaAdminCargar() {
+  const lista = document.getElementById('copaAdminLista');
+  try {
+    const { data, error } = await _supabase.from('insc_equipos').select('*')
+      .eq('torneo', TORNEO_ACTIVO).order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+    _copaAdminData = data || [];
+    await copaCargarCupos();
+    copaAdminRender();
+    copaAdminBadge();
+  } catch (e) {
+    if (lista) lista.innerHTML = `<div style="color:#ef4444;font-size:13px;line-height:1.6;">
+      No se pudieron cargar los equipos: ${copaEsc(e.message)}<br>
+      <span style="color:var(--muted);font-size:12px;">Si dice que la tabla no existe, corre <strong>sql/create_insc_equipos.sql</strong> en Supabase.</span>
+    </div>`;
+  }
+}
+
+const COPA_ESTADOS = {
+  reservado:          { txt: 'Reserva sin pago', color: '#f59e0b' },
+  confirmado:         { txt: 'Pagado',           color: 'var(--green)' },
+  lista_espera:       { txt: 'Lista de espera',  color: '#a5b4fc' },
+  pendiente_division: { txt: 'División por asignar', color: '#a5b4fc' },
+  expirado:           { txt: 'Expirado',         color: 'var(--muted)' },
+  cancelado:          { txt: 'Cancelado',        color: 'var(--muted)' },
+};
+
+const copaHorasRestantes = row => row.reserva_expira
+  ? (new Date(row.reserva_expira) - Date.now()) / 3600000 : null;
+
+function copaAdminRender() {
+  const lista = document.getElementById('copaAdminLista');
+  const cuposEl = document.getElementById('copaAdminCupos');
+  const resumen = document.getElementById('copaAdminResumen');
+  if (!lista) return;
+
+  // ── Cupos por división ──
+  if (cuposEl) {
+    cuposEl.innerHTML = COPA_DIVISIONES.map(d => {
+      const c    = copaCuposDe(d.division);
+      const max  = c ? c.max_equipos : d.maxEquipos;
+      const ocup = c ? Number(c.ocupados) : 0;
+      const conf = c ? Number(c.confirmados) : 0;
+      const esp  = c ? Number(c.en_espera) : 0;
+      const lleno = ocup >= max;
+      return `<div style="background:rgba(255,255,255,0.03);border:1px solid ${lleno ? 'rgba(239,68,68,0.35)' : 'var(--border)'};border-radius:11px;padding:11px 13px;">
+        <div style="font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--text);">${copaEsc(d.nombre)}</div>
+        <div style="font-family:'Orbitron',monospace;font-size:19px;font-weight:800;color:${lleno ? '#ef4444' : 'var(--accent)'};margin-top:3px;">${ocup} / ${max}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${conf} pagado${conf !== 1 ? 's' : ''}${esp ? ` · ${esp} en espera` : ''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Resumen financiero ──
+  const activos   = _copaAdminData.filter(r => !['expirado', 'cancelado'].includes(r.estado));
+  const cobrado   = _copaAdminData.reduce((s, r) => s + (Number(r.monto_pagado) || 0), 0);
+  const esperado  = activos.filter(r => r.estado !== 'lista_espera')
+                           .reduce((s, r) => s + (Number(r.costo) || 0), 0);
+  if (resumen) {
+    resumen.innerHTML = `${activos.length} equipo${activos.length !== 1 ? 's' : ''} activo${activos.length !== 1 ? 's' : ''}
+      &nbsp;·&nbsp; Cobrado <strong style="color:var(--green);">$${cobrado.toFixed(2)}</strong>
+      de <strong style="color:var(--text);">$${esperado.toFixed(2)}</strong>
+      &nbsp;·&nbsp; Por cobrar <strong style="color:#f59e0b;">$${Math.max(0, esperado - cobrado).toFixed(2)}</strong>`;
+  }
+
+  // ── Filtros ──
+  const q      = (document.getElementById('copaAdminBuscar')?.value || '').trim().toLowerCase();
+  const filtro = document.getElementById('copaAdminFiltro')?.value || '';
+
+  let filas = _copaAdminData.filter(r => {
+    if (filtro === 'vence') {
+      const h = copaHorasRestantes(r);
+      return r.estado === 'reservado' && h !== null && h <= 24;
+    }
+    if (filtro === 'expirado') return ['expirado', 'cancelado'].includes(r.estado);
+    if (filtro)                return r.estado === filtro;
+    return !['expirado', 'cancelado'].includes(r.estado);
+  });
+
+  if (q) {
+    filas = filas.filter(r => [r.cap_nombre, r.comp_nombre, r.nombre_equipo, r.club, r.referencia]
+      .some(v => (v || '').toLowerCase().includes(q)));
+  }
+
+  if (!filas.length) {
+    lista.innerHTML = '<div style="padding:36px 0;color:var(--muted);font-size:13.5px;">Ningún equipo coincide con el filtro.</div>';
+    return;
+  }
+
+  lista.style.textAlign = 'left';
+  lista.innerHTML = filas.map(copaAdminFila).join('');
+}
+
+function copaAdminFila(r) {
+  const est   = COPA_ESTADOS[r.estado] || { txt: r.estado, color: 'var(--muted)' };
+  const costo = Number(r.costo) || 0;
+  const pag   = Number(r.monto_pagado) || 0;
+  const saldo = Math.max(0, costo - pag);
+  const horas = copaHorasRestantes(r);
+  const div   = COPA_DIVISIONES.find(d => d.division === r.division);
+
+  const reloj = (r.estado === 'reservado' && horas !== null)
+    ? (horas <= 0
+        ? `<span style="color:#ef4444;font-weight:700;">reserva vencida</span>`
+        : `<span style="color:${horas <= 24 ? '#ef4444' : '#f59e0b'};font-weight:600;">quedan ${horas < 1 ? '<1' : Math.floor(horas)} h para pagar</span>`)
+    : '';
+
+  const contacto = [r.cap_email, r.cap_tel].filter(Boolean).join(' · ');
+
+  return `<div style="border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:9px;background:rgba(255,255,255,0.02);">
+    <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+      <div style="flex:1;min-width:210px;">
+        ${r.nombre_equipo ? `<div style="font-size:14px;font-weight:800;color:var(--text);">${copaEsc(r.nombre_equipo)}</div>` : ''}
+        <div style="font-size:13.5px;color:var(--text);font-weight:600;line-height:1.45;">
+          ${copaEsc(r.cap_nombre)}${r.cap_invitado ? ' <span style="color:#a5b4fc;font-size:10px;">(invitado)</span>' : ''}
+          <span style="color:var(--muted);">/</span>
+          ${copaEsc(r.comp_nombre)}${r.comp_invitado ? ' <span style="color:#a5b4fc;font-size:10px;">(invitado)</span>' : ''}
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">
+          #${r.id} · ${div ? copaEsc(div.nombre) : 'sin división'}
+          ${r.rating_combinado != null ? ` · ★${r.rating_combinado}` : ''}
+          ${r.club ? ` · ${copaEsc(r.club)}` : ''}
+        </div>
+        ${contacto ? `<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${copaEsc(contacto)}</div>` : ''}
+      </div>
+      <div style="text-align:right;min-width:120px;">
+        <div style="font-size:11px;font-weight:700;color:${est.color};">${est.txt}</div>
+        <div style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:${saldo > 0 ? '#f59e0b' : 'var(--green)'};margin-top:2px;">
+          $${pag.toFixed(2)} / $${costo.toFixed(2)}
+        </div>
+        ${r.referencia ? `<div style="font-family:'Orbitron',monospace;font-size:10.5px;color:var(--accent);margin-top:1px;">${copaEsc(r.referencia)}</div>` : ''}
+        ${reloj ? `<div style="font-size:10.5px;margin-top:3px;">${reloj}</div>` : ''}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1px solid var(--border);">
+      ${!['expirado','cancelado'].includes(r.estado) ? `
+        <button onclick="copaAdminPago(${r.id})" style="${copaBtnAdm('var(--green)')}">💵 Registrar pago</button>
+        ${r.estado === 'reservado' ? `<button onclick="copaAdminExtender(${r.id})" style="${copaBtnAdm('#f59e0b')}">⏱ +${COPA_RESERVA_HORAS} h</button>` : ''}
+        ${r.estado === 'pendiente_division' ? `<button onclick="copaAdminAsignarDivision(${r.id})" style="${copaBtnAdm('#a5b4fc')}">🎯 Asignar división</button>` : ''}
+        <button onclick="copaAdminCancelar(${r.id})" style="${copaBtnAdm('#ef4444')}">✕ Cancelar</button>
+      ` : `<button onclick="copaAdminReactivar(${r.id})" style="${copaBtnAdm('var(--accent)')}">↩ Reactivar</button>`}
+    </div>
+  </div>`;
+}
+
+const copaBtnAdm = color =>
+  `background:transparent;border:1px solid ${color};border-radius:8px;color:${color};font-size:11.5px;font-weight:700;padding:6px 11px;cursor:pointer;font-family:'Inter',sans-serif;`;
+
+function copaAdminMsg(txt, ok = true) {
+  const el = document.getElementById('copaAdminMsg');
+  if (!el) return;
+  el.textContent = txt;
+  el.style.color = ok ? 'var(--green)' : '#ef4444';
+  if (txt) setTimeout(() => { if (el.textContent === txt) el.textContent = ''; }, 5000);
+}
+
+async function copaAdminUpdate(id, patch, aviso) {
+  try {
+    const { error } = await _supabase.from('insc_equipos').update(patch).eq('id', id);
+    if (error) throw new Error(error.message);
+    await copaAdminCargar();
+    copaAdminMsg(aviso);
+  } catch (e) {
+    copaAdminMsg('Error: ' + e.message, false);
+  }
+}
+
+// Un pago total confirma el equipo y con eso deja de correr el reloj de la
+// reserva. Un abono parcial mantiene el cupo (insc_equipos_liberar respeta
+// cualquier monto > 0) pero no lo da por confirmado.
+async function copaAdminPago(id) {
+  const r = _copaAdminData.find(x => x.id === id);
+  if (!r) return;
+  const costo = Number(r.costo) || 0;
+  const actual = Number(r.monto_pagado) || 0;
+  const txt = prompt(`Monto recibido de ${r.cap_nombre} / ${r.comp_nombre}\n\nCosto: $${costo.toFixed(2)} · Ya pagado: $${actual.toFixed(2)}`, costo.toFixed(2));
+  if (txt === null) return;
+  const monto = parseFloat(String(txt).replace(/[^0-9.]/g, ''));
+  if (!Number.isFinite(monto) || monto < 0) { copaAdminMsg('Monto inválido.', false); return; }
+
+  const ref = prompt('Referencia del pago (ATH Móvil, confirmación, etc.)', r.referencia || '') ?? r.referencia;
+  const completo = costo > 0 && monto >= costo;
+
+  await copaAdminUpdate(id, {
+    monto_pagado: monto,
+    pagado: completo,
+    referencia: (ref || '').trim() || null,
+    estado: completo ? 'confirmado' : r.estado,
+    reserva_expira: completo ? null : r.reserva_expira,
+  }, completo ? 'Pago completo registrado — el equipo queda confirmado.'
+              : `Abono de $${monto.toFixed(2)} registrado. El cupo se mantiene.`);
+}
+
+async function copaAdminExtender(id) {
+  const nueva = new Date(Date.now() + COPA_RESERVA_HORAS * 3600000).toISOString();
+  await copaAdminUpdate(id, { reserva_expira: nueva },
+    `Reserva extendida ${COPA_RESERVA_HORAS} h más.`);
+}
+
+async function copaAdminAsignarDivision(id) {
+  const r = _copaAdminData.find(x => x.id === id);
+  if (!r) return;
+  const opciones = COPA_DIVISIONES.map((d, i) => `${i + 1}. ${d.nombre} — $${d.precio}`).join('\n');
+  const sel = prompt(`División para ${r.cap_nombre} / ${r.comp_nombre}\n\n${opciones}\n\nEscribe el número:`);
+  if (sel === null) return;
+  const d = COPA_DIVISIONES[parseInt(sel, 10) - 1];
+  if (!d) { copaAdminMsg('Opción inválida.', false); return; }
+
+  const c    = copaCuposDe(d.division);
+  const max  = c ? c.max_equipos : d.maxEquipos;
+  const ocup = c ? Number(c.ocupados) : 0;
+  const hayCupo = ocup < max;
+  if (!hayCupo && !confirm(`${d.nombre} está llena (${ocup}/${max}).\n\n¿Poner el equipo en lista de espera?`)) return;
+
+  await copaAdminUpdate(id, {
+    division: d.division,
+    costo: d.precio,
+    estado: hayCupo ? 'reservado' : 'lista_espera',
+    reserva_expira: hayCupo ? new Date(Date.now() + COPA_RESERVA_HORAS * 3600000).toISOString() : null,
+  }, hayCupo ? `Asignado a ${d.nombre} — $${d.precio}. Avísale al capitán.`
+             : `${d.nombre} está llena: el equipo quedó en lista de espera.`);
+}
+
+async function copaAdminCancelar(id) {
+  const r = _copaAdminData.find(x => x.id === id);
+  if (!r) return;
+  if (!confirm(`¿Cancelar el equipo ${r.cap_nombre} / ${r.comp_nombre}?\n\nSu cupo se libera y entra el primero de la lista de espera.`)) return;
+  await copaAdminUpdate(id, { estado: 'cancelado', reserva_expira: null }, 'Equipo cancelado.');
+  await copaAdminLiberar(true);
+}
+
+async function copaAdminReactivar(id) {
+  const r = _copaAdminData.find(x => x.id === id);
+  if (!r) return;
+  const d = COPA_DIVISIONES.find(x => x.division === r.division);
+  const c = d ? copaCuposDe(d.division) : null;
+  const hayCupo = d && c ? Number(c.ocupados) < c.max_equipos : true;
+  if (!hayCupo && !confirm(`${d.nombre} está llena.\n\n¿Reactivar en lista de espera?`)) return;
+  await copaAdminUpdate(id, {
+    estado: !d ? 'pendiente_division' : hayCupo ? 'reservado' : 'lista_espera',
+    reserva_expira: hayCupo && d ? new Date(Date.now() + COPA_RESERVA_HORAS * 3600000).toISOString() : null,
+  }, 'Equipo reactivado.');
+}
+
+// Expira reservas vencidas sin pago y sube la lista de espera. Corre sola en
+// cada inscripción; este botón es para cuando el admin acaba de liberar algo.
+async function copaAdminLiberar(silencioso = false) {
+  try {
+    const { data, error } = await _supabase.rpc('insc_equipos_liberar', { p_torneo: TORNEO_ACTIVO });
+    if (error) throw new Error(error.message);
+    await copaAdminCargar();
+    if (!silencioso) {
+      copaAdminMsg(`${data?.expirados || 0} reserva(s) expirada(s) · ${data?.promovidos || 0} equipo(s) promovido(s) desde la lista de espera.`);
+    }
+  } catch (e) {
+    if (!silencioso) copaAdminMsg('Error: ' + e.message, false);
+  }
+}
+
+// Insignia de la tarjeta: equipos cuya reserva vence en menos de 24 h.
+function copaAdminBadge() {
+  const b = document.getElementById('copaAdminBadge');
+  if (!b) return;
+  const n = _copaAdminData.filter(r => {
+    const h = copaHorasRestantes(r);
+    return r.estado === 'reservado' && h !== null && h <= 24;
+  }).length;
+  b.style.display = n ? '' : 'none';
+  b.textContent = String(n);
+}
+
+function copaAdminExportarCSV() {
+  const cab = ['id','estado','division','nombre_equipo','club',
+               'jugador_1','fptm_1','rating_1','jugador_2','fptm_2','rating_2',
+               'rating_combinado','costo','monto_pagado','referencia','email','telefono','inscrito'];
+  const filas = _copaAdminData.map(r => [
+    r.id, r.estado, r.division || '', r.nombre_equipo || '', r.club || '',
+    r.cap_nombre, r.cap_member_id ?? '', r.cap_rating ?? '',
+    r.comp_nombre, r.comp_member_id ?? '', r.comp_rating ?? '',
+    r.rating_combinado ?? '', r.costo, r.monto_pagado, r.referencia || '',
+    r.cap_email || '', r.cap_tel || '',
+    (r.created_at || '').split('T')[0],
+  ]);
+  const csv = [cab, ...filas]
+    .map(f => f.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `equipos_copa_olimpica_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+
+// ── ADMIN: tablón "Busco Compañero" ────────────────────────────────────────
+// El admin lee la tabla base, así que sí ve el contacto de los menores. Es
+// justo lo que hace posible el "contacta a la FPTM" que ve el público: la
+// federación conecta con la madre, padre o encargado.
+let _buscaAdminData = [];
+
+function buscaAdminToggle() {
+  const body = document.getElementById('buscaAdminBody');
+  const chev = document.getElementById('buscaAdminChevron');
+  if (!body) return;
+  const abrir = body.style.display === 'none';
+  body.style.display = abrir ? '' : 'none';
+  if (chev) chev.textContent = abrir ? 'Ocultar ▴' : 'Ver ▾';
+  if (abrir) buscaAdminCargar();
+}
+
+async function buscaAdminCargar() {
+  const host = document.getElementById('buscaAdminLista');
+  if (!host) return;
+  try {
+    const { data, error } = await _supabase.from('insc_busca_companero').select('*')
+      .eq('torneo', TORNEO_ACTIVO).order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    _buscaAdminData = data || [];
+    buscaAdminRender();
+  } catch (e) {
+    host.innerHTML = `<div style="color:#ef4444;font-size:12.5px;line-height:1.6;">
+      No se pudo cargar: ${copaEsc(e.message)}<br>
+      <span style="color:var(--muted);font-size:11.5px;">Si dice que la tabla no existe, corre <strong>sql/create_busca_companero.sql</strong>.</span>
+    </div>`;
+  }
+}
+
+function buscaAdminRender() {
+  const host = document.getElementById('buscaAdminLista');
+  if (!host) return;
+  const activos = _buscaAdminData.filter(r => r.estado === 'activo');
+  if (!_buscaAdminData.length) {
+    host.innerHTML = '<div style="font-size:12.5px;color:var(--muted);padding:12px 0;">Nadie ha publicado todavía.</div>';
+    return;
+  }
+  host.style.textAlign = 'left';
+  host.innerHTML = `<div style="font-size:11.5px;color:var(--muted);margin-bottom:9px;">
+      ${activos.length} activo(s) de ${_buscaAdminData.length} publicado(s)
+    </div>` + _buscaAdminData.map(r => {
+    const activo = r.estado === 'activo';
+    const contacto = r.contacto_tipo !== 'ninguno' && r.contacto_valor
+      ? `${r.contacto_tipo === 'whatsapp' ? '📱' : '✉'} ${copaEsc(r.contacto_valor)}`
+      : '<span style="color:var(--muted);">sin contacto</span>';
+    return `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:7px;background:rgba(255,255,255,0.02);opacity:${activo ? '1' : '0.5'};">
+      <div style="flex:1;min-width:170px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);">
+          ${copaEsc(r.nombre)}
+          ${r.es_menor ? '<span style="color:#a5b4fc;font-size:10px;font-weight:700;"> · MENOR</span>' : ''}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">
+          ${r.rating != null ? '★' + r.rating : 'sin rating'}${r.club ? ' · ' + copaEsc(r.club) : ''} · ${contacto}
+        </div>
+        ${r.nota ? `<div style="font-size:11.5px;color:var(--muted);margin-top:3px;font-style:italic;">“${copaEsc(r.nota)}”</div>` : ''}
+      </div>
+      <div style="font-size:10.5px;color:var(--muted);white-space:nowrap;">${copaEsc(r.estado)}</div>
+      <button onclick="buscaAdminEstado(${r.id}, '${activo ? 'oculto' : 'activo'}')"
+        style="${copaBtnAdm(activo ? '#ef4444' : 'var(--accent)')}">${activo ? '✕ Ocultar' : '↩ Reactivar'}</button>
+    </div>`;
+  }).join('');
+}
+
+async function buscaAdminEstado(id, estado) {
+  try {
+    const { error } = await _supabase.from('insc_busca_companero')
+      .update({ estado }).eq('id', id);
+    if (error) throw new Error(error.message);
+    await buscaAdminCargar();
+    copaAdminMsg(estado === 'oculto' ? 'Anuncio ocultado del tablón.' : 'Anuncio reactivado.');
+  } catch (e) {
+    copaAdminMsg('Error: ' + e.message, false);
+  }
+}
+
+// Modo equipos: las tarjetas del flujo individual leerían insc_registro para
+// un torneo que no tiene inscripciones ahí, así que mostrarían cero. Se
+// apagan para no dar un dato falso, y se enciende la de equipos.
+function copaAplicarAdminCards() {
+  if (!esTorneoEquipos()) return;
+  const eq = document.getElementById('adminCardEquipos');
+  if (eq) eq.style.display = torneoArchivado ? 'none' : '';
+  ['adminCardGestionar', 'adminCardExportar', 'adminCardReporte',
+   'adminCardFinanciero', 'adminCardLogistica'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
+
+// ══════════════════════════════════════════
+// BUSCO COMPAÑERO — tablón de jugadores sin equipo
+// ══════════════════════════════════════════
+// Sin esto, quien llega solo no tiene ningún camino: no puede inscribirse ni
+// dejar constancia de que quiere jugar. Un tablón plano sería un grupo de
+// WhatsApp con más pasos; lo que aporta la plataforma es que la división sale
+// del rating COMBINADO, así que "¿con quién me conviene?" tiene respuesta
+// exacta. Por eso lo primero que pide es "¿quién eres?".
+
+const buscaState = {
+  yo:         { player: null, timer: null },   // quién mira el tablón
+  publicador: { player: null, timer: null },   // quién publica
+  contactoTipo: 'whatsapp',
+  menor: null,        // true | false | null (sin fecha en la base)
+  anuncios: [],
+  enviando: false,
+};
+
+// ── Carga y render del tablón ──────────────────────────────────────────────
+async function loadBuscaSection() {
+  const host  = document.getElementById('buscaLista');
+  const sub   = document.getElementById('buscaSubtitulo');
+  if (sub) sub.textContent = TORNEO_ACTIVO;
+  if (!host) return;
+  host.innerHTML = '<div style="text-align:center;padding:36px 0;color:var(--muted);font-size:14px;">Cargando...</div>';
+
+  try {
+    const rows = await sbGet('insc_busca_companero_publico',
+      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=created_at.desc`);
+    buscaState.anuncios = rows || [];
+    buscaRenderPicker('yo', 'buscaYoSlot');
+    buscaRenderLista();
+  } catch (e) {
+    host.innerHTML = `<div style="text-align:center;padding:32px 16px;color:var(--muted);font-size:13px;line-height:1.6;">
+      No pudimos cargar el tablón.<br>
+      <button type="button" onclick="loadBuscaSection()" style="margin-top:12px;background:transparent;border:1px solid var(--border);border-radius:9px;color:var(--accent);font-size:13px;font-weight:600;padding:8px 16px;cursor:pointer;">⟳ Reintentar</button>
+    </div>`;
+  }
+}
+
+function buscaRenderLista() {
+  const host  = document.getElementById('buscaLista');
+  const badge = document.getElementById('buscaBadge');
+  if (!host) return;
+
+  const lista = buscaState.anuncios;
+  if (badge) {
+    badge.style.display = lista.length ? '' : 'none';
+    badge.textContent = String(lista.length);
+  }
+
+  if (!lista.length) {
+    host.innerHTML = `<div style="text-align:center;padding:34px 18px;border:1px dashed var(--border);border-radius:13px;color:var(--muted);font-size:13px;line-height:1.65;">
+      Todavía nadie ha publicado.<br><span style="font-size:12.5px;">Si te falta compañero, sé el primero — así te encuentran a ti.</span>
+    </div>`;
+    return;
+  }
+
+  const yo = buscaState.yo.player;
+
+  // Con "yo" escogido, cada anuncio se anota con la división que formarían.
+  // El orden pasa a ser por división (1 → 3), que es como piensa el jugador.
+  const conDiv = lista.map(a => {
+    let div = null, combinado = null;
+    if (yo && esTorneoEquipos() && yo.rating != null && a.rating != null && String(a.member_id) !== String(yo.id)) {
+      combinado = yo.rating + a.rating;
+      div = copaDivisionPara(combinado);
+    }
+    return { a, div, combinado };
+  }).filter(x => !yo || String(x.a.member_id) !== String(yo.id));
+
+  if (yo) {
+    conDiv.sort((x, z) => (x.div?.orden ?? 99) - (z.div?.orden ?? 99)
+                       || (z.combinado ?? 0) - (x.combinado ?? 0));
+  }
+
+  const contactoHtml = a => {
+    if (a.es_menor || a.contacto_tipo === 'ninguno' || !a.contacto_valor) {
+      return `<span style="font-size:11.5px;color:var(--muted);">${a.es_menor
+        ? 'Menor de edad — contacta a la FPTM para conectar'
+        : 'Contacta a la FPTM para conectar'}</span>`;
+    }
+    if (a.contacto_tipo === 'whatsapp') {
+      const tel = String(a.contacto_valor).replace(/[^0-9+]/g, '');
+      const num = tel.startsWith('+') ? tel.slice(1) : (tel.length === 10 ? '1' + tel : tel);
+      return `<a href="https://wa.me/${num}" target="_blank" rel="noopener"
+        style="display:inline-flex;align-items:center;gap:6px;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.35);border-radius:9px;padding:7px 12px;text-decoration:none;color:#25D366;font-size:12.5px;font-weight:700;">
+        WhatsApp ${copaEsc(a.contacto_valor)}</a>`;
+    }
+    return `<a href="mailto:${encodeURIComponent(a.contacto_valor)}"
+      style="display:inline-flex;align-items:center;gap:6px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.35);border-radius:9px;padding:7px 12px;text-decoration:none;color:var(--accent);font-size:12.5px;font-weight:700;">
+      ${copaEsc(a.contacto_valor)}</a>`;
+  };
+
+  let ultimaDiv = '__', nEncabezados = 0;
+  host.innerHTML = conDiv.map(({ a, div, combinado }) => {
+    let encabezado = '';
+    if (yo) {
+      const clave = div?.division || 'sin';
+      if (clave !== ultimaDiv) {
+        ultimaDiv = clave;
+        const mt = nEncabezados++ === 0 ? '0' : '18px';
+        encabezado = div
+          ? `<div style="display:flex;align-items:baseline;gap:9px;margin:${mt} 0 8px;">
+               <span style="font-family:'Orbitron',monospace;font-size:13px;font-weight:800;color:var(--text);">Con estos formas ${copaEsc(div.nombre)}</span>
+               <span style="font-size:11.5px;color:var(--accent);font-weight:700;">$${div.precio.toFixed(2)} por equipo</span>
+             </div>`
+          : `<div style="font-family:'Orbitron',monospace;font-size:13px;font-weight:800;color:var(--muted);margin:${mt} 0 8px;">Sin rating para calcular</div>`;
+      }
+    }
+
+    return encabezado + `<div style="border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:8px;background:rgba(255,255,255,0.02);">
+      <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1;min-width:180px;">
+          <div style="font-size:14.5px;font-weight:700;color:var(--text);line-height:1.35;">${copaEsc(a.nombre)}</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">
+            ${a.club ? copaEsc(a.club) : 'Sin club'}${a.member_id ? ` · FPTM-${a.member_id}` : ''}
+          </div>
+          ${a.nota ? `<div style="font-size:12.5px;color:var(--text);margin-top:6px;line-height:1.5;">“${copaEsc(a.nota)}”</div>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          ${a.rating != null
+            ? `<div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--accent);">${a.rating}</div>`
+            : '<div style="font-size:11px;color:#f59e0b;">sin rating</div>'}
+          ${combinado != null ? `<div style="font-size:10.5px;color:var(--muted);margin-top:1px;">juntos ${combinado}</div>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1px solid var(--border);">
+        ${contactoHtml(a)}
+        <button type="button" onclick="buscaRetirar(${a.id})" title="Si este anuncio es tuyo y ya conseguiste compañero"
+          style="margin-left:auto;background:none;border:none;color:var(--muted);font-size:11px;text-decoration:underline;cursor:pointer;font-family:'Inter',sans-serif;">Ya conseguí compañero</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Buscadores de jugador (el del tablón y el del formulario) ──────────────
+function buscaRenderPicker(key, hostId) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  const st = buscaState[key];
+
+  if (st.player) {
+    host.innerHTML = `<div style="display:flex;align-items:center;gap:12px;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.3);border-radius:11px;padding:11px 14px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14.5px;font-weight:700;color:var(--text);">${copaEsc(st.player.name)}</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">FPTM-${st.player.id}${st.player.club && st.player.club !== '—' ? ` · ${copaEsc(st.player.club)}` : ''}</div>
+      </div>
+      ${st.player.rating != null ? `<div style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:var(--accent);">${st.player.rating}</div>` : ''}
+      <button type="button" onclick="buscaLimpiarPicker('${key}','${hostId}')"
+        style="background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;font-weight:600;padding:6px 10px;cursor:pointer;">Cambiar</button>
+    </div>`;
+    return;
+  }
+
+  host.innerHTML = `<div style="position:relative;">
+      <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:17px;pointer-events:none;">⌕</span>
+      <input type="text" id="buscaSearch_${key}" placeholder="Escribe tu nombre..." oninput="buscaBuscar('${key}','${hostId}')" autocomplete="off"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 14px 11px 40px;font-family:'Inter',sans-serif;font-size:14.5px;color:var(--text);outline:none;">
+    </div>
+    <div id="buscaResults_${key}" style="display:none;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:8px;"></div>`;
+}
+
+function buscaBuscar(key, hostId) {
+  const st = buscaState[key];
+  clearTimeout(st.timer);
+  st.timer = setTimeout(() => {
+    const q  = (document.getElementById(`buscaSearch_${key}`)?.value || '').trim().toLowerCase();
+    const rl = document.getElementById(`buscaResults_${key}`);
+    if (!rl) return;
+    if (q.length < 2) { rl.innerHTML = ''; rl.style.display = 'none'; return; }
+    const matches = ALL_PLAYERS.filter(p => p.name.toLowerCase().includes(q)).slice(0, 8);
+    if (!matches.length) { rl.innerHTML = ''; rl.style.display = 'none'; return; }
+    rl.style.display = '';
+    rl.innerHTML = matches.map(p => `<div onclick="buscaSeleccionar('${key}','${hostId}',${p.id})"
+      style="padding:10px 13px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;"
+      onmouseover="this.style.background='rgba(56,189,248,0.06)'" onmouseout="this.style.background='transparent'">
+      <div style="font-size:13.5px;font-weight:600;color:var(--text);">${copaEsc(p.name)}</div>
+      <div style="color:var(--muted);font-size:11.5px;white-space:nowrap;margin-left:8px;">${p.rating != null ? p.rating : 'sin rating'}</div>
+    </div>`).join('');
+  }, 220);
+}
+
+async function buscaSeleccionar(key, hostId, id) {
+  const p = ALL_PLAYERS.find(x => String(x.id) === String(id));
+  if (!p) return;
+  buscaState[key].player = p;
+  buscaRenderPicker(key, hostId);
+  if (key === 'yo') { buscaRenderLista(); return; }
+  await buscaEvaluarEdad(p);
+}
+
+function buscaLimpiarPicker(key, hostId) {
+  buscaState[key].player = null;
+  buscaRenderPicker(key, hostId);
+  if (key === 'yo') buscaRenderLista();
+  else {
+    const resto = document.getElementById('buscaFormResto');
+    if (resto) resto.style.display = 'none';
+    buscaActualizarBoton();
+  }
+}
+
+// ── Edad ───────────────────────────────────────────────────────────────────
+// La decisión de verdad la toma publicar_busca_companero() contra la base;
+// esto es solo para no pedirle a alguien datos que no vamos a publicar.
+async function buscaEvaluarEdad(p) {
+  const resto  = document.getElementById('buscaFormResto');
+  const avisoM = document.getElementById('buscaMenorAviso');
+  const mayorW = document.getElementById('buscaMayorWrap');
+  if (resto) resto.style.display = '';
+  buscaState.menor = null;
+
+  let dob = null;
+  try { dob = await fetchPlayerDob(p.id); } catch (e) { dob = null; }
+
+  if (dob) {
+    const iso = _parseDOBStr(String(dob));
+    const d   = iso ? new Date(`${iso}T00:00:00`) : null;
+    if (d && !Number.isNaN(d.getTime())) {
+      const limite = new Date();
+      limite.setFullYear(limite.getFullYear() - 18);
+      buscaState.menor = d > limite;
+    }
+  }
+
+  if (buscaState.menor === true) {
+    buscaSetContacto('ninguno');
+    if (avisoM) {
+      avisoM.style.display = '';
+      avisoM.innerHTML = `Como eres menor de edad, tu anuncio se publica <strong>sin datos de contacto</strong>.
+        Quien quiera formar equipo contigo pasa por la FPTM, y la federación conecta con tu madre, padre o encargado.`;
+    }
+    if (mayorW) mayorW.style.display = 'none';
+  } else {
+    if (avisoM) avisoM.style.display = 'none';
+    // Sin fecha en la base no podemos saberlo: que lo declare.
+    if (mayorW) mayorW.style.display = (buscaState.menor === null) ? '' : 'none';
+  }
+  buscaActualizarBoton();
+}
+
+// ── Formulario ─────────────────────────────────────────────────────────────
+function buscaAbrirForm() {
+  const f   = document.getElementById('buscaForm');
+  const btn = document.getElementById('buscaAbrirFormBtn');
+  if (f)   f.style.display = '';
+  if (btn) btn.style.display = 'none';
+  buscaRenderPicker('publicador', 'buscaSlot_yo');
+  buscaSetContacto(buscaState.contactoTipo);
+  buscaActualizarBoton();
+  f?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function buscaCerrarForm() {
+  const f   = document.getElementById('buscaForm');
+  const btn = document.getElementById('buscaAbrirFormBtn');
+  if (f)   f.style.display = 'none';
+  if (btn) btn.style.display = '';
+  buscaState.publicador.player = null;
+  buscaState.menor = null;
+  const msg = document.getElementById('buscaFormMsg'); if (msg) msg.textContent = '';
+  const resto = document.getElementById('buscaFormResto'); if (resto) resto.style.display = 'none';
+}
+
+function buscaSetContacto(tipo) {
+  // Un menor no publica contacto, decida lo que decida en la pantalla
+  if (buscaState.menor === true) tipo = 'ninguno';
+  buscaState.contactoTipo = tipo;
+
+  ['whatsapp', 'email', 'ninguno'].forEach(t => {
+    const b = document.getElementById(`buscaCt_${t}`);
+    if (!b) return;
+    const on = t === tipo;
+    b.style.background  = on ? 'var(--accent)' : 'transparent';
+    b.style.color       = on ? '#0b1220' : 'var(--muted)';
+    b.style.border      = `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`;
+    b.disabled          = buscaState.menor === true && t !== 'ninguno';
+    b.style.opacity     = b.disabled ? '0.4' : '1';
+    b.style.cursor      = b.disabled ? 'not-allowed' : 'pointer';
+  });
+
+  const input = document.getElementById('buscaContactoValor');
+  const aviso = document.getElementById('buscaAvisoPublico');
+  if (input) {
+    input.style.display  = tipo === 'ninguno' ? 'none' : '';
+    input.placeholder    = tipo === 'whatsapp' ? '787-000-0000' : 'tu@email.com';
+    input.type           = tipo === 'email' ? 'email' : 'tel';
+    input.oninput        = buscaActualizarBoton;
+  }
+  if (aviso) aviso.style.display = tipo === 'ninguno' ? 'none' : '';
+  buscaActualizarBoton();
+}
+
+function buscaFaltante() {
+  if (!buscaState.publicador.player) return 'Escoge tu nombre.';
+  if (buscaState.contactoTipo !== 'ninguno' &&
+      !(document.getElementById('buscaContactoValor')?.value || '').trim())
+    return 'Escribe cómo quieres que te contacten.';
+  if (buscaState.menor === null && buscaState.contactoTipo !== 'ninguno' &&
+      !document.getElementById('buscaMayorCheck')?.checked)
+    return 'Confirma que tienes 18 años o más para publicar tu contacto.';
+  return null;
+}
+
+function buscaActualizarBoton() {
+  const btn = document.getElementById('buscaSubmitBtn');
+  if (!btn) return;
+  const ok = !buscaFaltante() && !buscaState.enviando;
+  btn.disabled      = !ok;
+  btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+  btn.style.opacity = ok ? '1' : '0.4';
+}
+
+async function buscaPublicar() {
+  const msg = document.getElementById('buscaFormMsg');
+  const btn = document.getElementById('buscaSubmitBtn');
+  const falta = buscaFaltante();
+  if (falta) { if (msg) msg.textContent = falta; return; }
+  if (buscaState.enviando) return;
+
+  buscaState.enviando = true;
+  buscaActualizarBoton();
+  if (msg) msg.textContent = '';
+  if (btn) btn.textContent = 'Publicando...';
+
+  const p = buscaState.publicador.player;
+  try {
+    const { data, error } = await _supabase.rpc('publicar_busca_companero', {
+      p_torneo:           TORNEO_ACTIVO,
+      p_member_id:        p.id,
+      p_nombre:           p.name,
+      p_rating:           p.rating ?? null,
+      p_club:             (p.club && p.club !== '—') ? p.club : null,
+      p_nota:             (document.getElementById('buscaNota')?.value || '').trim() || null,
+      p_contacto_tipo:    buscaState.contactoTipo,
+      p_contacto_valor:   (document.getElementById('buscaContactoValor')?.value || '').trim() || null,
+      p_adulto_declarado: !!document.getElementById('buscaMayorCheck')?.checked,
+    });
+    if (error) throw new Error(error.message);
+    if (!data || data.ok !== true) {
+      if (msg) msg.textContent = data?.error || 'No se pudo publicar.';
+      return;
+    }
+    buscaCerrarForm();
+    await loadBuscaSection();
+    // El servidor manda sobre la edad: si tumbó el contacto, hay que decirlo.
+    if (buscaState.contactoTipo !== 'ninguno' && data.contacto_publicado === false) {
+      alert('Tu anuncio se publicó sin datos de contacto porque la federación te tiene registrado/a como menor de edad.\n\nQuien quiera formar equipo contigo pasará por la FPTM.');
+    }
+  } catch (e) {
+    if (msg) msg.textContent = 'Error al publicar: ' + e.message;
+  } finally {
+    buscaState.enviando = false;
+    if (btn) btn.textContent = 'Publicar';
+    buscaActualizarBoton();
+  }
+}
+
+async function buscaRetirar(id) {
+  const a = buscaState.anuncios.find(x => x.id === id);
+  if (!a) return;
+  if (!confirm(`¿Retirar el anuncio de ${a.nombre} del tablón?\n\nHazlo solo si es tuyo y ya conseguiste compañero.`)) return;
+  try {
+    const { error } = await _supabase.rpc('retirar_busca_companero',
+      { p_id: id, p_torneo: TORNEO_ACTIVO });
+    if (error) throw new Error(error.message);
+    await loadBuscaSection();
+  } catch (e) {
+    alert('No se pudo retirar: ' + e.message);
   }
 }
 
@@ -12758,25 +14511,40 @@ async function inscSometerInscripcion() {
 // ══════════════════════════════════════════
 // INSCRIPCIONES — SUB-TABS
 // ══════════════════════════════════════════
+// Pestañas: 'form' | 'inscritos' | 'busca'. La tercera solo existe en torneos
+// por equipos — en un torneo individual nadie busca compañero.
+let _inscTabActual = 'form';
+
 function inscSwitchTab(tab) {
-  const isForm = tab === 'form';
-  const formEl  = document.getElementById('inscTabFormContent');
-  const listEl  = document.getElementById('inscTabInscritos');
-  const btnForm = document.getElementById('inscSubTabForm');
-  const btnList = document.getElementById('inscSubTabInscritos');
-  if (formEl) formEl.style.display = isForm ? '' : 'none';
-  if (listEl) listEl.style.display = isForm ? 'none' : '';
-  if (btnForm) {
-    btnForm.style.background = isForm ? 'var(--grad)' : 'transparent';
-    btnForm.style.color      = isForm ? '#fff' : 'var(--muted)';
-    btnForm.style.fontWeight = isForm ? '700' : '600';
-  }
-  if (btnList) {
-    btnList.style.background = !isForm ? 'var(--grad)' : 'transparent';
-    btnList.style.color      = !isForm ? '#fff' : 'var(--muted)';
-    btnList.style.fontWeight = !isForm ? '700' : '600';
-  }
-  if (!isForm) loadInscritosSection();
+  if (tab === 'busca' && !esTorneoEquipos()) tab = 'form';
+  _inscTabActual = tab;
+
+  const paneles = {
+    form:      esTorneoEquipos() ? 'inscEquiposPanel' : 'inscTabFormContent',
+    inscritos: 'inscTabInscritos',
+    busca:     'inscTabBusca',
+  };
+  // El panel individual y el de equipos comparten la pestaña 'form': el que
+  // no corresponde al modo se apaga siempre.
+  ['inscTabFormContent', 'inscEquiposPanel', 'inscTabInscritos', 'inscTabBusca']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = (id === paneles[tab]) ? '' : 'none';
+    });
+
+  [['inscSubTabForm', 'form'], ['inscSubTabInscritos', 'inscritos'], ['inscSubTabBusca', 'busca']]
+    .forEach(([id, val]) => {
+      const b = document.getElementById(id);
+      if (!b) return;
+      if (id === 'inscSubTabBusca') b.style.display = esTorneoEquipos() ? '' : 'none';
+      const on = tab === val;
+      b.style.background = on ? 'var(--grad)' : 'transparent';
+      b.style.color      = on ? '#fff' : 'var(--muted)';
+      b.style.fontWeight = on ? '700' : '600';
+    });
+
+  if (tab === 'inscritos') { esTorneoEquipos() ? loadEquiposSection() : loadInscritosSection(); }
+  if (tab === 'busca')     loadBuscaSection();
 }
 
 let _inscritosByCategory = null;
@@ -12787,6 +14555,8 @@ async function loadInscritosSection() {
   const badge    = document.getElementById('inscritosSectionBadge');
   if (!tabsEl || !content) return;
 
+  const sub = document.getElementById('inscritosSubtitulo');
+  if (sub) sub.textContent = TORNEO_ACTIVO;
   content.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--muted);font-size:14px;">Cargando...</div>';
   tabsEl.innerHTML  = '';
   if (badge) badge.style.display = 'none';
@@ -15180,7 +16950,19 @@ function regFormUpdateMinor() {
   document.getElementById('regMinorSection').style.display = isMinor ? '' : 'none';
 }
 
+// El enlace público de registro nombra el torneo activo. Sale de las
+// constantes para que cambiar de torneo no deje el nombre viejo aquí.
+function regFormPintarTorneo() {
+  const t  = document.getElementById('regFormTorneo');
+  const m  = document.getElementById('regFormTorneoMeta');
+  const ok = document.getElementById('regFormOkTorneo');
+  if (t)  t.textContent  = TORNEO_ACTIVO;
+  if (m)  m.textContent  = `${TORNEO_FECHAS_LABEL} · ${TORNEO_SEDE}`;
+  if (ok) ok.textContent = TORNEO_ACTIVO;
+}
+
 async function initPublicRegForm() {
+  regFormPintarTorneo();
   const params = new URLSearchParams(window.location.search);
   const token  = params.get('registro');
   if (!token) return;
