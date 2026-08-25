@@ -974,6 +974,53 @@
     .overview-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
+  /* ─── COPA OLÍMPICA 2026 — PREVIEW ─── */
+  .copa-prev {
+    --cn: #0d2a5c;  --cr: #cc1122;
+    position: relative; overflow: hidden;
+    background: linear-gradient(160deg, #0f1a2e 0%, #101725 100%);
+    border: 1px solid rgba(56,110,200,0.32);
+    border-radius: 18px; padding: 24px 22px 22px;
+    margin-bottom: 18px; text-align: center;
+  }
+  .copa-prev::before {
+    content: ''; position: absolute; inset: 0 0 auto 0; height: 3px;
+    background: linear-gradient(90deg, var(--cn), var(--cr), var(--cn));
+  }
+  .copa-chip {
+    display: inline-block; background: rgba(204,17,34,0.14);
+    border: 1px solid rgba(204,17,34,0.45); border-radius: 20px;
+    padding: 3px 13px; font-size: 10.5px; font-weight: 800;
+    letter-spacing: .12em; color: #f87171; margin-bottom: 12px;
+  }
+  .copa-logo { width: 100%; max-width: 190px; height: auto; margin: 0 auto 12px; display: block; }
+  .copa-name {
+    font-family: 'Orbitron', monospace; font-size: clamp(20px, 5.5vw, 27px);
+    font-weight: 800; letter-spacing: 1px; line-height: 1.15; color: var(--text);
+  }
+  .copa-meta { font-size: 13.5px; color: var(--muted); margin-top: 7px; line-height: 1.6; }
+  .copa-div-grid { display: grid; gap: 8px; margin: 18px 0 4px; text-align: left; }
+  .copa-div {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: rgba(255,255,255,0.035); border: 1px solid var(--border);
+    border-radius: 11px; padding: 11px 14px;
+  }
+  .copa-div-n {
+    font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700;
+    color: var(--text); min-width: 74px;
+  }
+  .copa-div-r { font-size: 12px; color: var(--muted); flex: 1; min-width: 110px; }
+  .copa-div-p { font-size: 12px; font-weight: 700; color: #facc15; white-space: nowrap; }
+  .copa-div-c {
+    font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700;
+    color: var(--accent); white-space: nowrap;
+  }
+  @media (max-width: 430px) {
+    .copa-prev { padding: 20px 16px 18px; }
+    .copa-div { gap: 6px 10px; }
+    .copa-div-n { min-width: 100%; }
+  }
+
   /* ─── CIDRA OPEN 2026 BANNER ─── */
   .cidra-banner {
     /* Paleta tomada del logo oficial: azul marino + rojo */
@@ -3666,6 +3713,54 @@ Maria Lopez,Ana Torres,B</code>
 
   <div class="container" style="max-width:580px;padding-top:0">
 
+    <!-- ── PRÓXIMO EVENTO: COPA OLÍMPICA 2026 ── -->
+    <div id="copaPreview" class="copa-prev">
+      <div class="copa-chip">PRÓXIMO EVENTO</div>
+      <img id="copaLogo" class="copa-logo" src="Logo_Copa_Olimpica_2026.png" alt="Copa Olímpica 2026">
+      <div id="copaTextHead" style="display:none">
+        <div class="copa-name">COPA OLÍMPICA<br><span style="color:#f87171">2026</span></div>
+      </div>
+      <div class="copa-meta">
+        <strong style="color:var(--text)">Sábado 19 y domingo 20 de septiembre</strong><br>
+        Centro de Convenciones de Puerto Rico<br>
+        <span style="font-size:12px">COPUR &middot; Federación Puertorriqueña de Tenis de Mesa</span>
+      </div>
+
+      <div style="background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.22);border-radius:11px;padding:11px 14px;margin-top:16px;font-size:12.5px;color:var(--text);line-height:1.6;">
+        🏓 Torneo <strong>por equipos de 2 jugadores</strong> (o mixtos)<br>
+        <span style="color:var(--muted);">Sistema Copa Corbillón/Davis al mejor de 5 partidos &middot; máximo 64 equipos</span>
+      </div>
+
+      <div class="copa-div-grid">
+        <div class="copa-div">
+          <span class="copa-div-n">División 1</span>
+          <span class="copa-div-r">Rating combinado 3800 o más &middot; 12 equipos</span>
+          <span class="copa-div-p">$600 / $500 / $400</span>
+          <span class="copa-div-c">$100</span>
+        </div>
+        <div class="copa-div">
+          <span class="copa-div-n">División 2</span>
+          <span class="copa-div-r">Rating combinado 3400 – 3799 &middot; 20 equipos</span>
+          <span class="copa-div-p">$350 / $300 / $250</span>
+          <span class="copa-div-c">$80</span>
+        </div>
+        <div class="copa-div">
+          <span class="copa-div-n">División 3</span>
+          <span class="copa-div-r">Rating combinado 3399 o menos &middot; 32 equipos</span>
+          <span class="copa-div-p">$220 / $180 / $140</span>
+          <span class="copa-div-c">$70</span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;text-align:left;">
+        Costo por equipo. Oro, plata y bronce para los tres primeros; medallas institucionales
+        en las llaves de consolación. Se define el 3er lugar en todas las llaves principales.
+      </div>
+
+      <div style="margin-top:16px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:11px 14px;font-size:12.5px;color:#f59e0b;font-weight:600;">
+        ⏳ Inscripciones próximamente &middot; el cupo cierra automáticamente al llegar a 64 equipos
+      </div>
+    </div>
+
     <div id="inscArchivedPlaceholder" style="display:none;padding:12px 0 40px;">
 
       <!-- ── PRÓXIMO EVENTO — countdown hero ── -->
@@ -3722,8 +3817,7 @@ Maria Lopez,Ana Torres,B</code>
     <div id="inscTorneoCard">
       <div class="cidra-banner">
         <!-- Official artwork when present; typographic lockup as fallback -->
-        <img id="cidraLogo" class="cidra-logo" src="Logo_Cidra_Open_2026.png"
-             alt="Cidra Open 2026" onerror="cidraLogoFallback(this)">
+        <img id="cidraLogo" class="cidra-logo" src="Logo_Cidra_Open_2026.png" alt="Cidra Open 2026">
         <div id="cidraTextHead" style="display:none">
           <div class="cidra-year">2026</div>
           <div class="cidra-eyebrow">Tenis de Mesa • Puerto Rico</div>
@@ -10346,6 +10440,10 @@ function showWaAnnouncement(delay = 400) {
 // INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+  // ── Logos de torneo (con respaldo tipográfico si falta el archivo) ──
+  montarLogoTorneo('cidraLogo', 'cidraTextHead');
+  montarLogoTorneo('copaLogo',  'copaTextHead');
+
   // ── Aviso del canal de WhatsApp ──
   document.querySelectorAll('[data-stadium-link]')
     .forEach(a => a.setAttribute('href', TORNEO_STADIUM_URL));
@@ -10943,16 +11041,10 @@ function applyInscripcionesState() {
 // semana duran dos días). logo y mapsUrl son opcionales — si faltan, no se
 // muestra logo ni el enlace "¿Cómo llegar?" del estado HOY.
 const UPCOMING_EVENTS = [
-  { name: 'Albergue Olímpico Summer Open', dateLabel: 'Sábado 4 & Domingo 5 de julio',
-    target: new Date('2026-07-04T08:00:00'), end: new Date('2026-07-05T23:59:59'),
-    logo: 'Logo_Albergue_Olimpico_Summer_Open_2026.svg',
-    mapsUrl: 'https://maps.google.com/?q=Albergue+Ol%C3%ADmpico+Salinas+Puerto+Rico' },
-  { name: 'Cidra Open 2026 · Parte 1', dateLabel: 'Sábado 15 & Domingo 16 de agosto · Cidra, PR',
-    target: new Date('2026-08-15T09:00:00'), end: new Date('2026-08-16T23:59:59'),
-    logo: TORNEO_LOGO, mapsUrl: TORNEO_MAPS_URL },
-  { name: 'Cidra Open 2026 · Parte 2', dateLabel: 'Sábado 22 & Domingo 23 de agosto · Cidra, PR',
-    target: new Date('2026-08-22T09:00:00'), end: new Date('2026-08-23T23:59:59'),
-    logo: TORNEO_LOGO, mapsUrl: TORNEO_MAPS_URL },
+  { name: 'Copa Olímpica 2026', dateLabel: 'Sábado 19 & Domingo 20 de septiembre · Centro de Convenciones, PR',
+    target: new Date('2026-09-19T09:00:00'), end: new Date('2026-09-20T23:59:59'),
+    logo: 'Logo_Copa_Olimpica_2026.png',
+    mapsUrl: 'https://maps.google.com/?q=Centro+de+Convenciones+de+Puerto+Rico' },
 ];
 const FINISHED_BADGE_DAYS = 7; // días que se muestra "Torneo finalizado" tras el evento
 
@@ -12207,17 +12299,31 @@ function inscRenderCategories() {
   container.innerHTML = html;
 }
 
+// Igual que el de Cidra: si no está la imagen, se muestra el nombre en texto.
 // Tournament artwork: try PNG, then SVG, then fall back to the typographic
 // lockup so the banner always reads correctly even without the asset.
-function cidraLogoFallback(img) {
-  if (!img.dataset.triedSvg) {
-    img.dataset.triedSvg = '1';
-    img.src = TORNEO_LOGO.replace(/\.png$/i, '.svg');
-    return;
-  }
-  img.style.display = 'none';
-  const head = document.getElementById('cidraTextHead');
-  if (head) head.style.display = '';
+// Los logos de torneo se enganchan desde JS, no con onerror inline: la imagen
+// puede fallar mientras el navegador aún parsea y la función todavía no existe.
+// Intenta .png, luego .svg y por último muestra el nombre en texto.
+function montarLogoTorneo(imgId, headId) {
+  const img = document.getElementById(imgId);
+  if (!img) return;
+  const rendirse = () => {
+    img.style.display = 'none';
+    const head = document.getElementById(headId);
+    if (head) head.style.display = '';
+  };
+  const fallar = () => {
+    if (!img.dataset.triedSvg) {
+      img.dataset.triedSvg = '1';
+      img.src = img.src.replace(/\.png(\?.*)?$/i, '.svg');
+      return;
+    }
+    rendirse();
+  };
+  img.addEventListener('error', fallar);
+  // Puede haber fallado ya, antes de que corriera este código
+  if (img.complete && img.naturalWidth === 0) fallar();
 }
 
 // Partner picked for a doubles event — re-render so the combined rating updates
