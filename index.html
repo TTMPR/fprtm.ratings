@@ -2659,6 +2659,14 @@ Maria Lopez,Ana Torres,B</code>
             </div>
           </div>
         </div>
+        <div id="adminCardEquipos" class="adm-card" style="display:none;border-color:rgba(56,189,248,0.35)" onclick="showCopaAdminModal()">
+          <div class="adm-ico">👥</div>
+          <div>
+            <div class="adm-title">Gestionar Equipos</div>
+            <div class="adm-desc">Pagos, cupos y lista de espera</div>
+          </div>
+          <span id="copaAdminBadge" class="adm-badge" style="display:none;background:#f59e0b;color:#000">0</span>
+        </div>
         <div id="adminCardGestionar" class="adm-card" onclick="showInscAdminModal()">
           <div class="adm-ico">🧾</div>
           <div>
@@ -3096,6 +3104,48 @@ Maria Lopez,Ana Torres,B</code>
 <!-- ══════════════════════════════════════════
      GESTIONAR INSCRITOS MODAL (admin)
 ═══════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════
+     ADMIN — GESTIONAR EQUIPOS (Copa Olímpica 2026)
+═══════════════════════════════════════════ -->
+<div id="copaAdminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
+  <div style="max-width:940px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Gestionar Equipos — Copa Olímpica 2026</div>
+        <div id="copaAdminResumen" style="font-size:12px;color:var(--muted);margin-top:3px;"></div>
+      </div>
+      <button onclick="closeCopaAdminModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
+    </div>
+
+    <!-- Cupos por división -->
+    <div id="copaAdminCupos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px;"></div>
+
+    <!-- Barra de herramientas -->
+    <div style="display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+      <input id="copaAdminBuscar" type="text" placeholder="🔍 Buscar por jugador, equipo o club…" oninput="copaAdminRender()"
+        style="flex:1;min-width:180px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:9px 14px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;">
+      <select id="copaAdminFiltro" onchange="copaAdminRender()"
+        style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;cursor:pointer;">
+        <option value="">Todos los estados</option>
+        <option value="reservado">⏳ Reservados (falta pago)</option>
+        <option value="confirmado">✓ Confirmados</option>
+        <option value="lista_espera">📋 Lista de espera</option>
+        <option value="pendiente_division">❓ División por asignar</option>
+        <option value="vence">🔥 Reserva por vencer (24 h)</option>
+        <option value="expirado">✕ Expirados / cancelados</option>
+      </select>
+      <button onclick="copaAdminLiberar()" title="Expira reservas vencidas sin pago y promueve la lista de espera"
+        style="background:rgba(245,158,11,0.14);border:1px solid rgba(245,158,11,0.42);border-radius:10px;color:#f59e0b;font-size:12.5px;font-weight:700;padding:9px 13px;cursor:pointer;font-family:'Inter',sans-serif;">⟳ Liberar cupos vencidos</button>
+      <button onclick="copaAdminExportarCSV()"
+        style="background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.4);border-radius:10px;color:var(--accent);font-size:12.5px;font-weight:700;padding:9px 13px;cursor:pointer;font-family:'Inter',sans-serif;">⬇ CSV</button>
+    </div>
+
+    <div id="copaAdminMsg" style="font-size:12.5px;margin-bottom:10px;min-height:16px;text-align:center;"></div>
+    <div id="copaAdminLista" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
+  </div>
+</div>
+
 <div id="inscAdminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
   <div style="max-width:900px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
 
@@ -11171,6 +11221,7 @@ function applyInscripcionesState() {
 
   // Torneo por equipos: apaga el flujo individual y enciende el de la Copa
   copaAplicarEstado();
+  copaAplicarAdminCards();
 
   // Start countdown if archived view is visible
   if (torneoArchivado) initNextEventCountdown();
@@ -12600,6 +12651,338 @@ async function copaInit() {
   await copaCargarConfig();
   await copaCargarCupos();
   copaAplicarEstado();
+}
+
+// ══════════════════════════════════════════
+// ADMIN — EQUIPOS (Copa Olímpica 2026)
+// ══════════════════════════════════════════
+// El admin sí lee la tabla base (con email, teléfono y referencia): su sesión
+// va autenticada y la RLS lo permite. Confirmar un pago es lo único que saca
+// un equipo del reloj de expiración, así que es la acción principal.
+
+let _copaAdminData = [];
+
+async function showCopaAdminModal() {
+  if (!isAdmin()) { showLogin(); return; }
+  const modal = document.getElementById('copaAdminModal');
+  if (modal) modal.style.display = '';
+  await copaAdminCargar();
+}
+
+function closeCopaAdminModal() {
+  const modal = document.getElementById('copaAdminModal');
+  if (modal) modal.style.display = 'none';
+  _copaAdminData = [];
+}
+
+async function copaAdminCargar() {
+  const lista = document.getElementById('copaAdminLista');
+  try {
+    const { data, error } = await _supabase.from('insc_equipos').select('*')
+      .eq('torneo', TORNEO_ACTIVO).order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+    _copaAdminData = data || [];
+    await copaCargarCupos();
+    copaAdminRender();
+    copaAdminBadge();
+  } catch (e) {
+    if (lista) lista.innerHTML = `<div style="color:#ef4444;font-size:13px;line-height:1.6;">
+      No se pudieron cargar los equipos: ${copaEsc(e.message)}<br>
+      <span style="color:var(--muted);font-size:12px;">Si dice que la tabla no existe, corre <strong>sql/create_insc_equipos.sql</strong> en Supabase.</span>
+    </div>`;
+  }
+}
+
+const COPA_ESTADOS = {
+  reservado:          { txt: 'Reserva sin pago', color: '#f59e0b' },
+  confirmado:         { txt: 'Pagado',           color: 'var(--green)' },
+  lista_espera:       { txt: 'Lista de espera',  color: '#a5b4fc' },
+  pendiente_division: { txt: 'División por asignar', color: '#a5b4fc' },
+  expirado:           { txt: 'Expirado',         color: 'var(--muted)' },
+  cancelado:          { txt: 'Cancelado',        color: 'var(--muted)' },
+};
+
+const copaHorasRestantes = row => row.reserva_expira
+  ? (new Date(row.reserva_expira) - Date.now()) / 3600000 : null;
+
+function copaAdminRender() {
+  const lista = document.getElementById('copaAdminLista');
+  const cuposEl = document.getElementById('copaAdminCupos');
+  const resumen = document.getElementById('copaAdminResumen');
+  if (!lista) return;
+
+  // ── Cupos por división ──
+  if (cuposEl) {
+    cuposEl.innerHTML = COPA_DIVISIONES.map(d => {
+      const c    = copaCuposDe(d.division);
+      const max  = c ? c.max_equipos : d.maxEquipos;
+      const ocup = c ? Number(c.ocupados) : 0;
+      const conf = c ? Number(c.confirmados) : 0;
+      const esp  = c ? Number(c.en_espera) : 0;
+      const lleno = ocup >= max;
+      return `<div style="background:rgba(255,255,255,0.03);border:1px solid ${lleno ? 'rgba(239,68,68,0.35)' : 'var(--border)'};border-radius:11px;padding:11px 13px;">
+        <div style="font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--text);">${copaEsc(d.nombre)}</div>
+        <div style="font-family:'Orbitron',monospace;font-size:19px;font-weight:800;color:${lleno ? '#ef4444' : 'var(--accent)'};margin-top:3px;">${ocup} / ${max}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${conf} pagado${conf !== 1 ? 's' : ''}${esp ? ` · ${esp} en espera` : ''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Resumen financiero ──
+  const activos   = _copaAdminData.filter(r => !['expirado', 'cancelado'].includes(r.estado));
+  const cobrado   = _copaAdminData.reduce((s, r) => s + (Number(r.monto_pagado) || 0), 0);
+  const esperado  = activos.filter(r => r.estado !== 'lista_espera')
+                           .reduce((s, r) => s + (Number(r.costo) || 0), 0);
+  if (resumen) {
+    resumen.innerHTML = `${activos.length} equipo${activos.length !== 1 ? 's' : ''} activo${activos.length !== 1 ? 's' : ''}
+      &nbsp;·&nbsp; Cobrado <strong style="color:var(--green);">$${cobrado.toFixed(2)}</strong>
+      de <strong style="color:var(--text);">$${esperado.toFixed(2)}</strong>
+      &nbsp;·&nbsp; Por cobrar <strong style="color:#f59e0b;">$${Math.max(0, esperado - cobrado).toFixed(2)}</strong>`;
+  }
+
+  // ── Filtros ──
+  const q      = (document.getElementById('copaAdminBuscar')?.value || '').trim().toLowerCase();
+  const filtro = document.getElementById('copaAdminFiltro')?.value || '';
+
+  let filas = _copaAdminData.filter(r => {
+    if (filtro === 'vence') {
+      const h = copaHorasRestantes(r);
+      return r.estado === 'reservado' && h !== null && h <= 24;
+    }
+    if (filtro === 'expirado') return ['expirado', 'cancelado'].includes(r.estado);
+    if (filtro)                return r.estado === filtro;
+    return !['expirado', 'cancelado'].includes(r.estado);
+  });
+
+  if (q) {
+    filas = filas.filter(r => [r.cap_nombre, r.comp_nombre, r.nombre_equipo, r.club, r.referencia]
+      .some(v => (v || '').toLowerCase().includes(q)));
+  }
+
+  if (!filas.length) {
+    lista.innerHTML = '<div style="padding:36px 0;color:var(--muted);font-size:13.5px;">Ningún equipo coincide con el filtro.</div>';
+    return;
+  }
+
+  lista.style.textAlign = 'left';
+  lista.innerHTML = filas.map(copaAdminFila).join('');
+}
+
+function copaAdminFila(r) {
+  const est   = COPA_ESTADOS[r.estado] || { txt: r.estado, color: 'var(--muted)' };
+  const costo = Number(r.costo) || 0;
+  const pag   = Number(r.monto_pagado) || 0;
+  const saldo = Math.max(0, costo - pag);
+  const horas = copaHorasRestantes(r);
+  const div   = COPA_DIVISIONES.find(d => d.division === r.division);
+
+  const reloj = (r.estado === 'reservado' && horas !== null)
+    ? (horas <= 0
+        ? `<span style="color:#ef4444;font-weight:700;">reserva vencida</span>`
+        : `<span style="color:${horas <= 24 ? '#ef4444' : '#f59e0b'};font-weight:600;">quedan ${horas < 1 ? '<1' : Math.floor(horas)} h para pagar</span>`)
+    : '';
+
+  const contacto = [r.cap_email, r.cap_tel].filter(Boolean).join(' · ');
+
+  return `<div style="border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:9px;background:rgba(255,255,255,0.02);">
+    <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+      <div style="flex:1;min-width:210px;">
+        ${r.nombre_equipo ? `<div style="font-size:14px;font-weight:800;color:var(--text);">${copaEsc(r.nombre_equipo)}</div>` : ''}
+        <div style="font-size:13.5px;color:var(--text);font-weight:600;line-height:1.45;">
+          ${copaEsc(r.cap_nombre)}${r.cap_invitado ? ' <span style="color:#a5b4fc;font-size:10px;">(invitado)</span>' : ''}
+          <span style="color:var(--muted);">/</span>
+          ${copaEsc(r.comp_nombre)}${r.comp_invitado ? ' <span style="color:#a5b4fc;font-size:10px;">(invitado)</span>' : ''}
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">
+          #${r.id} · ${div ? copaEsc(div.nombre) : 'sin división'}
+          ${r.rating_combinado != null ? ` · ★${r.rating_combinado}` : ''}
+          ${r.club ? ` · ${copaEsc(r.club)}` : ''}
+        </div>
+        ${contacto ? `<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${copaEsc(contacto)}</div>` : ''}
+      </div>
+      <div style="text-align:right;min-width:120px;">
+        <div style="font-size:11px;font-weight:700;color:${est.color};">${est.txt}</div>
+        <div style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:${saldo > 0 ? '#f59e0b' : 'var(--green)'};margin-top:2px;">
+          $${pag.toFixed(2)} / $${costo.toFixed(2)}
+        </div>
+        ${r.referencia ? `<div style="font-family:'Orbitron',monospace;font-size:10.5px;color:var(--accent);margin-top:1px;">${copaEsc(r.referencia)}</div>` : ''}
+        ${reloj ? `<div style="font-size:10.5px;margin-top:3px;">${reloj}</div>` : ''}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1px solid var(--border);">
+      ${!['expirado','cancelado'].includes(r.estado) ? `
+        <button onclick="copaAdminPago(${r.id})" style="${copaBtnAdm('var(--green)')}">💵 Registrar pago</button>
+        ${r.estado === 'reservado' ? `<button onclick="copaAdminExtender(${r.id})" style="${copaBtnAdm('#f59e0b')}">⏱ +${COPA_RESERVA_HORAS} h</button>` : ''}
+        ${r.estado === 'pendiente_division' ? `<button onclick="copaAdminAsignarDivision(${r.id})" style="${copaBtnAdm('#a5b4fc')}">🎯 Asignar división</button>` : ''}
+        <button onclick="copaAdminCancelar(${r.id})" style="${copaBtnAdm('#ef4444')}">✕ Cancelar</button>
+      ` : `<button onclick="copaAdminReactivar(${r.id})" style="${copaBtnAdm('var(--accent)')}">↩ Reactivar</button>`}
+    </div>
+  </div>`;
+}
+
+const copaBtnAdm = color =>
+  `background:transparent;border:1px solid ${color};border-radius:8px;color:${color};font-size:11.5px;font-weight:700;padding:6px 11px;cursor:pointer;font-family:'Inter',sans-serif;`;
+
+function copaAdminMsg(txt, ok = true) {
+  const el = document.getElementById('copaAdminMsg');
+  if (!el) return;
+  el.textContent = txt;
+  el.style.color = ok ? 'var(--green)' : '#ef4444';
+  if (txt) setTimeout(() => { if (el.textContent === txt) el.textContent = ''; }, 5000);
+}
+
+async function copaAdminUpdate(id, patch, aviso) {
+  try {
+    const { error } = await _supabase.from('insc_equipos').update(patch).eq('id', id);
+    if (error) throw new Error(error.message);
+    await copaAdminCargar();
+    copaAdminMsg(aviso);
+  } catch (e) {
+    copaAdminMsg('Error: ' + e.message, false);
+  }
+}
+
+// Un pago total confirma el equipo y con eso deja de correr el reloj de la
+// reserva. Un abono parcial mantiene el cupo (insc_equipos_liberar respeta
+// cualquier monto > 0) pero no lo da por confirmado.
+async function copaAdminPago(id) {
+  const r = _copaAdminData.find(x => x.id === id);
+  if (!r) return;
+  const costo = Number(r.costo) || 0;
+  const actual = Number(r.monto_pagado) || 0;
+  const txt = prompt(`Monto recibido de ${r.cap_nombre} / ${r.comp_nombre}\n\nCosto: $${costo.toFixed(2)} · Ya pagado: $${actual.toFixed(2)}`, costo.toFixed(2));
+  if (txt === null) return;
+  const monto = parseFloat(String(txt).replace(/[^0-9.]/g, ''));
+  if (!Number.isFinite(monto) || monto < 0) { copaAdminMsg('Monto inválido.', false); return; }
+
+  const ref = prompt('Referencia del pago (ATH Móvil, confirmación, etc.)', r.referencia || '') ?? r.referencia;
+  const completo = costo > 0 && monto >= costo;
+
+  await copaAdminUpdate(id, {
+    monto_pagado: monto,
+    pagado: completo,
+    referencia: (ref || '').trim() || null,
+    estado: completo ? 'confirmado' : r.estado,
+    reserva_expira: completo ? null : r.reserva_expira,
+  }, completo ? 'Pago completo registrado — el equipo queda confirmado.'
+              : `Abono de $${monto.toFixed(2)} registrado. El cupo se mantiene.`);
+}
+
+async function copaAdminExtender(id) {
+  const nueva = new Date(Date.now() + COPA_RESERVA_HORAS * 3600000).toISOString();
+  await copaAdminUpdate(id, { reserva_expira: nueva },
+    `Reserva extendida ${COPA_RESERVA_HORAS} h más.`);
+}
+
+async function copaAdminAsignarDivision(id) {
+  const r = _copaAdminData.find(x => x.id === id);
+  if (!r) return;
+  const opciones = COPA_DIVISIONES.map((d, i) => `${i + 1}. ${d.nombre} — $${d.precio}`).join('\n');
+  const sel = prompt(`División para ${r.cap_nombre} / ${r.comp_nombre}\n\n${opciones}\n\nEscribe el número:`);
+  if (sel === null) return;
+  const d = COPA_DIVISIONES[parseInt(sel, 10) - 1];
+  if (!d) { copaAdminMsg('Opción inválida.', false); return; }
+
+  const c    = copaCuposDe(d.division);
+  const max  = c ? c.max_equipos : d.maxEquipos;
+  const ocup = c ? Number(c.ocupados) : 0;
+  const hayCupo = ocup < max;
+  if (!hayCupo && !confirm(`${d.nombre} está llena (${ocup}/${max}).\n\n¿Poner el equipo en lista de espera?`)) return;
+
+  await copaAdminUpdate(id, {
+    division: d.division,
+    costo: d.precio,
+    estado: hayCupo ? 'reservado' : 'lista_espera',
+    reserva_expira: hayCupo ? new Date(Date.now() + COPA_RESERVA_HORAS * 3600000).toISOString() : null,
+  }, hayCupo ? `Asignado a ${d.nombre} — $${d.precio}. Avísale al capitán.`
+             : `${d.nombre} está llena: el equipo quedó en lista de espera.`);
+}
+
+async function copaAdminCancelar(id) {
+  const r = _copaAdminData.find(x => x.id === id);
+  if (!r) return;
+  if (!confirm(`¿Cancelar el equipo ${r.cap_nombre} / ${r.comp_nombre}?\n\nSu cupo se libera y entra el primero de la lista de espera.`)) return;
+  await copaAdminUpdate(id, { estado: 'cancelado', reserva_expira: null }, 'Equipo cancelado.');
+  await copaAdminLiberar(true);
+}
+
+async function copaAdminReactivar(id) {
+  const r = _copaAdminData.find(x => x.id === id);
+  if (!r) return;
+  const d = COPA_DIVISIONES.find(x => x.division === r.division);
+  const c = d ? copaCuposDe(d.division) : null;
+  const hayCupo = d && c ? Number(c.ocupados) < c.max_equipos : true;
+  if (!hayCupo && !confirm(`${d.nombre} está llena.\n\n¿Reactivar en lista de espera?`)) return;
+  await copaAdminUpdate(id, {
+    estado: !d ? 'pendiente_division' : hayCupo ? 'reservado' : 'lista_espera',
+    reserva_expira: hayCupo && d ? new Date(Date.now() + COPA_RESERVA_HORAS * 3600000).toISOString() : null,
+  }, 'Equipo reactivado.');
+}
+
+// Expira reservas vencidas sin pago y sube la lista de espera. Corre sola en
+// cada inscripción; este botón es para cuando el admin acaba de liberar algo.
+async function copaAdminLiberar(silencioso = false) {
+  try {
+    const { data, error } = await _supabase.rpc('insc_equipos_liberar', { p_torneo: TORNEO_ACTIVO });
+    if (error) throw new Error(error.message);
+    await copaAdminCargar();
+    if (!silencioso) {
+      copaAdminMsg(`${data?.expirados || 0} reserva(s) expirada(s) · ${data?.promovidos || 0} equipo(s) promovido(s) desde la lista de espera.`);
+    }
+  } catch (e) {
+    if (!silencioso) copaAdminMsg('Error: ' + e.message, false);
+  }
+}
+
+// Insignia de la tarjeta: equipos cuya reserva vence en menos de 24 h.
+function copaAdminBadge() {
+  const b = document.getElementById('copaAdminBadge');
+  if (!b) return;
+  const n = _copaAdminData.filter(r => {
+    const h = copaHorasRestantes(r);
+    return r.estado === 'reservado' && h !== null && h <= 24;
+  }).length;
+  b.style.display = n ? '' : 'none';
+  b.textContent = String(n);
+}
+
+function copaAdminExportarCSV() {
+  const cab = ['id','estado','division','nombre_equipo','club',
+               'jugador_1','fptm_1','rating_1','jugador_2','fptm_2','rating_2',
+               'rating_combinado','costo','monto_pagado','referencia','email','telefono','inscrito'];
+  const filas = _copaAdminData.map(r => [
+    r.id, r.estado, r.division || '', r.nombre_equipo || '', r.club || '',
+    r.cap_nombre, r.cap_member_id ?? '', r.cap_rating ?? '',
+    r.comp_nombre, r.comp_member_id ?? '', r.comp_rating ?? '',
+    r.rating_combinado ?? '', r.costo, r.monto_pagado, r.referencia || '',
+    r.cap_email || '', r.cap_tel || '',
+    (r.created_at || '').split('T')[0],
+  ]);
+  const csv = [cab, ...filas]
+    .map(f => f.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `equipos_copa_olimpica_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Modo equipos: las tarjetas del flujo individual leerían insc_registro para
+// un torneo que no tiene inscripciones ahí, así que mostrarían cero. Se
+// apagan para no dar un dato falso, y se enciende la de equipos.
+function copaAplicarAdminCards() {
+  if (!esTorneoEquipos()) return;
+  const eq = document.getElementById('adminCardEquipos');
+  if (eq) eq.style.display = torneoArchivado ? 'none' : '';
+  ['adminCardGestionar', 'adminCardExportar', 'adminCardReporte',
+   'adminCardFinanciero', 'adminCardLogistica'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
 }
 
 // ══════════════════════════════════════════
