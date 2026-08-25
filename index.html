@@ -6824,6 +6824,17 @@ function subirLoadTexto(texto, nombreMostrado) {
   }
 }
 
+let _sqlColumnaBorrador = '';
+async function copiarSqlColumna(btn) {
+  try {
+    await navigator.clipboard.writeText(_sqlColumnaBorrador);
+    const t = btn.textContent; btn.textContent = '✓ Copiado';
+    setTimeout(() => btn.textContent = t, 1600);
+  } catch (_) {
+    window.prompt('Copia este SQL:', _sqlColumnaBorrador);
+  }
+}
+
 function subirProcesarCsv() {
   if (!subirCsvRows.length) { alert('Primero carga un archivo CSV.'); return; }
   subirPending = [];
@@ -6955,13 +6966,16 @@ async function subirGuardarBorrador() {
     // Show SQL to create the column — admin must run this before publishing
     const sql = `ALTER TABLE public."Base de Datos" ADD COLUMN IF NOT EXISTS "${colName}" INTEGER;`;
     msgEl.style.color = 'var(--green)';
+    // El SQL lleva comillas dobles (public."Base de Datos"): incrustarlo en un
+    // onclick="..." rompía el atributo y el markup del botón salía como texto.
+    _sqlColumnaBorrador = sql;
     msgEl.innerHTML = `
       <div style="margin-bottom:8px;">✓ Borrador guardado. Antes de publicar, corre este SQL en Supabase:</div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <code style="flex:1;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;
-                     padding:10px 12px;font-size:12px;font-family:'Orbitron',monospace;color:var(--accent);
-                     display:block;word-break:break-all;">${sql}</code>
-        <button onclick="navigator.clipboard.writeText('${sql.replace(/'/g,"\\'")}').then(()=>this.textContent='✓').catch(()=>{})"
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <code style="flex:1;min-width:0;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;
+                     padding:10px 12px;font-size:12px;font-family:ui-monospace,monospace;color:var(--accent);
+                     display:block;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;">${escHTML(sql)}</code>
+        <button onclick="copiarSqlColumna(this)"
           style="flex-shrink:0;padding:8px 12px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);
                  color:var(--accent);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">
           Copiar
