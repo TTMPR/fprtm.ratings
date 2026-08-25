@@ -13,8 +13,12 @@ de septiembre, 10:00 p.m. AST (o antes si se llenan los 64).
 
 ### Paso 1: correr el SQL
 
-En **Supabase → SQL Editor**, pegar y ejecutar `sql/create_insc_equipos.sql`
-completo. Es seguro re-ejecutarlo: no borra datos.
+En **Supabase → SQL Editor**, pegar y ejecutar, en este orden:
+
+1. `sql/create_insc_equipos.sql`
+2. `sql/create_busca_companero.sql` (el tablón "Busco Compañero")
+
+Ambos son seguros de re-ejecutar: no borran datos.
 
 Al final imprime los cupos de las tres divisiones. Si ves esto, quedó bien:
 
@@ -113,7 +117,68 @@ próxima vez que corra "Liberar cupos".
 
 ---
 
-## 5. Lo que todavía no está
+## 5. Tablón "Busco Compañero"
+
+Tercera pestaña, junto a *Inscribirse* y *Ver Inscritos*. Quien no tiene
+pareja publica que busca, y los demás lo ven y le escriben directo.
+
+Lo que lo hace útil y no un grupo de WhatsApp con más pasos: **el visitante
+escoge su nombre primero**, y entonces el tablón le dice, con cada jugador de
+la lista, en qué división caerían juntos y cuánto pagarían — agrupado de la
+división más alta a la más baja. Es una pregunta que solo esta plataforma
+puede contestar, porque la división sale del rating combinado.
+
+### Contacto — decisión de la federación
+
+El contacto es **público y opcional**. Quien publica escoge WhatsApp, email o
+"por la FPTM". Lo que escoja queda visible para cualquiera que abra la página,
+no solo para jugadores inscritos, y el formulario se lo advierte antes de
+publicar.
+
+Quede claro para poder decidir distinto más adelante: cualquiera que lea el
+código fuente del sitio obtiene la llave anon y con ella esa lista de
+contactos. Es el precio de que el tablón funcione de un vistazo. Si algún día
+prefieren que no, el cambio es servir el contacto solo tras una acción
+("Me interesa") en vez de en la lista.
+
+### Menores de edad
+
+**El contacto de un menor de 18 no se publica nunca.** Su anuncio aparece,
+pero dice "contacta a la FPTM" y la federación conecta con la madre, padre o
+encargado. El contacto sí se ve en el panel de admin — es lo que hace posible
+ese "contacta a la FPTM".
+
+Esa decisión **no la toma el navegador**: `publicar_busca_companero()` la
+calcula contra la fecha de nacimiento de `Base de Datos`. Aunque el formulario
+mandara un teléfono y declarara que el jugador es adulto, el servidor lo
+descarta igual. Probado.
+
+Si la base no tiene fecha de nacimiento utilizable, el formulario le pide al
+jugador confirmar que tiene 18 o más. Sin esa confirmación, se publica sin
+contacto — preferimos un anuncio sin teléfono a publicar el de un menor por
+no saberlo.
+
+### Se mantiene solo
+
+- Al aparecer en un equipo inscrito, el anuncio **desaparece del tablón**.
+  Nadie tiene que acordarse de retirarlo. La fila queda `activo` en la tabla,
+  así que si luego cancelan el equipo, el anuncio reaparece solo.
+- Quien ya tiene equipo no puede publicar.
+- Un anuncio activo por persona: volver a publicar reemplaza el anterior.
+- Botón "Ya conseguí compañero" para retirarlo a mano.
+
+### Admin
+
+Sección desplegable al final de *Gestionar Equipos*: la lista completa con el
+contacto de todos (menores incluidos) y un botón para **ocultar** cualquier
+anuncio abusivo o duplicado, y reactivarlo.
+
+> Se instala con `sql/create_busca_companero.sql`. Requiere que
+> `sql/create_insc_equipos.sql` ya esté corrido.
+
+---
+
+## 6. Lo que todavía no está
 
 - **Export a Stadium Compete.** Stadium no importa equipos; el torneo se
   cargaría con el truco de dobles (`"Nombre / Nombre"` como una sola entrada,
@@ -127,12 +192,14 @@ próxima vez que corra "Liberar cupos".
 
 ---
 
-## 6. Volver a un torneo individual
+## 7. Volver a un torneo individual
 
 El flujo individual por categorías (Cidra, Morovis) sigue intacto en el
 código, solo apagado. Para el próximo torneo de ese tipo:
 
-1. Cambiar `TORNEO_MODO` a `'individual'` en `index.html`.
+1. Cambiar `TORNEO_MODO` a `'individual'` en `index.html`. La pestaña
+   "Busco Compañero" se oculta sola — en un torneo individual nadie busca
+   compañero.
 2. Actualizar las constantes del torneo (`TORNEO_ACTIVO`, sede, fechas,
    logo) y `INSC_CATEGORIES`.
 

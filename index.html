@@ -3143,6 +3143,20 @@ Maria Lopez,Ana Torres,B</code>
 
     <div id="copaAdminMsg" style="font-size:12.5px;margin-bottom:10px;min-height:16px;text-align:center;"></div>
     <div id="copaAdminLista" style="font-size:14px;color:var(--muted);text-align:center;padding:40px 0;">Cargando...</div>
+
+    <!-- ── Tablón "Busco Compañero" ── -->
+    <div style="margin-top:26px;border-top:1px solid var(--border);padding-top:18px;">
+      <div onclick="buscaAdminToggle()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px;">
+        <div>
+          <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:800;color:var(--text);">Busco Compañero</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">Jugadores sin equipo · el contacto de los menores solo se ve aquí</div>
+        </div>
+        <span id="buscaAdminChevron" style="color:var(--muted);font-size:12.5px;white-space:nowrap;">Ver ▾</span>
+      </div>
+      <div id="buscaAdminBody" style="display:none;margin-top:14px;">
+        <div id="buscaAdminLista" style="font-size:13px;color:var(--muted);text-align:center;padding:24px 0;">Cargando...</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3912,6 +3926,9 @@ Maria Lopez,Ana Torres,B</code>
         style="flex:1;padding:10px 0;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.18s;background:transparent;color:var(--muted);">
         Ver Inscritos
       </button>
+      <button id="inscSubTabBusca" onclick="inscSwitchTab('busca')" style="display:none;flex:1;padding:10px 0;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;transition:all 0.18s;background:transparent;color:var(--muted);">
+        Busco Compañero
+      </button>
     </div>
 
     <!-- Estadísticas en vivo (público) — cupos por categoría y rating promedio -->
@@ -4295,7 +4312,7 @@ Maria Lopez,Ana Torres,B</code>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;">
         <div>
           <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">INSCRITOS</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:1px;">Cidra Open 2026</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:1px;" id="inscritosSubtitulo">—</div>
         </div>
         <div id="inscritosSectionBadge" style="display:none;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);font-family:'Orbitron',monospace;font-size:17px;letter-spacing:1px;padding:5px 14px;border-radius:20px;white-space:nowrap;"></div>
       </div>
@@ -4304,6 +4321,87 @@ Maria Lopez,Ana Torres,B</code>
       </div>
       <div id="inscritosTabContent" style="padding-top:20px;min-height:100px;"></div>
     </div><!-- /inscTabInscritos -->
+
+    <!-- ══════════════════════════════════════════
+         BUSCO COMPAÑERO — tablón de jugadores sin equipo
+    ═══════════════════════════════════════════ -->
+    <div id="inscTabBusca" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:12px;">
+        <div>
+          <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">BUSCO COMPAÑERO</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:1px;" id="buscaSubtitulo">—</div>
+        </div>
+        <div id="buscaBadge" style="display:none;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);color:var(--accent);font-family:'Orbitron',monospace;font-size:17px;letter-spacing:1px;padding:5px 14px;border-radius:20px;white-space:nowrap;"></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin:0 0 16px;">
+        Jugadores que buscan con quién formar equipo. Escríbeles directo y, cuando cuadren, inscriban el equipo.
+      </p>
+
+      <!-- ── "Soy…" — con esto el tablón calcula la división de cada pareja ── -->
+      <div style="background:linear-gradient(150deg,rgba(56,189,248,0.08),rgba(129,140,248,0.05));border:1px solid rgba(56,189,248,0.26);border-radius:13px;padding:15px 16px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">¿Con quién te conviene?</div>
+        <div style="font-size:12.5px;color:var(--text);line-height:1.6;margin-bottom:11px;">
+          Escoge tu nombre y te digo, con cada jugador de la lista, en qué división caerían y cuánto pagarían.
+        </div>
+        <div id="buscaYoSlot"></div>
+      </div>
+
+      <div id="buscaLista" style="min-height:80px;"></div>
+
+      <!-- ── Publicar ── -->
+      <div style="margin-top:22px;border-top:1px solid var(--border);padding-top:20px;">
+        <button type="button" id="buscaAbrirFormBtn" onclick="buscaAbrirForm()"
+          style="width:100%;background:var(--grad);border:none;border-radius:11px;padding:14px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:800;cursor:pointer;">
+          📣 Publicar que busco equipo
+        </button>
+
+        <div id="buscaForm" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:12px;">
+          <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:10px;">Tu nombre en el sistema FPTM</label>
+          <div id="buscaSlot_yo"></div>
+
+          <div id="buscaFormResto" style="display:none;margin-top:16px;">
+            <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px;">Nota <span style="font-weight:400;">(opcional)</span></label>
+            <input type="text" id="buscaNota" maxlength="120" placeholder="Ej. Disponible los dos días · busco División 2" autocomplete="off"
+              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;margin-bottom:16px;">
+
+            <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:7px;">¿Cómo quieres que te contacten?</label>
+            <div style="display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;">
+              <button type="button" id="buscaCt_whatsapp" onclick="buscaSetContacto('whatsapp')" style="flex:1;min-width:96px;border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">WhatsApp</button>
+              <button type="button" id="buscaCt_email"    onclick="buscaSetContacto('email')"    style="flex:1;min-width:96px;border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Email</button>
+              <button type="button" id="buscaCt_ninguno"  onclick="buscaSetContacto('ninguno')"  style="flex:1;min-width:96px;border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Por la FPTM</button>
+            </div>
+            <input type="text" id="buscaContactoValor" placeholder="787-000-0000" autocomplete="off"
+              style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;">
+
+            <div id="buscaAvisoPublico" style="display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:11px 13px;margin-top:11px;font-size:12px;color:#f59e0b;line-height:1.6;">
+              ⚠ Esto queda <strong>visible para cualquiera</strong> que abra la página, no solo para jugadores inscritos.
+              Si prefieres que no, escoge <strong>"Por la FPTM"</strong> y la federación te conecta.
+            </div>
+
+            <div id="buscaMayorWrap" style="display:none;margin-top:11px;">
+              <label style="display:flex;align-items:flex-start;gap:11px;cursor:pointer;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;">
+                <input type="checkbox" id="buscaMayorCheck" onchange="buscaActualizarBoton()" style="width:17px;height:17px;flex-shrink:0;margin-top:1px;accent-color:var(--accent);cursor:pointer;">
+                <span style="font-size:12.5px;color:var(--text);line-height:1.55;">
+                  Confirmo que <strong>tengo 18 años o más</strong>. No tenemos tu fecha de nacimiento en la base,
+                  y no publicamos datos de contacto de menores de edad.
+                </span>
+              </label>
+            </div>
+
+            <div id="buscaMenorAviso" style="display:none;background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.3);border-radius:10px;padding:11px 13px;margin-top:11px;font-size:12px;color:#a5b4fc;line-height:1.6;"></div>
+
+            <div id="buscaFormMsg" style="font-size:12.5px;margin-top:12px;min-height:16px;text-align:center;color:#ef4444;line-height:1.5;"></div>
+
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              <button type="button" onclick="buscaCerrarForm()"
+                style="background:transparent;border:1px solid var(--border);border-radius:10px;padding:13px 18px;color:var(--muted);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Cancelar</button>
+              <button type="button" id="buscaSubmitBtn" onclick="buscaPublicar()" disabled
+                style="flex:1;background:var(--grad);border:none;border-radius:10px;padding:13px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:800;cursor:not-allowed;opacity:.4;">Publicar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /inscTabBusca -->
     </div><!-- /inscActiveTorneoUI -->
 
   </div>
@@ -12518,9 +12616,10 @@ function copaAplicarEstado() {
   const enExito         = success && success.style.display !== 'none' && success.innerHTML !== '';
 
   // El panel de equipos vive dentro de la pestaña "Inscribirse"
-  const enTabForm = document.getElementById('inscTabInscritos')?.style.display === 'none';
-  panel.style.display = enTabForm ? '' : 'none';
+  panel.style.display = _inscTabActual === 'form' ? '' : 'none';
   if (indiv) indiv.style.display = 'none';
+  const btnBusca = document.getElementById('inscSubTabBusca');
+  if (btnBusca) btnBusca.style.display = '';
 
   if (formW)   formW.style.display   = (mostrarForm && !enExito) ? '' : 'none';
   if (cerrado) cerrado.style.display = mostrarForm ? 'none' : '';
@@ -12547,6 +12646,8 @@ async function loadEquiposSection() {
   const badge   = document.getElementById('inscritosSectionBadge');
   if (!content) return;
 
+  const sub = document.getElementById('inscritosSubtitulo');
+  if (sub) sub.textContent = TORNEO_ACTIVO;
   content.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--muted);font-size:14px;">Cargando equipos...</div>';
   if (tabsEl) tabsEl.innerHTML = '';
   if (badge)  badge.style.display = 'none';
@@ -12971,6 +13072,86 @@ function copaAdminExportarCSV() {
   URL.revokeObjectURL(url);
 }
 
+
+// ── ADMIN: tablón "Busco Compañero" ────────────────────────────────────────
+// El admin lee la tabla base, así que sí ve el contacto de los menores. Es
+// justo lo que hace posible el "contacta a la FPTM" que ve el público: la
+// federación conecta con la madre, padre o encargado.
+let _buscaAdminData = [];
+
+function buscaAdminToggle() {
+  const body = document.getElementById('buscaAdminBody');
+  const chev = document.getElementById('buscaAdminChevron');
+  if (!body) return;
+  const abrir = body.style.display === 'none';
+  body.style.display = abrir ? '' : 'none';
+  if (chev) chev.textContent = abrir ? 'Ocultar ▴' : 'Ver ▾';
+  if (abrir) buscaAdminCargar();
+}
+
+async function buscaAdminCargar() {
+  const host = document.getElementById('buscaAdminLista');
+  if (!host) return;
+  try {
+    const { data, error } = await _supabase.from('insc_busca_companero').select('*')
+      .eq('torneo', TORNEO_ACTIVO).order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    _buscaAdminData = data || [];
+    buscaAdminRender();
+  } catch (e) {
+    host.innerHTML = `<div style="color:#ef4444;font-size:12.5px;line-height:1.6;">
+      No se pudo cargar: ${copaEsc(e.message)}<br>
+      <span style="color:var(--muted);font-size:11.5px;">Si dice que la tabla no existe, corre <strong>sql/create_busca_companero.sql</strong>.</span>
+    </div>`;
+  }
+}
+
+function buscaAdminRender() {
+  const host = document.getElementById('buscaAdminLista');
+  if (!host) return;
+  const activos = _buscaAdminData.filter(r => r.estado === 'activo');
+  if (!_buscaAdminData.length) {
+    host.innerHTML = '<div style="font-size:12.5px;color:var(--muted);padding:12px 0;">Nadie ha publicado todavía.</div>';
+    return;
+  }
+  host.style.textAlign = 'left';
+  host.innerHTML = `<div style="font-size:11.5px;color:var(--muted);margin-bottom:9px;">
+      ${activos.length} activo(s) de ${_buscaAdminData.length} publicado(s)
+    </div>` + _buscaAdminData.map(r => {
+    const activo = r.estado === 'activo';
+    const contacto = r.contacto_tipo !== 'ninguno' && r.contacto_valor
+      ? `${r.contacto_tipo === 'whatsapp' ? '📱' : '✉'} ${copaEsc(r.contacto_valor)}`
+      : '<span style="color:var(--muted);">sin contacto</span>';
+    return `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:7px;background:rgba(255,255,255,0.02);opacity:${activo ? '1' : '0.5'};">
+      <div style="flex:1;min-width:170px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);">
+          ${copaEsc(r.nombre)}
+          ${r.es_menor ? '<span style="color:#a5b4fc;font-size:10px;font-weight:700;"> · MENOR</span>' : ''}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">
+          ${r.rating != null ? '★' + r.rating : 'sin rating'}${r.club ? ' · ' + copaEsc(r.club) : ''} · ${contacto}
+        </div>
+        ${r.nota ? `<div style="font-size:11.5px;color:var(--muted);margin-top:3px;font-style:italic;">“${copaEsc(r.nota)}”</div>` : ''}
+      </div>
+      <div style="font-size:10.5px;color:var(--muted);white-space:nowrap;">${copaEsc(r.estado)}</div>
+      <button onclick="buscaAdminEstado(${r.id}, '${activo ? 'oculto' : 'activo'}')"
+        style="${copaBtnAdm(activo ? '#ef4444' : 'var(--accent)')}">${activo ? '✕ Ocultar' : '↩ Reactivar'}</button>
+    </div>`;
+  }).join('');
+}
+
+async function buscaAdminEstado(id, estado) {
+  try {
+    const { error } = await _supabase.from('insc_busca_companero')
+      .update({ estado }).eq('id', id);
+    if (error) throw new Error(error.message);
+    await buscaAdminCargar();
+    copaAdminMsg(estado === 'oculto' ? 'Anuncio ocultado del tablón.' : 'Anuncio reactivado.');
+  } catch (e) {
+    copaAdminMsg('Error: ' + e.message, false);
+  }
+}
+
 // Modo equipos: las tarjetas del flujo individual leerían insc_registro para
 // un torneo que no tiene inscripciones ahí, así que mostrarían cero. Se
 // apagan para no dar un dato falso, y se enciende la de equipos.
@@ -12983,6 +13164,379 @@ function copaAplicarAdminCards() {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
+}
+
+// ══════════════════════════════════════════
+// BUSCO COMPAÑERO — tablón de jugadores sin equipo
+// ══════════════════════════════════════════
+// Sin esto, quien llega solo no tiene ningún camino: no puede inscribirse ni
+// dejar constancia de que quiere jugar. Un tablón plano sería un grupo de
+// WhatsApp con más pasos; lo que aporta la plataforma es que la división sale
+// del rating COMBINADO, así que "¿con quién me conviene?" tiene respuesta
+// exacta. Por eso lo primero que pide es "¿quién eres?".
+
+const buscaState = {
+  yo:         { player: null, timer: null },   // quién mira el tablón
+  publicador: { player: null, timer: null },   // quién publica
+  contactoTipo: 'whatsapp',
+  menor: null,        // true | false | null (sin fecha en la base)
+  anuncios: [],
+  enviando: false,
+};
+
+// ── Carga y render del tablón ──────────────────────────────────────────────
+async function loadBuscaSection() {
+  const host  = document.getElementById('buscaLista');
+  const sub   = document.getElementById('buscaSubtitulo');
+  if (sub) sub.textContent = TORNEO_ACTIVO;
+  if (!host) return;
+  host.innerHTML = '<div style="text-align:center;padding:36px 0;color:var(--muted);font-size:14px;">Cargando...</div>';
+
+  try {
+    const rows = await sbGet('insc_busca_companero_publico',
+      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=created_at.desc`);
+    buscaState.anuncios = rows || [];
+    buscaRenderPicker('yo', 'buscaYoSlot');
+    buscaRenderLista();
+  } catch (e) {
+    host.innerHTML = `<div style="text-align:center;padding:32px 16px;color:var(--muted);font-size:13px;line-height:1.6;">
+      No pudimos cargar el tablón.<br>
+      <button type="button" onclick="loadBuscaSection()" style="margin-top:12px;background:transparent;border:1px solid var(--border);border-radius:9px;color:var(--accent);font-size:13px;font-weight:600;padding:8px 16px;cursor:pointer;">⟳ Reintentar</button>
+    </div>`;
+  }
+}
+
+function buscaRenderLista() {
+  const host  = document.getElementById('buscaLista');
+  const badge = document.getElementById('buscaBadge');
+  if (!host) return;
+
+  const lista = buscaState.anuncios;
+  if (badge) {
+    badge.style.display = lista.length ? '' : 'none';
+    badge.textContent = String(lista.length);
+  }
+
+  if (!lista.length) {
+    host.innerHTML = `<div style="text-align:center;padding:34px 18px;border:1px dashed var(--border);border-radius:13px;color:var(--muted);font-size:13px;line-height:1.65;">
+      Todavía nadie ha publicado.<br><span style="font-size:12.5px;">Si te falta compañero, sé el primero — así te encuentran a ti.</span>
+    </div>`;
+    return;
+  }
+
+  const yo = buscaState.yo.player;
+
+  // Con "yo" escogido, cada anuncio se anota con la división que formarían.
+  // El orden pasa a ser por división (1 → 3), que es como piensa el jugador.
+  const conDiv = lista.map(a => {
+    let div = null, combinado = null;
+    if (yo && esTorneoEquipos() && yo.rating != null && a.rating != null && String(a.member_id) !== String(yo.id)) {
+      combinado = yo.rating + a.rating;
+      div = copaDivisionPara(combinado);
+    }
+    return { a, div, combinado };
+  }).filter(x => !yo || String(x.a.member_id) !== String(yo.id));
+
+  if (yo) {
+    conDiv.sort((x, z) => (x.div?.orden ?? 99) - (z.div?.orden ?? 99)
+                       || (z.combinado ?? 0) - (x.combinado ?? 0));
+  }
+
+  const contactoHtml = a => {
+    if (a.es_menor || a.contacto_tipo === 'ninguno' || !a.contacto_valor) {
+      return `<span style="font-size:11.5px;color:var(--muted);">${a.es_menor
+        ? 'Menor de edad — contacta a la FPTM para conectar'
+        : 'Contacta a la FPTM para conectar'}</span>`;
+    }
+    if (a.contacto_tipo === 'whatsapp') {
+      const tel = String(a.contacto_valor).replace(/[^0-9+]/g, '');
+      const num = tel.startsWith('+') ? tel.slice(1) : (tel.length === 10 ? '1' + tel : tel);
+      return `<a href="https://wa.me/${num}" target="_blank" rel="noopener"
+        style="display:inline-flex;align-items:center;gap:6px;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.35);border-radius:9px;padding:7px 12px;text-decoration:none;color:#25D366;font-size:12.5px;font-weight:700;">
+        WhatsApp ${copaEsc(a.contacto_valor)}</a>`;
+    }
+    return `<a href="mailto:${encodeURIComponent(a.contacto_valor)}"
+      style="display:inline-flex;align-items:center;gap:6px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.35);border-radius:9px;padding:7px 12px;text-decoration:none;color:var(--accent);font-size:12.5px;font-weight:700;">
+      ${copaEsc(a.contacto_valor)}</a>`;
+  };
+
+  let ultimaDiv = '__', nEncabezados = 0;
+  host.innerHTML = conDiv.map(({ a, div, combinado }) => {
+    let encabezado = '';
+    if (yo) {
+      const clave = div?.division || 'sin';
+      if (clave !== ultimaDiv) {
+        ultimaDiv = clave;
+        const mt = nEncabezados++ === 0 ? '0' : '18px';
+        encabezado = div
+          ? `<div style="display:flex;align-items:baseline;gap:9px;margin:${mt} 0 8px;">
+               <span style="font-family:'Orbitron',monospace;font-size:13px;font-weight:800;color:var(--text);">Con estos formas ${copaEsc(div.nombre)}</span>
+               <span style="font-size:11.5px;color:var(--accent);font-weight:700;">$${div.precio.toFixed(2)} por equipo</span>
+             </div>`
+          : `<div style="font-family:'Orbitron',monospace;font-size:13px;font-weight:800;color:var(--muted);margin:${mt} 0 8px;">Sin rating para calcular</div>`;
+      }
+    }
+
+    return encabezado + `<div style="border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:8px;background:rgba(255,255,255,0.02);">
+      <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1;min-width:180px;">
+          <div style="font-size:14.5px;font-weight:700;color:var(--text);line-height:1.35;">${copaEsc(a.nombre)}</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">
+            ${a.club ? copaEsc(a.club) : 'Sin club'}${a.member_id ? ` · FPTM-${a.member_id}` : ''}
+          </div>
+          ${a.nota ? `<div style="font-size:12.5px;color:var(--text);margin-top:6px;line-height:1.5;">“${copaEsc(a.nota)}”</div>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          ${a.rating != null
+            ? `<div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--accent);">${a.rating}</div>`
+            : '<div style="font-size:11px;color:#f59e0b;">sin rating</div>'}
+          ${combinado != null ? `<div style="font-size:10.5px;color:var(--muted);margin-top:1px;">juntos ${combinado}</div>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1px solid var(--border);">
+        ${contactoHtml(a)}
+        <button type="button" onclick="buscaRetirar(${a.id})" title="Si este anuncio es tuyo y ya conseguiste compañero"
+          style="margin-left:auto;background:none;border:none;color:var(--muted);font-size:11px;text-decoration:underline;cursor:pointer;font-family:'Inter',sans-serif;">Ya conseguí compañero</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Buscadores de jugador (el del tablón y el del formulario) ──────────────
+function buscaRenderPicker(key, hostId) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  const st = buscaState[key];
+
+  if (st.player) {
+    host.innerHTML = `<div style="display:flex;align-items:center;gap:12px;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.3);border-radius:11px;padding:11px 14px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14.5px;font-weight:700;color:var(--text);">${copaEsc(st.player.name)}</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">FPTM-${st.player.id}${st.player.club && st.player.club !== '—' ? ` · ${copaEsc(st.player.club)}` : ''}</div>
+      </div>
+      ${st.player.rating != null ? `<div style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:var(--accent);">${st.player.rating}</div>` : ''}
+      <button type="button" onclick="buscaLimpiarPicker('${key}','${hostId}')"
+        style="background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;font-weight:600;padding:6px 10px;cursor:pointer;">Cambiar</button>
+    </div>`;
+    return;
+  }
+
+  host.innerHTML = `<div style="position:relative;">
+      <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:17px;pointer-events:none;">⌕</span>
+      <input type="text" id="buscaSearch_${key}" placeholder="Escribe tu nombre..." oninput="buscaBuscar('${key}','${hostId}')" autocomplete="off"
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 14px 11px 40px;font-family:'Inter',sans-serif;font-size:14.5px;color:var(--text);outline:none;">
+    </div>
+    <div id="buscaResults_${key}" style="display:none;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:8px;"></div>`;
+}
+
+function buscaBuscar(key, hostId) {
+  const st = buscaState[key];
+  clearTimeout(st.timer);
+  st.timer = setTimeout(() => {
+    const q  = (document.getElementById(`buscaSearch_${key}`)?.value || '').trim().toLowerCase();
+    const rl = document.getElementById(`buscaResults_${key}`);
+    if (!rl) return;
+    if (q.length < 2) { rl.innerHTML = ''; rl.style.display = 'none'; return; }
+    const matches = ALL_PLAYERS.filter(p => p.name.toLowerCase().includes(q)).slice(0, 8);
+    if (!matches.length) { rl.innerHTML = ''; rl.style.display = 'none'; return; }
+    rl.style.display = '';
+    rl.innerHTML = matches.map(p => `<div onclick="buscaSeleccionar('${key}','${hostId}',${p.id})"
+      style="padding:10px 13px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;"
+      onmouseover="this.style.background='rgba(56,189,248,0.06)'" onmouseout="this.style.background='transparent'">
+      <div style="font-size:13.5px;font-weight:600;color:var(--text);">${copaEsc(p.name)}</div>
+      <div style="color:var(--muted);font-size:11.5px;white-space:nowrap;margin-left:8px;">${p.rating != null ? p.rating : 'sin rating'}</div>
+    </div>`).join('');
+  }, 220);
+}
+
+async function buscaSeleccionar(key, hostId, id) {
+  const p = ALL_PLAYERS.find(x => String(x.id) === String(id));
+  if (!p) return;
+  buscaState[key].player = p;
+  buscaRenderPicker(key, hostId);
+  if (key === 'yo') { buscaRenderLista(); return; }
+  await buscaEvaluarEdad(p);
+}
+
+function buscaLimpiarPicker(key, hostId) {
+  buscaState[key].player = null;
+  buscaRenderPicker(key, hostId);
+  if (key === 'yo') buscaRenderLista();
+  else {
+    const resto = document.getElementById('buscaFormResto');
+    if (resto) resto.style.display = 'none';
+    buscaActualizarBoton();
+  }
+}
+
+// ── Edad ───────────────────────────────────────────────────────────────────
+// La decisión de verdad la toma publicar_busca_companero() contra la base;
+// esto es solo para no pedirle a alguien datos que no vamos a publicar.
+async function buscaEvaluarEdad(p) {
+  const resto  = document.getElementById('buscaFormResto');
+  const avisoM = document.getElementById('buscaMenorAviso');
+  const mayorW = document.getElementById('buscaMayorWrap');
+  if (resto) resto.style.display = '';
+  buscaState.menor = null;
+
+  let dob = null;
+  try { dob = await fetchPlayerDob(p.id); } catch (e) { dob = null; }
+
+  if (dob) {
+    const iso = _parseDOBStr(String(dob));
+    const d   = iso ? new Date(`${iso}T00:00:00`) : null;
+    if (d && !Number.isNaN(d.getTime())) {
+      const limite = new Date();
+      limite.setFullYear(limite.getFullYear() - 18);
+      buscaState.menor = d > limite;
+    }
+  }
+
+  if (buscaState.menor === true) {
+    buscaSetContacto('ninguno');
+    if (avisoM) {
+      avisoM.style.display = '';
+      avisoM.innerHTML = `Como eres menor de edad, tu anuncio se publica <strong>sin datos de contacto</strong>.
+        Quien quiera formar equipo contigo pasa por la FPTM, y la federación conecta con tu madre, padre o encargado.`;
+    }
+    if (mayorW) mayorW.style.display = 'none';
+  } else {
+    if (avisoM) avisoM.style.display = 'none';
+    // Sin fecha en la base no podemos saberlo: que lo declare.
+    if (mayorW) mayorW.style.display = (buscaState.menor === null) ? '' : 'none';
+  }
+  buscaActualizarBoton();
+}
+
+// ── Formulario ─────────────────────────────────────────────────────────────
+function buscaAbrirForm() {
+  const f   = document.getElementById('buscaForm');
+  const btn = document.getElementById('buscaAbrirFormBtn');
+  if (f)   f.style.display = '';
+  if (btn) btn.style.display = 'none';
+  buscaRenderPicker('publicador', 'buscaSlot_yo');
+  buscaSetContacto(buscaState.contactoTipo);
+  buscaActualizarBoton();
+  f?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function buscaCerrarForm() {
+  const f   = document.getElementById('buscaForm');
+  const btn = document.getElementById('buscaAbrirFormBtn');
+  if (f)   f.style.display = 'none';
+  if (btn) btn.style.display = '';
+  buscaState.publicador.player = null;
+  buscaState.menor = null;
+  const msg = document.getElementById('buscaFormMsg'); if (msg) msg.textContent = '';
+  const resto = document.getElementById('buscaFormResto'); if (resto) resto.style.display = 'none';
+}
+
+function buscaSetContacto(tipo) {
+  // Un menor no publica contacto, decida lo que decida en la pantalla
+  if (buscaState.menor === true) tipo = 'ninguno';
+  buscaState.contactoTipo = tipo;
+
+  ['whatsapp', 'email', 'ninguno'].forEach(t => {
+    const b = document.getElementById(`buscaCt_${t}`);
+    if (!b) return;
+    const on = t === tipo;
+    b.style.background  = on ? 'var(--accent)' : 'transparent';
+    b.style.color       = on ? '#0b1220' : 'var(--muted)';
+    b.style.border      = `1px solid ${on ? 'var(--accent)' : 'var(--border)'}`;
+    b.disabled          = buscaState.menor === true && t !== 'ninguno';
+    b.style.opacity     = b.disabled ? '0.4' : '1';
+    b.style.cursor      = b.disabled ? 'not-allowed' : 'pointer';
+  });
+
+  const input = document.getElementById('buscaContactoValor');
+  const aviso = document.getElementById('buscaAvisoPublico');
+  if (input) {
+    input.style.display  = tipo === 'ninguno' ? 'none' : '';
+    input.placeholder    = tipo === 'whatsapp' ? '787-000-0000' : 'tu@email.com';
+    input.type           = tipo === 'email' ? 'email' : 'tel';
+    input.oninput        = buscaActualizarBoton;
+  }
+  if (aviso) aviso.style.display = tipo === 'ninguno' ? 'none' : '';
+  buscaActualizarBoton();
+}
+
+function buscaFaltante() {
+  if (!buscaState.publicador.player) return 'Escoge tu nombre.';
+  if (buscaState.contactoTipo !== 'ninguno' &&
+      !(document.getElementById('buscaContactoValor')?.value || '').trim())
+    return 'Escribe cómo quieres que te contacten.';
+  if (buscaState.menor === null && buscaState.contactoTipo !== 'ninguno' &&
+      !document.getElementById('buscaMayorCheck')?.checked)
+    return 'Confirma que tienes 18 años o más para publicar tu contacto.';
+  return null;
+}
+
+function buscaActualizarBoton() {
+  const btn = document.getElementById('buscaSubmitBtn');
+  if (!btn) return;
+  const ok = !buscaFaltante() && !buscaState.enviando;
+  btn.disabled      = !ok;
+  btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
+  btn.style.opacity = ok ? '1' : '0.4';
+}
+
+async function buscaPublicar() {
+  const msg = document.getElementById('buscaFormMsg');
+  const btn = document.getElementById('buscaSubmitBtn');
+  const falta = buscaFaltante();
+  if (falta) { if (msg) msg.textContent = falta; return; }
+  if (buscaState.enviando) return;
+
+  buscaState.enviando = true;
+  buscaActualizarBoton();
+  if (msg) msg.textContent = '';
+  if (btn) btn.textContent = 'Publicando...';
+
+  const p = buscaState.publicador.player;
+  try {
+    const { data, error } = await _supabase.rpc('publicar_busca_companero', {
+      p_torneo:           TORNEO_ACTIVO,
+      p_member_id:        p.id,
+      p_nombre:           p.name,
+      p_rating:           p.rating ?? null,
+      p_club:             (p.club && p.club !== '—') ? p.club : null,
+      p_nota:             (document.getElementById('buscaNota')?.value || '').trim() || null,
+      p_contacto_tipo:    buscaState.contactoTipo,
+      p_contacto_valor:   (document.getElementById('buscaContactoValor')?.value || '').trim() || null,
+      p_adulto_declarado: !!document.getElementById('buscaMayorCheck')?.checked,
+    });
+    if (error) throw new Error(error.message);
+    if (!data || data.ok !== true) {
+      if (msg) msg.textContent = data?.error || 'No se pudo publicar.';
+      return;
+    }
+    buscaCerrarForm();
+    await loadBuscaSection();
+    // El servidor manda sobre la edad: si tumbó el contacto, hay que decirlo.
+    if (buscaState.contactoTipo !== 'ninguno' && data.contacto_publicado === false) {
+      alert('Tu anuncio se publicó sin datos de contacto porque la federación te tiene registrado/a como menor de edad.\n\nQuien quiera formar equipo contigo pasará por la FPTM.');
+    }
+  } catch (e) {
+    if (msg) msg.textContent = 'Error al publicar: ' + e.message;
+  } finally {
+    buscaState.enviando = false;
+    if (btn) btn.textContent = 'Publicar';
+    buscaActualizarBoton();
+  }
+}
+
+async function buscaRetirar(id) {
+  const a = buscaState.anuncios.find(x => x.id === id);
+  if (!a) return;
+  if (!confirm(`¿Retirar el anuncio de ${a.nombre} del tablón?\n\nHazlo solo si es tuyo y ya conseguiste compañero.`)) return;
+  try {
+    const { error } = await _supabase.rpc('retirar_busca_companero',
+      { p_id: id, p_torneo: TORNEO_ACTIVO });
+    if (error) throw new Error(error.message);
+    await loadBuscaSection();
+  } catch (e) {
+    alert('No se pudo retirar: ' + e.message);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -13957,27 +14511,40 @@ async function inscSometerInscripcion() {
 // ══════════════════════════════════════════
 // INSCRIPCIONES — SUB-TABS
 // ══════════════════════════════════════════
+// Pestañas: 'form' | 'inscritos' | 'busca'. La tercera solo existe en torneos
+// por equipos — en un torneo individual nadie busca compañero.
+let _inscTabActual = 'form';
+
 function inscSwitchTab(tab) {
-  const isForm = tab === 'form';
-  const formEl  = document.getElementById('inscTabFormContent');
-  const listEl  = document.getElementById('inscTabInscritos');
-  const btnForm = document.getElementById('inscSubTabForm');
-  const btnList = document.getElementById('inscSubTabInscritos');
-  if (formEl) formEl.style.display = (isForm && !esTorneoEquipos()) ? '' : 'none';
-  if (listEl) listEl.style.display = isForm ? 'none' : '';
-  const eqPanel = document.getElementById('inscEquiposPanel');
-  if (eqPanel) eqPanel.style.display = (isForm && esTorneoEquipos()) ? '' : 'none';
-  if (btnForm) {
-    btnForm.style.background = isForm ? 'var(--grad)' : 'transparent';
-    btnForm.style.color      = isForm ? '#fff' : 'var(--muted)';
-    btnForm.style.fontWeight = isForm ? '700' : '600';
-  }
-  if (btnList) {
-    btnList.style.background = !isForm ? 'var(--grad)' : 'transparent';
-    btnList.style.color      = !isForm ? '#fff' : 'var(--muted)';
-    btnList.style.fontWeight = !isForm ? '700' : '600';
-  }
-  if (!isForm) { esTorneoEquipos() ? loadEquiposSection() : loadInscritosSection(); }
+  if (tab === 'busca' && !esTorneoEquipos()) tab = 'form';
+  _inscTabActual = tab;
+
+  const paneles = {
+    form:      esTorneoEquipos() ? 'inscEquiposPanel' : 'inscTabFormContent',
+    inscritos: 'inscTabInscritos',
+    busca:     'inscTabBusca',
+  };
+  // El panel individual y el de equipos comparten la pestaña 'form': el que
+  // no corresponde al modo se apaga siempre.
+  ['inscTabFormContent', 'inscEquiposPanel', 'inscTabInscritos', 'inscTabBusca']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = (id === paneles[tab]) ? '' : 'none';
+    });
+
+  [['inscSubTabForm', 'form'], ['inscSubTabInscritos', 'inscritos'], ['inscSubTabBusca', 'busca']]
+    .forEach(([id, val]) => {
+      const b = document.getElementById(id);
+      if (!b) return;
+      if (id === 'inscSubTabBusca') b.style.display = esTorneoEquipos() ? '' : 'none';
+      const on = tab === val;
+      b.style.background = on ? 'var(--grad)' : 'transparent';
+      b.style.color      = on ? '#fff' : 'var(--muted)';
+      b.style.fontWeight = on ? '700' : '600';
+    });
+
+  if (tab === 'inscritos') { esTorneoEquipos() ? loadEquiposSection() : loadInscritosSection(); }
+  if (tab === 'busca')     loadBuscaSection();
 }
 
 let _inscritosByCategory = null;
@@ -13988,6 +14555,8 @@ async function loadInscritosSection() {
   const badge    = document.getElementById('inscritosSectionBadge');
   if (!tabsEl || !content) return;
 
+  const sub = document.getElementById('inscritosSubtitulo');
+  if (sub) sub.textContent = TORNEO_ACTIVO;
   content.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--muted);font-size:14px;">Cargando...</div>';
   tabsEl.innerHTML  = '';
   if (badge) badge.style.display = 'none';
