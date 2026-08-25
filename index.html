@@ -4391,8 +4391,8 @@ Maria Lopez,Ana Torres,B</code>
     <div id="regFormBody" style="display:none;">
       <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:20px 24px;margin-bottom:28px;">
         <div style="font-size:11px;color:var(--accent);font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Registro de Participante</div>
-        <div style="font-size:18px;font-weight:700;color:var(--text);">Cidra Open 2026</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">15, 16, 22 y 23 de agosto · Cidra, PR</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);" id="regFormTorneo">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="regFormTorneoMeta">—</div>
       </div>
 
       <input type="hidden" id="regFormToken">
@@ -4492,7 +4492,7 @@ Maria Lopez,Ana Torres,B</code>
     <div id="regFormSuccess" style="display:none;text-align:center;padding:40px 0;">
       <div style="font-size:56px;margin-bottom:16px;">✅</div>
       <div style="font-family:'Orbitron',monospace;font-size:20px;letter-spacing:1px;color:#4ade80;margin-bottom:12px;">¡Solicitud Enviada!</div>
-      <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el Cidra Open 2026.</p>
+      <p style="font-size:15px;color:var(--muted);line-height:1.6;">Tu información fue recibida. El administrador de la FPTM la revisará y te contactará para confirmar tu participación en el <span id="regFormOkTorneo">torneo</span>.</p>
     </div>
   </div>
 </div>
@@ -16381,7 +16381,19 @@ function regFormUpdateMinor() {
   document.getElementById('regMinorSection').style.display = isMinor ? '' : 'none';
 }
 
+// El enlace público de registro nombra el torneo activo. Sale de las
+// constantes para que cambiar de torneo no deje el nombre viejo aquí.
+function regFormPintarTorneo() {
+  const t  = document.getElementById('regFormTorneo');
+  const m  = document.getElementById('regFormTorneoMeta');
+  const ok = document.getElementById('regFormOkTorneo');
+  if (t)  t.textContent  = TORNEO_ACTIVO;
+  if (m)  m.textContent  = `${TORNEO_FECHAS_LABEL} · ${TORNEO_SEDE}`;
+  if (ok) ok.textContent = TORNEO_ACTIVO;
+}
+
 async function initPublicRegForm() {
+  regFormPintarTorneo();
   const params = new URLSearchParams(window.location.search);
   const token  = params.get('registro');
   if (!token) return;
