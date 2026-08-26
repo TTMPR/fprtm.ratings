@@ -20,7 +20,21 @@ En **Supabase → SQL Editor**, pegar y ejecutar, en este orden:
 
 Ambos son seguros de re-ejecutar: no borran datos.
 
-Al final imprime los cupos de las tres divisiones. Si ves esto, quedó bien:
+### Comprobar que quedó bien
+
+Corre `sql/verificar_copa.sql` en el mismo SQL Editor. Es de solo lectura y
+devuelve una tabla de ~45 controles: tablas, vistas, columnas, funciones,
+permisos del público y configuración de divisiones. **Todo debe decir `OK`.**
+
+Cualquier `FALTA` trae en `detalle` qué hacer — casi siempre "vuelve a correr
+create_insc_equipos.sql", que incluye los `ALTER` para actualizar una
+instalación anterior sin perder datos.
+
+Presta atención especial a los controles `6.`: dicen que el público **no**
+puede leer las tablas con emails y teléfonos. Si alguno dice `REVISAR`, no
+abras inscripciones hasta arreglarlo.
+
+El script de instalación además imprime los cupos de las tres divisiones:
 
 ```
  division |   nombre   | precio | max_equipos | ocupados | disponibles
