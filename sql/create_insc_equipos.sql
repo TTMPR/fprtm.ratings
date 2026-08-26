@@ -44,36 +44,54 @@ CREATE TABLE IF NOT EXISTS public.insc_divisiones (
   precio      NUMERIC(8,2) NOT NULL,
   max_equipos INTEGER NOT NULL,
   orden       INTEGER NOT NULL DEFAULT 0,
+  -- Reserva de cupo sin pareja: solo donde la federación la habilite, y solo
+  -- para jugadores por encima de cierto rating. Ver sección 5b.
+  permite_reserva_solo BOOLEAN NOT NULL DEFAULT FALSE,
+  reserva_rating_min   INTEGER,
   PRIMARY KEY (torneo, division)
 );
 
+-- Instalaciones previas: añadir las columnas sin tocar los datos
+ALTER TABLE public.insc_divisiones
+  ADD COLUMN IF NOT EXISTS permite_reserva_solo BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS reserva_rating_min   INTEGER;
+
 INSERT INTO public.insc_divisiones
-  (torneo, division, nombre, rating_min, rating_max, precio, max_equipos, orden)
+  (torneo, division, nombre, rating_min, rating_max, precio, max_equipos, orden,
+   permite_reserva_solo, reserva_rating_min)
 VALUES
-  ('Copa Olímpica 2026', 'div1', 'División 1', 3800, NULL,  100.00, 12, 1),
-  ('Copa Olímpica 2026', 'div2', 'División 2', 3400, 3799,   80.00, 20, 2),
-  ('Copa Olímpica 2026', 'div3', 'División 3', NULL, 3399,   70.00, 32, 3)
+  ('Copa Olímpica 2026', 'div1', 'División 1', 3800, NULL,  100.00, 12, 1, TRUE,  2000),
+  ('Copa Olímpica 2026', 'div2', 'División 2', 3400, 3799,   80.00, 20, 2, FALSE, NULL),
+  ('Copa Olímpica 2026', 'div3', 'División 3', NULL, 3399,   70.00, 32, 3, FALSE, NULL)
 ON CONFLICT (torneo, division) DO UPDATE
   SET nombre      = EXCLUDED.nombre,
       rating_min  = EXCLUDED.rating_min,
       rating_max  = EXCLUDED.rating_max,
       precio      = EXCLUDED.precio,
       max_equipos = EXCLUDED.max_equipos,
-      orden       = EXCLUDED.orden;
+      orden       = EXCLUDED.orden,
+      permite_reserva_solo = EXCLUDED.permite_reserva_solo,
+      reserva_rating_min   = EXCLUDED.reserva_rating_min;
 
 
 -- ---------------------------------------------------------------------------
 -- 2. EQUIPOS
 --
 --  estado:
---    reservado           cupo tomado, esperando el pago (reserva_expira manda)
---    confirmado          pago recibido — el cupo ya no expira
---    lista_espera        la división estaba llena; entra si se libera un cupo
---    pendiente_division  falta rating de algún invitado; no ocupa cupo todavía
---    expirado            venció la reserva sin pago; el cupo se liberó
---    cancelado           dado de baja por la federación o por el capitán
+--    reservado            cupo tomado, esperando el pago (reserva_expira manda)
+--    confirmado           pago recibido — el cupo ya no expira
+--    esperando_companero  cupo comprado sin pareja todavía (ver sección 5b)
+--    revision_tecnica     nombró pareja que no llega al mínimo de la división;
+--                         lo resuelve la Dirección Técnica
+--    lista_espera         la división estaba llena; entra si se libera un cupo
+--    pendiente_division   falta rating de algún invitado; no ocupa cupo todavía
+--    expirado             venció la reserva sin pago; el cupo se liberó
+--    cancelado            dado de baja por la federación o por el capitán
+--    credito              cupo liberado y dinero a favor del jugador
 --
---  Solo `reservado` y `confirmado` ocupan cupo.
+--  Qué ocupa cupo lo dice insc_equipo_ocupa_cupo(), no una lista repetida en
+--  cinco sitios: al añadir un estado nuevo, esa función es el único lugar que
+--  hay que revisar.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.insc_equipos (
   id               BIGSERIAL PRIMARY KEY,
@@ -92,7 +110,7 @@ CREATE TABLE IF NOT EXISTS public.insc_equipos (
   cap_tel          TEXT,
 
   comp_member_id   INTEGER,
-  comp_nombre      TEXT NOT NULL,
+  comp_nombre      TEXT,          -- NULL mientras el cupo espera compañero
   comp_rating      INTEGER,
   comp_invitado    BOOLEAN NOT NULL DEFAULT FALSE,
 
@@ -107,9 +125,35 @@ CREATE TABLE IF NOT EXISTS public.insc_equipos (
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
+  credito          NUMERIC(8,2) NOT NULL DEFAULT 0,
+
   CONSTRAINT insc_equipos_estado_chk CHECK (estado IN
-    ('reservado','confirmado','lista_espera','pendiente_division','expirado','cancelado'))
+    ('reservado','confirmado','esperando_companero','revision_tecnica',
+     'lista_espera','pendiente_division','expirado','cancelado','credito'))
 );
+
+-- Instalaciones previas: subir el esquema sin perder filas
+ALTER TABLE public.insc_equipos
+  ADD COLUMN IF NOT EXISTS credito NUMERIC(8,2) NOT NULL DEFAULT 0;
+ALTER TABLE public.insc_equipos ALTER COLUMN comp_nombre DROP NOT NULL;
+ALTER TABLE public.insc_equipos DROP CONSTRAINT IF EXISTS insc_equipos_estado_chk;
+ALTER TABLE public.insc_equipos ADD CONSTRAINT insc_equipos_estado_chk CHECK (estado IN
+  ('reservado','confirmado','esperando_companero','revision_tecnica',
+   'lista_espera','pendiente_division','expirado','cancelado','credito'));
+
+
+-- ¿Este estado ocupa uno de los cupos de la división?
+CREATE OR REPLACE FUNCTION public.insc_equipo_ocupa_cupo(p_estado TEXT)
+RETURNS BOOLEAN LANGUAGE sql IMMUTABLE SET search_path = '' AS $$
+  SELECT p_estado IN ('reservado','confirmado','esperando_companero','revision_tecnica');
+$$;
+
+-- ¿Sigue vivo en el torneo? (ocupa cupo, o espera a que se libere uno)
+CREATE OR REPLACE FUNCTION public.insc_equipo_activo(p_estado TEXT)
+RETURNS BOOLEAN LANGUAGE sql IMMUTABLE SET search_path = '' AS $$
+  SELECT p_estado IN ('reservado','confirmado','esperando_companero','revision_tecnica',
+                      'lista_espera','pendiente_division');
+$$;
 
 CREATE INDEX IF NOT EXISTS insc_equipos_torneo_idx   ON public.insc_equipos (torneo);
 CREATE INDEX IF NOT EXISTS insc_equipos_division_idx ON public.insc_equipos (torneo, division, estado);
@@ -168,7 +212,7 @@ BEGIN
   UPDATE public.insc_equipos
      SET estado = 'expirado', updated_at = NOW()
    WHERE torneo = p_torneo
-     AND estado = 'reservado'
+     AND estado IN ('reservado', 'esperando_companero')
      AND reserva_expira IS NOT NULL
      AND reserva_expira < NOW()
      AND COALESCE(monto_pagado, 0) = 0;
@@ -180,7 +224,7 @@ BEGIN
       SELECT d.max_equipos - COUNT(*) INTO v_libres
         FROM public.insc_equipos
        WHERE torneo = p_torneo AND division = d.division
-         AND estado IN ('reservado', 'confirmado');
+         AND public.insc_equipo_ocupa_cupo(estado);
       EXIT WHEN v_libres <= 0;
 
       SELECT id INTO v_id FROM public.insc_equipos
@@ -292,7 +336,7 @@ BEGIN
     INTO v_choque
     FROM public.insc_equipos
    WHERE torneo = p_torneo
-     AND estado IN ('reservado', 'confirmado', 'lista_espera', 'pendiente_division')
+     AND public.insc_equipo_activo(estado)
      AND (
           (cap_member_id  IS NOT NULL AND cap_member_id  IN (p_cap_member_id, p_comp_member_id))
        OR (comp_member_id IS NOT NULL AND comp_member_id IN (p_cap_member_id, p_comp_member_id))
@@ -328,7 +372,7 @@ BEGIN
 
     SELECT COUNT(*) INTO v_ocupados FROM public.insc_equipos
      WHERE torneo = p_torneo AND division = v_division
-       AND estado IN ('reservado', 'confirmado');
+       AND public.insc_equipo_ocupa_cupo(estado);
 
     IF v_ocupados < v_max THEN
       v_estado := 'reservado';
@@ -382,34 +426,393 @@ $$;
 
 
 -- ---------------------------------------------------------------------------
+-- 5b. RESERVAR CUPO SIN PAREJA  ("comprar un equipo")
+--
+--  Un jugador fuerte quiere asegurar su sitio en División 1 antes de tener
+--  con quién jugar. Paga el cupo, lo retiene, y nombra al compañero después.
+--
+--  Lo que compra es un CUPO CONDICIONADO, no el derecho a jugar División 1
+--  con cualquiera: la división sigue saliendo del rating combinado. Si al
+--  final la pareja no llega al mínimo, el equipo pasa a revisión de la
+--  Dirección Técnica, que decide si lo aprueba o lo baja de división.
+--
+--  Quién puede: solo divisiones con permite_reserva_solo, y solo jugadores
+--  por encima de reserva_rating_min. Ese rating se lee de "Base de Datos",
+--  no del navegador — si no, cualquiera se manda un 2000 y toma un cupo de
+--  los 12.
+-- ---------------------------------------------------------------------------
+
+-- Rating vigente del jugador según la federación. NULL si no hay dato.
+CREATE OR REPLACE FUNCTION public.insc_rating_federativo(p_member_id INTEGER)
+RETURNS INTEGER
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+DECLARE v INTEGER;
+BEGIN
+  IF p_member_id IS NULL THEN RETURN NULL; END IF;
+  SELECT COALESCE(b."New Rating", b."Rating") INTO v
+    FROM public."Base de Datos" b WHERE b."Member ID" = p_member_id;
+  RETURN v;
+EXCEPTION WHEN OTHERS THEN
+  RETURN NULL;
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION public.reservar_cupo_solo(
+  p_torneo        TEXT,
+  p_member_id     INTEGER,
+  p_nombre        TEXT,
+  p_division      TEXT,
+  p_email         TEXT DEFAULT NULL,
+  p_tel           TEXT DEFAULT NULL,
+  p_nombre_equipo TEXT DEFAULT NULL,
+  p_club          TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_abierto  TEXT;
+  v_cierre   TEXT;
+  v_div      RECORD;
+  v_rating   INTEGER;
+  v_ocupados INTEGER;
+  v_choque   RECORD;
+  v_expira   TIMESTAMPTZ;
+  v_id       BIGINT;
+BEGIN
+  PERFORM pg_advisory_xact_lock(hashtext('insc_equipos:' || p_torneo));
+
+  IF p_member_id IS NULL OR public.insc_nombre_norm(p_nombre) = '' THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'incompleto',
+      'error', 'Solo jugadores registrados en la FPTM pueden reservar un cupo.');
+  END IF;
+
+  SELECT value INTO v_abierto FROM public.app_settings WHERE key = 'inscripciones_open';
+  IF COALESCE(v_abierto, 'false') <> 'true' THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'cerradas',
+      'error', 'Las inscripciones no están abiertas en este momento.');
+  END IF;
+
+  SELECT value INTO v_cierre FROM public.app_settings WHERE key = 'insc_equipos_cierre';
+  IF v_cierre IS NOT NULL AND btrim(v_cierre) <> '' THEN
+    BEGIN
+      IF NOW() > v_cierre::TIMESTAMPTZ THEN
+        RETURN jsonb_build_object('ok', false, 'codigo', 'fecha_limite',
+          'error', 'La fecha límite de inscripción ya pasó.');
+      END IF;
+    EXCEPTION WHEN OTHERS THEN NULL;
+    END;
+  END IF;
+
+  SELECT * INTO v_div FROM public.insc_divisiones
+   WHERE torneo = p_torneo AND division = p_division;
+  IF NOT FOUND OR NOT v_div.permite_reserva_solo THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'no_permitido',
+      'error', 'Esta división no admite reservar cupo sin pareja.');
+  END IF;
+
+  -- El rating lo dice la federación, no quien llama
+  v_rating := public.insc_rating_federativo(p_member_id);
+  IF v_rating IS NULL THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'sin_rating',
+      'error', 'No encontramos tu rating federativo. Comunícate con la FPTM.');
+  END IF;
+  IF v_div.reserva_rating_min IS NOT NULL AND v_rating < v_div.reserva_rating_min THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'rating_insuficiente',
+      'rating', v_rating, 'minimo', v_div.reserva_rating_min,
+      'error', 'Reservar cupo en ' || v_div.nombre || ' sin pareja requiere rating '
+               || v_div.reserva_rating_min || ' o más. El tuyo es ' || v_rating || '.');
+  END IF;
+
+  PERFORM public.insc_equipos_liberar(p_torneo);
+
+  SELECT id, cap_nombre, comp_nombre, estado INTO v_choque
+    FROM public.insc_equipos
+   WHERE torneo = p_torneo
+     AND public.insc_equipo_activo(estado)
+     AND p_member_id IN (cap_member_id, comp_member_id)
+   LIMIT 1;
+  IF FOUND THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'ya_inscrito',
+      'error', CASE WHEN v_choque.estado = 'esperando_companero'
+                    THEN 'Ya tienes un cupo reservado esperando compañero.'
+                    ELSE 'Ya estás inscrito/a en un equipo de este torneo.' END);
+  END IF;
+
+  SELECT COUNT(*) INTO v_ocupados FROM public.insc_equipos
+   WHERE torneo = p_torneo AND division = p_division
+     AND public.insc_equipo_ocupa_cupo(estado);
+
+  -- Un cupo retenido sin pareja no tiene sentido en lista de espera:
+  -- si la división está llena, no hay nada que reservar.
+  IF v_ocupados >= v_div.max_equipos THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'division_llena',
+      'error', v_div.nombre || ' está llena. Inscríbete con un compañero para entrar a la lista de espera.');
+  END IF;
+
+  v_expira := NOW() + (public.insc_equipos_reserva_horas() || ' hours')::INTERVAL;
+
+  INSERT INTO public.insc_equipos (
+    torneo, division, estado, nombre_equipo, club,
+    cap_member_id, cap_nombre, cap_rating, cap_email, cap_tel,
+    comp_nombre, costo, reserva_expira
+  ) VALUES (
+    p_torneo, p_division, 'esperando_companero',
+    NULLIF(btrim(COALESCE(p_nombre_equipo, '')), ''),
+    NULLIF(btrim(COALESCE(p_club, '')), ''),
+    p_member_id, btrim(p_nombre), v_rating,
+    NULLIF(btrim(COALESCE(p_email, '')), ''),
+    NULLIF(btrim(COALESCE(p_tel, '')), ''),
+    NULL, v_div.precio, v_expira
+  ) RETURNING id INTO v_id;
+
+  RETURN jsonb_build_object('ok', true, 'id', v_id, 'estado', 'esperando_companero',
+    'division', p_division, 'division_nombre', v_div.nombre,
+    'costo', v_div.precio, 'rating', v_rating,
+    'rating_min_division', v_div.rating_min,
+    'reserva_expira', v_expira,
+    'cupos_restantes', v_div.max_equipos - v_ocupados - 1);
+END;
+$$;
+
+
+-- ---------------------------------------------------------------------------
+-- 5c. NOMBRAR AL COMPAÑERO DE UN CUPO RESERVADO
+--     Si la pareja llega al mínimo de la división, el equipo queda normal.
+--     Si no llega, va a revisión de la Dirección Técnica — no se baja solo
+--     ni se aprueba solo, porque es dinero ya cobrado.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.nombrar_companero(
+  p_equipo_id      BIGINT,
+  p_torneo         TEXT,
+  p_comp_member_id INTEGER,
+  p_comp_nombre    TEXT,
+  p_comp_invitado  BOOLEAN DEFAULT FALSE
+)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_eq        RECORD;
+  v_div       RECORD;
+  v_norm      TEXT := public.insc_nombre_norm(p_comp_nombre);
+  v_rating    INTEGER;
+  v_combinado INTEGER;
+  v_estado    TEXT;
+  v_choque    RECORD;
+BEGIN
+  PERFORM pg_advisory_xact_lock(hashtext('insc_equipos:' || p_torneo));
+
+  SELECT * INTO v_eq FROM public.insc_equipos
+   WHERE id = p_equipo_id AND torneo = p_torneo;
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'no_existe',
+      'error', 'No encontramos esa reserva.');
+  END IF;
+  IF v_eq.estado <> 'esperando_companero' THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'estado_invalido',
+      'error', 'Esa reserva ya no está esperando compañero.');
+  END IF;
+  IF v_norm = '' THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'incompleto',
+      'error', 'Hace falta el nombre del compañero.');
+  END IF;
+  IF p_comp_member_id IS NOT NULL AND p_comp_member_id = v_eq.cap_member_id THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'mismo_jugador',
+      'error', 'El compañero no puede ser tú mismo.');
+  END IF;
+
+  SELECT cap_nombre, comp_nombre INTO v_choque FROM public.insc_equipos
+   WHERE torneo = p_torneo AND id <> p_equipo_id
+     AND public.insc_equipo_activo(estado)
+     AND ( (p_comp_member_id IS NOT NULL AND p_comp_member_id IN (cap_member_id, comp_member_id))
+        OR (p_comp_member_id IS NULL AND v_norm IN (public.insc_nombre_norm(cap_nombre),
+                                                    public.insc_nombre_norm(comp_nombre))) )
+   LIMIT 1;
+  IF FOUND THEN
+    RETURN jsonb_build_object('ok', false, 'codigo', 'ya_inscrito',
+      'error', btrim(p_comp_nombre) || ' ya está inscrito/a en otro equipo de este torneo.');
+  END IF;
+
+  SELECT * INTO v_div FROM public.insc_divisiones
+   WHERE torneo = p_torneo AND division = v_eq.division;
+
+  v_rating := CASE WHEN COALESCE(p_comp_invitado, FALSE) THEN NULL
+                   ELSE public.insc_rating_federativo(p_comp_member_id) END;
+
+  IF v_rating IS NOT NULL AND v_eq.cap_rating IS NOT NULL THEN
+    v_combinado := v_eq.cap_rating + v_rating;
+  END IF;
+
+  -- Llega al mínimo de la división → equipo normal. Si no (o si es un
+  -- invitado sin rating), lo mira la Dirección Técnica.
+  IF v_combinado IS NOT NULL
+     AND (v_div.rating_min IS NULL OR v_combinado >= v_div.rating_min)
+     AND (v_div.rating_max IS NULL OR v_combinado <= v_div.rating_max) THEN
+    v_estado := CASE WHEN v_eq.pagado THEN 'confirmado' ELSE 'reservado' END;
+  ELSE
+    v_estado := 'revision_tecnica';
+  END IF;
+
+  UPDATE public.insc_equipos
+     SET comp_member_id   = p_comp_member_id,
+         comp_nombre      = btrim(p_comp_nombre),
+         comp_rating      = v_rating,
+         comp_invitado    = COALESCE(p_comp_invitado, FALSE),
+         rating_combinado = v_combinado,
+         estado           = v_estado,
+         updated_at       = NOW()
+   WHERE id = p_equipo_id;
+
+  RETURN jsonb_build_object('ok', true, 'id', p_equipo_id, 'estado', v_estado,
+    'rating_combinado', v_combinado,
+    'division', v_eq.division, 'division_nombre', v_div.nombre,
+    'rating_min_division', v_div.rating_min,
+    'requiere_revision', v_estado = 'revision_tecnica');
+END;
+$$;
+
+
+-- ---------------------------------------------------------------------------
+-- 5d. RESOLUCIÓN DE LA DIRECCIÓN TÉCNICA  (solo admin)
+--     'aprobar' deja el equipo en su división aunque no llegue al mínimo.
+--     'bajar'   lo manda a la división que le toca por rating combinado y
+--               ajusta el costo; si esa división está llena, va a la espera.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.resolver_revision_tecnica(
+  p_equipo_id BIGINT, p_torneo TEXT, p_accion TEXT)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_eq       RECORD;
+  v_div      RECORD;
+  v_ocupados INTEGER;
+  v_estado   TEXT;
+BEGIN
+  PERFORM pg_advisory_xact_lock(hashtext('insc_equipos:' || p_torneo));
+
+  SELECT * INTO v_eq FROM public.insc_equipos
+   WHERE id = p_equipo_id AND torneo = p_torneo AND estado = 'revision_tecnica';
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('ok', false, 'error', 'Ese equipo no está en revisión técnica.');
+  END IF;
+
+  IF p_accion = 'aprobar' THEN
+    UPDATE public.insc_equipos
+       SET estado = CASE WHEN pagado THEN 'confirmado' ELSE 'reservado' END,
+           updated_at = NOW()
+     WHERE id = p_equipo_id;
+    RETURN jsonb_build_object('ok', true, 'accion', 'aprobar', 'division', v_eq.division);
+  END IF;
+
+  IF p_accion <> 'bajar' THEN
+    RETURN jsonb_build_object('ok', false, 'error', 'Acción no reconocida.');
+  END IF;
+
+  IF v_eq.rating_combinado IS NULL THEN
+    RETURN jsonb_build_object('ok', false,
+      'error', 'Sin rating combinado no se puede calcular la división. Asígnala a mano.');
+  END IF;
+
+  SELECT * INTO v_div FROM public.insc_divisiones
+   WHERE torneo = p_torneo
+     AND (rating_min IS NULL OR v_eq.rating_combinado >= rating_min)
+     AND (rating_max IS NULL OR v_eq.rating_combinado <= rating_max)
+   ORDER BY orden LIMIT 1;
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('ok', false,
+      'error', 'No hay división para un rating combinado de ' || v_eq.rating_combinado || '.');
+  END IF;
+
+  SELECT COUNT(*) INTO v_ocupados FROM public.insc_equipos
+   WHERE torneo = p_torneo AND division = v_div.division
+     AND id <> p_equipo_id AND public.insc_equipo_ocupa_cupo(estado);
+
+  v_estado := CASE WHEN v_ocupados < v_div.max_equipos
+                   THEN CASE WHEN v_eq.pagado THEN 'confirmado' ELSE 'reservado' END
+                   ELSE 'lista_espera' END;
+
+  UPDATE public.insc_equipos
+     SET division = v_div.division, costo = v_div.precio, estado = v_estado,
+         updated_at = NOW()
+   WHERE id = p_equipo_id;
+
+  -- El cupo que deja libre en la división de arriba pasa al siguiente
+  PERFORM public.insc_equipos_liberar(p_torneo);
+
+  RETURN jsonb_build_object('ok', true, 'accion', 'bajar',
+    'division', v_div.division, 'division_nombre', v_div.nombre,
+    'costo_nuevo', v_div.precio, 'costo_anterior', v_eq.costo,
+    'diferencia', v_eq.costo - v_div.precio, 'estado', v_estado);
+END;
+$$;
+
+
+-- ---------------------------------------------------------------------------
+-- 5e. LIBERAR UN CUPO Y DEJAR EL DINERO COMO CRÉDITO  (solo admin)
+--     Para el que compró cupo y nunca nombró compañero: el cupo vuelve al
+--     torneo y lo pagado queda a favor del jugador para el próximo evento.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.liberar_cupo_con_credito(
+  p_equipo_id BIGINT, p_torneo TEXT)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_monto NUMERIC(8,2);
+BEGIN
+  PERFORM pg_advisory_xact_lock(hashtext('insc_equipos:' || p_torneo));
+
+  UPDATE public.insc_equipos
+     SET estado = 'credito', credito = COALESCE(monto_pagado, 0),
+         reserva_expira = NULL, updated_at = NOW()
+   WHERE id = p_equipo_id AND torneo = p_torneo
+     AND public.insc_equipo_activo(estado)
+  RETURNING credito INTO v_monto;
+
+  IF v_monto IS NULL THEN
+    RETURN jsonb_build_object('ok', false, 'error', 'No encontramos ese equipo activo.');
+  END IF;
+
+  PERFORM public.insc_equipos_liberar(p_torneo);
+  RETURN jsonb_build_object('ok', true, 'credito', v_monto);
+END;
+$$;
+
+
+-- ---------------------------------------------------------------------------
 -- 6. VISTAS PÚBLICAS
 --    El portal necesita mostrar equipos y cupos sin exponer email, teléfono,
 --    referencia de pago ni montos. La tabla base queda cerrada al público y
 --    estas vistas son la única ventana: no es disciplina del cliente, es que
 --    las columnas sensibles literalmente no existen aquí.
 -- ---------------------------------------------------------------------------
-CREATE OR REPLACE VIEW public.insc_equipos_publico
+-- DROP antes de CREATE: la vista gana columnas en medio y CREATE OR REPLACE
+-- solo sabe añadirlas al final.
+DROP VIEW IF EXISTS public.insc_equipos_publico;
+CREATE VIEW public.insc_equipos_publico
 WITH (security_invoker = off) AS
 SELECT
   e.id, e.torneo, e.division, e.estado,
   e.nombre_equipo, e.club,
-  e.cap_nombre,  e.cap_rating,
-  e.comp_nombre, e.comp_rating,
+  -- Los member_id ya son públicos en el ranking; hacen falta aquí para saber
+  -- si quien llena el formulario es el dueño de un cupo esperando compañero.
+  e.cap_member_id,  e.cap_nombre,  e.cap_rating,
+  e.comp_member_id, e.comp_nombre, e.comp_rating,
   e.rating_combinado,
   e.created_at
 FROM public.insc_equipos e
-WHERE e.estado IN ('reservado', 'confirmado', 'lista_espera', 'pendiente_division');
+WHERE public.insc_equipo_activo(e.estado);
 
 CREATE OR REPLACE VIEW public.insc_equipos_cupos
 WITH (security_invoker = off) AS
 SELECT
   d.torneo, d.division, d.nombre, d.rating_min, d.rating_max,
   d.precio, d.max_equipos, d.orden,
-  COUNT(*) FILTER (WHERE e.estado IN ('reservado', 'confirmado'))       AS ocupados,
+  COUNT(*) FILTER (WHERE public.insc_equipo_ocupa_cupo(e.estado))       AS ocupados,
   GREATEST(d.max_equipos
-    - COUNT(*) FILTER (WHERE e.estado IN ('reservado', 'confirmado')), 0) AS disponibles,
+    - COUNT(*) FILTER (WHERE public.insc_equipo_ocupa_cupo(e.estado)), 0) AS disponibles,
   COUNT(*) FILTER (WHERE e.estado = 'lista_espera')                     AS en_espera,
-  COUNT(*) FILTER (WHERE e.estado = 'confirmado')                       AS confirmados
+  COUNT(*) FILTER (WHERE e.estado = 'confirmado')                       AS confirmados,
+  COUNT(*) FILTER (WHERE e.estado = 'esperando_companero')               AS esperando_companero,
+  COUNT(*) FILTER (WHERE e.estado = 'revision_tecnica')                  AS en_revision
 FROM public.insc_divisiones d
 LEFT JOIN public.insc_equipos e
        ON e.torneo = d.torneo AND e.division = d.division
@@ -470,6 +873,15 @@ GRANT EXECUTE ON FUNCTION public.inscribir_equipo(
   TEXT, INTEGER, TEXT, INTEGER, INTEGER, TEXT, INTEGER,
   BOOLEAN, BOOLEAN, TEXT, TEXT, TEXT, TEXT) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.insc_equipos_liberar(TEXT)      TO authenticated;
+GRANT EXECUTE ON FUNCTION public.reservar_cupo_solo(
+  TEXT, INTEGER, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT)         TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.nombrar_companero(
+  BIGINT, TEXT, INTEGER, TEXT, BOOLEAN)                      TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.resolver_revision_tecnica(BIGINT, TEXT, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.liberar_cupo_con_credito(BIGINT, TEXT)        TO authenticated;
+GRANT EXECUTE ON FUNCTION public.insc_rating_federativo(INTEGER)               TO authenticated;
+GRANT EXECUTE ON FUNCTION public.insc_equipo_ocupa_cupo(TEXT) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.insc_equipo_activo(TEXT)     TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.insc_equipos_reserva_horas()    TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.insc_nombre_norm(TEXT)          TO anon, authenticated;
 

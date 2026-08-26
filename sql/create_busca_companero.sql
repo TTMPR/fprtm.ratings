@@ -142,20 +142,39 @@ CREATE TRIGGER insc_busca_touch_trg
 --        tiene que acordarse de retirar su anuncio;
 --      · el contacto de un menor no sale, pase lo que pase.
 -- ---------------------------------------------------------------------------
-CREATE OR REPLACE VIEW public.insc_busca_companero_publico
+--  Un matiz que importa: quien COMPRÓ un cupo sin pareja (esperando_companero)
+--  no desaparece del tablón — es justo quien más necesita que lo vean. Su
+--  anuncio además muestra qué cupo trae ya pagado, que es el mejor argumento
+--  posible para que alguien se le una.
+-- DROP antes de CREATE: la vista ganó columnas y CREATE OR REPLACE no puede
+-- reordenar ni insertar columnas en medio.
+DROP VIEW IF EXISTS public.insc_busca_companero_publico;
+CREATE VIEW public.insc_busca_companero_publico
 WITH (security_invoker = off) AS
 SELECT
   b.id, b.torneo, b.member_id, b.nombre, b.rating, b.club, b.nota,
   b.es_menor,
   CASE WHEN b.es_menor THEN 'ninguno' ELSE b.contacto_tipo  END AS contacto_tipo,
   CASE WHEN b.es_menor THEN NULL      ELSE b.contacto_valor END AS contacto_valor,
+  cupo.id       AS cupo_equipo_id,
+  cupo.division AS cupo_division,
+  d.nombre      AS cupo_division_nombre,
   b.created_at
 FROM public.insc_busca_companero b
+LEFT JOIN LATERAL (
+  SELECT e.id, e.division FROM public.insc_equipos e
+   WHERE e.torneo = b.torneo AND e.estado = 'esperando_companero'
+     AND b.member_id IS NOT NULL AND e.cap_member_id = b.member_id
+   LIMIT 1
+) cupo ON TRUE
+LEFT JOIN public.insc_divisiones d
+       ON d.torneo = b.torneo AND d.division = cupo.division
 WHERE b.estado = 'activo'
   AND NOT EXISTS (
     SELECT 1 FROM public.insc_equipos e
      WHERE e.torneo = b.torneo
-       AND e.estado IN ('reservado','confirmado','lista_espera','pendiente_division')
+       AND public.insc_equipo_activo(e.estado)
+       AND e.estado <> 'esperando_companero'
        AND ( (b.member_id IS NOT NULL AND b.member_id IN (e.cap_member_id, e.comp_member_id))
           OR (b.member_id IS NULL AND b.nombre_norm IN (public.insc_nombre_norm(e.cap_nombre),
                                                         public.insc_nombre_norm(e.comp_nombre))) )
@@ -217,11 +236,13 @@ BEGIN
     END;
   END IF;
 
-  -- Quien ya tiene equipo no busca compañero
+  -- Quien ya tiene equipo no busca compañero. Excepción: quien compró un cupo
+  -- y aún no tiene con quién jugar — ese sí, y con más razón que nadie.
   SELECT cap_nombre, comp_nombre INTO v_equipo
     FROM public.insc_equipos
    WHERE torneo = p_torneo
-     AND estado IN ('reservado','confirmado','lista_espera','pendiente_division')
+     AND public.insc_equipo_activo(estado)
+     AND estado <> 'esperando_companero'
      AND ( (p_member_id IS NOT NULL AND p_member_id IN (cap_member_id, comp_member_id))
         OR (p_member_id IS NULL AND v_norm IN (public.insc_nombre_norm(cap_nombre),
                                                public.insc_nombre_norm(comp_nombre))) )
