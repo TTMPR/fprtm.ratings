@@ -212,6 +212,9 @@ Se cargaron en su día con los scripts de Python del repositorio
 "partidos detectados" y un aviso de jugadores no encontrados, sin que nada
 indique que el formato es incorrecto.
 
+**Disposición:** el importador **no se ha tocado**. Queda como trabajo de
+endurecimiento para la Fase 1 o 2, detallado en §10.1.6.
+
 ### D-5 · Hueco documentado: no hay salidas de producción en el repositorio
 
 Las filas reales de `partidos` y `resultados_evento` viven en Supabase. La
@@ -425,6 +428,39 @@ sin privilegio, identidad verificada por la base, capacidades (cambio de
 entorno, vista previa de rol y de organización sin escritura, banderas,
 diagnósticos), y salvaguardas (banner, auditoría con correo real, kill switch,
 prohibición de ampliar políticas).
+
+### 1.6 — Endurecer el importador (D-4) · pendiente, no implementado
+
+Hoy el importador **acepta en silencio** ficheros cuyo formato no reconoce.
+Un CSV `Round,WinnerID,LoserID,Scores` no activa la rama Stadium (le faltan
+las columnas `winnerMembershipIds`/`loserMembershipIds`), así que cae a la
+rama simple y parsea `pA = "Group 10 (B vs. C)"`, `pB = "fprtm|71953"`. No
+falla: muestra "partidos detectados" y luego un aviso de jugadores no
+encontrados, sin que nada indique que el formato es incorrecto.
+
+Afecta a tres ficheros históricos del propio repositorio
+(`torneo_1700_under.csv`, `albergue_olimpico_march2026.csv`,
+`albergue.olimpico.2026rev`), que en su día se cargaron con los scripts de
+Python, no por la interfaz.
+
+Trabajo propuesto para la Fase 1 o 2:
+
+- **Reconocer el formato explícitamente** en vez de deducirlo por descarte.
+  La rama simple debería ser una elección, no el destino de todo lo que no
+  es Stadium.
+- **Rechazar o avisar con claridad** ante un encabezado desconocido, en vez
+  de parsear y dejar que falle más tarde como "jugador no encontrado".
+- **Detectar identificadores inválidos como error de formato**: si ninguna
+  fila produce un id de federación válido, el problema es el fichero, no los
+  jugadores.
+- **Arreglar el filtro de encabezado** para que descarte `pA,pB,win`
+  (hoy sólo busca `/jugador|player|ganador|winner/i`) — ver §6.4.
+- Considerar soportar el formato `Round,WinnerID,LoserID,Scores`, ya que
+  existen datos históricos en él.
+
+**No implementado en la Fase 0.** Cualquier cambio aquí toca la semántica del
+importador y debe hacerse con los tests de caracterización de esta fase como
+red, y con aprobación explícita.
 
 ### Fuera de alcance en la Fase 1
 Tournament Manager, tenencia multi-organización (Fase 2), y **cualquier cambio
