@@ -473,6 +473,6 @@ fecha, notas (e.g. 'retired')
 | Stadium Compete | Third-party tournament bracket/draw software used by FPRTM |
 | Dirección Técnica | FPRTM's technical direction / coaching committee |
 | Retired | Match result where a player cannot continue; no rating change for either player |
-| Default / W/O | Player fails to appear or is disqualified; loser loses rating points |
+| Default / W/O | Player fails to appear or is disqualified; loser loses rating points — ⚠️ **no coincide con producción; ver el aviso de §7.6** |
 | torneo_archivado | System flag that switches the inscription tab from active to closed/thank-you state |
 | Kileaaa | Puerto Rican colloquial for "to play/compete" — the platform name |
