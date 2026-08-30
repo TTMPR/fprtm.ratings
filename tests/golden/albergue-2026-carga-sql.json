@@ -1,0 +1,1228 @@
+{
+  "_meta": {
+    "dataset": "albergue-2026-carga-sql",
+    "torneo": "Albergue Olímpico 2026",
+    "fuente": "carga_albergue_2026.sql",
+    "formato": "lista de partidos del cargador SQL",
+    "snapshot": "restore_rating_backup.sql",
+    "jugadoresEnSnapshot": 537,
+    "nota": "Foto del comportamiento del pipeline oficial. No es una verdad matemática."
+  },
+  "partidosParseados": 376,
+  "partidosCalculados": 323,
+  "partidosGuardados": 323,
+  "participantes": 151,
+  "actualizacionesDeRating": 151,
+  "sumaNetaDeDeltas": 0,
+  "retirados": 0,
+  "jugadores": [
+    {
+      "id": 10074,
+      "inicio": 1710,
+      "fin": 1725,
+      "delta": 15,
+      "ganados": 4,
+      "perdidos": 0
+    },
+    {
+      "id": 11025,
+      "inicio": 1590,
+      "fin": 1558,
+      "delta": -32,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 11934,
+      "inicio": 1609,
+      "fin": 1596,
+      "delta": -13,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 13248,
+      "inicio": 1575,
+      "fin": 1575,
+      "delta": 0,
+      "ganados": 1,
+      "perdidos": 1
+    },
+    {
+      "id": 13617,
+      "inicio": 1563,
+      "fin": 1547,
+      "delta": -16,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 14207,
+      "inicio": 1833,
+      "fin": 1912,
+      "delta": 79,
+      "ganados": 12,
+      "perdidos": 0
+    },
+    {
+      "id": 15075,
+      "inicio": 1574,
+      "fin": 1555,
+      "delta": -19,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 15817,
+      "inicio": 1547,
+      "fin": 1533,
+      "delta": -14,
+      "ganados": 1,
+      "perdidos": 4
+    },
+    {
+      "id": 16175,
+      "inicio": 1783,
+      "fin": 1760,
+      "delta": -23,
+      "ganados": 6,
+      "perdidos": 6
+    },
+    {
+      "id": 17331,
+      "inicio": 1834,
+      "fin": 1839,
+      "delta": 5,
+      "ganados": 2,
+      "perdidos": 1
+    },
+    {
+      "id": 17944,
+      "inicio": 1624,
+      "fin": 1626,
+      "delta": 2,
+      "ganados": 1,
+      "perdidos": 1
+    },
+    {
+      "id": 18675,
+      "inicio": 1829,
+      "fin": 1807,
+      "delta": -22,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 18834,
+      "inicio": 1654,
+      "fin": 1646,
+      "delta": -8,
+      "ganados": 0,
+      "perdidos": 1
+    },
+    {
+      "id": 19099,
+      "inicio": 1568,
+      "fin": 1609,
+      "delta": 41,
+      "ganados": 6,
+      "perdidos": 2
+    },
+    {
+      "id": 19287,
+      "inicio": 1650,
+      "fin": 1645,
+      "delta": -5,
+      "ganados": 1,
+      "perdidos": 3
+    },
+    {
+      "id": 19305,
+      "inicio": 1658,
+      "fin": 1671,
+      "delta": 13,
+      "ganados": 4,
+      "perdidos": 1
+    },
+    {
+      "id": 19358,
+      "inicio": 1857,
+      "fin": 1852,
+      "delta": -5,
+      "ganados": 4,
+      "perdidos": 3
+    },
+    {
+      "id": 21226,
+      "inicio": 1692,
+      "fin": 1687,
+      "delta": -5,
+      "ganados": 1,
+      "perdidos": 3
+    },
+    {
+      "id": 22224,
+      "inicio": 1609,
+      "fin": 1601,
+      "delta": -8,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 24371,
+      "inicio": 1780,
+      "fin": 1764,
+      "delta": -16,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 24592,
+      "inicio": 2132,
+      "fin": 2129,
+      "delta": -3,
+      "ganados": 7,
+      "perdidos": 1
+    },
+    {
+      "id": 25014,
+      "inicio": 1737,
+      "fin": 1729,
+      "delta": -8,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 25860,
+      "inicio": 1670,
+      "fin": 1648,
+      "delta": -22,
+      "ganados": 2,
+      "perdidos": 3
+    },
+    {
+      "id": 26683,
+      "inicio": 1514,
+      "fin": 1502,
+      "delta": -12,
+      "ganados": 1,
+      "perdidos": 4
+    },
+    {
+      "id": 27146,
+      "inicio": 1582,
+      "fin": 1571,
+      "delta": -11,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 27154,
+      "inicio": 1596,
+      "fin": 1584,
+      "delta": -12,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 27342,
+      "inicio": 1645,
+      "fin": 1658,
+      "delta": 13,
+      "ganados": 2,
+      "perdidos": 0
+    },
+    {
+      "id": 28289,
+      "inicio": 2065,
+      "fin": 2090,
+      "delta": 25,
+      "ganados": 4,
+      "perdidos": 1
+    },
+    {
+      "id": 28301,
+      "inicio": 1812,
+      "fin": 1822,
+      "delta": 10,
+      "ganados": 3,
+      "perdidos": 0
+    },
+    {
+      "id": 28726,
+      "inicio": 1813,
+      "fin": 1814,
+      "delta": 1,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 30379,
+      "inicio": 1957,
+      "fin": 1957,
+      "delta": 0,
+      "ganados": 2,
+      "perdidos": 1
+    },
+    {
+      "id": 30866,
+      "inicio": 1574,
+      "fin": 1569,
+      "delta": -5,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 30969,
+      "inicio": 1777,
+      "fin": 1721,
+      "delta": -56,
+      "ganados": 0,
+      "perdidos": 6
+    },
+    {
+      "id": 31417,
+      "inicio": 1849,
+      "fin": 1821,
+      "delta": -28,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 32431,
+      "inicio": 1852,
+      "fin": 1876,
+      "delta": 24,
+      "ganados": 5,
+      "perdidos": 3
+    },
+    {
+      "id": 32810,
+      "inicio": 1498,
+      "fin": 1494,
+      "delta": -4,
+      "ganados": 1,
+      "perdidos": 3
+    },
+    {
+      "id": 33416,
+      "inicio": 1722,
+      "fin": 1769,
+      "delta": 47,
+      "ganados": 6,
+      "perdidos": 1
+    },
+    {
+      "id": 34914,
+      "inicio": 1548,
+      "fin": 1544,
+      "delta": -4,
+      "ganados": 2,
+      "perdidos": 4
+    },
+    {
+      "id": 34957,
+      "inicio": 1638,
+      "fin": 1656,
+      "delta": 18,
+      "ganados": 3,
+      "perdidos": 2
+    },
+    {
+      "id": 35112,
+      "inicio": 1621,
+      "fin": 1641,
+      "delta": 20,
+      "ganados": 2,
+      "perdidos": 0
+    },
+    {
+      "id": 36158,
+      "inicio": 1573,
+      "fin": 1583,
+      "delta": 10,
+      "ganados": 3,
+      "perdidos": 1
+    },
+    {
+      "id": 37607,
+      "inicio": 1586,
+      "fin": 1596,
+      "delta": 10,
+      "ganados": 3,
+      "perdidos": 1
+    },
+    {
+      "id": 37869,
+      "inicio": 1825,
+      "fin": 1811,
+      "delta": -14,
+      "ganados": 1,
+      "perdidos": 5
+    },
+    {
+      "id": 38016,
+      "inicio": 1608,
+      "fin": 1604,
+      "delta": -4,
+      "ganados": 3,
+      "perdidos": 3
+    },
+    {
+      "id": 38534,
+      "inicio": 1602,
+      "fin": 1589,
+      "delta": -13,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 38864,
+      "inicio": 1662,
+      "fin": 1673,
+      "delta": 11,
+      "ganados": 2,
+      "perdidos": 0
+    },
+    {
+      "id": 39154,
+      "inicio": 1573,
+      "fin": 1578,
+      "delta": 5,
+      "ganados": 2,
+      "perdidos": 1
+    },
+    {
+      "id": 39831,
+      "inicio": 1572,
+      "fin": 1575,
+      "delta": 3,
+      "ganados": 3,
+      "perdidos": 2
+    },
+    {
+      "id": 39871,
+      "inicio": 1895,
+      "fin": 1905,
+      "delta": 10,
+      "ganados": 4,
+      "perdidos": 1
+    },
+    {
+      "id": 40007,
+      "inicio": 1655,
+      "fin": 1659,
+      "delta": 4,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 40021,
+      "inicio": 1834,
+      "fin": 1841,
+      "delta": 7,
+      "ganados": 3,
+      "perdidos": 2
+    },
+    {
+      "id": 40161,
+      "inicio": 1664,
+      "fin": 1659,
+      "delta": -5,
+      "ganados": 1,
+      "perdidos": 1
+    },
+    {
+      "id": 40982,
+      "inicio": 1609,
+      "fin": 1612,
+      "delta": 3,
+      "ganados": 1,
+      "perdidos": 1
+    },
+    {
+      "id": 41195,
+      "inicio": 1649,
+      "fin": 1644,
+      "delta": -5,
+      "ganados": 1,
+      "perdidos": 1
+    },
+    {
+      "id": 41285,
+      "inicio": 1597,
+      "fin": 1602,
+      "delta": 5,
+      "ganados": 1,
+      "perdidos": 1
+    },
+    {
+      "id": 41850,
+      "inicio": 1641,
+      "fin": 1656,
+      "delta": 15,
+      "ganados": 2,
+      "perdidos": 0
+    },
+    {
+      "id": 42493,
+      "inicio": 1667,
+      "fin": 1660,
+      "delta": -7,
+      "ganados": 1,
+      "perdidos": 1
+    },
+    {
+      "id": 43386,
+      "inicio": 1547,
+      "fin": 1539,
+      "delta": -8,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 44795,
+      "inicio": 1558,
+      "fin": 1545,
+      "delta": -13,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 45382,
+      "inicio": 1845,
+      "fin": 1851,
+      "delta": 6,
+      "ganados": 5,
+      "perdidos": 2
+    },
+    {
+      "id": 48752,
+      "inicio": 1519,
+      "fin": 1585,
+      "delta": 66,
+      "ganados": 7,
+      "perdidos": 3
+    },
+    {
+      "id": 48890,
+      "inicio": 1603,
+      "fin": 1606,
+      "delta": 3,
+      "ganados": 1,
+      "perdidos": 1
+    },
+    {
+      "id": 49117,
+      "inicio": 1720,
+      "fin": 1712,
+      "delta": -8,
+      "ganados": 3,
+      "perdidos": 5
+    },
+    {
+      "id": 49321,
+      "inicio": 1596,
+      "fin": 1591,
+      "delta": -5,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 49363,
+      "inicio": 1536,
+      "fin": 1565,
+      "delta": 29,
+      "ganados": 3,
+      "perdidos": 1
+    },
+    {
+      "id": 50001,
+      "inicio": 1572,
+      "fin": 1545,
+      "delta": -27,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 50857,
+      "inicio": 1679,
+      "fin": 1676,
+      "delta": -3,
+      "ganados": 3,
+      "perdidos": 2
+    },
+    {
+      "id": 51245,
+      "inicio": 1828,
+      "fin": 1816,
+      "delta": -12,
+      "ganados": 1,
+      "perdidos": 3
+    },
+    {
+      "id": 51347,
+      "inicio": 1831,
+      "fin": 1858,
+      "delta": 27,
+      "ganados": 5,
+      "perdidos": 3
+    },
+    {
+      "id": 52487,
+      "inicio": 1708,
+      "fin": 1696,
+      "delta": -12,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 53025,
+      "inicio": 1568,
+      "fin": 1544,
+      "delta": -24,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 53404,
+      "inicio": 1564,
+      "fin": 1566,
+      "delta": 2,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 54597,
+      "inicio": 1966,
+      "fin": 1973,
+      "delta": 7,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 56025,
+      "inicio": 1567,
+      "fin": 1577,
+      "delta": 10,
+      "ganados": 2,
+      "perdidos": 0
+    },
+    {
+      "id": 56566,
+      "inicio": 1870,
+      "fin": 1855,
+      "delta": -15,
+      "ganados": 2,
+      "perdidos": 3
+    },
+    {
+      "id": 57400,
+      "inicio": 1909,
+      "fin": 1920,
+      "delta": 11,
+      "ganados": 5,
+      "perdidos": 2
+    },
+    {
+      "id": 57447,
+      "inicio": 1791,
+      "fin": 1805,
+      "delta": 14,
+      "ganados": 4,
+      "perdidos": 1
+    },
+    {
+      "id": 57576,
+      "inicio": 1699,
+      "fin": 1721,
+      "delta": 22,
+      "ganados": 5,
+      "perdidos": 2
+    },
+    {
+      "id": 57795,
+      "inicio": 1577,
+      "fin": 1567,
+      "delta": -10,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 58520,
+      "inicio": 1872,
+      "fin": 1861,
+      "delta": -11,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 59009,
+      "inicio": 1714,
+      "fin": 1701,
+      "delta": -13,
+      "ganados": 2,
+      "perdidos": 3
+    },
+    {
+      "id": 59672,
+      "inicio": 1607,
+      "fin": 1610,
+      "delta": 3,
+      "ganados": 1,
+      "perdidos": 1
+    },
+    {
+      "id": 60432,
+      "inicio": 1755,
+      "fin": 1766,
+      "delta": 11,
+      "ganados": 7,
+      "perdidos": 2
+    },
+    {
+      "id": 61876,
+      "inicio": 1596,
+      "fin": 1609,
+      "delta": 13,
+      "ganados": 3,
+      "perdidos": 1
+    },
+    {
+      "id": 62743,
+      "inicio": 1522,
+      "fin": 1538,
+      "delta": 16,
+      "ganados": 2,
+      "perdidos": 1
+    },
+    {
+      "id": 63264,
+      "inicio": 1576,
+      "fin": 1549,
+      "delta": -27,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 63354,
+      "inicio": 1639,
+      "fin": 1643,
+      "delta": 4,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 63883,
+      "inicio": 1630,
+      "fin": 1624,
+      "delta": -6,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 65108,
+      "inicio": 1506,
+      "fin": 1499,
+      "delta": -7,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 65333,
+      "inicio": 1762,
+      "fin": 1777,
+      "delta": 15,
+      "ganados": 5,
+      "perdidos": 1
+    },
+    {
+      "id": 65444,
+      "inicio": 1605,
+      "fin": 1615,
+      "delta": 10,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 65461,
+      "inicio": 1682,
+      "fin": 1665,
+      "delta": -17,
+      "ganados": 1,
+      "perdidos": 3
+    },
+    {
+      "id": 66057,
+      "inicio": 1582,
+      "fin": 1562,
+      "delta": -20,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 66985,
+      "inicio": 1730,
+      "fin": 1715,
+      "delta": -15,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 69177,
+      "inicio": 1671,
+      "fin": 1676,
+      "delta": 5,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 69470,
+      "inicio": 1729,
+      "fin": 1727,
+      "delta": -2,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 69638,
+      "inicio": 1605,
+      "fin": 1606,
+      "delta": 1,
+      "ganados": 2,
+      "perdidos": 1
+    },
+    {
+      "id": 69929,
+      "inicio": 1595,
+      "fin": 1611,
+      "delta": 16,
+      "ganados": 3,
+      "perdidos": 1
+    },
+    {
+      "id": 70637,
+      "inicio": 1616,
+      "fin": 1633,
+      "delta": 17,
+      "ganados": 3,
+      "perdidos": 0
+    },
+    {
+      "id": 71953,
+      "inicio": 1643,
+      "fin": 1674,
+      "delta": 31,
+      "ganados": 4,
+      "perdidos": 2
+    },
+    {
+      "id": 72296,
+      "inicio": 1687,
+      "fin": 1673,
+      "delta": -14,
+      "ganados": 3,
+      "perdidos": 5
+    },
+    {
+      "id": 73699,
+      "inicio": 1692,
+      "fin": 1702,
+      "delta": 10,
+      "ganados": 2,
+      "perdidos": 0
+    },
+    {
+      "id": 74686,
+      "inicio": 1785,
+      "fin": 1782,
+      "delta": -3,
+      "ganados": 6,
+      "perdidos": 3
+    },
+    {
+      "id": 75612,
+      "inicio": 1725,
+      "fin": 1718,
+      "delta": -7,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 76540,
+      "inicio": 1718,
+      "fin": 1739,
+      "delta": 21,
+      "ganados": 4,
+      "perdidos": 3
+    },
+    {
+      "id": 76542,
+      "inicio": 1722,
+      "fin": 1720,
+      "delta": -2,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 76768,
+      "inicio": 1566,
+      "fin": 1558,
+      "delta": -8,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 77391,
+      "inicio": 1650,
+      "fin": 1642,
+      "delta": -8,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 78146,
+      "inicio": 1547,
+      "fin": 1518,
+      "delta": -29,
+      "ganados": 1,
+      "perdidos": 6
+    },
+    {
+      "id": 79514,
+      "inicio": 1712,
+      "fin": 1742,
+      "delta": 30,
+      "ganados": 6,
+      "perdidos": 2
+    },
+    {
+      "id": 80468,
+      "inicio": 1593,
+      "fin": 1588,
+      "delta": -5,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 80678,
+      "inicio": 1646,
+      "fin": 1661,
+      "delta": 15,
+      "ganados": 4,
+      "perdidos": 0
+    },
+    {
+      "id": 81200,
+      "inicio": 1591,
+      "fin": 1587,
+      "delta": -4,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 82512,
+      "inicio": 1745,
+      "fin": 1711,
+      "delta": -34,
+      "ganados": 4,
+      "perdidos": 3
+    },
+    {
+      "id": 83000,
+      "inicio": 1838,
+      "fin": 1809,
+      "delta": -29,
+      "ganados": 3,
+      "perdidos": 4
+    },
+    {
+      "id": 84341,
+      "inicio": 1828,
+      "fin": 1824,
+      "delta": -4,
+      "ganados": 5,
+      "perdidos": 3
+    },
+    {
+      "id": 84593,
+      "inicio": 1482,
+      "fin": 1487,
+      "delta": 5,
+      "ganados": 1,
+      "perdidos": 3
+    },
+    {
+      "id": 84847,
+      "inicio": 1644,
+      "fin": 1663,
+      "delta": 19,
+      "ganados": 3,
+      "perdidos": 0
+    },
+    {
+      "id": 85525,
+      "inicio": 1643,
+      "fin": 1640,
+      "delta": -3,
+      "ganados": 1,
+      "perdidos": 1
+    },
+    {
+      "id": 85674,
+      "inicio": 1909,
+      "fin": 1904,
+      "delta": -5,
+      "ganados": 2,
+      "perdidos": 3
+    },
+    {
+      "id": 85914,
+      "inicio": 1601,
+      "fin": 1573,
+      "delta": -28,
+      "ganados": 0,
+      "perdidos": 4
+    },
+    {
+      "id": 86099,
+      "inicio": 1560,
+      "fin": 1566,
+      "delta": 6,
+      "ganados": 2,
+      "perdidos": 4
+    },
+    {
+      "id": 86503,
+      "inicio": 1600,
+      "fin": 1591,
+      "delta": -9,
+      "ganados": 1,
+      "perdidos": 7
+    },
+    {
+      "id": 87128,
+      "inicio": 1662,
+      "fin": 1649,
+      "delta": -13,
+      "ganados": 2,
+      "perdidos": 7
+    },
+    {
+      "id": 88172,
+      "inicio": 1757,
+      "fin": 1759,
+      "delta": 2,
+      "ganados": 3,
+      "perdidos": 3
+    },
+    {
+      "id": 88504,
+      "inicio": 1710,
+      "fin": 1708,
+      "delta": -2,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 89840,
+      "inicio": 1857,
+      "fin": 1861,
+      "delta": 4,
+      "ganados": 3,
+      "perdidos": 2
+    },
+    {
+      "id": 90676,
+      "inicio": 1497,
+      "fin": 1500,
+      "delta": 3,
+      "ganados": 1,
+      "perdidos": 3
+    },
+    {
+      "id": 91678,
+      "inicio": 1539,
+      "fin": 1517,
+      "delta": -22,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 91959,
+      "inicio": 1721,
+      "fin": 1745,
+      "delta": 24,
+      "ganados": 3,
+      "perdidos": 1
+    },
+    {
+      "id": 92240,
+      "inicio": 1779,
+      "fin": 1822,
+      "delta": 43,
+      "ganados": 10,
+      "perdidos": 0
+    },
+    {
+      "id": 93136,
+      "inicio": 1584,
+      "fin": 1572,
+      "delta": -12,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 93748,
+      "inicio": 1719,
+      "fin": 1709,
+      "delta": -10,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 93810,
+      "inicio": 2174,
+      "fin": 2162,
+      "delta": -12,
+      "ganados": 2,
+      "perdidos": 1
+    },
+    {
+      "id": 94080,
+      "inicio": 1566,
+      "fin": 1561,
+      "delta": -5,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 95180,
+      "inicio": 1676,
+      "fin": 1675,
+      "delta": -1,
+      "ganados": 3,
+      "perdidos": 2
+    },
+    {
+      "id": 95181,
+      "inicio": 1997,
+      "fin": 1985,
+      "delta": -12,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 95909,
+      "inicio": 1825,
+      "fin": 1836,
+      "delta": 11,
+      "ganados": 2,
+      "perdidos": 1
+    },
+    {
+      "id": 96374,
+      "inicio": 1634,
+      "fin": 1632,
+      "delta": -2,
+      "ganados": 1,
+      "perdidos": 1
+    },
+    {
+      "id": 96474,
+      "inicio": 1688,
+      "fin": 1698,
+      "delta": 10,
+      "ganados": 2,
+      "perdidos": 0
+    },
+    {
+      "id": 97062,
+      "inicio": 1541,
+      "fin": 1535,
+      "delta": -6,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 97410,
+      "inicio": 1532,
+      "fin": 1544,
+      "delta": 12,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 97684,
+      "inicio": 1648,
+      "fin": 1637,
+      "delta": -11,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 97806,
+      "inicio": 1575,
+      "fin": 1572,
+      "delta": -3,
+      "ganados": 2,
+      "perdidos": 2
+    },
+    {
+      "id": 97900,
+      "inicio": 1546,
+      "fin": 1591,
+      "delta": 45,
+      "ganados": 5,
+      "perdidos": 2
+    },
+    {
+      "id": 98259,
+      "inicio": 1628,
+      "fin": 1614,
+      "delta": -14,
+      "ganados": 1,
+      "perdidos": 7
+    },
+    {
+      "id": 98777,
+      "inicio": 1500,
+      "fin": 1487,
+      "delta": -13,
+      "ganados": 0,
+      "perdidos": 2
+    },
+    {
+      "id": 99065,
+      "inicio": 1564,
+      "fin": 1540,
+      "delta": -24,
+      "ganados": 0,
+      "perdidos": 3
+    },
+    {
+      "id": 99166,
+      "inicio": 1742,
+      "fin": 1761,
+      "delta": 19,
+      "ganados": 3,
+      "perdidos": 1
+    },
+    {
+      "id": 99353,
+      "inicio": 1737,
+      "fin": 1727,
+      "delta": -10,
+      "ganados": 1,
+      "perdidos": 2
+    },
+    {
+      "id": 99593,
+      "inicio": 1859,
+      "fin": 1863,
+      "delta": 4,
+      "ganados": 2,
+      "perdidos": 1
+    }
+  ]
+}

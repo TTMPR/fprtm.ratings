@@ -248,6 +248,29 @@ fecha, notas (e.g. 'retired')
 
 ### 7.6 FPRTM Rating Calculations
 
+> ⚠️ **AVISO — esta sección no coincide con producción (Fase 0, 2026-08-27)**
+>
+> La descripción de **W/O y Default** que aparece más abajo **no describe el
+> comportamiento actual** de ratings.ttmpr.xyz. En producción:
+>
+> - **W/O y walkover** se tratan igual que un retirado: **ninguno de los dos
+>   jugadores gana ni pierde puntos**.
+> - **"Default"** no se reconoce como caso especial y **puntúa como un partido
+>   normal**, con intercambio completo de puntos.
+>
+> **El comportamiento actual de ratings.ttmpr.xyz es la fuente de verdad
+> oficial, no este documento.** Esta sección queda marcada como posiblemente
+> desactualizada.
+>
+> **No cambies el comportamiento de producción basándote en este PRD.**
+> Alinear el código con lo que dice aquí — o corregir el PRD — es una
+> **decisión de política de la federación**, pendiente de revisión, y requiere
+> aprobación explícita.
+>
+> El comportamiento real está fijado por tests de caracterización
+> (`tests/importer.test.mjs`, suite B11) y documentado en `PHASE0_REPORT.md`
+> §6.1–6.2.
+
 **Point table (current FPRTM standard):**
 
 | Rating difference | Favorite gains | Underdog gains |
@@ -450,6 +473,6 @@ fecha, notas (e.g. 'retired')
 | Stadium Compete | Third-party tournament bracket/draw software used by FPRTM |
 | Dirección Técnica | FPRTM's technical direction / coaching committee |
 | Retired | Match result where a player cannot continue; no rating change for either player |
-| Default / W/O | Player fails to appear or is disqualified; loser loses rating points |
+| Default / W/O | Player fails to appear or is disqualified; loser loses rating points — ⚠️ **no coincide con producción; ver el aviso de §7.6** |
 | torneo_archivado | System flag that switches the inscription tab from active to closed/thank-you state |
 | Kileaaa | Puerto Rican colloquial for "to play/compete" — the platform name |

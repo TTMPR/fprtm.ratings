@@ -57,6 +57,13 @@ const TABLES = [
   'player_reg_tokens',
   'resultados_draft',
   'audit_log',
+  // Copa Olímpica (sql/create_insc_equipos.sql, sql/create_busca_companero.sql).
+  // Faltaban desde que se creó el módulo: es el más reciente con dinero
+  // asociado y quedaba fuera del backup. Las tablas que no existan en el
+  // proyecto se saltan solas con un aviso.
+  'insc_divisiones',
+  'insc_equipos',
+  'insc_busca_companero',
 ];
 
 const HEADERS = { apikey: KEY, Authorization: `Bearer ${KEY}` };
