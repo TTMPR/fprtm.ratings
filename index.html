@@ -13342,6 +13342,7 @@ function copaAdminFila(r) {
           ${r.club ? ` · ${copaEsc(r.club)}` : ''}
         </div>
         ${contacto ? `<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${copaEsc(contacto)}</div>` : ''}
+        ${r.notas ? `<div style="font-size:11px;color:#a5b4fc;margin-top:5px;line-height:1.5;background:rgba(129,140,248,0.07);border-left:2px solid rgba(129,140,248,0.5);padding:5px 9px;border-radius:0 6px 6px 0;">📝 ${copaEsc(r.notas)}</div>` : ''}
       </div>
       <div style="text-align:right;min-width:120px;">
         <div style="font-size:11px;font-weight:700;color:${est.color};">${est.txt}</div>
@@ -13550,14 +13551,14 @@ function copaAdminBadge() {
 function copaAdminExportarCSV() {
   const cab = ['id','estado','division','nombre_equipo','club',
                'jugador_1','fptm_1','rating_1','jugador_2','fptm_2','rating_2',
-               'rating_combinado','costo','monto_pagado','credito','referencia','email','telefono','inscrito'];
+               'rating_combinado','costo','monto_pagado','credito','referencia','email','telefono','inscrito','notas'];
   const filas = _copaAdminData.map(r => [
     r.id, r.estado, r.division || '', r.nombre_equipo || '', r.club || '',
     r.cap_nombre, r.cap_member_id ?? '', r.cap_rating ?? '',
     r.comp_nombre || 'POR DEFINIR', r.comp_member_id ?? '', r.comp_rating ?? '',
     r.rating_combinado ?? '', r.costo, r.monto_pagado, r.credito ?? 0, r.referencia || '',
     r.cap_email || '', r.cap_tel || '',
-    (r.created_at || '').split('T')[0],
+    (r.created_at || '').split('T')[0], r.notas || '',
   ]);
   const csv = [cab, ...filas]
     .map(f => f.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))

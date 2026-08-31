@@ -15,6 +15,14 @@
 --  Reparto de cupo: se restauran por orden de inscripción. Quien quepa en su
 --  división vuelve a su estado anterior; si la división ya se llenó mientras
 --  tanto, el equipo vuelve como lista de espera en vez de pasarse del cupo.
+--
+--  ⚠ ANTES CORRE sql/deduplicar_inscripciones.sql
+--  Mucha gente cuya reserva se expiró volvió a inscribirse — era legal, porque
+--  una fila expirada no cuenta como activa. Al revivir la vieja, esa persona
+--  queda en dos equipos. Por eso este script llama a insc_equipos_deduplicar()
+--  al terminar: conserva la inscripción MÁS ANTIGUA de cada jugador y cancela
+--  las posteriores, trasladando cualquier pago al equipo que se queda.
+--  Esa función vive en el otro archivo, así que ese va primero.
 -- ============================================================================
 
 WITH ocupacion AS (
@@ -58,3 +66,13 @@ SELECT id,
        estado AS restaurado_como
   FROM restaurados
  ORDER BY division, id;
+
+
+-- ---------------------------------------------------------------------------
+-- Y ahora se quitan los duplicados que la restauración pueda haber creado.
+-- Manda la inscripción más antigua; el dinero de las canceladas se traslada.
+-- Revisa este informe: las filas 'cancelado' son las que se dieron de baja.
+-- ---------------------------------------------------------------------------
+SELECT * FROM public.insc_equipos_deduplicar('Copa Olímpica 2026', true)
+ WHERE accion <> 'conservar'
+ ORDER BY inscrito, equipo_id;

@@ -17,11 +17,42 @@ En **Supabase → SQL Editor**, pegar y ejecutar, en este orden:
 
 1. `sql/create_insc_equipos.sql`
 2. `sql/create_busca_companero.sql` (el tablón "Busco Compañero")
-3. `sql/restaurar_inscripciones_expiradas.sql` — **solo si ya hubo
+3. `sql/deduplicar_inscripciones.sql` — instala la herramienta que quita
+   inscripciones repetidas. Al final hace un **ensayo en seco** que no cambia
+   nada; revisa el informe.
+4. `sql/restaurar_inscripciones_expiradas.sql` — **solo si ya hubo
    inscripciones antes de este cambio.** Devuelve a la vida cualquier reserva
-   que se hubiera expirado sola. Si no había nada, no hace nada.
+   que se hubiera expirado sola, y quita los duplicados que eso genere.
+   Si no había nada, no hace nada.
 
-Los tres son seguros de re-ejecutar: no borran datos.
+Todos son seguros de re-ejecutar: no borran datos.
+
+### Por qué salían equipos repetidos
+
+Con el comportamiento viejo, una reserva sin pagar se expiraba sola. Como una
+fila expirada no cuenta como activa, esa persona **podía volver a
+inscribirse** — y muchas lo hicieron. Al revivir la fila vieja, quedaban en
+dos equipos a la vez.
+
+La regla al deduplicar es la que pidió la federación: **manda la inscripción
+más antigua**. Se recorren los equipos del más viejo al más nuevo reclamando
+jugadores; el primero en que aparece cada persona se conserva y los
+posteriores que la repitan se cancelan.
+
+**El dinero no se pierde.** Si el equipo que se cancela tenía pagos, el monto
+y la referencia pasan al que se conserva, con una nota explicando de dónde
+vino — visible en el panel y en el CSV. Si con eso queda cubierto el costo, el
+equipo pasa a *confirmado* solo.
+
+Para revisar antes de tocar nada:
+
+```sql
+SELECT * FROM insc_equipos_deduplicar('Copa Olímpica 2026');        -- ensayo
+SELECT * FROM insc_equipos_deduplicar('Copa Olímpica 2026', true);  -- aplicar
+```
+
+> Esto no se repetirá: como ya nada se expira solo, nadie se queda sin
+> inscripción y por tanto nadie necesita reinscribirse.
 
 ### Comprobar que quedó bien
 
