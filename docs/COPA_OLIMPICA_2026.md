@@ -17,8 +17,11 @@ En **Supabase → SQL Editor**, pegar y ejecutar, en este orden:
 
 1. `sql/create_insc_equipos.sql`
 2. `sql/create_busca_companero.sql` (el tablón "Busco Compañero")
+3. `sql/restaurar_inscripciones_expiradas.sql` — **solo si ya hubo
+   inscripciones antes de este cambio.** Devuelve a la vida cualquier reserva
+   que se hubiera expirado sola. Si no había nada, no hace nada.
 
-Ambos son seguros de re-ejecutar: no borran datos.
+Los tres son seguros de re-ejecutar: no borran datos.
 
 ### Comprobar que quedó bien
 
@@ -64,9 +67,9 @@ Mientras estén cerradas, el admin igual ve el formulario (con un aviso de
 | **División automática** | Sale del rating combinado. **No se puede escoger** ni jugar hacia arriba. |
 | **Rating congelado** | Se guarda el rating de ambos al momento de inscribir. Si cambia después, el equipo juega y paga lo que vio. |
 | **Un equipo por jugador** | Nadie puede aparecer en dos equipos del torneo. |
-| **Cupo reservado 48 h** | Se toma al inscribir. Si no entra pago, se libera y entra el primero de la lista de espera. |
-| **Abono parcial protege** | Cualquier monto > 0 evita que la reserva expire sola. |
-| **Lista de espera** | División llena → el equipo entra igual, en espera, y **no paga** hasta tener cupo. |
+| **Cupo reservado** | Se toma al inscribir. Hay 48 h para pagar, pero **pasado el plazo el cupo no se pierde**: queda marcado en rojo y lo suelta una persona, no un reloj. |
+| **Nada se borra solo** | Ninguna inscripción desaparece sin que alguien de la FPTM lo mande. |
+| **Lista de espera** | División llena → el equipo entra igual, en espera, y **no paga** hasta tener cupo. Avanza cuando ustedes cancelan a alguien. |
 | **Invitado sin rating** | El equipo queda en *"división por asignar"* y no ocupa cupo de nadie hasta que el admin le asigne una. |
 | **Cupo sin pareja** | Solo División 1 y solo con rating 2000+. Ocupa cupo desde que se compra. Ver sección 5. |
 | **Precio fijo** | Sin recargo por no tener membresía. |
@@ -101,12 +104,25 @@ venciendo en menos de 24 horas**. Ese es el número que hay que atender.
 | **✕ Cancelar** | Libera el cupo y promueve de inmediato al primero en espera. |
 | **⚖️ Aprobar / ⬇ Bajar** | Solo en equipos en revisión técnica: la Dirección Técnica decide si acepta la excepción o baja al equipo ajustando el costo. |
 | **🎫 Liberar y dar crédito** | Para el que compró cupo y nunca nombró compañero: libera el cupo y registra el dinero como crédito. |
-| **⟳ Liberar cupos vencidos** | Expira reservas vencidas sin pago y sube la lista de espera. Corre sola en cada inscripción nueva; el botón es para forzarla. |
+| **⟳ Promover lista de espera** | Mueve la espera a los cupos que hayan quedado libres. **No cancela a nadie.** Corre sola en cada inscripción nueva; el botón es para forzarla tras una cancelación. |
 | **⬇ CSV** | Todos los equipos con contacto, montos y referencias. |
 
-**Filtro "🔥 Reserva por vencer (24 h)"**: la lista de a quién llamar hoy. La
-insignia de la tarjeta cuenta esas reservas **más** los equipos parados en
-revisión técnica esperando decisión.
+### A quién perseguir
+
+Pasado el plazo sin pago, el equipo **conserva su cupo** y aparece con el
+nombre **en rojo y parpadeando**, con el distintivo `SIN PAGAR` y cuántos días
+lleva fuera de plazo. Un abono parcial quita la marca: el equipo respondió.
+
+Dos filtros para eso: **"🔴 Fuera de plazo sin pagar"** (los que ya se
+pasaron) y **"🔥 Reserva por vencer (24 h)"** (los que están a punto). La
+insignia de la tarjeta suma ambos más los equipos parados en revisión técnica.
+
+Para soltar un cupo de verdad hay que **cancelar** al equipo — es una decisión
+de la federación, y al hacerlo entra sola la lista de espera.
+
+> El parpadeo es un latido lento de 1,4 s, no un destello: un parpadeo rápido
+> es un riesgo real para personas fotosensibles. A quien tenga activado
+> "reducir movimiento" en su sistema le sale en rojo fijo, sin animación.
 
 ### Conciliar pagos de ATH Móvil
 

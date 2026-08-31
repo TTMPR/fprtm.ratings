@@ -13,13 +13,15 @@
 --    public.insc_equipos_publico   — vista de solo lectura para el portal
 --    public.insc_equipos_cupos     — conteo de cupos por división
 --    public.inscribir_equipo(...)  — alta transaccional con control de cupo
---    public.insc_equipos_liberar() — expira reservas y promueve lista de espera
+--    public.insc_equipos_liberar() — promueve la lista de espera a huecos libres
 --
 --  Modelo de cupos (decidido con la federación):
---    · El cupo se RESERVA al inscribir y se libera solo si no entra el pago
---      dentro de la ventana (48 h por defecto).
---    · Al liberarse un cupo entra automáticamente el primero de la lista de
---      espera de esa división.
+--    · El cupo se RESERVA al inscribir. Hay 48 h para pagar, pero pasado el
+--      plazo el cupo NO se pierde solo: queda marcado en rojo y la FPTM
+--      decide si lo suelta. Ninguna inscripción desaparece sin que una
+--      persona lo mande.
+--    · Al liberarse un cupo (por cancelación) entra automáticamente el
+--      primero de la lista de espera de esa división.
 --    · La división se deriva del rating combinado y NO se puede escoger.
 --    · El rating de ambos jugadores se congela al momento de inscribir.
 --    · Un jugador solo puede estar en un equipo en todo el torneo.
@@ -85,7 +87,8 @@ ON CONFLICT (torneo, division) DO UPDATE
 --                         lo resuelve la Dirección Técnica
 --    lista_espera         la división estaba llena; entra si se libera un cupo
 --    pendiente_division   falta rating de algún invitado; no ocupa cupo todavía
---    expirado             venció la reserva sin pago; el cupo se liberó
+--    expirado             en desuso: ya nada expira solo. Se conserva por las
+--                         filas antiguas y para poder restaurarlas.
 --    cancelado            dado de baja por la federación o por el capitán
 --    credito              cupo liberado y dinero a favor del jugador
 --
@@ -192,31 +195,39 @@ $$;
 
 
 -- ---------------------------------------------------------------------------
--- 4. LIBERAR CUPOS
---    Expira las reservas vencidas que nunca recibieron pago y promueve la
---    lista de espera de cada división al espacio que quedó libre.
---    Se llama sola al inicio de inscribir_equipo(); el admin también puede
---    invocarla a mano desde el panel.
+-- 4. PROMOVER LA LISTA DE ESPERA
+--
+--    Decisión de la federación: una reserva vencida NO se cancela sola. El
+--    equipo conserva su cupo pase el tiempo que pase; el portal y el panel lo
+--    marcan en rojo para que la FPTM lo persiga, y si hay que soltarlo, lo
+--    suelta una persona con el botón de cancelar.
+--
+--    Consecuencia asumida: en una división llena, la lista de espera solo
+--    avanza cuando el admin cancela a alguien. Esta función ya no expira
+--    nada — solo mueve la espera al hueco que exista.
+--
+--    Se llama sola al inicio de inscribir_equipo() y tras cada cancelación.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.insc_equipos_liberar(p_torneo TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
-  v_expirados  INTEGER := 0;
   v_promovidos INTEGER := 0;
+  v_vencidas   INTEGER := 0;
   v_horas      INTEGER := public.insc_equipos_reserva_horas();
   v_libres     INTEGER;
   v_id         BIGINT;
   d            RECORD;
 BEGIN
-  UPDATE public.insc_equipos
-     SET estado = 'expirado', updated_at = NOW()
+  -- Cuántas reservas están fuera de plazo sin pagar. No se tocan: es el
+  -- número que el panel usa para saber a quién hay que llamar.
+  SELECT COUNT(*) INTO v_vencidas
+    FROM public.insc_equipos
    WHERE torneo = p_torneo
      AND estado IN ('reservado', 'esperando_companero')
      AND reserva_expira IS NOT NULL
      AND reserva_expira < NOW()
      AND COALESCE(monto_pagado, 0) = 0;
-  GET DIAGNOSTICS v_expirados = ROW_COUNT;
 
   FOR d IN SELECT division, max_equipos FROM public.insc_divisiones
             WHERE torneo = p_torneo ORDER BY orden LOOP
@@ -243,7 +254,7 @@ BEGIN
     END LOOP;
   END LOOP;
 
-  RETURN jsonb_build_object('expirados', v_expirados, 'promovidos', v_promovidos);
+  RETURN jsonb_build_object('promovidos', v_promovidos, 'vencidas_sin_pago', v_vencidas);
 END;
 $$;
 

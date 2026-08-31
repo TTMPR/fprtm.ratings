@@ -974,6 +974,31 @@
     .overview-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
+  /* ─── RESERVA FUERA DE PLAZO ───
+     Ya nada se cancela solo: la reserva vencida sin pagar se queda y se
+     marca, para que salte a la vista en la lista de a quién perseguir.
+     Es un latido lento, no un parpadeo duro — un destello rápido es un
+     riesgo real para personas fotosensibles y aquí no aporta nada. */
+  @keyframes inscLatido {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.35; }
+  }
+  .insc-vencida {
+    color: #ef4444 !important;
+    animation: inscLatido 1.4s ease-in-out infinite;
+  }
+  .insc-vencida-chip {
+    display: inline-block; background: rgba(239,68,68,0.14);
+    border: 1px solid rgba(239,68,68,0.5); border-radius: 6px;
+    padding: 1px 7px; font-size: 10px; font-weight: 800;
+    letter-spacing: .06em; color: #ef4444; margin-left: 6px;
+    animation: inscLatido 1.4s ease-in-out infinite;
+  }
+  /* Quien pidió menos movimiento en su sistema lo ve fijo, igual de rojo */
+  @media (prefers-reduced-motion: reduce) {
+    .insc-vencida, .insc-vencida-chip { animation: none; }
+  }
+
   /* ─── COPA OLÍMPICA 2026 — PREVIEW ─── */
   .copa-prev {
     --cn: #0d2a5c;  --cr: #cc1122;
@@ -3134,11 +3159,12 @@ Maria Lopez,Ana Torres,B</code>
         <option value="revision_tecnica">⚖️ Revisión técnica</option>
         <option value="lista_espera">📋 Lista de espera</option>
         <option value="pendiente_division">❓ División por asignar</option>
+        <option value="vencida">🔴 Fuera de plazo sin pagar</option>
         <option value="vence">🔥 Reserva por vencer (24 h)</option>
         <option value="expirado">✕ Expirados / cancelados / crédito</option>
       </select>
-      <button onclick="copaAdminLiberar()" title="Expira reservas vencidas sin pago y promueve la lista de espera"
-        style="background:rgba(245,158,11,0.14);border:1px solid rgba(245,158,11,0.42);border-radius:10px;color:#f59e0b;font-size:12.5px;font-weight:700;padding:9px 13px;cursor:pointer;font-family:'Inter',sans-serif;">⟳ Liberar cupos vencidos</button>
+      <button onclick="copaAdminLiberar()" title="Mueve la lista de espera a los cupos que hayan quedado libres. No cancela a nadie."
+        style="background:rgba(245,158,11,0.14);border:1px solid rgba(245,158,11,0.42);border-radius:10px;color:#f59e0b;font-size:12.5px;font-weight:700;padding:9px 13px;cursor:pointer;font-family:'Inter',sans-serif;">⟳ Promover lista de espera</button>
       <button onclick="copaAdminExportarCSV()"
         style="background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.4);border-radius:10px;color:var(--accent);font-size:12.5px;font-weight:700;padding:9px 13px;cursor:pointer;font-family:'Inter',sans-serif;">⬇ CSV</button>
     </div>
@@ -3987,8 +4013,9 @@ Maria Lopez,Ana Torres,B</code>
         <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.22);border-radius:12px;padding:13px 16px;margin-bottom:16px;font-size:12.5px;color:var(--text);line-height:1.65;">
           <strong style="color:#a5b4fc;">Cómo funciona</strong><br>
           Una sola persona inscribe al equipo completo. La <strong>división se asigna sola</strong>
-          según el rating combinado de ambos — no se escoge. Tu cupo queda reservado
-          <strong><span id="copaHorasTxt">48</span> horas</strong> para completar el pago.
+          según el rating combinado de ambos — no se escoge. Tienes
+          <strong><span id="copaHorasTxt">48</span> horas</strong> para pagar; pasado el plazo
+          <strong>el cupo no se pierde solo</strong>, pero la FPTM se comunica contigo.
         </div>
 
         <!-- ── Capitán ── -->
@@ -12492,8 +12519,8 @@ function copaRenderVeredicto() {
         <strong style="color:var(--text);">Lo que estás comprando es el cupo, no la división.</strong>
         Si el compañero que nombres no llega a ${d?.ratingMin ?? '—'} combinado, la Dirección
         Técnica decide si aprueba la excepción o baja al equipo de división y te devuelve la diferencia.
-        Si llega el cierre y nunca nombraste compañero, se libera el cupo y lo pagado te queda como
-        crédito para el próximo torneo.
+        Si llega el cierre y nunca nombraste compañero, la FPTM libera el cupo y lo pagado te
+        queda como crédito para el próximo torneo.
       </div>
     </div>`;
     copaActualizarBoton();
@@ -12549,7 +12576,7 @@ function copaRenderVeredicto() {
     : disp > 0
       ? `<div style="font-size:12px;color:var(--green);font-weight:600;">✓ Quedan ${disp} de ${max} cupos en esta división</div>`
       : `<div style="font-size:12px;color:#f59e0b;font-weight:600;line-height:1.55;">⚠ División llena${esp ? ` · ${esp} equipo${esp !== 1 ? 's' : ''} en espera` : ''}<br>
-         <span style="font-weight:400;color:var(--muted);">Puedes someter: entrarás a la lista de espera y subes automáticamente si se libera un cupo. No pagas hasta que tengas cupo.</span></div>`;
+         <span style="font-weight:400;color:var(--muted);">Puedes someter: entrarás a la lista de espera y subes en cuanto la FPTM libere un cupo. No pagas hasta tenerlo.</span></div>`;
 
   const r1 = copaState.cap.player?.rating, r2 = copaState.comp.player?.rating;
 
@@ -12819,8 +12846,9 @@ function copaMostrarExito(res) {
         <span style="font-size:12px;color:var(--muted);">por el equipo</span>
       </div>
       ${expiraTxt ? `<div style="background:rgba(0,0,0,0.2);border-radius:9px;padding:10px 13px;font-size:12.5px;color:var(--text);line-height:1.6;margin-bottom:14px;">
-        ⏳ Tu cupo está reservado hasta el <strong style="color:#fb923c;">${expiraTxt}</strong>.
-        <span style="color:var(--muted);">Si no recibimos el pago, el cupo pasa al próximo equipo en espera.</span>
+        ⏳ Tienes hasta el <strong style="color:#fb923c;">${expiraTxt}</strong> para pagar.
+        <span style="color:var(--muted);">Pasado el plazo tu cupo sigue siendo tuyo, pero queda marcado como
+        pendiente y la FPTM se comunicará contigo antes de soltarlo.</span>
       </div>` : ''}
       <a href="${COPA_ATH_URL}" target="_blank" rel="noopener"
         style="display:block;background:var(--grad);border-radius:11px;padding:14px;text-align:center;text-decoration:none;color:#fff;font-size:15px;font-weight:800;">
@@ -12879,8 +12907,9 @@ function copaMostrarExitoReserva(res) {
         <span style="font-size:12px;color:var(--muted);">por el equipo</span>
       </div>
       ${expiraTxt ? `<div style="background:rgba(0,0,0,0.2);border-radius:9px;padding:10px 13px;font-size:12.5px;color:var(--text);line-height:1.6;margin-bottom:14px;">
-        ⏳ Tu cupo está reservado hasta el <strong style="color:#fb923c;">${expiraTxt}</strong>.
-        <span style="color:var(--muted);">Sin el pago, vuelve al torneo.</span>
+        ⏳ Tienes hasta el <strong style="color:#fb923c;">${expiraTxt}</strong> para pagar.
+        <span style="color:var(--muted);">Pasado el plazo el cupo sigue a tu nombre, pero la FPTM
+        se comunicará contigo.</span>
       </div>` : ''}
       <a href="${COPA_ATH_URL}" target="_blank" rel="noopener"
         style="display:block;background:var(--grad);border-radius:11px;padding:14px;text-align:center;text-decoration:none;color:#fff;font-size:15px;font-weight:800;">
@@ -13205,6 +13234,15 @@ const COPA_INACTIVOS = ['expirado', 'cancelado', 'credito'];
 const copaHorasRestantes = row => row.reserva_expira
   ? (new Date(row.reserva_expira) - Date.now()) / 3600000 : null;
 
+// Pasó el plazo de pago y no ha entrado nada. El equipo conserva su cupo —
+// esto solo decide quién sale marcado en rojo.
+function copaVencidaSinPago(row) {
+  const h = copaHorasRestantes(row);
+  return ['reservado', 'esperando_companero'].includes(row.estado)
+      && h !== null && h <= 0
+      && (Number(row.monto_pagado) || 0) === 0;
+}
+
 function copaAdminRender() {
   const lista = document.getElementById('copaAdminLista');
   const cuposEl = document.getElementById('copaAdminCupos');
@@ -13245,9 +13283,10 @@ function copaAdminRender() {
   const filtro = document.getElementById('copaAdminFiltro')?.value || '';
 
   let filas = _copaAdminData.filter(r => {
+    if (filtro === 'vencida') return copaVencidaSinPago(r);
     if (filtro === 'vence') {
       const h = copaHorasRestantes(r);
-      return ['reservado', 'esperando_companero'].includes(r.estado) && h !== null && h <= 24;
+      return ['reservado', 'esperando_companero'].includes(r.estado) && h !== null && h > 0 && h <= 24;
     }
     if (filtro === 'expirado') return COPA_INACTIVOS.includes(r.estado);
     if (filtro)                return r.estado === filtro;
@@ -13276,9 +13315,10 @@ function copaAdminFila(r) {
   const horas = copaHorasRestantes(r);
   const div   = COPA_DIVISIONES.find(d => d.division === r.division);
 
+  const vencida = copaVencidaSinPago(r);
   const reloj = (['reservado', 'esperando_companero'].includes(r.estado) && horas !== null)
     ? (horas <= 0
-        ? `<span style="color:#ef4444;font-weight:700;">reserva vencida</span>`
+        ? `<span class="insc-vencida" style="font-weight:700;">sin pagar · ${Math.floor(-horas / 24)} d fuera de plazo</span>`
         : `<span style="color:${horas <= 24 ? '#ef4444' : '#f59e0b'};font-weight:600;">quedan ${horas < 1 ? '<1' : Math.floor(horas)} h para pagar</span>`)
     : '';
 
@@ -13288,12 +13328,13 @@ function copaAdminFila(r) {
     <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
       <div style="flex:1;min-width:210px;">
         ${r.nombre_equipo ? `<div style="font-size:14px;font-weight:800;color:var(--text);">${copaEsc(r.nombre_equipo)}</div>` : ''}
-        <div style="font-size:13.5px;color:var(--text);font-weight:600;line-height:1.45;">
+        <div class="${vencida ? 'insc-vencida' : ''}" style="font-size:13.5px;color:var(--text);font-weight:${vencida ? '800' : '600'};line-height:1.45;">
           ${copaEsc(r.cap_nombre)}${r.cap_invitado ? ' <span style="color:#a5b4fc;font-size:10px;">(invitado)</span>' : ''}
-          <span style="color:var(--muted);">/</span>
+          <span style="${vencida ? '' : 'color:var(--muted);'}">/</span>
           ${r.comp_nombre
             ? `${copaEsc(r.comp_nombre)}${r.comp_invitado ? ' <span style="color:#a5b4fc;font-size:10px;">(invitado)</span>' : ''}`
-            : '<span style="color:#facc15;font-style:italic;">por definir</span>'}
+            : `<span style="${vencida ? '' : 'color:#facc15;'}font-style:italic;">por definir</span>`}
+          ${vencida ? '<span class="insc-vencida-chip">SIN PAGAR</span>' : ''}
         </div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">
           #${r.id} · ${div ? copaEsc(div.nombre) : 'sin división'}
@@ -13473,15 +13514,17 @@ async function copaAdminReactivar(id) {
   }, 'Equipo reactivado.');
 }
 
-// Expira reservas vencidas sin pago y sube la lista de espera. Corre sola en
-// cada inscripción; este botón es para cuando el admin acaba de liberar algo.
+// Sube la lista de espera a los huecos que existan. Ya no expira nada: una
+// reserva vencida conserva su cupo hasta que una persona decida soltarlo.
 async function copaAdminLiberar(silencioso = false) {
   try {
     const { data, error } = await _supabase.rpc('insc_equipos_liberar', { p_torneo: TORNEO_ACTIVO });
     if (error) throw new Error(error.message);
     await copaAdminCargar();
     if (!silencioso) {
-      copaAdminMsg(`${data?.expirados || 0} reserva(s) expirada(s) · ${data?.promovidos || 0} equipo(s) promovido(s) desde la lista de espera.`);
+      const venc = data?.vencidas_sin_pago || 0;
+      copaAdminMsg(`${data?.promovidos || 0} equipo(s) promovido(s) desde la lista de espera.`
+        + (venc ? ` · ${venc} reserva(s) fuera de plazo sin pagar — siguen con su cupo, márcalas o cancélalas tú.` : ''));
     }
   } catch (e) {
     if (!silencioso) copaAdminMsg('Error: ' + e.message, false);
@@ -13496,7 +13539,8 @@ function copaAdminBadge() {
   // revisión técnica esperando que la Dirección Técnica decida.
   const n = _copaAdminData.filter(r => {
     const h = copaHorasRestantes(r);
-    return (['reservado', 'esperando_companero'].includes(r.estado) && h !== null && h <= 24)
+    return copaVencidaSinPago(r)
+        || (['reservado', 'esperando_companero'].includes(r.estado) && h !== null && h > 0 && h <= 24)
         || r.estado === 'revision_tecnica';
   }).length;
   b.style.display = n ? '' : 'none';
