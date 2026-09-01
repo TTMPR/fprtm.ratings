@@ -17,8 +17,42 @@ En **Supabase → SQL Editor**, pegar y ejecutar, en este orden:
 
 1. `sql/create_insc_equipos.sql`
 2. `sql/create_busca_companero.sql` (el tablón "Busco Compañero")
+3. `sql/deduplicar_inscripciones.sql` — instala la herramienta que quita
+   inscripciones repetidas. Al final hace un **ensayo en seco** que no cambia
+   nada; revisa el informe.
+4. `sql/restaurar_inscripciones_expiradas.sql` — **solo si ya hubo
+   inscripciones antes de este cambio.** Devuelve a la vida cualquier reserva
+   que se hubiera expirado sola, y quita los duplicados que eso genere.
+   Si no había nada, no hace nada.
 
-Ambos son seguros de re-ejecutar: no borran datos.
+Todos son seguros de re-ejecutar: no borran datos.
+
+### Por qué salían equipos repetidos
+
+Con el comportamiento viejo, una reserva sin pagar se expiraba sola. Como una
+fila expirada no cuenta como activa, esa persona **podía volver a
+inscribirse** — y muchas lo hicieron. Al revivir la fila vieja, quedaban en
+dos equipos a la vez.
+
+La regla al deduplicar es la que pidió la federación: **manda la inscripción
+más antigua**. Se recorren los equipos del más viejo al más nuevo reclamando
+jugadores; el primero en que aparece cada persona se conserva y los
+posteriores que la repitan se cancelan.
+
+**El dinero no se pierde.** Si el equipo que se cancela tenía pagos, el monto
+y la referencia pasan al que se conserva, con una nota explicando de dónde
+vino — visible en el panel y en el CSV. Si con eso queda cubierto el costo, el
+equipo pasa a *confirmado* solo.
+
+Para revisar antes de tocar nada:
+
+```sql
+SELECT * FROM insc_equipos_deduplicar('Copa Olímpica 2026');        -- ensayo
+SELECT * FROM insc_equipos_deduplicar('Copa Olímpica 2026', true);  -- aplicar
+```
+
+> Esto no se repetirá: como ya nada se expira solo, nadie se queda sin
+> inscripción y por tanto nadie necesita reinscribirse.
 
 ### Comprobar que quedó bien
 
@@ -64,9 +98,9 @@ Mientras estén cerradas, el admin igual ve el formulario (con un aviso de
 | **División automática** | Sale del rating combinado. **No se puede escoger** ni jugar hacia arriba. |
 | **Rating congelado** | Se guarda el rating de ambos al momento de inscribir. Si cambia después, el equipo juega y paga lo que vio. |
 | **Un equipo por jugador** | Nadie puede aparecer en dos equipos del torneo. |
-| **Cupo reservado 48 h** | Se toma al inscribir. Si no entra pago, se libera y entra el primero de la lista de espera. |
-| **Abono parcial protege** | Cualquier monto > 0 evita que la reserva expire sola. |
-| **Lista de espera** | División llena → el equipo entra igual, en espera, y **no paga** hasta tener cupo. |
+| **Cupo reservado** | Se toma al inscribir. Hay 48 h para pagar, pero **pasado el plazo el cupo no se pierde**: queda marcado en rojo y lo suelta una persona, no un reloj. |
+| **Nada se borra solo** | Ninguna inscripción desaparece sin que alguien de la FPTM lo mande. |
+| **Lista de espera** | División llena → el equipo entra igual, en espera, y **no paga** hasta tener cupo. Avanza cuando ustedes cancelan a alguien. |
 | **Invitado sin rating** | El equipo queda en *"división por asignar"* y no ocupa cupo de nadie hasta que el admin le asigne una. |
 | **Cupo sin pareja** | Solo División 1 y solo con rating 2000+. Ocupa cupo desde que se compra. Ver sección 5. |
 | **Precio fijo** | Sin recargo por no tener membresía. |
@@ -99,14 +133,57 @@ venciendo en menos de 24 horas**. Ese es el número que hay que atender.
 | **⏱ +48 h** | Extiende la reserva de alguien que avisó que va a pagar. |
 | **🎯 Asignar división** | Solo para equipos con invitado sin rating. Fija división y costo; si está llena, ofrece lista de espera. |
 | **✕ Cancelar** | Libera el cupo y promueve de inmediato al primero en espera. |
+| **✏️ Editar** | Nombre del equipo, club y **los dos jugadores**. Ver abajo. |
 | **⚖️ Aprobar / ⬇ Bajar** | Solo en equipos en revisión técnica: la Dirección Técnica decide si acepta la excepción o baja al equipo ajustando el costo. |
 | **🎫 Liberar y dar crédito** | Para el que compró cupo y nunca nombró compañero: libera el cupo y registra el dinero como crédito. |
-| **⟳ Liberar cupos vencidos** | Expira reservas vencidas sin pago y sube la lista de espera. Corre sola en cada inscripción nueva; el botón es para forzarla. |
+| **⟳ Promover lista de espera** | Mueve la espera a los cupos que hayan quedado libres. **No cancela a nadie.** Corre sola en cada inscripción nueva; el botón es para forzarla tras una cancelación. |
 | **⬇ CSV** | Todos los equipos con contacto, montos y referencias. |
 
-**Filtro "🔥 Reserva por vencer (24 h)"**: la lista de a quién llamar hoy. La
-insignia de la tarjeta cuenta esas reservas **más** los equipos parados en
-revisión técnica esperando decisión.
+### A quién perseguir
+
+Pasado el plazo sin pago, el equipo **conserva su cupo** y aparece con el
+nombre **en rojo y parpadeando**, con el distintivo `SIN PAGAR` y cuántos días
+lleva fuera de plazo. Un abono parcial quita la marca: el equipo respondió.
+
+Dos filtros para eso: **"🔴 Fuera de plazo sin pagar"** (los que ya se
+pasaron) y **"🔥 Reserva por vencer (24 h)"** (los que están a punto). La
+insignia de la tarjeta suma ambos más los equipos parados en revisión técnica.
+
+Para soltar un cupo de verdad hay que **cancelar** al equipo — es una decisión
+de la federación, y al hacerlo entra sola la lista de espera.
+
+> El parpadeo es un latido lento de 1,4 s, no un destello: un parpadeo rápido
+> es un riesgo real para personas fotosensibles. A quien tenga activado
+> "reducir movimiento" en su sistema le sale en rojo fijo, sin animación.
+
+### Editar un equipo
+
+El nombre del equipo y el club son texto y se cambian sin más. **Cambiar un
+jugador no lo es:** el rating queda congelado en la inscripción, así que
+sustituir a alguien mueve el rating combinado, y con él la división y el
+costo.
+
+Por eso el modal enseña **cómo queda antes de guardar**: la división
+resultante, el precio nuevo y, si cambia de división, cuánto hay que
+devolverle o cobrarle de más. Ejemplo real: cambiar al segundo jugador por uno
+de 1400 baja el equipo de División 1 a División 3 y avisa *"devuélvele
+$30.00"*.
+
+El servidor vuelve a comprobar todo — que ninguno de los dos esté ya en otro
+equipo, que no sean la misma persona, y el rating lo lee de la base, no de la
+pantalla. Cada edición deja una nota en la fila con lo que cambió, visible en
+el panel y en el CSV.
+
+Dos cosas más que se pueden hacer desde ahí:
+
+- **Vaciar el jugador 2** — el equipo vuelve a *esperando compañero*
+  conservando su cupo. Útil cuando la pareja se cae a última hora.
+- **Fijar la división a mano** — el selector trae "Automática" por defecto;
+  escoger una división concreta es la Dirección Técnica ejerciendo su
+  potestad, y el modal lo marca como excepción si el rating no da.
+
+> Si el equipo se muda a una división que ya está llena, entra por la **lista
+> de espera** en vez de pasarse del cupo, y el panel te lo dice al guardar.
 
 ### Conciliar pagos de ATH Móvil
 
