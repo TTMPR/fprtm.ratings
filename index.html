@@ -3132,6 +3132,49 @@ Maria Lopez,Ana Torres,B</code>
 <!-- ══════════════════════════════════════════
      ADMIN — GESTIONAR EQUIPOS (Copa Olímpica 2026)
 ═══════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════
+     ADMIN — EDITAR EQUIPO
+═══════════════════════════════════════════ -->
+<div id="copaEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1100;overflow-y:auto;padding:16px;">
+  <div style="max-width:560px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:22px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;">
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:16px;letter-spacing:1px;">Editar equipo</div>
+        <div id="copaEditSub" style="font-size:11.5px;color:var(--muted);margin-top:2px;"></div>
+      </div>
+      <button onclick="copaEditCerrar()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:7px 12px;border-radius:8px;cursor:pointer;font-size:13px;">✕</button>
+    </div>
+
+    <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:6px;">Nombre del equipo</label>
+    <input type="text" id="copaEditNombre" maxlength="60" placeholder="(sin nombre)"
+      style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;margin-bottom:12px;">
+
+    <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:6px;">Club o escuela</label>
+    <input type="text" id="copaEditClub" list="clubsDatalist" placeholder="(sin club)"
+      style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;margin-bottom:16px;">
+
+    <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:7px;">Jugador 1</label>
+    <div id="copaEditSlot_cap" style="margin-bottom:14px;"></div>
+
+    <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:7px;">Jugador 2</label>
+    <div id="copaEditSlot_comp" style="margin-bottom:14px;"></div>
+
+    <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:7px;">División</label>
+    <select id="copaEditDivision" onchange="copaEditPreview()"
+      style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;margin-bottom:14px;cursor:pointer;"></select>
+
+    <div id="copaEditPreview" style="margin-bottom:14px;"></div>
+    <div id="copaEditMsg" style="font-size:12.5px;color:#ef4444;min-height:16px;text-align:center;margin-bottom:10px;line-height:1.5;"></div>
+
+    <div style="display:flex;gap:8px;">
+      <button onclick="copaEditCerrar()"
+        style="background:transparent;border:1px solid var(--border);border-radius:10px;padding:12px 18px;color:var(--muted);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button id="copaEditGuardar" onclick="copaEditGuardar()"
+        style="flex:1;background:var(--grad);border:none;border-radius:10px;padding:12px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:800;cursor:pointer;">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <div id="copaAdminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;overflow-y:auto;padding:16px;">
   <div style="max-width:940px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
 
@@ -13356,6 +13399,7 @@ function copaAdminFila(r) {
 
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1px solid var(--border);">
       ${!COPA_INACTIVOS.includes(r.estado) ? `
+        <button onclick="copaEditAbrir(${r.id})" style="${copaBtnAdm('var(--accent)')}">✏️ Editar</button>
         <button onclick="copaAdminPago(${r.id})" style="${copaBtnAdm('var(--green)')}">💵 Registrar pago</button>
         ${['reservado','esperando_companero'].includes(r.estado) ? `<button onclick="copaAdminExtender(${r.id})" style="${copaBtnAdm('#f59e0b')}">⏱ +${COPA_RESERVA_HORAS} h</button>` : ''}
         ${r.estado === 'pendiente_division' ? `<button onclick="copaAdminAsignarDivision(${r.id})" style="${copaBtnAdm('#a5b4fc')}">🎯 Asignar división</button>` : ''}
@@ -13572,6 +13616,227 @@ function copaAdminExportarCSV() {
   URL.revokeObjectURL(url);
 }
 
+
+
+// ── ADMIN: editar un equipo ────────────────────────────────────────────────
+// Cambiar el nombre es texto; cambiar un jugador no. El rating va congelado
+// en la fila, así que sustituir a alguien mueve el rating combinado, y con él
+// la división y el costo. Esta pantalla enseña esa consecuencia ANTES de
+// guardar; quien decide de verdad es editar_equipo() en el servidor.
+const copaEdit = {
+  row: null,
+  cap:  { player: null, invitado: '', timer: null },
+  comp: { player: null, invitado: '', timer: null },
+  guardando: false,
+};
+
+function copaEditAbrir(id) {
+  const r = _copaAdminData.find(x => x.id === id);
+  if (!r) return;
+  copaEdit.row  = r;
+  copaEdit.cap  = { player: ALL_PLAYERS.find(p => String(p.id) === String(r.cap_member_id))  || null,
+                    invitado: r.cap_member_id  ? '' : (r.cap_nombre  || ''), timer: null };
+  copaEdit.comp = { player: ALL_PLAYERS.find(p => String(p.id) === String(r.comp_member_id)) || null,
+                    invitado: r.comp_member_id ? '' : (r.comp_nombre || ''), timer: null };
+
+  document.getElementById('copaEditNombre').value = r.nombre_equipo || '';
+  document.getElementById('copaEditClub').value   = r.club || '';
+  document.getElementById('copaEditSub').textContent =
+    `#${r.id} · inscrito ${(r.created_at || '').split('T')[0]} · pagado $${(Number(r.monto_pagado) || 0).toFixed(2)}`;
+
+  const sel = document.getElementById('copaEditDivision');
+  sel.innerHTML = `<option value="auto">Automática — por rating combinado</option>`
+    + COPA_DIVISIONES.map(d => `<option value="${d.division}">Fijar en ${copaEsc(d.nombre)} · $${d.precio.toFixed(2)}</option>`).join('');
+  sel.value = 'auto';
+
+  document.getElementById('copaEditMsg').textContent = '';
+  document.getElementById('copaEditModal').style.display = '';
+  copaEditRenderSlot('cap');
+  copaEditRenderSlot('comp');
+  copaEditPreview();
+}
+
+function copaEditCerrar() {
+  document.getElementById('copaEditModal').style.display = 'none';
+  copaEdit.row = null;
+}
+
+function copaEditRenderSlot(rol) {
+  const host = document.getElementById(`copaEditSlot_${rol}`);
+  if (!host) return;
+  const st = copaEdit[rol];
+
+  if (st.player || st.invitado) {
+    const nombre = st.player ? st.player.name : st.invitado;
+    const rating = st.player?.rating;
+    host.innerHTML = `<div style="display:flex;align-items:center;gap:10px;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.3);border-radius:9px;padding:10px 12px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);">${copaEsc(nombre)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px;">
+          ${st.player ? `FPTM-${st.player.id}` : '<span style="color:#a5b4fc;">invitado · sin rating</span>'}
+        </div>
+      </div>
+      ${rating != null ? `<div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--accent);">${rating}</div>` : ''}
+      <button type="button" onclick="copaEditLimpiar('${rol}')"
+        style="background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-size:11px;font-weight:600;padding:5px 9px;cursor:pointer;">Cambiar</button>
+    </div>`;
+    return;
+  }
+
+  host.innerHTML = `<input type="text" id="copaEditSearch_${rol}" placeholder="Buscar jugador…" oninput="copaEditBuscar('${rol}')" autocomplete="off"
+      style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);outline:none;">
+    <div id="copaEditResults_${rol}" style="display:none;border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-top:6px;max-height:190px;overflow-y:auto;"></div>
+    <div style="display:flex;gap:7px;margin-top:7px;flex-wrap:wrap;">
+      <button type="button" onclick="copaEditInvitado('${rol}')"
+        style="background:none;border:none;color:var(--muted);font-size:11px;text-decoration:underline;cursor:pointer;font-family:'Inter',sans-serif;padding:0;">Poner un invitado (nombre libre)</button>
+      ${rol === 'comp' ? `<span style="color:var(--border);">·</span>
+      <span style="font-size:11px;color:#facc15;">déjalo vacío y el equipo vuelve a esperar compañero</span>` : ''}
+    </div>`;
+}
+
+function copaEditBuscar(rol) {
+  const st = copaEdit[rol];
+  clearTimeout(st.timer);
+  st.timer = setTimeout(() => {
+    const q  = (document.getElementById(`copaEditSearch_${rol}`)?.value || '').trim().toLowerCase();
+    const rl = document.getElementById(`copaEditResults_${rol}`);
+    if (!rl) return;
+    if (q.length < 2) { rl.innerHTML = ''; rl.style.display = 'none'; return; }
+    const otro = rol === 'cap' ? copaEdit.comp : copaEdit.cap;
+    const m = ALL_PLAYERS.filter(p => p.name.toLowerCase().includes(q))
+                         .filter(p => !otro.player || String(p.id) !== String(otro.player.id))
+                         .slice(0, 8);
+    if (!m.length) { rl.innerHTML = ''; rl.style.display = 'none'; return; }
+    rl.style.display = '';
+    rl.innerHTML = m.map(p => `<div onclick="copaEditSeleccionar('${rol}',${p.id})"
+      style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:8px;"
+      onmouseover="this.style.background='rgba(56,189,248,0.07)'" onmouseout="this.style.background='transparent'">
+      <span style="font-size:13px;color:var(--text);">${copaEsc(p.name)}</span>
+      <span style="font-size:11.5px;color:var(--muted);white-space:nowrap;">${p.rating ?? 'sin rating'}</span>
+    </div>`).join('');
+  }, 200);
+}
+
+function copaEditSeleccionar(rol, id) {
+  const p = ALL_PLAYERS.find(x => String(x.id) === String(id));
+  if (!p) return;
+  copaEdit[rol] = { player: p, invitado: '', timer: null };
+  copaEditRenderSlot(rol);
+  copaEditPreview();
+}
+
+function copaEditLimpiar(rol) {
+  copaEdit[rol] = { player: null, invitado: '', timer: null };
+  copaEditRenderSlot(rol);
+  copaEditPreview();
+}
+
+function copaEditInvitado(rol) {
+  const v = (prompt('Nombre completo del jugador invitado:') || '').trim();
+  if (v.length < 3) return;
+  copaEdit[rol] = { player: null, invitado: v, timer: null };
+  copaEditRenderSlot(rol);
+  copaEditPreview();
+}
+
+// Anticipo de lo que va a pasar. El servidor recalcula igual — esto existe
+// para que nadie mueva a un jugador sin ver que el equipo cambia de división
+// y de precio.
+function copaEditPreview() {
+  const host = document.getElementById('copaEditPreview');
+  const r = copaEdit.row;
+  if (!host || !r) return;
+
+  const capR  = copaEdit.cap.player?.rating;
+  const compR = copaEdit.comp.player?.rating;
+  const hayComp = !!(copaEdit.comp.player || copaEdit.comp.invitado);
+  const comb  = (capR != null && compR != null) ? capR + compR : null;
+  const forz  = document.getElementById('copaEditDivision')?.value || 'auto';
+
+  let d = null;
+  if (forz !== 'auto')     d = COPA_DIVISIONES.find(x => x.division === forz);
+  else if (comb != null)   d = copaDivisionPara(comb);
+  else if (r.division)     d = COPA_DIVISIONES.find(x => x.division === r.division);
+
+  const costoNuevo = d ? d.precio : 0;
+  const costoViejo = Number(r.costo) || 0;
+  const dif        = costoViejo - costoNuevo;
+  const pagado     = Number(r.monto_pagado) || 0;
+  const saldo      = Math.max(0, costoNuevo - pagado);
+  const cambiaDiv  = (d?.division || null) !== (r.division || null);
+
+  const estado = !hayComp ? 'Esperando compañero'
+               : !d       ? 'División por asignar'
+               : 'Con cupo en su división';
+
+  host.innerHTML = `<div style="background:rgba(255,255,255,0.03);border:1px solid ${cambiaDiv ? 'rgba(245,158,11,0.45)' : 'var(--border)'};border-radius:11px;padding:13px 15px;">
+    <div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;">Cómo queda</div>
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--text);">
+      <span><strong>${d ? copaEsc(d.nombre) : '—'}</strong> · ${estado}</span>
+      <span style="font-family:'Orbitron',monospace;font-weight:700;color:var(--accent);">$${costoNuevo.toFixed(2)}</span>
+    </div>
+    ${comb != null ? `<div style="font-size:11.5px;color:var(--muted);margin-top:5px;">Rating combinado ${capR} + ${compR} = <strong style="color:var(--text);">${comb}</strong></div>` : ''}
+    ${cambiaDiv ? `<div style="font-size:12px;color:#f59e0b;font-weight:600;margin-top:8px;line-height:1.5;">
+        ⚠ Cambia de división: ${r.division ? copaEsc(COPA_DIVISIONES.find(x=>x.division===r.division)?.nombre || r.division) : '—'} → ${d ? copaEsc(d.nombre) : '—'}
+        ${dif > 0 ? `<br><span style="font-weight:400;color:var(--muted);">Pagó de más: devuélvele <strong style="color:#f59e0b;">$${dif.toFixed(2)}</strong></span>` : ''}
+        ${dif < 0 ? `<br><span style="font-weight:400;color:var(--muted);">Cuesta más: cóbrale <strong style="color:#f59e0b;">$${(-dif).toFixed(2)}</strong></span>` : ''}
+      </div>` : ''}
+    ${saldo > 0 && !cambiaDiv ? `<div style="font-size:11.5px;color:#f59e0b;margin-top:6px;">Saldo pendiente: $${saldo.toFixed(2)}</div>` : ''}
+    ${forz !== 'auto' && comb != null && d && ((d.ratingMin != null && comb < d.ratingMin) || (d.ratingMax != null && comb > d.ratingMax))
+      ? `<div style="font-size:11.5px;color:#a5b4fc;margin-top:7px;line-height:1.5;">⚖️ Queda fuera del rango de la división: es una excepción de la Dirección Técnica.</div>` : ''}
+  </div>`;
+}
+
+async function copaEditGuardar() {
+  const r = copaEdit.row;
+  const msg = document.getElementById('copaEditMsg');
+  const btn = document.getElementById('copaEditGuardar');
+  if (!r || copaEdit.guardando) return;
+
+  if (!copaEdit.cap.player && !copaEdit.cap.invitado) {
+    if (msg) msg.textContent = 'El equipo necesita al menos al jugador 1.'; return;
+  }
+
+  const forz = document.getElementById('copaEditDivision')?.value || 'auto';
+  copaEdit.guardando = true;
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; btn.style.opacity = '0.6'; }
+  if (msg) msg.textContent = '';
+
+  try {
+    const { data, error } = await _supabase.rpc('editar_equipo', {
+      p_equipo_id:      r.id,
+      p_torneo:         TORNEO_ACTIVO,
+      p_cap_member_id:  copaEdit.cap.player?.id ?? null,
+      p_cap_nombre:     copaEdit.cap.player?.name ?? copaEdit.cap.invitado,
+      p_comp_member_id: copaEdit.comp.player?.id ?? null,
+      p_comp_nombre:    copaEdit.comp.player?.name ?? (copaEdit.comp.invitado || null),
+      p_cap_invitado:   !copaEdit.cap.player,
+      p_comp_invitado:  !copaEdit.comp.player && !!copaEdit.comp.invitado,
+      p_nombre_equipo:  (document.getElementById('copaEditNombre')?.value || '').trim() || null,
+      p_club:           (document.getElementById('copaEditClub')?.value || '').trim() || null,
+      p_division:       forz === 'auto' ? null : forz,
+    });
+    if (error) throw new Error(error.message);
+    if (!data || data.ok !== true) {
+      if (msg) msg.textContent = data?.error || 'No se pudo guardar.';
+      return;
+    }
+
+    copaEditCerrar();
+    await copaAdminCargar();
+    const dif = Number(data.diferencia) || 0;
+    copaAdminMsg('Equipo actualizado.'
+      + (data.division_cambio ? ` Ahora en ${data.division_nombre}.` : '')
+      + (dif > 0 ? ` Devuélvele $${dif.toFixed(2)}.` : '')
+      + (dif < 0 ? ` Cóbrale $${(-dif).toFixed(2)} más.` : '')
+      + (data.estado === 'lista_espera' ? ' La división estaba llena: quedó en lista de espera.' : ''));
+  } catch (e) {
+    if (msg) msg.textContent = 'Error: ' + e.message;
+  } finally {
+    copaEdit.guardando = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar cambios'; btn.style.opacity = '1'; }
+  }
+}
 
 // ── ADMIN: tablón "Busco Compañero" ────────────────────────────────────────
 // El admin lee la tabla base, así que sí ve el contacto de los menores. Es

@@ -133,6 +133,7 @@ venciendo en menos de 24 horas**. Ese es el número que hay que atender.
 | **⏱ +48 h** | Extiende la reserva de alguien que avisó que va a pagar. |
 | **🎯 Asignar división** | Solo para equipos con invitado sin rating. Fija división y costo; si está llena, ofrece lista de espera. |
 | **✕ Cancelar** | Libera el cupo y promueve de inmediato al primero en espera. |
+| **✏️ Editar** | Nombre del equipo, club y **los dos jugadores**. Ver abajo. |
 | **⚖️ Aprobar / ⬇ Bajar** | Solo en equipos en revisión técnica: la Dirección Técnica decide si acepta la excepción o baja al equipo ajustando el costo. |
 | **🎫 Liberar y dar crédito** | Para el que compró cupo y nunca nombró compañero: libera el cupo y registra el dinero como crédito. |
 | **⟳ Promover lista de espera** | Mueve la espera a los cupos que hayan quedado libres. **No cancela a nadie.** Corre sola en cada inscripción nueva; el botón es para forzarla tras una cancelación. |
@@ -154,6 +155,35 @@ de la federación, y al hacerlo entra sola la lista de espera.
 > El parpadeo es un latido lento de 1,4 s, no un destello: un parpadeo rápido
 > es un riesgo real para personas fotosensibles. A quien tenga activado
 > "reducir movimiento" en su sistema le sale en rojo fijo, sin animación.
+
+### Editar un equipo
+
+El nombre del equipo y el club son texto y se cambian sin más. **Cambiar un
+jugador no lo es:** el rating queda congelado en la inscripción, así que
+sustituir a alguien mueve el rating combinado, y con él la división y el
+costo.
+
+Por eso el modal enseña **cómo queda antes de guardar**: la división
+resultante, el precio nuevo y, si cambia de división, cuánto hay que
+devolverle o cobrarle de más. Ejemplo real: cambiar al segundo jugador por uno
+de 1400 baja el equipo de División 1 a División 3 y avisa *"devuélvele
+$30.00"*.
+
+El servidor vuelve a comprobar todo — que ninguno de los dos esté ya en otro
+equipo, que no sean la misma persona, y el rating lo lee de la base, no de la
+pantalla. Cada edición deja una nota en la fila con lo que cambió, visible en
+el panel y en el CSV.
+
+Dos cosas más que se pueden hacer desde ahí:
+
+- **Vaciar el jugador 2** — el equipo vuelve a *esperando compañero*
+  conservando su cupo. Útil cuando la pareja se cae a última hora.
+- **Fijar la división a mano** — el selector trae "Automática" por defecto;
+  escoger una división concreta es la Dirección Técnica ejerciendo su
+  potestad, y el modal lo marca como excepción si el rating no da.
+
+> Si el equipo se muda a una división que ya está llena, entra por la **lista
+> de espera** en vez de pasarse del cupo, y el panel te lo dice al guardar.
 
 ### Conciliar pagos de ATH Móvil
 
