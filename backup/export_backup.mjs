@@ -64,6 +64,12 @@ const TABLES = [
   'insc_divisiones',
   'insc_equipos',
   'insc_busca_companero',
+  // Descubiertas por la extracción del esquema de producción (2026-09-03):
+  // existen, tienen RLS y datos, y no estaban en esta lista. `miembros`
+  // contiene datos personales (email, teléfono, dirección, responsable de
+  // menores) y alimenta la vista miembros_alertas.
+  'historial_rating',
+  'miembros',
 ];
 
 const HEADERS = { apikey: KEY, Authorization: `Bearer ${KEY}` };

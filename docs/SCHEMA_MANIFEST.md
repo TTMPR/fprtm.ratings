@@ -3,8 +3,10 @@
 Inventario objeto por objeto del esquema `public` que la aplicación espera.
 Producido en la Fase 1.0 para poder reproducir la base de datos desde cero.
 
-**Estado global: INCOMPLETO.** 5 de 20 tablas no tienen DDL en el
-repositorio. Ver "Tablas núcleo" abajo y `sql/schema/010_core_tables.PENDING.sql`.
+**Estado: las cinco tablas núcleo ya están recuperadas** (extracción de sólo
+lectura de producción, 2026-09-03) y viven en `sql/schema/010_core_tables.sql`.
+Quedan **dos tablas nuevas** descubiertas por esa misma extracción cuyo DDL
+todavía falta: `historial_rating` y `miembros`.
 
 Leyenda de columnas:
 
@@ -17,19 +19,32 @@ Leyenda de columnas:
 
 ---
 
-## Tablas núcleo — DDL pendiente de recuperar
+## Tablas núcleo — recuperadas de producción
 
-| Tabla | Propósito | Fichero origen | DDL | Depende de | PII | Público | Área | Hallazgos |
+| Tabla | Propósito | Fichero origen | DDL | Filas | PII | Público | Área | Hallazgos |
 |---|---|---|---|---|---|---|---|---|
-| `"Base de Datos"` | Registro de jugadores y ratings oficiales. PK `"Member ID"`. Columnas confirmadas por las vistas: `First Name`, `Last Name`, `Escuela`, `Rating`, `New Rating`, `Date of Birth`, `Sex`, `Club`, `Expiration Date`; además `Email`, `Home Address`, `photo_url` y columnas `rating_<slug>` por torneo | — | **producción** | — | **Sí** (email, dirección, fecha de nacimiento) | **Sí** | ratings, membresía | **F-01, F-02, F-03, F-05** |
-| `torneos` | Torneos. PK `id` | — | **producción** | — | No | Sí | ratings | F-05 |
-| `partidos` | Partidos con ratings antes/después. Escrita por `subirApplyRatings()` | — | **producción** | `torneos`, `"Base de Datos"` | No | Sí | ratings | **F-03**, F-05 |
-| `resultados_evento` | Resumen por jugador y torneo: `rating_inicio`, `rating_fin`, `ganados`, `perdidos` | — | **producción** | `torneos` | No | Sí | ratings | F-03, F-05 |
-| `jugadores` | ⚠ Propósito poco claro. Aparece en el backup y en `trg_audit_jugadores`, pero `index.html` no la consulta en ninguna ruta activa. Posible residuo de una migración anterior | — | **producción** | — | Probable | Desconocido | — | — |
+| `"Base de Datos"` | Registro de jugadores y ratings oficiales. 16 columnas. **PK compuesta de 10 columnas**, todas `NOT NULL` — `Member ID` NO es único. Sin columna `photo_url` | `sql/schema/010_core_tables.sql` | recuperado | 619 | **Sí** (email, dirección, fecha nac.) | **Sí** | ratings, membresía | ver informe privado |
+| `torneos` | Torneos. Columnas no documentadas antes: `lugar`, `tipo`, `temporada` (def. 2026), `notas` | `sql/schema/010_core_tables.sql` | recuperado | 6 | No | Sí | ratings | F-05 |
+| `partidos` | Partidos con ratings antes/después. **Pares de columnas duplicadas**: `categoria_evento`/`categoria`, `score`/`marcador`; además `puntos_a`/`puntos_b` sin uso. FK real a `torneos` | `sql/schema/010_core_tables.sql` | recuperado | 1 829 | No | Sí | ratings | F-03, F-05 |
+| `resultados_evento` | Resumen por jugador y torneo. `id` es `IDENTITY ALWAYS`, no serial. Sin FK a `torneos` (inconsistente con `partidos`) | `sql/schema/010_core_tables.sql` | recuperado | 780 | No | Sí | ratings | F-03 |
+| `jugadores` | **Segundo registro de jugadores**, distinto de `Base de Datos`. UUID, `rating_actual` (def. 1000), campos de la temporada 2025. Lectura pública, trigger de auditoría, y **no** se consulta desde `index.html` | `sql/schema/010_core_tables.sql` | recuperado | 537 | Probable | **Sí** | — | — |
 
-> Las políticas de `SELECT` sobre estas cinco tablas tampoco están en el
-> repositorio. La app las lee sin sesión, así que existen en producción.
-> Recuperarlas junto al DDL.
+> **`jugadores` no es un residuo vacío.** Tiene 537 filas — exactamente el
+> número de jugadores de `restore_rating_backup.sql`, lo que sugiere que fue
+> el origen de aquel snapshot. Sigue pendiente decidir si va a staging, se
+> congela o se retira.
+
+---
+
+## Tablas descubiertas — DDL todavía pendiente
+
+| Tabla | Qué se sabe | DDL | En el backup | Hallazgos |
+|---|---|---|---|---|
+| `historial_rating` | Histórico de ratings, a juzgar por el nombre. Secuencia propia `historial_rating_id_seq` | **producción** | Añadida en Fase 1.0G | ver informe privado |
+| `miembros` | Registro de miembros de la federación. Alimenta la vista `miembros_alertas`. **Contiene datos personales sensibles**, incluidos los del adulto responsable de los jugadores menores | **producción** | Añadida en Fase 1.0G | ver informe privado |
+
+Hace falta una segunda extracción de sólo lectura para su DDL antes de dar el
+esquema por completo.
 
 ---
 
@@ -97,7 +112,7 @@ Leyenda de columnas:
 | `insc_equipos_publico` | Equipos sin datos de contacto | `sql/create_insc_equipos.sql` | repo | `insc_equipos` | No | **Sí** | — |
 | `insc_equipos_cupos` | Cupos libres por división | `sql/create_insc_equipos.sql` | repo | `insc_equipos`, `insc_divisiones` | No | **Sí** | — |
 | `insc_busca_companero_publico` | Tablón sin datos de contacto | `sql/create_busca_companero.sql` | repo | `insc_busca_companero` | No | **Sí** | — |
-| `miembros_alertas` | ⚠ Desconocido. `supabase_security_fixes.sql` le hace `ALTER VIEW … security_invoker`, pero **nadie la crea** | — | **producción** | Probablemente `"Base de Datos"` | Probable | Desconocido | — |
+| `miembros_alertas` | Alertas de vencimiento de membresía para la temporada 2026: calcula `activo` / `por_vencer` / `vencido` y los días restantes. `security_invoker=on` | — | **recuperada** (definición completa en la extracción) | `miembros` | **Sí** — email, teléfono, dirección, datos del responsable de menores | ver informe privado | ver informe privado |
 
 ---
 
@@ -110,7 +125,7 @@ Leyenda de columnas:
 | `fprtm_parse_fecha()` | Convierte los tres formatos históricos de fecha a `DATE` | `sql/create_api_publica.sql` | repo | Replica `_parseDOBStr()` de `index.html` |
 | `purge_deleted_torneos()` | Purga la papelera pasados 30 días, `SECURITY DEFINER` | `sql/soft_delete_torneos.sql` | repo | `REVOKE EXECUTE` a `anon`/`authenticated`; job `pg_cron` diario |
 | 14 funciones de Copa Olímpica | `inscribir_equipo`, `reservar_cupo_solo`, `liberar_cupo_con_credito`, `nombrar_companero`, `publicar_busca_companero`, `retirar_busca_companero`, `resolver_revision_tecnica`, `insc_*` auxiliares | `sql/create_insc_equipos.sql`, `sql/create_busca_companero.sql` | repo | Lógica de negocio en la base |
-| `update_updated_at()` | ⚠ **Nadie la crea.** `supabase_security_fixes.sql` le fija `search_path` | — | **producción** | Probablemente un trigger de `updated_at` |
+| `update_updated_at()` | Trigger de `updated_at`: `NEW.updated_at = NOW()`. `search_path` fijado a `''` | — | **recuperada** | No hay ningún trigger que la use en las tablas núcleo |
 
 ---
 
@@ -134,14 +149,16 @@ Leyenda de columnas:
 
 ## Resumen de huecos
 
-Lo que hay que recuperar de producción antes de poder reproducir el esquema:
+**Cerrado por la extracción de 2026-09-03:** el DDL de las cinco tablas
+núcleo, sus políticas RLS completas, la vista `miembros_alertas`, la función
+`update_updated_at()` y la confirmación de que `jugadores` tiene 537 filas.
 
-1. DDL de `"Base de Datos"`, `torneos`, `partidos`, `resultados_evento`, `jugadores`
-2. Políticas de `SELECT` de esas cinco tablas (y el `INSERT` de `resultados_evento`)
-3. Vista `miembros_alertas`
-4. Función `update_updated_at()` y los triggers que la usen
-5. Configuración del bucket `player-photos` y sus políticas
-6. Confirmar si `jugadores` sigue teniendo filas o es un residuo
+**Todavía pendiente:**
+
+1. DDL de `historial_rating` y `miembros` (segunda extracción)
+2. Políticas del bucket `player-photos` (el bucket existe y es público;
+   sus políticas de `storage.objects` no se extrajeron)
+3. Decidir el destino de `jugadores`
 
 Discrepancias a verificar contra el volcado:
 
@@ -149,3 +166,16 @@ Discrepancias a verificar contra el volcado:
   definidas **dos veces** con formas distintas (`setup_fprtm_database.sql` y
   los `create_*.sql` posteriores). El esquema canónico toma la versión más
   reciente; hay que comprobar cuál coincide con producción.
+
+
+---
+
+## Nota sobre la revisión de seguridad
+
+Este repositorio es **público**. El análisis de las políticas RLS de producción
+—incluidos los hallazgos abiertos que todavía no se han corregido— se mantiene
+**fuera de Git** a propósito, para no publicar detalles explotables de un
+sistema en producción antes de arreglarlo.
+
+Las columnas de hallazgos de este documento dicen "ver informe privado" donde
+correspondería un identificador. Pide el informe a quien lleve la migración.
