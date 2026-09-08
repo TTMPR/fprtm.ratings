@@ -69,8 +69,9 @@ if (disponible) {
     DO $r$ BEGIN
       CREATE ROLE service_role;  EXCEPTION WHEN duplicate_object THEN NULL; END $r$;`);
 
-  for (const f of ['010_core_tables', '020_core_alterations', '030_registration',
-                   '040_content', '050_membership', '060_copa_olimpica']) {
+  for (const f of ['010_core_tables', '015_miembros_historial', '020_core_alterations',
+                   '030_registration', '040_content', '050_membership',
+                   '060_copa_olimpica']) {
     await run(`${BIN}/psql`, ['-h', SOCK, '-p', String(PORT), '-U', 'postgres', '-d', DB,
                               '-v', 'ON_ERROR_STOP=1', '-q', '-f', `${ROOT}/sql/schema/${f}.sql`]);
   }
@@ -79,12 +80,6 @@ if (disponible) {
   // que no está instalado en el Postgres de pruebas.
   const f070 = (await readFile(`${ROOT}/sql/schema/070_functions_triggers.sql`, 'utf8'));
   await psql(DB, f070.slice(0, f070.indexOf('SELECT cron.unschedule')));
-
-  // Tablas todavía sin DDL en el repositorio; forma mínima para poder probar
-  // que la restauración NO las trata con un on_conflict adivinado.
-  await psql(DB, `
-    CREATE TABLE IF NOT EXISTS public.historial_rating (id bigserial PRIMARY KEY, nota text);
-    CREATE TABLE IF NOT EXISTS public.miembros (id bigserial PRIMARY KEY, nombre_completo text);`);
 
   api = await startFakePostgrest({ socket: SOCK, port: PORT, db: DB });
   tmp = await mkdtemp(path.join(os.tmpdir(), 'restore-test-'));
@@ -259,10 +254,10 @@ describe('R5 · audit_log — identidad, igual que resultados_evento', saltar, (
   });
 });
 
-describe('R6 · Tablas cuyo DDL aún no se ha extraído', saltar, () => {
-  test('historial_rating y miembros se insertan sin on_conflict adivinado', async () => {
+describe('R6 · historial_rating y miembros — sin clave de conflicto asumida', saltar, () => {
+  test('se insertan sin on_conflict, aunque su DDL ya se conozca', async () => {
     const { stdout } = await restaurar({
-      historial_rating: [{ id: 1, nota: 'x' }],
+      historial_rating: [{ id: 1, jugador_id: 7, rating: 1500, fecha: '2026-01-01' }],
       miembros: [{ id: 1, nombre_completo: 'Persona' }],
     });
     assert.match(stdout, /✓ historial_rating: 1\/1/);

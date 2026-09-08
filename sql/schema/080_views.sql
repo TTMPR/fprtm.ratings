@@ -230,3 +230,53 @@ GRANT EXECUTE ON FUNCTION public.fprtm_parse_fecha(TEXT) TO anon, authenticated;
 --        count(*) FILTER (WHERE "Expiration Date" IS NOT NULL
 --                           AND public.fprtm_parse_fecha("Expiration Date") IS NULL) AS exp_sin_parsear
 --   FROM public."Base de Datos";
+
+
+-- ============================================================================
+-- miembros_alertas — RECUPERADA DE PRODUCCIÓN
+--
+-- Origen: segunda extracción de sólo lectura (2026-09-08). Definición copiada
+-- literalmente de pg_get_viewdef(). Depende de: 015 (miembros).
+--
+-- `supabase_security_fixes.sql` y `setup_fprtm_database.sql` le hacían
+-- ALTER VIEW … SET (security_invoker = on) sin que nadie la creara nunca.
+-- Con esto queda cerrado ese hueco.
+--
+-- security_invoker=on es importante: la vista se evalúa con los permisos de
+-- quien consulta, no del propietario, así que hereda la RLS de `miembros`.
+--
+-- ⚠️  OBSERVACIÓN, NO CORREGIDA: el CASE evalúa "< now() - 11 meses" antes que
+--     "< now() - 1 año". Como toda fila vencida hace más de un año también
+--     cumple la primera condición, la rama 'vencido' es INALCANZABLE: una
+--     membresía caducada hace dos años se reporta como 'por_vencer'.
+--     Se reproduce tal cual — arreglarlo cambia el comportamiento de
+--     producción y necesita decisión de la federación.
+-- ============================================================================
+
+CREATE OR REPLACE VIEW public.miembros_alertas
+WITH (security_invoker = on) AS
+ SELECT id,
+    nombre_completo,
+    email,
+    telefono,
+    club,
+    sexo,
+    edad,
+    fecha_nac,
+    fecha_membresia,
+    ath_id,
+    pueblo,
+    pais,
+    responsable,
+    relacion,
+    status,
+    temporada,
+    created_at,
+        CASE
+            WHEN fecha_membresia < (now() - '11 mons'::interval) THEN 'por_vencer'::text
+            WHEN fecha_membresia < (now() - '1 year'::interval) THEN 'vencido'::text
+            ELSE 'activo'::text
+        END AS alerta,
+    date_part('day'::text, fecha_membresia + '1 year'::interval - now()) AS dias_para_vencer
+   FROM miembros m
+  WHERE temporada = 2026;

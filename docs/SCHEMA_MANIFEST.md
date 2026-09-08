@@ -3,10 +3,9 @@
 Inventario objeto por objeto del esquema `public` que la aplicación espera.
 Producido en la Fase 1.0 para poder reproducir la base de datos desde cero.
 
-**Estado: las cinco tablas núcleo ya están recuperadas** (extracción de sólo
-lectura de producción, 2026-09-03) y viven en `sql/schema/010_core_tables.sql`.
-Quedan **dos tablas nuevas** descubiertas por esa misma extracción cuyo DDL
-todavía falta: `historial_rating` y `miembros`.
+**Estado: completo.** El esquema canónico reconstruye las **22 tablas** y
+**7 vistas** que producción reporta, desde una base vacía y sin stubs.
+Recuperado en dos extracciones de sólo lectura (2026-09-03 y 2026-09-08).
 
 Leyenda de columnas:
 
@@ -36,15 +35,20 @@ Leyenda de columnas:
 
 ---
 
-## Tablas descubiertas — DDL todavía pendiente
+## Miembros e histórico — recuperadas de producción
 
-| Tabla | Qué se sabe | DDL | En el backup | Hallazgos |
-|---|---|---|---|---|
-| `historial_rating` | Histórico de ratings, a juzgar por el nombre. Secuencia propia `historial_rating_id_seq` | **producción** | Añadida en Fase 1.0G | ver informe privado |
-| `miembros` | Registro de miembros de la federación. Alimenta la vista `miembros_alertas`. **Contiene datos personales sensibles**, incluidos los del adulto responsable de los jugadores menores | **producción** | Añadida en Fase 1.0G | ver informe privado |
+| Tabla | Propósito | Fichero origen | DDL | Filas en prod. | PII | Público | Hallazgos |
+|---|---|---|---|---|---|---|---|
+| `miembros` | Registro de miembros de la federación. Alimenta `miembros_alertas`. 17 columnas; `pais` por defecto `'Puerto Rico'`, `status` `'activo'`, `temporada` `2026`. Índices por `nombre_completo` y `status` | `sql/schema/015_miembros_historial.sql` | recuperado | 134 | **Sí, sensible** — correo, teléfono, pueblo, fecha de nacimiento y `responsable`/`relacion`: los datos del adulto responsable de los menores | ver informe privado | ver informe privado |
+| `historial_rating` | Histórico de rating por jugador y torneo. FK a `torneos`; índice `(jugador_id, fecha DESC)` | `sql/schema/015_miembros_historial.sql` | recuperado | **0** | No | ver informe privado | ver informe privado |
 
-Hace falta una segunda extracción de sólo lectura para su DDL antes de dar el
-esquema por completo.
+> **`historial_rating` está vacía en producción.** Tiene estructura, índice y
+> clave foránea, pero cero filas: parece preparada para un histórico que
+> todavía no se alimenta. El histórico real vive hoy en `resultados_evento` y
+> en las columnas `rating_<slug>` de `"Base de Datos"`.
+>
+> Los conteos de arriba son **observaciones de producción**. El esquema
+> canónico crea las tablas vacías; no siembra ninguna fila.
 
 ---
 
@@ -112,7 +116,14 @@ esquema por completo.
 | `insc_equipos_publico` | Equipos sin datos de contacto | `sql/create_insc_equipos.sql` | repo | `insc_equipos` | No | **Sí** | — |
 | `insc_equipos_cupos` | Cupos libres por división | `sql/create_insc_equipos.sql` | repo | `insc_equipos`, `insc_divisiones` | No | **Sí** | — |
 | `insc_busca_companero_publico` | Tablón sin datos de contacto | `sql/create_busca_companero.sql` | repo | `insc_busca_companero` | No | **Sí** | — |
-| `miembros_alertas` | Alertas de vencimiento de membresía para la temporada 2026: calcula `activo` / `por_vencer` / `vencido` y los días restantes. `security_invoker=on` | — | **recuperada** (definición completa en la extracción) | `miembros` | **Sí** — email, teléfono, dirección, datos del responsable de menores | ver informe privado | ver informe privado |
+| `miembros_alertas` | Alertas de vencimiento de membresía de la temporada 2026: `activo` / `por_vencer` / `vencido` y los días restantes. `security_invoker=on`, así que hereda la RLS de `miembros` | `sql/schema/080_views.sql` | **recuperada** | `miembros` (única dependencia, confirmada) | **Sí** — correo, teléfono, pueblo, datos del responsable de menores | ver informe privado | ver informe privado |
+
+> ⚠️ **Rama inalcanzable, reproducida sin corregir.** El `CASE` de la vista
+> evalúa `< now() - 11 meses` antes que `< now() - 1 año`. Como toda fila
+> vencida hace más de un año cumple también la primera condición, el valor
+> `'vencido'` **nunca se devuelve**: una membresía caducada hace dos años se
+> reporta como `'por_vencer'`. Corregirlo cambia el comportamiento de
+> producción y es una decisión de la federación.
 
 ---
 
@@ -153,12 +164,17 @@ esquema por completo.
 núcleo, sus políticas RLS completas, la vista `miembros_alertas`, la función
 `update_updated_at()` y la confirmación de que `jugadores` tiene 537 filas.
 
+**Cerrado por la segunda extracción (2026-09-08):** el DDL de
+`historial_rating` y `miembros`, la definición de `miembros_alertas` con su
+`security_invoker=on` y su única dependencia, y la reconciliación completa del
+inventario: **22 tablas y 7 vistas, sin diferencias**.
+
 **Todavía pendiente:**
 
-1. DDL de `historial_rating` y `miembros` (segunda extracción)
-2. Políticas del bucket `player-photos` (el bucket existe y es público;
-   sus políticas de `storage.objects` no se extrajeron)
-3. Decidir el destino de `jugadores`
+1. Políticas del bucket `player-photos` (el bucket existe y es público; sus
+   políticas de `storage.objects` no se han extraído)
+2. Decidir el destino de `jugadores` — 537 filas, lectura pública, ninguna
+   ruta de `index.html` la consulta
 
 Discrepancias a verificar contra el volcado:
 
