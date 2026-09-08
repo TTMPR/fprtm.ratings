@@ -55,6 +55,12 @@ el código: lo extraen.
 | `rating-batch.test.mjs` | Rating congelado al inicio, varios partidos por jugador, una sola aplicación neta |
 | `importer.test.mjs` | Fusión multi-archivo, retirados, W/O, dobles, parseo de IDs, filas omitidas, borrador |
 | `replay.test.mjs` | Replay de cinco conjuntos históricos contra `golden/` |
+| `restore.test.mjs` | Ciclo export → restore contra PostgreSQL real |
+| `schema-rebuild.test.mjs` | Reconstrucción de `sql/schema/` desde cero: paridad de nombres con producción, comportamiento de `ensure_rls`, idempotencia |
+
+Los dos últimos necesitan un PostgreSQL local en `/tmp/pg-phase10`. Si no
+está, se saltan en vez de fallar: son de infraestructura, no del pipeline
+oficial de rating.
 
 ## Ficheros golden
 

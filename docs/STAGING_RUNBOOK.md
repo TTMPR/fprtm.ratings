@@ -183,7 +183,8 @@ uno termina sin error antes de pasar al siguiente:
 
 ```
 000_extensions.sql
-010_core_tables.sql          ← el que escribiste en el Paso 0
+010_core_tables.sql
+015_miembros_historial.sql
 020_core_alterations.sql
 030_registration.sql
 040_content.sql
@@ -191,31 +192,48 @@ uno termina sin error antes de pasar al siguiente:
 060_copa_olimpica.sql
 070_functions_triggers.sql
 080_views.sql
-090_rls_current_snapshot.sql
-100_storage.sql
+090_rls_current_snapshot.PRIVADO.sql    ← paquete privado, no está en Git
+STAGING_STORAGE.PRIVADO.sql             ← paquete privado, no está en Git
 ```
 
 Todos son idempotentes: si uno falla a medias, se puede volver a lanzar
 entero tras corregir.
 
-> Si `010` sigue siendo el fichero `PENDING`, el primer intento lanzará un
-> `RAISE EXCEPTION` a propósito. Es la guarda: significa que falta el Paso 0.
+Los dos últimos **no están en el repositorio**: se entregan por canal privado
+porque contienen la configuración de seguridad exacta de un sistema en uso con
+hallazgos abiertos. `sql/schema/090_rls_current_snapshot.sql` y
+`sql/schema/100_storage.sql` son sólo punteros que explican dónde está lo real.
+
+> `070` crea el event trigger `ensure_rls` y por tanto necesita permisos de
+> superusuario. En el SQL Editor de Supabase se ejecuta como `postgres`, que
+> puede hacerlo — en producción el propietario de `ensure_rls` es `postgres`.
+
+Tras aplicarlos, comprueba el resultado con la reconciliación del final:
+deben salir 22 tablas, 7 vistas, 23 funciones, 1 event trigger propio
+(`ensure_rls`), 57 políticas y RLS activo en las 22 tablas. Es exactamente lo
+que produce la validación local (`tests/schema-rebuild.test.mjs`).
 
 ---
 
 ## Paso 5 · Storage
 
-`100_storage.sql` crea `club-logos` y sus políticas.
+Aplica `STAGING_STORAGE.PRIVADO.sql`, del paquete privado. Crea los dos
+buckets (`club-logos` y `player-photos`) y las cinco políticas de
+`storage.objects` que tiene producción, con su configuración literal.
 
-**`player-photos` hay que crearlo a mano** — ningún fichero del repositorio
-lo define. Storage → New bucket:
+Ya no hace falta crear nada a mano ni ir a mirar el proyecto real: la
+configuración se extrajo del catálogo el 2026-09-08 y el fichero la reproduce
+tal cual, **incluida la debilidad abierta que documenta el informe privado de
+seguridad**. Es deliberado: staging tiene que empezar pareciéndose a
+producción. El endurecimiento es Fase 1.2/1.3 y se prueba aquí primero.
 
-- Nombre: `player-photos`
-- Público: sí (así está en producción)
-- Políticas: replicar las de producción, que hay que consultar antes en
-  Storage → Policies del proyecto real
+El esquema `storage` en sí lo crea Supabase al provisionar el proyecto; el
+fichero no lo toca.
 
 No crees el bucket `backups` en staging: no hay nada que respaldar todavía.
+
+La sección 3 del propio fichero trae una consulta de verificación de sólo
+lectura. Compara su salida con el volcado de producción de la extracción 3.
 
 ---
 

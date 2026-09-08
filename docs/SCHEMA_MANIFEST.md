@@ -163,6 +163,23 @@ Leyenda de columnas:
 | `player-photos` | Sí | Fotos de jugador — **incluidos menores** | **producción** ⚠ ningún fichero lo crea |
 | `backups` | **No** | Destino del backup semanal | Lo crea `backup/export_backup.mjs` |
 
+**Extraído el 2026-09-08.** La tercera extracción de sólo lectura devolvió la
+configuración completa de los dos buckets de Storage y todas las políticas de
+`storage.objects`. Con eso, Storage deja de ser un hueco.
+
+Lo extraído **no se publica aquí**. Vive en el paquete privado de staging
+(`STAGING_STORAGE.PRIVADO.sql`), junto al snapshot `090` de RLS, por el mismo
+motivo: el repositorio es público y entre esas políticas hay una debilidad
+todavía abierta. Ver el informe privado de seguridad.
+
+Lo que sí se puede decir en abierto: los dos buckets son públicos y de tipo
+estándar, sin versionado, y ninguno tiene límite propio de tamaño ni
+restricción de tipo MIME. Producción no tiene ninguna política propia en las
+demás tablas del esquema `storage`.
+
+El esquema `storage` en sí —sus tablas, triggers y funciones internas— lo crea
+Supabase al provisionar el proyecto. No se reproduce: no es nuestro.
+
 ---
 
 ## Resumen de huecos
@@ -176,11 +193,15 @@ núcleo, sus políticas RLS completas, la vista `miembros_alertas`, la función
 `security_invoker=on` y su única dependencia, y la reconciliación completa del
 inventario: **22 tablas y 7 vistas, sin diferencias**.
 
+**Cerrado por la tercera extracción (2026-09-08):** el cuerpo de
+`rls_auto_enable()`, el event trigger `ensure_rls` que la invoca, el inventario
+de event triggers del proyecto y la configuración completa de Storage. Con
+esto la paridad de objetos es total: **22 tablas, 7 vistas, 23 funciones y el
+event trigger propio, sin diferencias**.
+
 **Todavía pendiente:**
 
-1. Políticas del bucket `player-photos` (el bucket existe y es público; sus
-   políticas de `storage.objects` no se han extraído)
-2. Decidir el destino de `jugadores` — 537 filas, lectura pública, ninguna
+1. Decidir el destino de `jugadores` — 537 filas, lectura pública, ninguna
    ruta de `index.html` la consulta
 
 Discrepancias a verificar contra el volcado:
@@ -255,11 +276,44 @@ a ser dependencia y hay que incluirla.
 |---|---|---|
 | Tablas | 22 | **22** |
 | Vistas | 7 | **7** |
-| Funciones | 23 | **22** |
+| Funciones | 23 | **23** |
+| Event triggers propios | 1 | **1** |
 | RLS activo | 22 tablas | **22 tablas** |
 
-Falta una sola función: **`rls_auto_enable`**. Existe en producción, no está
-en ningún fichero del repositorio y su cuerpo no se ha extraído todavía — las
-dos extracciones pidieron el cuerpo sólo de las funciones de trigger de unas
-tablas concretas, y ésta no lo es. No se inventa. Es el último hueco del
-esquema canónico.
+Sin diferencias. La comparación ya no es de recuentos: la comprueba
+`tests/schema-rebuild.test.mjs` contra las **listas de nombres** que devolvió
+la extracción, sobre una base reconstruida desde cero. Un recuento correcto
+con un nombre distinto pasaría desapercibido; una lista, no.
+
+### `rls_auto_enable` y `ensure_rls`
+
+La última función que faltaba se recuperó en la tercera extracción y está en
+`sql/schema/070_functions_triggers.sql`, con el cuerpo literal de
+`pg_get_functiondef()`.
+
+Es la función de un event trigger, `ensure_rls`, que al terminar cualquier
+`CREATE TABLE`, `CREATE TABLE AS` o `SELECT INTO` sobre `public` activa RLS en
+la tabla recién creada. Los fallos se registran en el log y nunca abortan el
+DDL. El esquema canónico lo reproduce de forma idempotente, y el test no se
+conforma con que exista: crea una tabla de usar y tirar y comprueba que nació
+con RLS activo.
+
+Producción tiene otros seis event triggers (`pgrst_ddl_watch`,
+`issue_pg_cron_access`, `issue_pg_graphql_access`, `issue_pg_net_access`,
+`issue_graphql_placeholder`, `pgrst_drop_watch`). Son de la plataforma
+Supabase, propiedad de `supabase_admin`, y **no** se reproducen: los pone
+Supabase al crear el proyecto y no forman parte del esquema de la aplicación.
+
+### Un defecto que la reconstrucción destapó
+
+Hasta esta fase, cinco tablas —`Base de Datos`, `jugadores`, `torneos`,
+`partidos` y `resultados_evento`— sólo recibían `ENABLE ROW LEVEL SECURITY`
+dentro del snapshot `090`, que **no está en el repositorio público**. Quien
+reconstruyera el esquema con los ficheros públicos se quedaba con las cinco
+tablas más sensibles del sistema sin RLS, es decir sin ninguna restricción.
+
+El fallo no lo vio ninguna revisión a ojo; lo encontró el test de
+reconstrucción la primera vez que se ejecutó. Ahora el `ENABLE ROW LEVEL
+SECURITY` de esas cinco tablas está en `010_core_tables.sql`, donde se crean.
+No define ninguna política ni cambia producción: alinea el fichero con el
+estado real y hace que la reconstrucción falle cerrada en vez de abierta.

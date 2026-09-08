@@ -206,3 +206,33 @@ CREATE TABLE IF NOT EXISTS public.resultados_evento (
 
 -- id_torneo no tiene clave foránea contra torneos en producción, aunque
 -- partidos.torneo_id sí la tiene. Inconsistente; reproducido tal cual.
+
+
+-- ============================================================================
+-- RLS de las cinco tablas núcleo
+-- ============================================================================
+--
+-- Producción tiene RLS ACTIVO en las 22 tablas de `public` (confirmado por la
+-- extracción de sólo lectura). Estas cinco lo tenían activado únicamente
+-- dentro del snapshot 090, que **no está en este repositorio público**.
+--
+-- Consecuencia, detectada por tests/schema-rebuild.test.mjs: quien
+-- reconstruyera el esquema sólo con los ficheros públicos se quedaba con las
+-- cinco tablas más sensibles del sistema —la base de jugadores, los torneos,
+-- los partidos y los resultados— **sin RLS**. Y sin RLS no hay restricción
+-- ninguna: en Supabase los roles `anon` y `authenticated` tienen permisos
+-- sobre las tablas de `public`, y es RLS lo único que los acota. El fallo
+-- abría más que cualquier política mal escrita.
+--
+-- Activarlo aquí NO define ninguna política y NO cambia nada de producción:
+-- sólo alinea el fichero con el estado real (RLS activo) y hace que la
+-- reconstrucción falle cerrada en vez de abierta. Sin políticas, RLS deniega
+-- todo — el valor por defecto seguro. Las políticas siguen viniendo del 090.
+--
+-- El 090 privado repite estos mismos ALTER. Son idempotentes: no molesta.
+
+ALTER TABLE public."Base de Datos"     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.jugadores           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.torneos             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.partidos            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.resultados_evento   ENABLE ROW LEVEL SECURITY;

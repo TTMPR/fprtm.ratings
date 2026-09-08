@@ -240,15 +240,85 @@ $function$;
 
 
 -- ============================================================================
--- PENDIENTE: rls_auto_enable
+-- rls_auto_enable + ensure_rls — RECUPERADOS DE PRODUCCIÓN
+--
+-- Origen: tercera extracción de sólo lectura (2026-09-08, PostgreSQL 17.6).
+-- El cuerpo es la salida literal de pg_get_functiondef(); no se ha
+-- reformateado ni "mejorado" una sola línea.
+--
+-- Era el último objeto de `public` que le faltaba al esquema canónico. Con él
+-- la paridad de funciones queda en 23 de 23.
+--
+-- Qué hace: un event trigger que, al terminar cualquier CREATE TABLE,
+-- CREATE TABLE AS o SELECT INTO sobre el esquema `public`, activa RLS en la
+-- tabla recién creada. Los fallos se tragan (EXCEPTION WHEN OTHERS) y sólo
+-- dejan rastro en el log del servidor: nunca abortan el DDL que los provocó.
+--
+-- Por qué va aquí y no antes de las tablas: en producción el trigger ya
+-- existía cuando se crearon las tablas, así que las activó él. En el esquema
+-- canónico cada tabla trae su propio ALTER TABLE ... ENABLE ROW LEVEL
+-- SECURITY explícito, de modo que el estado final es idéntico se cree el
+-- trigger antes o después. Crearlo al final evita que un automatismo silencioso
+-- sea responsable de la seguridad de la reconstrucción: los ficheros dicen lo
+-- que hacen.
+--
+-- ⚠ CREATE EVENT TRIGGER exige superusuario. En Supabase el rol `postgres`
+--   puede hacerlo (en producción el propietario de `ensure_rls` es `postgres`).
+--   En un Postgres normal hay que aplicar este fichero como superusuario.
+--
+-- Los otros seis event triggers de producción (issue_graphql_placeholder,
+-- issue_pg_cron_access, issue_pg_graphql_access, issue_pg_net_access,
+-- pgrst_ddl_watch, pgrst_drop_watch) son de la plataforma Supabase, propiedad
+-- de `supabase_admin`. NO se reproducen aquí: los pone Supabase al crear el
+-- proyecto y no forman parte del esquema de la aplicación.
 -- ============================================================================
--- Producción tiene una función public.rls_auto_enable que NO está en ningún
--- fichero del repositorio y cuya definición todavía no se ha extraído: las
--- dos extracciones pidieron el cuerpo sólo de las funciones de trigger de
--- unas tablas concretas, y ésta no lo es.
+
+CREATE OR REPLACE FUNCTION public.rls_auto_enable()
+ RETURNS event_trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'pg_catalog'
+AS $function$
+DECLARE
+  cmd record;
+BEGIN
+  FOR cmd IN
+    SELECT *
+    FROM pg_event_trigger_ddl_commands()
+    WHERE command_tag IN ('CREATE TABLE', 'CREATE TABLE AS', 'SELECT INTO')
+      AND object_type IN ('table','partitioned table')
+  LOOP
+     IF cmd.schema_name IS NOT NULL AND cmd.schema_name IN ('public') AND cmd.schema_name NOT IN ('pg_catalog','information_schema') AND cmd.schema_name NOT LIKE 'pg_toast%' AND cmd.schema_name NOT LIKE 'pg_temp%' THEN
+      BEGIN
+        EXECUTE format('alter table if exists %s enable row level security', cmd.object_identity);
+        RAISE LOG 'rls_auto_enable: enabled RLS on %', cmd.object_identity;
+      EXCEPTION
+        WHEN OTHERS THEN
+          RAISE LOG 'rls_auto_enable: failed to enable RLS on %', cmd.object_identity;
+      END;
+     ELSE
+        RAISE LOG 'rls_auto_enable: skip % (either system schema or not in enforced list: %.)', cmd.object_identity, cmd.schema_name;
+     END IF;
+  END LOOP;
+END;
+$function$;
+
+
+-- CREATE EVENT TRIGGER no admite IF NOT EXISTS, así que la idempotencia se
+-- resuelve mirando el catálogo. No se usa DROP + CREATE a propósito: entre el
+-- DROP y el CREATE habría una ventana, por corta que sea, en la que una tabla
+-- nueva se crearía sin RLS.
 --
--- NO se inventa. Por el nombre parece activar RLS automáticamente en tablas
--- nuevas, quizá desde un event trigger — que también habría que confirmar.
---
--- Es el único objeto de `public` que le falta al esquema canónico.
--- Ver docs/SCHEMA_MANIFEST.md.
+-- Estado en producción: habilitado (evtenabled = 'O'), propietario `postgres`,
+-- evento ddl_command_end, etiquetas CREATE TABLE / CREATE TABLE AS / SELECT INTO.
+
+DO $ensure_rls$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_event_trigger WHERE evtname = 'ensure_rls') THEN
+    CREATE EVENT TRIGGER ensure_rls
+      ON ddl_command_end
+      WHEN TAG IN ('CREATE TABLE', 'CREATE TABLE AS', 'SELECT INTO')
+      EXECUTE FUNCTION public.rls_auto_enable();
+  END IF;
+END
+$ensure_rls$;

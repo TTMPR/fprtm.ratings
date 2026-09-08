@@ -1,42 +1,37 @@
 -- ============================================================================
--- 100 · Storage (SÓLO Supabase)
+-- 100 · Storage — NO ESTÁ EN ESTE REPOSITORIO
 --
--- Este fichero NO se puede aplicar en un Postgres normal: el esquema
--- `storage` lo crea Supabase. Por eso está separado de 050.
+-- La configuración de Storage de producción (los dos buckets y las políticas
+-- de `storage.objects`) se extrajo del catálogo el 2026-09-08 y **se mantiene
+-- fuera de Git**, igual que el snapshot 090 de RLS.
 --
--- Origen: create_clubs_table.sql (parte de Storage) + los buckets que la
--- aplicación usa según index.html.
+-- Motivo: este repositorio es público y entre esas políticas hay una debilidad
+-- de seguridad todavía abierta. Publicar la configuración exacta de un sistema
+-- en uso antes de arreglarlo es un riesgo innecesario. El análisis está en el
+-- informe privado de seguridad.
 --
--- Buckets referenciados por la aplicación:
---   club-logos     público   logos de club
---   player-photos  público   fotos de jugador
---   backups        PRIVADO   destino del backup semanal (lo crea
---                            backup/export_backup.mjs, no este fichero)
+-- El fichero real es `STAGING_STORAGE.PRIVADO.sql` y se entrega por canal
+-- privado junto con el 090. Reproduce, tal cual están hoy en producción:
+--
+--   · los dos buckets de la aplicación (`club-logos` y `player-photos`), con
+--     su configuración completa;
+--   · las políticas de `storage.objects` que son de la aplicación.
+--
+-- Lo que ese fichero NO trae, porque lo crea Supabase al provisionar el
+-- proyecto y no es nuestro: el esquema `storage` en sí, sus tablas
+-- (`objects`, `buckets`, `migrations`, `s3_multipart_uploads`, …), sus
+-- triggers internos y sus funciones internas.
+--
+-- Nada de esto se puede aplicar en un Postgres normal: el esquema `storage`
+-- es de Supabase. Por eso Storage está separado del resto del esquema
+-- canónico y no participa en la validación local.
+--
+-- Lo que sí es público, porque siempre lo fue:
+--   club-logos     bucket público, logos de club
+--                  (lo crea `create_clubs_table.sql`, en la raíz del repo)
+--   player-photos  bucket público, fotos de jugador — incluidos menores
+--   backups        bucket PRIVADO, destino del backup semanal
+--                  (lo crea `backup/export_backup.mjs`, no un fichero SQL)
+--
+-- Ver docs/SCHEMA_MANIFEST.md y docs/STAGING_RUNBOOK.md.
 -- ============================================================================
-
--- Storage bucket para logos
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('club-logos', 'club-logos', true)
-ON CONFLICT (id) DO NOTHING;
-
-DROP POLICY IF EXISTS "Public read club-logos" ON storage.objects;
-CREATE POLICY "Public read club-logos"
-  ON storage.objects FOR SELECT TO anon, authenticated
-  USING (bucket_id = 'club-logos');
-
-DROP POLICY IF EXISTS "Authenticated upload club-logos" ON storage.objects;
-CREATE POLICY "Authenticated upload club-logos"
-  ON storage.objects FOR INSERT TO authenticated
-  WITH CHECK (bucket_id = 'club-logos');
-
-DROP POLICY IF EXISTS "Authenticated update club-logos" ON storage.objects;
-CREATE POLICY "Authenticated update club-logos"
-  ON storage.objects FOR UPDATE TO authenticated
-  USING (bucket_id = 'club-logos');
-
-
--- ── player-photos ───────────────────────────────────────────────────────────
--- ⚠ NO hay fichero en el repositorio que cree este bucket ni sus políticas.
---   La app sube y lee de él (index.html: showPhotoUploadModal,
---   showPendingPhotosModal). Recuperar su configuración real de producción
---   antes de crear staging — ver docs/STAGING_RUNBOOK.md.
