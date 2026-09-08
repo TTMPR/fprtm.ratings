@@ -88,13 +88,20 @@ Leyenda de columnas:
 
 | Tabla | Propósito | Fichero origen | DDL | Depende de | PII | Público | Área | Hallazgos |
 |---|---|---|---|---|---|---|---|---|
-| `insc_divisiones` | Divisiones por rating combinado, precio y cupo | `sql/create_insc_equipos.sql` | repo | — | No | Sí | copa | F-04 |
+| `insc_divisiones` | Divisiones por rating combinado, precio y cupo | `sql/create_insc_equipos.sql` | repo | — | No | Sí | copa | ver informe privado |
 | `insc_equipos` | Equipos inscritos, estado de pago y reserva | `sql/create_insc_equipos.sql` | repo | `insc_divisiones`, `"Base de Datos"` | Sí (contacto) | Vía vista | copa | F-04 |
 | `insc_busca_companero` | Tablón de jugadores sin pareja | `sql/create_busca_companero.sql` | repo | `"Base de Datos"`, `insc_divisiones` | Sí (contacto) | Vía vista | copa | F-04 |
 
-> ⚠️ **Las tres están fuera del backup semanal.** No aparecen en la lista
-> `TABLES` de `backup/export_backup.mjs`. Es el módulo con dinero asociado
-> más reciente. Corrección propuesta en la Fase 1.0G.
+> ⚠️ **Copa Olímpica 2026 está en curso.** `sql/schema/060_copa_olimpica.sql`
+> es una copia literal de `sql/create_insc_equipos.sql` y
+> `sql/create_busca_companero.sql` **tal como están en main**. Cualquier
+> cambio va primero a esos ficheros; el canónico se resincroniza después,
+> nunca al revés.
+>
+> Resincronizado el 2026-09-08: la copia anterior conservaba el
+> comportamiento ya retirado en el que una reserva vencida sin pagar se
+> expiraba sola. Hoy no se expira, conserva su cupo, y cancelarla es una
+> decisión de la federación. Ver "Deriva detectada" abajo.
 
 ---
 
@@ -195,3 +202,64 @@ sistema en producción antes de arreglarlo.
 
 Las columnas de hallazgos de este documento dicen "ver informe privado" donde
 correspondería un identificador. Pide el informe a quien lleve la migración.
+
+
+---
+
+## Deriva detectada y corregida — 2026-09-08
+
+Al sincronizar `origin/main` con la rama de migración apareció que el esquema
+canónico se había quedado atrás respecto al módulo de Copa Olímpica, que sigue
+en uso. Registro de lo encontrado:
+
+### `insc_equipos_liberar(TEXT)` — comportamiento cambiado
+
+| | Copia canónica anterior | main actual |
+|---|---|---|
+| Reserva vencida sin pagar | `UPDATE … SET estado = 'expirado'` | **no se toca**, conserva su cupo |
+| Qué devuelve | `{expirados, promovidos}` | `{promovidos, vencidas_sin_pago}` |
+| Quién cancela | el sistema, a las 48 h | **la federación, a mano** |
+
+La función sólo promueve la lista de espera a los cupos realmente libres. El
+contador `vencidas_sin_pago` existe para que el panel sepa a quién llamar, no
+para actuar.
+
+### `editar_equipo(...)` — función nueva, dependencia viva
+
+Permite a la federación corregir el nombre de un equipo y sus jugadores.
+`index.html` la invoca (2 usos) y tiene `GRANT EXECUTE … TO authenticated`.
+**Faltaba por completo** en el esquema canónico: un staging construido con la
+copia anterior habría roto esa pantalla.
+
+### Scripts de reparación puntual — NO incluidos en el esquema canónico
+
+| Fichero | Qué es | Objetos persistentes | ¿Lo usa la app? | Decisión |
+|---|---|---|---|---|
+| `sql/restaurar_inscripciones_expiradas.sql` | Devuelve a la vida las reservas que el comportamiento anterior expiró sola. Un solo `UPDATE`, para correr una vez | ninguno | no | **excluido** |
+| `sql/deduplicar_inscripciones.sql` | Quita inscripciones duplicadas que aparecieron al restaurar las expiradas | `insc_equipos_deduplicar()` | **no** — `index.html` nunca la llama | **excluido**, ver nota |
+
+`insc_equipos_deduplicar()` sí es una función persistente, pero es una
+herramienta de reparación: ninguna ruta de la aplicación la invoca. Se deja
+fuera del esquema canónico a propósito. Si algún día el panel la expone, pasa
+a ser dependencia y hay que incluirla.
+
+> **Nota de causa raíz.** El commit `4f9ca2c` ("Remove the duplicate
+> registrations the restore produced") describe duplicados aparecidos *tras
+> una restauración*. Merece la pena comprobar si se relaciona con el defecto
+> de clave primaria descrito en el informe privado, que hace que restaurar
+> una fila cuyo valor de clave cambió inserte otra en lugar de actualizarla.
+
+### Equivalencia tras la sincronización
+
+| Objeto | Producción | Canónico |
+|---|---|---|
+| Tablas | 22 | **22** |
+| Vistas | 7 | **7** |
+| Funciones | 23 | **22** |
+| RLS activo | 22 tablas | **22 tablas** |
+
+Falta una sola función: **`rls_auto_enable`**. Existe en producción, no está
+en ningún fichero del repositorio y su cuerpo no se ha extraído todavía — las
+dos extracciones pidieron el cuerpo sólo de las funciones de trigger de unas
+tablas concretas, y ésta no lo es. No se inventa. Es el último hueco del
+esquema canónico.

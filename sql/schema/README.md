@@ -22,7 +22,7 @@ El número **es** el orden. Aplícalos de menor a mayor.
 | `030_registration.sql` | `insc_registro` y sus parches |
 | `040_content.sql` | `app_settings`, `articulos`, `clubs`, `club_info_requests` |
 | `050_membership.sql` | Membresías, fotos, cambios de club, registro de jugadores, `resultados_draft` |
-| `060_copa_olimpica.sql` | Equipos, divisiones y Busco Compañero |
+| `060_copa_olimpica.sql` | Equipos, divisiones y Busco Compañero — **copia literal de main, resincronizar tras cada cambio de Copa** |
 | `070_functions_triggers.sql` | `audit_log` + `fn_audit` + triggers, purga de la papelera |
 | `080_views.sql` | `fprtm_parse_fecha` y las vistas `api_*` |
 | `090_rls_current_snapshot.sql` | RLS — **no está en este repositorio**, ver abajo |
@@ -99,7 +99,10 @@ producción), en orden numérico estricto y **sin stubs**:
 ✓ 080_views.sql              ✓ 090 (privado)
 ```
 
-Resultado: **22 tablas, 7 vistas**, 57 políticas, RLS activo en las 22 tablas.
+Resultado: **22 tablas, 7 vistas, 22 de las 23 funciones**, 9 triggers,
+46 índices, 32 restricciones, 57 políticas y RLS activo en las 22 tablas.
+La única función que falta es `rls_auto_enable`, cuyo cuerpo todavía no se ha
+extraído de producción (ver `docs/SCHEMA_MANIFEST.md`).
 Todos los ficheros son idempotentes: la segunda pasada sobre la misma base no
 falla.
 

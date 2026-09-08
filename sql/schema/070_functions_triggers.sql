@@ -210,3 +210,45 @@ SELECT cron.schedule(
 --   WHERE table_name IN ('torneos','resultados_evento','partidos')
 --     AND column_name = 'deleted_at';
 -- SELECT jobname, schedule FROM cron.job WHERE jobname = 'purge-deleted-torneos';
+
+
+-- ============================================================================
+-- update_updated_at — RECUPERADA DE PRODUCCIÓN
+--
+-- Origen: extracción de sólo lectura del 2026-09-03, definición copiada
+-- literalmente de pg_get_functiondef().
+--
+-- `supabase_security_fixes.sql` y `setup_fprtm_database.sql` le fijaban el
+-- search_path sin que nadie la creara nunca. Con esto queda cerrado ese hueco.
+--
+-- Ningún trigger de las tablas núcleo la usa: las tablas de Copa Olímpica
+-- tienen las suyas (insc_equipos_touch, insc_busca_touch). Se reproduce
+-- igualmente porque existe en producción y el esquema canónico debe
+-- reproducir producción, no decidir qué merece existir.
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION public.update_updated_at()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO ''
+AS $function$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$function$;
+
+
+-- ============================================================================
+-- PENDIENTE: rls_auto_enable
+-- ============================================================================
+-- Producción tiene una función public.rls_auto_enable que NO está en ningún
+-- fichero del repositorio y cuya definición todavía no se ha extraído: las
+-- dos extracciones pidieron el cuerpo sólo de las funciones de trigger de
+-- unas tablas concretas, y ésta no lo es.
+--
+-- NO se inventa. Por el nombre parece activar RLS automáticamente en tablas
+-- nuevas, quizá desde un event trigger — que también habría que confirmar.
+--
+-- Es el único objeto de `public` que le falta al esquema canónico.
+-- Ver docs/SCHEMA_MANIFEST.md.
