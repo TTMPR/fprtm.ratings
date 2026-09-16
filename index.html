@@ -999,8 +999,10 @@
     .insc-vencida, .insc-vencida-chip { animation: none; }
   }
 
-  /* ─── COPA OLÍMPICA 2026 — PREVIEW ─── */
-  .copa-prev {
+  /* ─── TARJETA DE PORTADA DE UN TORNEO ─── */
+  /* La usan la Copa Olímpica (divisiones) y el Lares Open (categorías). Los
+     colores salen del arte de cada torneo: --cn azul, --cr rojo. */
+  .copa-prev, .lares-prev {
     --cn: #0d2a5c;  --cr: #cc1122;
     position: relative; overflow: hidden;
     background: linear-gradient(160deg, #0f1a2e 0%, #101725 100%);
@@ -1008,22 +1010,46 @@
     border-radius: 18px; padding: 24px 22px 22px;
     margin-bottom: 18px; text-align: center;
   }
-  .copa-prev::before {
+  .lares-prev { --cn: #123b73;  --cr: #d32030; }
+  .copa-prev::before, .lares-prev::before {
     content: ''; position: absolute; inset: 0 0 auto 0; height: 3px;
     background: linear-gradient(90deg, var(--cn), var(--cr), var(--cn));
   }
-  .copa-chip {
+  .copa-chip, .lares-chip {
     display: inline-block; background: rgba(204,17,34,0.14);
     border: 1px solid rgba(204,17,34,0.45); border-radius: 20px;
     padding: 3px 13px; font-size: 10.5px; font-weight: 800;
     letter-spacing: .12em; color: #f87171; margin-bottom: 12px;
   }
-  .copa-logo { width: 100%; max-width: 190px; height: auto; margin: 0 auto 12px; display: block; }
-  .copa-name {
+  .lares-chip { background: rgba(34,197,94,0.13); border-color: rgba(34,197,94,0.45); color: #4ade80; }
+  .copa-logo, .lares-logo { width: 100%; max-width: 190px; height: auto; margin: 0 auto 12px; display: block; }
+  .lares-logo { max-width: 230px; }
+  .copa-name, .lares-name {
     font-family: 'Orbitron', monospace; font-size: clamp(20px, 5.5vw, 27px);
     font-weight: 800; letter-spacing: 1px; line-height: 1.15; color: var(--text);
   }
-  .copa-meta { font-size: 13.5px; color: var(--muted); margin-top: 7px; line-height: 1.6; }
+  .copa-meta, .lares-meta { font-size: 13.5px; color: var(--muted); margin-top: 7px; line-height: 1.6; }
+
+  /* Itinerario del torneo individual: una fila por categoría, agrupadas por día */
+  .lares-dia {
+    font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--accent);
+    text-align: left; margin: 16px 0 8px;
+  }
+  .lares-ev {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: rgba(255,255,255,0.035); border: 1px solid var(--border);
+    border-radius: 10px; padding: 9px 13px; margin-bottom: 6px; text-align: left;
+  }
+  .lares-ev-h {
+    font-family: 'Orbitron', monospace; font-size: 11.5px; font-weight: 700;
+    color: var(--accent); min-width: 62px;
+  }
+  .lares-ev-n { font-size: 12.5px; color: var(--text); flex: 1; min-width: 118px; }
+  .lares-ev-p { font-size: 11.5px; font-weight: 700; color: #facc15; white-space: nowrap; }
+  @media (max-width: 430px) {
+    .lares-ev-h { min-width: 100%; }
+  }
   .copa-div-grid { display: grid; gap: 8px; margin: 18px 0 4px; text-align: left; }
   .copa-div {
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
@@ -2663,16 +2689,19 @@ Maria Lopez,Ana Torres,B</code>
     <div class="adm-section">
       <div class="adm-section-title">🏓 Torneo & Inscripciones</div>
       <div class="adm-grid">
-        <div id="inscAdminCard" class="adm-card" onclick="toggleInscripciones()">
+        <!-- Abre y cierra el torneo SELECCIONADO en los chips: hay dos vivos a
+             la vez y cada uno tiene su propio interruptor. -->
+        <div id="inscAdminCard" class="adm-card" style="align-items:flex-start;" onclick="toggleInscripciones()">
           <div class="adm-ico" id="inscAdminIcon">📋</div>
-          <div>
-            <div class="adm-title">Inscripciones</div>
+          <div style="flex:1;min-width:0;">
+            <div class="adm-title">Inscripciones · <span id="inscAdminTorneo">—</span></div>
             <div class="adm-desc" id="inscAdminStatus">Cargando...</div>
             <div id="inscAdminSync" style="font-size:11px;margin-top:3px;color:var(--muted)"></div>
             <button id="btnProrroga" onclick="event.stopPropagation();toggleProrroga()" style="display:none;margin-top:7px;border:1px solid var(--border);border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;"></button>
+            <div class="insc-evento-chips" data-compacto="1" style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;"></div>
           </div>
         </div>
-        <div class="adm-card" style="align-items:flex-start;cursor:default;" onclick="event.stopPropagation()">
+        <div id="adminCardParte" class="adm-card" style="align-items:flex-start;cursor:default;" onclick="event.stopPropagation()">
           <div class="adm-ico">🗓</div>
           <div style="flex:1;min-width:0;">
             <div class="adm-title">Parte que acepta inscripciones</div>
@@ -2704,7 +2733,7 @@ Maria Lopez,Ana Torres,B</code>
           <div class="adm-ico">📤</div>
           <div>
             <div class="adm-title">Exportar Inscritos</div>
-            <div class="adm-desc">CSV para Stadium — por parte</div>
+            <div class="adm-desc">CSV para Stadium</div>
           </div>
         </div>
         <div id="adminCardReporte" class="adm-card" onclick="showInscReporteModal()">
@@ -3054,7 +3083,7 @@ Maria Lopez,Ana Torres,B</code>
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap;">
       <div>
         <div style="font-family:'Orbitron',monospace;font-size:20px;font-weight:700;letter-spacing:1px;">Reporte Financiero</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:3px;" id="rfSubtitle">Cidra Open 2026</div>
+        <div class="torneo-activo-txt" style="color:var(--muted);font-size:13px;margin-top:3px;" id="rfSubtitle">—</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button onclick="exportReporteFinanciero()" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:8px 14px;color:#4ade80;font-size:13px;font-weight:600;cursor:pointer;">⬇ Excel</button>
@@ -3091,7 +3120,7 @@ Maria Lopez,Ana Torres,B</code>
   <div style="max-width:860px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Reporte por Categoría — Cidra Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Reporte por Categoría — <span class="torneo-activo-txt">—</span></div>
         <div id="inscReporteTotalEl" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscReporteModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -3237,7 +3266,7 @@ Maria Lopez,Ana Torres,B</code>
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
       <div>
-        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Gestionar Inscritos — Cidra Open 2026</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;">Gestionar Inscritos — <span class="torneo-activo-txt">—</span></div>
         <div id="inscAdminModalTotal" style="font-size:12px;color:var(--muted);margin-top:2px;"></div>
       </div>
       <button onclick="closeInscAdminModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
@@ -3848,8 +3877,72 @@ Maria Lopez,Ana Torres,B</code>
 
   <div class="container" style="max-width:580px;padding-top:0">
 
+    <!-- ── ¿QUÉ TORNEO? ──────────────────────────────────────────────────
+         Dos a la vez: el Lares Open (individual, inscribiéndose) y la Copa
+         Olímpica (por equipos, ya cerrada pero con su panel vivo hasta que
+         se juegue). Los chips los dibuja inscRenderEventoSelector().        -->
+    <div class="insc-evento-chips" style="display:flex;gap:6px;margin-bottom:16px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:4px;"></div>
+
+    <!-- ── TORNEO INDIVIDUAL: 6TO LARES OPEN 2026 ── -->
+    <div id="inscPreview_lares" class="lares-prev">
+      <div class="lares-chip">INSCRIPCIONES</div>
+      <img id="laresLogo" class="lares-logo" src="Logo_Lares_Open_2026.png" alt="6to Lares Open de Tenis de Mesa 2026">
+      <div id="laresTextHead" style="display:none">
+        <div class="lares-name">6<span style="font-size:.6em">TO</span> LARES OPEN<br><span style="color:#f87171">2026</span></div>
+      </div>
+      <div class="lares-meta">
+        <strong style="color:var(--text)">Sábado 26 y domingo 27 de septiembre</strong><br>
+        Coliseo Félix “Amiguito” Méndez Acevedo, Lares
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:9px;margin-top:10px;">
+        <img src="Logo_Patriotas_Lares.png" alt="" aria-hidden="true" width="34" height="34"
+          style="width:34px;height:34px;border-radius:50%;flex-shrink:0;" onerror="this.style.display='none'">
+        <span style="font-size:12px;color:var(--muted);text-align:left;">FPTM &middot; Club Tenis de Mesa Patriotas de Lares</span>
+      </div>
+
+      <div style="background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.22);border-radius:11px;padding:11px 14px;margin-top:16px;font-size:12.5px;color:var(--text);line-height:1.6;">
+        🏓 Torneo <strong>individual por categorías</strong> &middot; 16 mesas<br>
+        <span style="color:var(--muted);">Fase de grupos de 3 y todos pasan a eliminación sencilla &middot; máx. 2 categorías por día</span>
+      </div>
+
+      <div class="lares-dia">Sábado 26 de septiembre</div>
+      <div class="lares-ev"><span class="lares-ev-h">9:00 am</span><span class="lares-ev-n">Rating 1900 o menos</span><span class="lares-ev-p">$80 · $70 · $60</span></div>
+      <div class="lares-ev"><span class="lares-ev-h">9:00 am</span><span class="lares-ev-n">Rating 1500 o menos</span><span class="lares-ev-p">$50 · $40 · $30</span></div>
+      <div class="lares-ev"><span class="lares-ev-h">12:00 pm</span><span class="lares-ev-n">Rating 1700 o menos</span><span class="lares-ev-p">$60 · $50 · $40</span></div>
+      <div class="lares-ev"><span class="lares-ev-h">2:00 pm</span><span class="lares-ev-n">15 o menos Femenino &middot; Masculino</span><span class="lares-ev-p">$40 · $35 · $30</span></div>
+      <div class="lares-ev"><span class="lares-ev-h">2:00 pm</span><span class="lares-ev-n">11 o menos Femenino &middot; Masculino</span><span class="lares-ev-p">$30 · $25 · $20</span></div>
+
+      <div class="lares-dia">Domingo 27 de septiembre</div>
+      <div class="lares-ev"><span class="lares-ev-h">9:00 am</span><span class="lares-ev-n">Rating 1800 o menos</span><span class="lares-ev-p">$70 · $60 · $50</span></div>
+      <div class="lares-ev"><span class="lares-ev-h">9:00 am</span><span class="lares-ev-n">Rating 1600 o menos</span><span class="lares-ev-p">$55 · $45 · $35</span></div>
+      <div class="lares-ev"><span class="lares-ev-h">12:00 pm</span><span class="lares-ev-n">Seniors: 40 años o más (Mixto)</span><span class="lares-ev-p">$35 · $25 · $20</span></div>
+      <div class="lares-ev"><span class="lares-ev-h">12:00 pm</span><span class="lares-ev-n">7 o menos Abierto &middot; <span style="color:var(--muted)">$11</span></span><span class="lares-ev-p">Trofeos</span></div>
+      <div class="lares-ev"><span class="lares-ev-h">12:00 pm</span><span class="lares-ev-n">9 o menos Femenino &middot; Masculino</span><span class="lares-ev-p">Trofeos</span></div>
+      <div class="lares-ev"><span class="lares-ev-h">2:00 pm</span><span class="lares-ev-n">13 o menos Femenino &middot; Masculino</span><span class="lares-ev-p">$35 · $30 · $25</span></div>
+
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;text-align:left;">
+        $20 por categoría ($11 la de 7 o menos). No se juega el 3er y 4to lugar: se premian
+        <strong style="color:var(--text)">dos terceros lugares</strong>. Las categorías de 7 y 9 o menos
+        llevan trofeo del 1° al 4° y medalla del 5° al 8°.
+      </div>
+
+      <div id="laresCtaWrap" style="display:none;margin-top:16px;">
+        <button type="button" onclick="laresIrAlFormulario()"
+          style="width:100%;background:var(--grad);border:none;border-radius:11px;padding:14px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:800;letter-spacing:.02em;cursor:pointer;">
+          INSCRIBIRME →
+        </button>
+        <div style="font-size:11px;color:var(--muted);margin-top:9px;line-height:1.5;">
+          Cierre: <strong style="color:#fb923c;" class="deadline-txt">—</strong>
+        </div>
+      </div>
+
+      <div id="laresProximamente" style="display:none;margin-top:16px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:11px 14px;font-size:12.5px;color:#f59e0b;font-weight:600;">
+        ⏳ Inscripciones próximamente &middot; síguenos en redes para enterarte cuando abran
+      </div>
+    </div>
+
     <!-- ── PRÓXIMO EVENTO: COPA OLÍMPICA 2026 ── -->
-    <div id="copaPreview" class="copa-prev">
+    <div id="inscPreview_copa" class="copa-prev">
       <div class="copa-chip">PRÓXIMO EVENTO</div>
       <img id="copaLogo" class="copa-logo" src="Logo_Copa_Olimpica_2026.png" alt="Copa Olímpica 2026">
       <div id="copaTextHead" style="display:none">
@@ -3968,16 +4061,27 @@ Maria Lopez,Ana Torres,B</code>
       </p>
     </div>
 
-    <!-- Torneo activo — siempre visible -->
+    <!-- Torneo activo — siempre visible. Una franja logística por torneo: el
+         arte y los eventos ya van arriba, aquí solo sede, cierre y mapa. -->
     <div id="inscTorneoCard">
-      <!-- Franja de sede y fecha límite. El arte y las divisiones ya están
-           arriba en #copaPreview, así que aquí solo va lo logístico. -->
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.18);border-radius:12px;padding:12px 18px;margin-bottom:20px;">
+      <div id="inscTorneoCard_lares" style="display:none;align-items:center;gap:14px;flex-wrap:wrap;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.18);border-radius:12px;padding:12px 18px;margin-bottom:20px;">
+        <div style="font-size:13px;color:var(--muted);">
+          <strong style="color:var(--text);">Sáb 26 &amp; Dom 27 de septiembre</strong>
+          &nbsp;·&nbsp; Coliseo Félix “Amiguito” Méndez Acevedo, Lares
+        </div>
+        <div id="inscDeadlineLabel" class="insc-deadline-label" style="font-size:12px;color:#fb923c;font-weight:600;">⏰ Cierre: <span class="deadline-txt">—</span></div>
+        <a href="https://maps.google.com/?q=Coliseo+F%C3%A9lix+M%C3%A9ndez+Acevedo+Lares+Puerto+Rico" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:var(--accent);font-size:13px;font-weight:600;transition:opacity 0.15s;margin-left:auto;"
+          onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">
+          📍 ¿Cómo llegar?
+        </a>
+      </div>
+      <div id="inscTorneoCard_copa" style="display:none;align-items:center;gap:14px;flex-wrap:wrap;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.18);border-radius:12px;padding:12px 18px;margin-bottom:20px;">
         <div style="font-size:13px;color:var(--muted);">
           <strong style="color:var(--text);">Sáb 19 &amp; Dom 20 de septiembre</strong>
           &nbsp;·&nbsp; Centro de Convenciones de PR
         </div>
-        <div id="inscDeadlineLabel" style="font-size:12px;color:#fb923c;font-weight:600;">⏰ Cierre: <span class="deadline-txt">—</span></div>
+        <div id="inscDeadlineLabelCopa" class="insc-deadline-label" style="font-size:12px;color:#fb923c;font-weight:600;">⏰ Cierre: <span class="deadline-txt">—</span></div>
         <a href="https://maps.google.com/?q=Centro+de+Convenciones+de+Puerto+Rico" target="_blank" rel="noopener"
           style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:var(--accent);font-size:13px;font-weight:600;transition:opacity 0.15s;margin-left:auto;"
           onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">
@@ -4168,14 +4272,14 @@ Maria Lopez,Ana Torres,B</code>
       <div style="background:var(--card2);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:24px;margin-bottom:16px;">
         <div style="font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Antes de inscribirte</div>
         <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;color:var(--text);">Reglamento del Torneo</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Debes leer y aceptar el reglamento del Cidra Open 2026 para proceder con tu inscripción.</p>
+        <p style="font-size:14px;color:var(--muted);line-height:1.55;margin-bottom:20px;">Debes leer y aceptar el reglamento del <span class="torneo-activo-txt">—</span> para proceder con tu inscripción.</p>
 
         <button onclick="openReglamentoModal()"
           style="display:flex;align-items:center;gap:10px;width:100%;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:14px 16px;cursor:pointer;text-align:left;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:20px;transition:border-color 0.15s;"
           onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(56,189,248,0.25)'">
           <span style="font-size:22px;flex-shrink:0;">📋</span>
           <div style="flex:1;">
-            <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Ver Reglamento Cidra Open 2026</div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:2px;">Ver Reglamento <span class="torneo-activo-txt">—</span></div>
             <div style="font-size:12px;color:var(--muted);">Fecha límite: <span class="deadline-txt">—</span> · ATH Business /fprtm</div>
           </div>
           <span style="color:var(--accent);font-size:16px;">→</span>
@@ -4185,7 +4289,7 @@ Maria Lopez,Ana Torres,B</code>
           <input type="checkbox" id="inscReglamentoCheck" onchange="inscUpdateReglamentoBtn()"
             style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:var(--accent);cursor:pointer;">
           <span style="font-size:13px;color:var(--text);line-height:1.5;">
-            He leído y <strong style="color:var(--text);">acepto el reglamento</strong> del Cidra Open 2026, incluyendo las reglas de participación, políticas de pago y responsabilidad personal.
+            He leído y <strong style="color:var(--text);">acepto el reglamento</strong> del <span class="torneo-activo-txt">—</span>, incluyendo las reglas de participación, políticas de pago y responsabilidad personal.
           </span>
         </label>
 
@@ -4273,7 +4377,7 @@ Maria Lopez,Ana Torres,B</code>
           <div style="font-size:15px;font-weight:700;color:var(--text);">Categorías</div>
           <button onclick="openReglamentoModal()" style="background:none;border:none;color:var(--accent);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;">📋 Ver reglamento</button>
         </div>
-        <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:14px;">Máx. 2 categorías por día · Sin coincidir en horario · Cupo máx. 30 por Rating.</p>
+        <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:14px;">Máx. 2 categorías por día · Sin coincidir en horario · $20 por categoría ($11 la de 7 o menos).</p>
         <div id="inscCatList" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
 
@@ -4728,74 +4832,66 @@ Maria Lopez,Ana Torres,B</code>
 </div>
 
 <!-- ══════════════════════════════════════════
-     REGLAMENTO MODAL — CIDRA OPEN 2026
+     REGLAMENTO MODAL — LARES OPEN 2026
 ═══════════════════════════════════════════ -->
 <div id="reglamentoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1200;overflow-y:auto;padding:16px;">
   <div style="max-width:680px;margin:0 auto;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:28px 28px 36px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div>
         <div style="font-family:'Orbitron',monospace;font-size:18px;letter-spacing:1px;color:var(--text);">REGLAMENTO</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px;">Cidra Open 2026 · 15, 16, 22 y 23 de agosto</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">6to Lares Open 2026 · 26 y 27 de septiembre</div>
       </div>
       <button onclick="closeReglamentoModal()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;">✕ Cerrar</button>
     </div>
 
     <div style="font-size:14px;color:var(--text);line-height:1.75;">
 
-      <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">Federación Puertorriqueña de Tenis de Mesa (FPRTM)</p>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">Federación Puertorriqueña de Tenis de Mesa (FPTM) · Club Tenis de Mesa Patriotas de Lares</p>
 
       <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.15);border-radius:10px;padding:16px 18px;margin-bottom:24px;">
         <strong style="color:var(--accent);">1. FECHA</strong><br>
-        15, 16, 22 y 23 de agosto de 2026.<br>
-        <span style="font-size:13px;color:var(--muted);">Parte 1: 15 y 16 de agosto &nbsp;·&nbsp; Parte 2: 22 y 23 de agosto</span>
+        Sábado 26 y domingo 27 de septiembre de 2026.
       </div>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">2. ORGANIZA</strong><br>
-        Federación Puertorriqueña de Tenis de Mesa (FPRTM).
+        Federación Puertorriqueña de Tenis de Mesa (FPTM) y Club Tenis de Mesa Patriotas de Lares.
       </div>
 
       <div style="margin-bottom:18px;">
-        <strong style="color:var(--accent);">3. SEDE</strong><br>
-        Cancha Juanito Cabello — Cidra, Puerto Rico · 10 mesas de competencia.
+        <strong style="color:var(--accent);">3. SEDE DEL EVENTO</strong><br>
+        Coliseo Félix “Amiguito” Méndez Acevedo — Lares, Puerto Rico · 16 mesas de competencia.
       </div>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">4. ELEGIBILIDAD</strong><br>
-        La participación estará abierta a todos los miembros activos de la FPRTM y a los jugadores invitados autorizados por el Comité Organizador.
+        La participación en el Lares Open de Tenis de Mesa 2026 está abierta a todos los miembros activos de la FPTM y a los jugadores invitados autorizados por el Comité Organizador.
       </div>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">5. EVENTOS</strong>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">La edad se considera por año natural (al 31 de diciembre de 2026).</div>
         <div style="margin-top:12px;">
-          <div style="font-weight:600;color:var(--text);margin-bottom:8px;">Sábado 15 de agosto</div>
-          <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
-            <li>Rating 1800 o menos – 9:00 a.m.</li>
-            <li>Abierto (Open Individual) – 11:30 a.m.</li>
-            <li>15 años o menos Masculino – 2:00 p.m. | menores de 16 al 31-dic-2026</li>
-            <li>15 años o menos Femenino – 2:00 p.m. | menores de 16 al 31-dic-2026</li>
-          </ol>
-          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 16 de agosto</div>
+          <div style="font-weight:600;color:var(--text);margin-bottom:8px;">Sábado 26 de septiembre</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
             <li>Rating 1900 o menos – 9:00 a.m.</li>
-            <li>Dobles Abierto – 11:30 a.m.</li>
-            <li>11 años o menos Masculino – 2:00 p.m. | menores de 12 al 31-dic-2026</li>
+            <li>Rating 1500 o menos – 9:00 a.m.</li>
+            <li>Rating 1700 o menos – 12:00 p.m.</li>
+            <li>15 años o menos Femenino – 2:00 p.m. | menores de 16 al 31-dic-2026</li>
+            <li>15 años o menos Masculino – 2:00 p.m. | menores de 16 al 31-dic-2026</li>
             <li>11 años o menos Femenino – 2:00 p.m. | menores de 12 al 31-dic-2026</li>
+            <li>11 años o menos Masculino – 2:00 p.m. | menores de 12 al 31-dic-2026</li>
           </ol>
-          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Sábado 22 de agosto</div>
-          <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
-            <li>Rating 1700 o menos – 9:00 a.m.</li>
-            <li>Rating 1500 o menos – 11:30 a.m.</li>
-            <li>Seniors: 40 años o más (Mixto) – 2:00 p.m.</li>
-          </ol>
-          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 23 de agosto</div>
+          <div style="font-weight:600;color:var(--text);margin:12px 0 8px;">Domingo 27 de septiembre</div>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
             <li>Rating 1600 o menos – 9:00 a.m.</li>
-            <li>7 años o menos Abierto – 11:00 a.m. | menores de 8 al 31-dic-2026 · Trofeos</li>
-            <li>9 años o menos Masculino – 11:00 a.m. | menores de 10 al 31-dic-2026 · Trofeos</li>
-            <li>9 años o menos Femenino – 11:00 a.m. | menores de 10 al 31-dic-2026 · Trofeos</li>
-            <li>13 años o menos Masculino – 2:00 p.m. | menores de 14 al 31-dic-2026</li>
+            <li>Rating 1800 o menos – 9:00 a.m.</li>
+            <li>Seniors: 40 años o más (Mixto) – 12:00 p.m.</li>
+            <li>7 años o menos Abierto – 12:00 p.m. | menores de 8 al 31-dic-2026 · Trofeos</li>
+            <li>9 años o menos Femenino – 12:00 p.m. | menores de 10 al 31-dic-2026 · Trofeos</li>
+            <li>9 años o menos Masculino – 12:00 p.m. | menores de 10 al 31-dic-2026 · Trofeos</li>
             <li>13 años o menos Femenino – 2:00 p.m. | menores de 14 al 31-dic-2026</li>
+            <li>13 años o menos Masculino – 2:00 p.m. | menores de 14 al 31-dic-2026</li>
           </ol>
           <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#f59e0b;margin-top:12px;">
             ⚠ Máximo 2 categorías por día, siempre que no coincidan en horario.
@@ -4805,112 +4901,108 @@ Maria Lopez,Ana Torres,B</code>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">6. REGLAS</strong><br>
-        Es responsabilidad del jugador, padre, madre o entrenador inscribir al participante en la categoría correspondiente a su edad y nivel de rating. El evento se conducirá bajo el reglamento vigente de la Federación Internacional de Tenis de Mesa y normas federativas. Toda decisión del Comité Técnico será final. En caso de empate en la fase de grupos, se aplicarán los criterios de desempate establecidos por la ITTF y la FPRTM.
+        Es responsabilidad del jugador, padre, madre o entrenador inscribir al participante en la categoría correspondiente a su edad y nivel de rating. El evento se conducirá bajo el reglamento vigente de la Federación Internacional de Tenis de Mesa (ITTF) y normas federativas. Toda decisión del Comité Técnico será final. En caso de empate en la fase de grupos, se aplicarán los criterios de desempate establecidos por la ITTF y la FPTM.
       </div>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">7. FORMATO DE COMPETENCIA</strong><br>
-        Se jugará una fase de grupos (3 jugadores por grupo, asignando 1 mesa por grupo). Todos los jugadores avanzarán a una llave de eliminación sencilla. Para Dobles Abierto se jugará el mismo formato: grupos de 3 parejas + eliminación sencilla.
+        Se jugará una fase de grupos (3 jugadores por grupo, asignando 1 mesa por grupo). Todos los jugadores avanzarán a una llave de eliminación sencilla.
+      </div>
+
+      <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:16px 18px;margin-bottom:18px;">
+        <strong style="color:#f59e0b;">8. PARTICIPACIÓN EN MÚLTIPLES CATEGORÍAS</strong><br>
+        <p style="margin:8px 0 0;">
+          El jugador que se inscriba en más de una categoría es responsable de cumplir con el
+          <strong style="color:var(--text);">itinerario oficial</strong> del torneo, y debe estar presente y
+          listo en su mesa a la hora indicada de CADA evento en que participe.
+        </p>
+        <p style="margin:10px 0 0;">
+          El torneo <strong style="color:var(--text);">no detendrá su programación</strong> para esperar a un
+          jugador que se encuentre compitiendo en otra categoría. El Comité Técnico evaluará caso por caso
+          cualquier situación de solapamiento de horarios y tomará la determinación que corresponda.
+        </p>
+        <p style="margin:10px 0 0;">Se recomienda revisar el itinerario antes de inscribirse en múltiples categorías.</p>
       </div>
 
       <div style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.22);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
-        <strong style="color:var(--purple);">8. POLÍTICA DE ASCENSO</strong><br>
+        <strong style="color:var(--purple);">9. POLÍTICA DE ASCENSO</strong><br>
         Para participar en una categoría superior a la natural del jugador, este debe estar inscrito en su categoría natural primero.
         <ul style="padding-left:18px;margin:8px 0 0;font-size:13px;color:var(--muted);line-height:1.8;">
           <li><strong style="color:var(--text);">Rating:</strong> un jugador de 1705 pts (categoría natural: Rating 1800) puede inscribirse en Rating 1900, siempre que también esté inscrito en Rating 1800.</li>
-          <li><strong style="color:var(--text);">Edad:</strong> un jugador de 13 años que desee participar en U15 debe estar inscrito en U13 también.</li>
+          <li><strong style="color:var(--text);">Edad:</strong> un jugador de 13 años que desee participar en 15 años o menos debe estar inscrito en 13 años o menos también.</li>
         </ul>
-        <div style="font-size:12px;color:var(--muted);margin-top:8px;">El sistema de inscripción aplica esta regla automáticamente y te ofrecerá añadir tu categoría natural.</div>
-      </div>
-
-      <div style="margin-bottom:18px;">
-        <strong style="color:var(--accent);">9. PREMIACIÓN</strong><br>
-        En todas las categorías no se jugarán partidos para definir la 3ra. y 4ta. posición; se premiarán dos terceros lugares. Las categorías de 7 años o menos y 9 años o menos serán premiadas con trofeos para los primeros cuatro lugares más medallas para 5°-8°.
-        <div style="margin-top:12px;font-size:13px;color:var(--muted);line-height:1.9;">
-          <div style="color:var(--text);font-weight:600;margin-bottom:4px;">Sábado 15 de agosto</div>
-          Rating 1800 o menos — 1ro: $60 | 2do: $55 | 3ro: $50 (x2)<br>
-          Abierto — 1ro: $100 | 2do: $85 | 3ro: $70 (x2)<br>
-          15 o menos Masculino — 1ro: $40 | 2do: $35 | 3ro: $30 (x2)<br>
-          15 o menos Femenino — 1ro: $40 | 2do: $35 | 3ro: $30 (x2)
-          <div style="color:var(--text);font-weight:600;margin:10px 0 4px;">Domingo 16 de agosto</div>
-          Rating 1900 o menos — 1ro: $70 | 2do: $60 | 3ro: $55 (x2)<br>
-          11 o menos Masculino — 1ro: $30 | 2do: $25 | 3ro: $20 (x2)<br>
-          11 o menos Femenino — 1ro: $30 | 2do: $25 | 3ro: $20 (x2)<br>
-          Dobles Abierto — 1ro: $120 | 2do: $100 | 3ro: $80 (x2)
-          <div style="color:var(--text);font-weight:600;margin:10px 0 4px;">Sábado 22 de agosto</div>
-          Rating 1700 o menos — 1ro: $55 | 2do: $50 | 3ro: $45 (x2)<br>
-          Rating 1500 o menos — 1ro: $45 | 2do: $40 | 3ro: $35 (x2)<br>
-          Seniors 40 años o más — 1ro: $35 | 2do: $25 | 3ro: $20 (x2)
-          <div style="color:var(--text);font-weight:600;margin:10px 0 4px;">Domingo 23 de agosto</div>
-          Rating 1600 o menos — 1ro: $50 | 2do: $45 | 3ro: $40 (x2)<br>
-          7 o menos Abierto — Trofeo 1° al 4° + Medalla 5°-8°<br>
-          9 o menos Masculino — Trofeo 1° al 4° + Medalla 5°-8°<br>
-          9 o menos Femenino — Trofeo 1° al 4° + Medalla 5°-8°<br>
-          13 o menos Masculino — 1ro: $35 | 2do: $30 | 3ro: $25 (x2)<br>
-          13 o menos Femenino — 1ro: $35 | 2do: $30 | 3ro: $25 (x2)
-        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">El sistema de inscripción aplica esta regla automáticamente y te ofrecerá añadir tu categoría natural. Cuando las dos categorías caen a la misma hora la regla no aplica, porque sería imposible cumplirla.</div>
       </div>
 
       <div style="margin-bottom:18px;">
         <strong style="color:var(--accent);">10. ITINERARIO</strong><br>
-        Los jugadores deben estar presentes <strong>45 minutos antes</strong> de la hora de comienzo de su evento para verificación y registro, y listos en su mesa <strong>20 minutos antes</strong> del comienzo de los partidos. Para las categorías de las 9:00 a.m., los grupos se irán llamando a medida que las mesas estén disponibles.
-      </div>
-
-      <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:16px 18px;margin-bottom:18px;">
-        <strong style="color:#f59e0b;">11. PARTIDOS CONSECUTIVOS — IMPORTANTE</strong><br>
-        <p style="margin:8px 0 0;">
-          El jugador inscrito en más de una categoría debe contemplar la posibilidad de
-          <strong style="color:var(--text);">disputar partidos de forma consecutiva</strong>: al finalizar un
-          encuentro, la mesa técnica puede solicitarle pasar de inmediato al siguiente, sin tiempo de
-          descanso entre ambos. Es una consecuencia natural del formato de competencia y del número de
-          mesas disponibles.
-        </p>
-        <p style="margin:10px 0 0;">
-          Por la fluidez del evento, <strong style="color:var(--text);">el torneo no puede detenerse ni
-          reprogramarse</strong> para acomodar a un participante en particular. Es responsabilidad del jugador
-          —o de su padre, madre o entrenador en el caso de menores— conocer su itinerario, permanecer atento
-          a los llamados y presentarse a la mesa cuando le corresponda.
-        </p>
-        <p style="margin:10px 0 0;">
-          Toda situación que surja será <strong style="color:var(--text);">evaluada de forma individual</strong>
-          por el Comité Técnico, cuya decisión será final.
-        </p>
+        Los jugadores deben estar presentes <strong>45 minutos antes</strong> de la hora de comienzo de su evento para verificación y registro, y listos en su mesa <strong>20 minutos antes</strong> del comienzo de los partidos.
       </div>
 
       <div style="margin-bottom:18px;">
-        <strong style="color:var(--accent);">12. INSCRIPCIONES</strong><br>
-        La inscripción será aceptada únicamente si se completa correctamente y se realiza el pago correspondiente. Inscripciones en: ratings.ttmpr.xyz · Límite de participación: máximo 2 categorías por día, siempre que no coincidan en horario.
+        <strong style="color:var(--accent);">11. INSCRIPCIONES</strong><br>
+        La inscripción será aceptada únicamente si se completa correctamente y se realiza el pago correspondiente. Inscripciones en: ratings.ttmpr.xyz
       </div>
 
       <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
-        <strong style="color:#ef4444;">13. FECHA LÍMITE</strong><br>
+        <strong style="color:#ef4444;">12. FECHA LÍMITE</strong><br>
         <strong class="deadline-txt" style="color:var(--text);font-size:15px;">—</strong>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px;">Después de esta hora no se aceptan inscripciones ni cambios.</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">Fecha tentativa mientras la federación anuncia la oficial. Después de esa hora no se aceptan inscripciones ni cambios.</div>
       </div>
 
       <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
-        <strong style="color:var(--green);">14. MÉTODO DE PAGO</strong><br>
+        <strong style="color:var(--green);">13. MÉTODO DE PAGO</strong><br>
         Las inscripciones solo serán aceptadas a través de <strong>ATH Móvil Business /fprtm</strong>.
       </div>
 
       <div style="margin-bottom:18px;">
-        <strong style="color:var(--accent);">15. RESPONSABILIDAD</strong><br>
-        Cada jugador participará bajo su propia responsabilidad por cualquier lesión, accidente o daño que pudiera sufrir en relación con el torneo. La Federación Puertorriqueña de Tenis de Mesa, los miembros del Comité Organizador y las Empresas Auspiciadoras quedan liberados de toda indemnización por demandas presentadas por tales causas.
+        <strong style="color:var(--accent);">14. MEMBRESÍA FEDERATIVA</strong><br>
+        Los participantes deben estar al corriente en el pago de su cuota anual de membresía federativa ($20.00). Los jugadores que no sean miembros activos podrán participar pagando un fee adicional de no miembro de $10.00.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">15. CANCELACIONES Y REEMBOLSOS</strong><br>
+        No se realizarán reembolsos por concepto de cancelación de inscripción. En caso de cancelación, se otorgará un crédito por el monto pagado, aplicable al próximo evento organizado por la FPTM. El crédito es personal e intransferible. Toda cancelación debe ser notificada al Comité Organizador antes de la fecha límite de inscripción.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">16. ARBITRAJE</strong><br>
+        Para contribuir con el flujo del evento, los jugadores que le corresponda arbitrar y se nieguen a cumplir deben buscar un árbitro sustituto o pagar $2.00. Los jugadores que se vayan sin arbitrar o buscar sustituto tendrán una multa de $5.00 y no podrán participar en próximos torneos hasta que la paguen.
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">17. PREMIACIÓN</strong><br>
+        En todas las categorías no se jugarán partidos para definir la 3ra. y 4ta. posición; se premiarán dos terceros lugares. Las categorías de 7 años o menos y 9 años o menos serán premiadas con trofeos para los primeros cuatro lugares y medallas del 5to al 8vo lugar.
+        <div style="margin-top:12px;font-size:13px;color:var(--muted);line-height:1.9;">
+          <div style="color:var(--text);font-weight:600;margin-bottom:4px;">Sábado 26 de septiembre</div>
+          Rating 1900 o menos — 1ro: $80 | 2do: $70 | 3ro: $60 (x2)<br>
+          Rating 1500 o menos — 1ro: $50 | 2do: $40 | 3ro: $30 (x2)<br>
+          Rating 1700 o menos — 1ro: $60 | 2do: $50 | 3ro: $40 (x2)<br>
+          15 o menos Femenino — 1ro: $40 | 2do: $35 | 3ro: $30 (x2)<br>
+          15 o menos Masculino — 1ro: $40 | 2do: $35 | 3ro: $30 (x2)<br>
+          11 o menos Femenino — 1ro: $30 | 2do: $25 | 3ro: $20 (x2)<br>
+          11 o menos Masculino — 1ro: $30 | 2do: $25 | 3ro: $20 (x2)
+          <div style="color:var(--text);font-weight:600;margin:10px 0 4px;">Domingo 27 de septiembre</div>
+          Rating 1600 o menos — 1ro: $55 | 2do: $45 | 3ro: $35 (x2)<br>
+          Rating 1800 o menos — 1ro: $70 | 2do: $60 | 3ro: $50 (x2)<br>
+          Seniors 40 años o más — 1ro: $35 | 2do: $25 | 3ro: $20 (x2)<br>
+          7 o menos Abierto — Trofeo 1° al 4° + Medalla 5°-8°<br>
+          9 o menos Femenino — Trofeo 1° al 4° + Medalla 5°-8°<br>
+          9 o menos Masculino — Trofeo 1° al 4° + Medalla 5°-8°<br>
+          13 o menos Femenino — 1ro: $35 | 2do: $30 | 3ro: $25 (x2)<br>
+          13 o menos Masculino — 1ro: $35 | 2do: $30 | 3ro: $25 (x2)
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:10px;">Costo por categoría: $20.00 · 7 años o menos: $11.00</div>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">18. RESPONSABILIDAD</strong><br>
+        Cada jugador participará bajo su propia responsabilidad por cualquier lesión, accidente o daño que pudiera sufrir en relación con el torneo. La Federación Puertorriqueña de Tenis de Mesa, el Club Tenis de Mesa Patriotas de Lares, los miembros del Comité Organizador y las Empresas Auspiciadoras quedan liberados de toda indemnización por demandas presentadas por tales causas.
       </div>
 
       <div style="margin-bottom:24px;">
-        <strong style="color:var(--accent);">16. IMPREVISTOS</strong><br>
+        <strong style="color:var(--accent);">19. IMPREVISTOS</strong><br>
         La Federación Puertorriqueña de Tenis de Mesa se reserva la facultad de realizar en cualquier momento las modificaciones necesarias, según el criterio del Comité Organizador.
-      </div>
-
-      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:13px;color:var(--muted);line-height:1.9;">
-        <strong style="color:var(--text);display:block;margin-bottom:8px;">Notas generales</strong>
-        <ul style="padding-left:18px;margin:0;">
-          <li>Los participantes deben estar al corriente en el pago de su cuota anual de membresía federativa ($20.00). Los jugadores que no sean miembros activos podrán participar pagando un fee adicional de no miembro de $10.00.</li>
-          <li>Los jugadores que le corresponda arbitrar y se nieguen a cumplir deben buscar un árbitro sustituto o pagar $2.00. Quienes se vayan sin arbitrar o buscar sustituto tendrán una multa de $5.00 y no podrán participar en próximos torneos hasta que la paguen.</li>
-          <li>No se jugarán partidos para definir 3er y 4to lugar — se premiarán dos terceros lugares.</li>
-          <li>El Comité Organizador se reserva el derecho de realizar ajustes para garantizar la fluidez del torneo.</li>
-        </ul>
       </div>
 
     </div>
@@ -10760,7 +10852,7 @@ function showWaAnnouncement(delay = 400) {
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
   // ── Logos de torneo (con respaldo tipográfico si falta el archivo) ──
-  montarLogoTorneo('cidraLogo', 'cidraTextHead');
+  montarLogoTorneo('laresLogo', 'laresTextHead');
   montarLogoTorneo('copaLogo',  'copaTextHead');
 
   // ── Aviso del canal de WhatsApp ──
@@ -10867,23 +10959,57 @@ async function loadDirectoryData() {
 // ══════════════════════════════════════════
 // INSCRIPCIONES — CONSTANTS
 // ══════════════════════════════════════════
-// Copa Olímpica 2026 — 19 y 20 de septiembre
-// Centro de Convenciones de Puerto Rico · 24 mesas · COPUR + FPTM
-const TORNEO_ACTIVO       = 'Copa Olímpica 2026';
-const TORNEO_SEDE         = 'Centro de Convenciones de Puerto Rico';
-const TORNEO_FECHAS_LABEL = '19 y 20 de septiembre';
-const TORNEO_MAPS_URL     = 'https://maps.google.com/?q=Centro+de+Convenciones+de+Puerto+Rico';
+// Dos torneos viven a la vez en esta página:
+//
+//   · Copa Olímpica 2026 — por equipos, 19 y 20 de septiembre. Su inscripción
+//     ya cerró, pero el panel sigue vivo hasta que se juegue.
+//   · Lares Open 2026 — individual por categorías, 26 y 27 de septiembre.
+//
+// Cada uno guarda sus inscripciones bajo su propio nombre de torneo (la Copa
+// en insc_equipos, el Lares Open en insc_registro) y su propio interruptor en
+// app_settings. Abrir, cerrar o archivar uno no toca al otro.
+
+// ── Torneo individual activo: 6to Lares Open de Tenis de Mesa ──
+// 26 y 27 de septiembre · Coliseo Félix "Amiguito" Méndez Acevedo, Lares
+// 16 mesas · FPTM + Club Tenis de Mesa Patriotas de Lares
+const TORNEO_ACTIVO       = 'Lares Open 2026';
+const TORNEO_SEDE         = 'Coliseo Félix “Amiguito” Méndez Acevedo, Lares, PR';
+const TORNEO_FECHAS_LABEL = '26 y 27 de septiembre';
+const TORNEO_MAPS_URL     = 'https://maps.google.com/?q=Coliseo+F%C3%A9lix+M%C3%A9ndez+Acevedo+Lares+Puerto+Rico';
 // Official artwork — drop the file at the repo root. Falls back to .svg and
 // then to the typographic lockup if the file isn't there.
-const TORNEO_LOGO         = 'Logo_Copa_Olimpica_2026.png';
+const TORNEO_LOGO         = 'Logo_Lares_Open_2026.png';
 // StadiumTT publica las llaves cuando cierre la inscripción
 const TORNEO_STADIUM_URL  = '';
 
-// Cómo se inscribe este torneo: 'individual' (categorías por jugador, el
-// modelo de Cidra/Morovis) o 'equipos' (parejas de 2, el modelo de la Copa).
-// El flujo individual queda intacto y dormido mientras el modo sea 'equipos'.
-const TORNEO_MODO = 'equipos';
-const esTorneoEquipos = () => TORNEO_MODO === 'equipos';
+// ── Torneo por equipos: Copa Olímpica 2026 ──
+// Nombre con el que están guardados sus equipos. Todo el módulo de la Copa
+// lo usa en vez de TORNEO_ACTIVO, así que cambiar el torneo individual no
+// mueve ni una fila suya.
+const COPA_TORNEO = 'Copa Olímpica 2026';
+
+// Qué torneo mira quien abre Inscripciones. El modo sale del evento, no de
+// una constante global: 'individual' = categorías por jugador (Lares Open),
+// 'equipos' = parejas de 2 (Copa Olímpica).
+const EVENTOS = [
+  { id: 'lares', torneo: TORNEO_ACTIVO, modo: 'individual',
+    nombre: 'Lares Open 2026', corto: 'Lares Open', fechas: 'Sáb 26 & Dom 27 sept',
+    claves: { open: 'inscripciones_open_lares',
+              prorroga: 'insc_ignorar_deadline_lares',
+              archivado: 'torneo_archivado_lares' },
+    archivadoPorDefecto: false },
+  // La Copa conserva las claves de siempre en app_settings: lo ya guardado se
+  // sigue leyendo y escribiendo igual que antes de que existiera el selector.
+  { id: 'copa',  torneo: COPA_TORNEO, modo: 'equipos',
+    nombre: 'Copa Olímpica 2026', corto: 'Copa Olímpica', fechas: 'Sáb 19 & Dom 20 sept',
+    claves: { open: 'inscripciones_open',
+              prorroga: 'insc_ignorar_deadline',
+              archivado: 'torneo_archivado' },
+    archivadoPorDefecto: true },
+];
+let EVENTO_VISTA = 'lares';
+const eventoActual    = () => EVENTOS.find(e => e.id === EVENTO_VISTA) || EVENTOS[0];
+const esTorneoEquipos = () => eventoActual().modo === 'equipos';
 
 // ── COPA OLÍMPICA 2026 — DIVISIONES ────────────────────────────────────────
 // Espejo de public.insc_divisiones (sql/create_insc_equipos.sql). Esto es
@@ -10914,13 +11040,16 @@ function copaDivisionPara(ratingCombinado) {
     (d.ratingMax == null || ratingCombinado <= d.ratingMax)) || null;
 }
 
-// The four competition days (2 weekends). Day key = slot prefix.
+// Los días de competencia. Day key = slot prefix.
+// El Lares Open es de un solo fin de semana, así que los días no llevan
+// `parte`: la maquinaria de partes (la usó Cidra, con dos fines de semana)
+// sigue en el código pero no filtra nada mientras no haya partes.
 const INSC_DAYS = [
-  { key: 'S15', label: 'Sábado 15 de agosto',  short: 'Sáb 15', parte: 1 },
-  { key: 'D16', label: 'Domingo 16 de agosto', short: 'Dom 16', parte: 1 },
-  { key: 'S22', label: 'Sábado 22 de agosto',  short: 'Sáb 22', parte: 2 },
-  { key: 'D23', label: 'Domingo 23 de agosto', short: 'Dom 23', parte: 2 },
+  { key: 'S26', label: 'Sábado 26 de septiembre',  short: 'Sáb 26' },
+  { key: 'D27', label: 'Domingo 27 de septiembre', short: 'Dom 27' },
 ];
+// ¿Este torneo se juega por partes? Decide si el panel enseña el selector.
+const TORNEO_TIENE_PARTES = INSC_DAYS.some(d => d.parte);
 const INSC_DAY_BY_KEY = Object.fromEntries(INSC_DAYS.map(d => [d.key, d]));
 // Slot format is "<DAYKEY>-<TIME>", so the day is the prefix before the dash.
 function catDayKey(cat)   { return String(cat?.slot || '').split('-')[0]; }
@@ -10928,28 +11057,27 @@ function catDayLabel(cat) { return INSC_DAY_BY_KEY[catDayKey(cat)]?.label || '';
 
 // Rule: max 2 categories per day · no same-slot conflicts
 // ratingGroup: identifies rating-capped categories for the ascenso policy
+// Sin stadiumId/stadiumVerified: el evento del Lares Open todavía no existe en
+// Stadium Compete. Hasta que se cree y se verifiquen los nombres, el export a
+// Stadium avisa que las omite en vez de generar un CSV que Stadium rechace.
 const INSC_CATEGORIES = [
-  // ── Sábado 15 de agosto ──
-  { id: 'ev1',  name: '1800 o Menos',            desc: 'Premiación: $60 · $55 · $50 (x2)',                            price: 20, slot: 'S15-900',  maxRating: 1800, ratingGroup: 'rating', stadiumId: '1800-under', stadiumVerified: true },
-  { id: 'ev2',  name: 'Abierto (Open Individual)', desc: 'Premiación: $100 · $85 · $70 (x2) · Todos los niveles',     price: 25, slot: 'S15-1130', openDivision: true,                     stadiumId: 'abierto', stadiumVerified: true },
-  { id: 'ev3',  name: '15 o Menos Masculino',    desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S15-1400', maxAge: 15, sex: 'M',                   stadiumId: '15u---masculino', stadiumVerified: true },
-  { id: 'ev4',  name: '15 o Menos Femenino',     desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S15-1400', maxAge: 15, sex: 'F',                   stadiumId: '15u---femenino', stadiumVerified: true },
-  // ── Domingo 16 de agosto ──
-  { id: 'ev5',  name: '1900 o Menos',            desc: 'Premiación: $70 · $60 · $55 (x2)',                            price: 20, slot: 'D16-900',  maxRating: 1900, ratingGroup: 'rating', stadiumId: '1900-under', stadiumVerified: true },
-  { id: 'ev6',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1400', maxAge: 11, sex: 'M',                   stadiumId: '11u---masculino', stadiumVerified: true },
-  { id: 'ev7',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'D16-1400', maxAge: 11, sex: 'F',                   stadiumId: '11u---femenino', stadiumVerified: true },
-  { id: 'ev8',  name: 'Dobles Abierto',          desc: 'Premiación: $120 · $100 · $80 (x2) · $40 por pareja (una sola inscripción)', price: 40, slot: 'D16-1130', openDivision: true, dobles: true, stadiumId: 'dobles-abierto' },
-  // ── Sábado 22 de agosto ──
-  { id: 'ev9',  name: '1700 o Menos',            desc: 'Premiación: $55 · $50 · $45 (x2)',                            price: 20, slot: 'S22-900',  maxRating: 1700, maxPlayers: 36, capPrivado: true, ratingGroup: 'rating', stadiumId: '1700u', stadiumVerified: true },
-  { id: 'ev10', name: '1500 o Menos',            desc: 'Premiación: $45 · $40 · $35 (x2)',                            price: 20, slot: 'S22-1130', maxRating: 1500, maxPlayers: 36, capPrivado: true, ratingGroup: 'rating', stadiumId: '1500u', stadiumVerified: true },
-  { id: 'ev11', name: 'Seniors – 40 años o más', desc: 'Premiación: $35 · $25 · $20 (x2) · Mixto',                    price: 20, slot: 'S22-1400', minAge: 40,                             stadiumId: 'seniors', stadiumVerified: true },
-  // ── Domingo 23 de agosto ──
-  { id: 'ev12', name: '1600 o Menos',            desc: 'Premiación: $50 · $45 · $40 (x2)',                            price: 20, slot: 'D23-900',  maxRating: 1600, maxPlayers: 36, capPrivado: true, ratingGroup: 'rating', stadiumId: '1600u', stadiumVerified: true },
-  { id: 'ev13', name: '7 o Menos Abierto',       desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                             price: 11, slot: 'D23-1100', maxAge: 7,                              stadiumId: '7u---abierto', stadiumVerified: true },
-  { id: 'ev14', name: '9 o Menos Masculino',     desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                             price: 20, slot: 'D23-1100', maxAge: 9,  sex: 'M',                   stadiumId: '9u---masculino', stadiumVerified: true },
-  { id: 'ev15', name: '9 o Menos Femenino',      desc: 'Trofeo 1° al 4° · Medalla 5°-8°',                             price: 20, slot: 'D23-1100', maxAge: 9,  sex: 'F',                   stadiumId: '9u---femenino', stadiumVerified: true },
-  { id: 'ev16', name: '13 o Menos Masculino',    desc: 'Premiación: $35 · $30 · $25 (x2) · menores de 14 al 31-dic', price: 20, slot: 'D23-1400', maxAge: 13, sex: 'M',                   stadiumId: '13u---masculino', stadiumVerified: true },
-  { id: 'ev17', name: '13 o Menos Femenino',     desc: 'Premiación: $35 · $30 · $25 (x2) · menores de 14 al 31-dic', price: 20, slot: 'D23-1400', maxAge: 13, sex: 'F',                   stadiumId: '13u---femenino', stadiumVerified: true },
+  // ── Sábado 26 de septiembre ──
+  { id: 'ev1',  name: '1900 o Menos',            desc: 'Premiación: $80 · $70 · $60 (x2)',                            price: 20, slot: 'S26-900',  maxRating: 1900, ratingGroup: 'rating' },
+  { id: 'ev2',  name: '1500 o Menos',            desc: 'Premiación: $50 · $40 · $30 (x2)',                            price: 20, slot: 'S26-900',  maxRating: 1500, ratingGroup: 'rating' },
+  { id: 'ev3',  name: '1700 o Menos',            desc: 'Premiación: $60 · $50 · $40 (x2)',                            price: 20, slot: 'S26-1200', maxRating: 1700, ratingGroup: 'rating' },
+  { id: 'ev4',  name: '15 o Menos Femenino',     desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 15, sex: 'F' },
+  { id: 'ev5',  name: '15 o Menos Masculino',    desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 15, sex: 'M' },
+  { id: 'ev6',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 11, sex: 'F' },
+  { id: 'ev7',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 11, sex: 'M' },
+  // ── Domingo 27 de septiembre ──
+  { id: 'ev8',  name: '1600 o Menos',            desc: 'Premiación: $55 · $45 · $35 (x2)',                            price: 20, slot: 'D27-900',  maxRating: 1600, ratingGroup: 'rating' },
+  { id: 'ev9',  name: '1800 o Menos',            desc: 'Premiación: $70 · $60 · $50 (x2)',                            price: 20, slot: 'D27-900',  maxRating: 1800, ratingGroup: 'rating' },
+  { id: 'ev10', name: 'Seniors – 40 años o más', desc: 'Premiación: $35 · $25 · $20 (x2) · Mixto',                    price: 20, slot: 'D27-1200', minAge: 40 },
+  { id: 'ev11', name: '7 o Menos Abierto',       desc: 'Trofeo 1° al 4° · Medalla 5°-8° · menores de 8 al 31-dic',   price: 11, slot: 'D27-1200', maxAge: 7 },
+  { id: 'ev12', name: '9 o Menos Femenino',      desc: 'Trofeo 1° al 4° · Medalla 5°-8° · menores de 10 al 31-dic',  price: 20, slot: 'D27-1200', maxAge: 9,  sex: 'F' },
+  { id: 'ev13', name: '9 o Menos Masculino',     desc: 'Trofeo 1° al 4° · Medalla 5°-8° · menores de 10 al 31-dic',  price: 20, slot: 'D27-1200', maxAge: 9,  sex: 'M' },
+  { id: 'ev14', name: '13 o Menos Femenino',     desc: 'Premiación: $35 · $30 · $25 (x2) · menores de 14 al 31-dic', price: 20, slot: 'D27-1400', maxAge: 13, sex: 'F' },
+  { id: 'ev15', name: '13 o Menos Masculino',    desc: 'Premiación: $35 · $30 · $25 (x2) · menores de 14 al 31-dic', price: 20, slot: 'D27-1400', maxAge: 13, sex: 'M' },
 ];
 
 // ── POLÍTICA DE ASCENSO ────────────────────────────────────────────────────
@@ -10991,18 +11119,12 @@ function inscAscensoRequirement(cat, { rating, dob, sex, yaInscritas }) {
 }
 
 const INSC_SLOT_LABELS = {
-  'S15-900':  'Sáb 15 agosto · 9:00 a.m.',
-  'S15-1130': 'Sáb 15 agosto · 11:30 a.m.',
-  'S15-1400': 'Sáb 15 agosto · 2:00 p.m.',
-  'D16-900':  'Dom 16 agosto · 9:00 a.m.',
-  'D16-1130': 'Dom 16 agosto · 11:30 a.m.',
-  'D16-1400': 'Dom 16 agosto · 2:00 p.m.',
-  'S22-900':  'Sáb 22 agosto · 9:00 a.m.',
-  'S22-1130': 'Sáb 22 agosto · 11:30 a.m.',
-  'S22-1400': 'Sáb 22 agosto · 2:00 p.m.',
-  'D23-900':  'Dom 23 agosto · 9:00 a.m.',
-  'D23-1100': 'Dom 23 agosto · 11:00 a.m.',
-  'D23-1400': 'Dom 23 agosto · 2:00 p.m.',
+  'S26-900':  'Sáb 26 septiembre · 9:00 a.m.',
+  'S26-1200': 'Sáb 26 septiembre · 12:00 p.m.',
+  'S26-1400': 'Sáb 26 septiembre · 2:00 p.m.',
+  'D27-900':  'Dom 27 septiembre · 9:00 a.m.',
+  'D27-1200': 'Dom 27 septiembre · 12:00 p.m.',
+  'D27-1400': 'Dom 27 septiembre · 2:00 p.m.',
 };
 
 const CLUBS_LIST = [
@@ -11174,36 +11296,54 @@ function inscUpdateProgress(step) {
 // ══════════════════════════════════════════
 // INSCRIPCIONES — OPEN / CLOSED SETTING
 // ══════════════════════════════════════════
+// Estado por evento. `inscripcionesOpen`, `INSC_IGNORAR_DEADLINE` y
+// `torneoArchivado` son el espejo del evento que se está mirando: el resto del
+// código los lee como siempre y no tiene que enterarse de que hay dos torneos.
+// Quien los CAMBIA escribe en INSC_ESTADO y en la clave de ese evento, que es
+// lo que impide que abrir el Lares Open mueva nada de la Copa.
+const INSC_ESTADO = Object.fromEntries(EVENTOS.map(e => [e.id, {
+  open: false, prorroga: false, archivado: e.archivadoPorDefecto,
+}]));
+function inscEstado(id = EVENTO_VISTA) { return INSC_ESTADO[id] || INSC_ESTADO[EVENTOS[0].id]; }
+// El torneo individual (el de insc_registro): es el que gobierna las tarjetas
+// de admin del flujo por categorías, se esté mirando el que se esté mirando.
+const eventoIndividual = () => EVENTOS.find(e => e.modo === 'individual') || EVENTOS[0];
+function inscSyncVarsEvento() {
+  const st = inscEstado();
+  inscripcionesOpen     = st.open;
+  INSC_IGNORAR_DEADLINE = st.prorroga;
+  torneoArchivado       = st.archivado;
+}
+
 let inscripcionesOpen = false;
 let inscSbSynced = false;   // true once a successful Supabase round-trip happens
-// Cidra Open 2026 — el reglamento aún no fija fecha límite; placeholder: jueves
-// antes de la Parte 1. Ajustar cuando la federación la anuncie oficialmente.
-// Fecha límite por parte — la Parte 2 se inscribe después de jugada la Parte 1
-const INSC_DEADLINES = {
-  1: new Date('2026-08-13T20:00:00-04:00'), // jue. 13 agosto · 8:00 p.m. AST
-  2: new Date('2026-08-19T20:00:00-04:00'), // mié. 19 agosto · 8:00 p.m. AST
-};
+// Lares Open 2026 — el reglamento dice que la fecha límite "será anunciada
+// próximamente". Placeholder: jueves 24 de septiembre, 10:00 p.m. AST.
+// Cámbiala aquí cuando la federación la anuncie; mientras tanto el botón
+// "Extender: abrir igual" del panel mantiene abiertas las inscripciones
+// pasada esa hora sin tocar el código.
+const INSC_DEADLINE = new Date('2026-09-24T22:00:00-04:00');
+// Fecha límite por parte — solo para torneos de dos fines de semana (Cidra).
+// El Lares Open no tiene partes, así que queda vacío y manda INSC_DEADLINE.
+const INSC_DEADLINES = {};
 // Override del admin: mantener abiertas aunque la fecha límite ya pasó.
 let INSC_IGNORAR_DEADLINE = false;
 // Qué parte acepta inscripciones ahora: '1' | '2' | 'todas'.
-// La Parte 1 ya cerró, así que el valor por defecto es la Parte 2; el admin
-// puede cambiarlo y su elección se guarda en app_settings.
-let INSC_PARTE_ABIERTA = '2';
+// Sin partes en el torneo actual, el valor no filtra nada.
+let INSC_PARTE_ABIERTA = 'todas';
 
 function inscParteAbiertaNum() {
   return INSC_PARTE_ABIERTA === '1' ? 1 : INSC_PARTE_ABIERTA === '2' ? 2 : null;
 }
 // Última fecha de competencia de cada parte, para no dejar inscribir en un
 // fin de semana ya jugado aunque el admin deje el selector en "todas".
-const INSC_PARTE_FIN = {
-  1: new Date('2026-08-16T23:59:59-04:00'),
-  2: new Date('2026-08-23T23:59:59-04:00'),
-};
+const INSC_PARTE_FIN = {};
 // ¿Se puede inscribir en esta categoría ahora mismo?
 function catParteAbierta(cat) {
   const parteCat = INSC_DAY_BY_KEY[catDayKey(cat)]?.parte;
   if (!parteCat) return true;
-  if (Date.now() > INSC_PARTE_FIN[parteCat].getTime()) return false;  // ya se jugó
+  const fin = INSC_PARTE_FIN[parteCat];
+  if (fin && Date.now() > fin.getTime()) return false;  // ya se jugó
   const n = inscParteAbiertaNum();
   if (!n) return true;
   return parteCat === n;
@@ -11211,7 +11351,8 @@ function catParteAbierta(cat) {
 function inscDeadlineActual() {
   // La Copa no se juega por partes: una sola fecha límite para todo el torneo.
   if (esTorneoEquipos()) return COPA_DEADLINE;
-  return INSC_DEADLINES[inscParteAbiertaNum() ?? 2];
+  const parte = inscParteAbiertaNum();
+  return (parte && INSC_DEADLINES[parte]) || INSC_DEADLINE;
 }
 // Siempre en hora de Puerto Rico: la fecha límite es local al torneo, no al
 // dispositivo de quien mira (en UTC, las 8:00 p.m. caen al día siguiente).
@@ -11226,28 +11367,40 @@ function inscDeadlineLabelTxt() {
   return `${fecha} · ${hora}`;
 }
 
+// Cada evento trae su propio interruptor y su propia prórroga, así que se
+// cargan los dos: quien mire la Copa ve el estado de la Copa y quien mire el
+// Lares Open el suyo, sin que uno pise al otro.
 async function loadInscripcionesConfig() {
   // Show locally-cached value instantly while network resolves
-  const cached = localStorage.getItem('inscripciones_open');
-  if (cached !== null) inscripcionesOpen = cached === 'true';
+  const evGuardado = localStorage.getItem('insc_evento_vista');
+  if (evGuardado && EVENTOS.some(e => e.id === evGuardado)) EVENTO_VISTA = evGuardado;
+  EVENTOS.forEach(ev => {
+    const st = INSC_ESTADO[ev.id];
+    const co = localStorage.getItem(ev.claves.open);
+    if (co !== null) st.open = co === 'true';
+    const cp = localStorage.getItem(ev.claves.prorroga);
+    if (cp !== null) st.prorroga = cp === 'true';
+  });
   const cachedParte = localStorage.getItem('insc_parte_abierta');
   if (cachedParte) INSC_PARTE_ABIERTA = cachedParte;
-  const cachedIgn = localStorage.getItem('insc_ignorar_deadline');
-  if (cachedIgn !== null) INSC_IGNORAR_DEADLINE = cachedIgn === 'true';
+  inscSyncVarsEvento();
   applyInscripcionesState();
 
   // Supabase is the source of truth for all devices
   try {
-    const data = await sbGet('app_settings', '?key=eq.inscripciones_open&select=value');
-    if (data && data.length) {
-      inscripcionesOpen = data[0].value === 'true';
-      localStorage.setItem('inscripciones_open', String(inscripcionesOpen));
-      inscSbSynced = true;
-    }
-    const di = await sbGet('app_settings', '?key=eq.insc_ignorar_deadline&select=value');
-    if (di && di.length) {
-      INSC_IGNORAR_DEADLINE = di[0].value === 'true';
-      localStorage.setItem('insc_ignorar_deadline', String(INSC_IGNORAR_DEADLINE));
+    for (const ev of EVENTOS) {
+      const st = INSC_ESTADO[ev.id];
+      const data = await sbGet('app_settings', `?key=eq.${ev.claves.open}&select=value`);
+      if (data && data.length) {
+        st.open = data[0].value === 'true';
+        localStorage.setItem(ev.claves.open, String(st.open));
+        inscSbSynced = true;
+      }
+      const di = await sbGet('app_settings', `?key=eq.${ev.claves.prorroga}&select=value`);
+      if (di && di.length) {
+        st.prorroga = di[0].value === 'true';
+        localStorage.setItem(ev.claves.prorroga, String(st.prorroga));
+      }
     }
     const dp = await sbGet('app_settings', '?key=eq.insc_parte_abierta&select=value');
     if (dp && dp.length && dp[0].value) {
@@ -11257,10 +11410,82 @@ async function loadInscripcionesConfig() {
   } catch(e) {
     console.warn('loadInscripcionesConfig (Supabase):', e.message);
   }
+  inscSyncVarsEvento();
   applyInscripcionesState();
 }
 
+// Cambiar de torneo en la página de Inscripciones. No toca la base de datos:
+// solo cambia qué se mira.
+function inscSwitchEvento(id) {
+  if (!EVENTOS.some(e => e.id === id) || id === EVENTO_VISTA) return;
+  EVENTO_VISTA = id;
+  localStorage.setItem('insc_evento_vista', id);
+  inscSyncVarsEvento();
+  // Las categorías a medio escoger son del torneo anterior.
+  inscState.selectedCats = new Set();
+  applyInscripcionesState();
+  inscSwitchTab(_inscTabActual);
+  if (esTorneoEquipos()) copaInit();
+}
+
+// Chips de torneo. Se dibujan desde EVENTOS, así que añadir un tercer evento
+// no pide tocar el HTML. Con un solo evento el selector no aparece.
+function inscRenderEventoSelector() {
+  document.querySelectorAll('.insc-evento-chips').forEach(cont => {
+    if (EVENTOS.length < 2) { cont.style.display = 'none'; return; }
+    cont.style.display = 'flex';
+    const compacto = cont.dataset.compacto === '1';
+    if (cont.childElementCount !== EVENTOS.length) {
+      cont.innerHTML = EVENTOS.map(ev => `
+        <button type="button" data-evento="${ev.id}" onclick="event.stopPropagation();inscSwitchEvento('${ev.id}')"
+          style="flex:1;min-width:0;border-radius:10px;padding:${compacto ? '5px 11px' : '9px 12px'};cursor:pointer;
+                 font-family:'Inter',sans-serif;font-size:${compacto ? '11px' : '13px'};font-weight:700;
+                 transition:all 0.18s;text-align:center;">
+          ${ev.corto}${compacto ? '' : `<span style="display:block;font-size:10.5px;font-weight:600;opacity:.75;margin-top:2px;">${ev.fechas}</span>`}
+        </button>`).join('');
+    }
+    cont.querySelectorAll('[data-evento]').forEach(b => {
+      const on = b.dataset.evento === EVENTO_VISTA;
+      b.style.background  = on ? 'var(--grad)' : 'transparent';
+      b.style.color       = on ? '#fff' : 'var(--muted)';
+      b.style.border      = `1px solid ${on ? 'transparent' : 'var(--border)'}`;
+    });
+  });
+}
+
+// Qué tarjeta de portada y qué franja logística se enseñan. Cada evento tiene
+// las suyas y se apagan las del otro.
+function inscAplicarEvento() {
+  inscRenderEventoSelector();
+  const ver = (id, on, display = '') => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = on ? display : 'none';
+  };
+  EVENTOS.forEach(ev => {
+    ver('inscPreview_' + ev.id,    ev.id === EVENTO_VISTA);
+    ver('inscTorneoCard_' + ev.id, ev.id === EVENTO_VISTA, 'flex');
+  });
+  // CTA de la tarjeta del torneo individual: solo cuando de verdad se puede
+  // inscribir ahora mismo.
+  const abierto = inscripcionesOpen && !torneoArchivado &&
+    (Date.now() <= inscDeadlineActual().getTime() || INSC_IGNORAR_DEADLINE);
+  ver('laresCtaWrap',      !esTorneoEquipos() &&  abierto);
+  ver('laresProximamente', !esTorneoEquipos() && !abierto);
+  // Las estadísticas por categoría son del flujo individual.
+  const stats = document.getElementById('inscStatsCard');
+  if (stats) stats.style.display = esTorneoEquipos() ? 'none' : '';
+  // El selector de partes solo tiene sentido en un torneo de dos fines de semana.
+  const cardParte = document.getElementById('adminCardParte');
+  if (cardParte) cardParte.style.display = (!esTorneoEquipos() && TORNEO_TIENE_PARTES) ? '' : 'none';
+  // Todo texto que nombre el torneo individual sale de un solo sitio.
+  document.querySelectorAll('.torneo-activo-txt').forEach(el => { el.textContent = TORNEO_ACTIVO; });
+}
+
 function applyInscripcionesState() {
+  // Primero, qué torneo se está mirando: de ahí salen la fecha límite, el
+  // interruptor y las tarjetas que se pintan debajo.
+  inscAplicarEvento();
+
   const banner        = document.getElementById('inscCerradasBanner');
   const previewBanner = document.getElementById('inscPreviewBanner');
   const progress      = document.getElementById('inscProgressBar');
@@ -11269,9 +11494,12 @@ function applyInscripcionesState() {
   const torneoCard    = document.getElementById('inscTorneoCard');
 
   const deadlinePassed = Date.now() > inscDeadlineActual().getTime();
-  const deadlineLabel  = document.getElementById('inscDeadlineLabel');
   const cerradasMsg    = document.getElementById('inscCerradasMsg');
-  if (deadlineLabel) deadlineLabel.style.display = (deadlinePassed && !INSC_IGNORAR_DEADLINE) ? 'none' : '';
+  // Cada torneo tiene su franja logística; la fecha límite se apaga en la que
+  // esté a la vista cuando ya pasó.
+  document.querySelectorAll('.insc-deadline-label').forEach(el => {
+    el.style.display = (deadlinePassed && !INSC_IGNORAR_DEADLINE) ? 'none' : '';
+  });
   // La fecha límite cierra sola, pero el admin puede mantenerlas abiertas
   const effectivelyOpen = inscripcionesOpen && (!deadlinePassed || INSC_IGNORAR_DEADLINE);
   if (cerradasMsg) {
@@ -11338,6 +11566,10 @@ function applyInscripcionesState() {
   const syncEl   = document.getElementById('inscAdminSync');
   const cardEl   = document.getElementById('inscAdminCard');
   const iconEl   = document.getElementById('inscAdminIcon');
+  // El botón abre y cierra el torneo que esté seleccionado arriba: decirlo
+  // evita cerrar la Copa creyendo que se cierra el Lares Open.
+  const tituloEl = document.getElementById('inscAdminTorneo');
+  if (tituloEl) tituloEl.textContent = eventoActual().nombre;
   if (statusEl) {
     if (!inscripcionesOpen) {
       statusEl.textContent = 'Cerradas — clic para abrir';
@@ -11372,8 +11604,10 @@ function applyInscripcionesState() {
   // Selector de parte abierta
   const parteDesc = document.getElementById('parteAbiertaDesc');
   if (parteDesc) {
-    const etq = { '1': 'Parte 1 · 15 y 16 de agosto', '2': 'Parte 2 · 22 y 23 de agosto',
-                  'todas': 'Todas las categorías del torneo' }[INSC_PARTE_ABIERTA] || '—';
+    const diasDe = n => INSC_DAYS.filter(d => d.parte === n).map(d => d.short).join(' y ');
+    const etq = INSC_PARTE_ABIERTA === 'todas'
+      ? 'Todas las categorías del torneo'
+      : `Parte ${INSC_PARTE_ABIERTA} · ${diasDe(Number(INSC_PARTE_ABIERTA)) || '—'}`;
     parteDesc.innerHTML = `${etq}<br><span style="font-size:11px;">Cierra: ${inscDeadlineLabelTxt()}</span>`;
   }
   [['btnParte1','1'],['btnParte2','2'],['btnParteTodas','todas']].forEach(([id, val]) => {
@@ -11406,6 +11640,9 @@ const UPCOMING_EVENTS = [
     target: new Date('2026-09-19T09:00:00'), end: new Date('2026-09-20T23:59:59'),
     logo: 'Logo_Copa_Olimpica_2026.png',
     mapsUrl: 'https://maps.google.com/?q=Centro+de+Convenciones+de+Puerto+Rico' },
+  { name: 'Lares Open 2026', dateLabel: 'Sábado 26 & Domingo 27 de septiembre · Coliseo Félix Méndez Acevedo, Lares',
+    target: new Date('2026-09-26T09:00:00'), end: new Date('2026-09-27T23:59:59'),
+    logo: TORNEO_LOGO, mapsUrl: TORNEO_MAPS_URL },
 ];
 const FINISHED_BADGE_DAYS = 7; // días que se muestra "Torneo finalizado" tras el evento
 
@@ -11492,12 +11729,15 @@ function initNextEventCountdown() {
 // Mantener las inscripciones abiertas después de la fecha límite
 async function toggleProrroga() {
   if (!isAdmin()) { showLogin(); return; }
-  INSC_IGNORAR_DEADLINE = !INSC_IGNORAR_DEADLINE;
-  localStorage.setItem('insc_ignorar_deadline', String(INSC_IGNORAR_DEADLINE));
+  const ev = eventoActual();
+  const st = inscEstado();
+  st.prorroga = !st.prorroga;
+  inscSyncVarsEvento();
+  localStorage.setItem(ev.claves.prorroga, String(st.prorroga));
   applyInscripcionesState();
   try {
     const { error } = await _supabase.from('app_settings')
-      .upsert({ key: 'insc_ignorar_deadline', value: String(INSC_IGNORAR_DEADLINE),
+      .upsert({ key: ev.claves.prorroga, value: String(st.prorroga),
                 updated_at: new Date().toISOString() }, { onConflict: 'key' });
     if (error) throw error;
   } catch (e) { alert('No se pudo guardar en Supabase: ' + e.message); }
@@ -11523,27 +11763,32 @@ async function setParteAbierta(valor) {
   }
 }
 
+// Abre o cierra el torneo SELECCIONADO. Escribe solo en las claves de ese
+// evento, así que abrir el Lares Open no cambia nada de la Copa ni al revés.
 async function toggleInscripciones() {
   if (!isAdmin()) { showLogin(); return; }
+  const ev = eventoActual();
+  const st = inscEstado();
   // Flip immediately — visual feedback without waiting for network
-  inscripcionesOpen = !inscripcionesOpen;
-  localStorage.setItem('inscripciones_open', String(inscripcionesOpen));
+  st.open = !st.open;
+  localStorage.setItem(ev.claves.open, String(st.open));
   // Cerrar a mano cancela cualquier prórroga, para que "cerradas" no sea ambiguo
-  if (!inscripcionesOpen && INSC_IGNORAR_DEADLINE) {
-    INSC_IGNORAR_DEADLINE = false;
-    localStorage.setItem('insc_ignorar_deadline', 'false');
+  if (!st.open && st.prorroga) {
+    st.prorroga = false;
+    localStorage.setItem(ev.claves.prorroga, 'false');
     _supabase.from('app_settings').upsert(
-      { key: 'insc_ignorar_deadline', value: 'false', updated_at: new Date().toISOString() },
+      { key: ev.claves.prorroga, value: 'false', updated_at: new Date().toISOString() },
       { onConflict: 'key' }).then(() => {}, () => {});
   }
 
   // Opening inscripciones implies the torneo is active — un-archive automatically,
   // otherwise the archived placeholder keeps overriding the open state.
-  const willUnarchive = inscripcionesOpen && torneoArchivado;
+  const willUnarchive = st.open && st.archivado;
   if (willUnarchive) {
-    torneoArchivado = false;
-    localStorage.setItem('torneo_archivado', 'false');
+    st.archivado = false;
+    localStorage.setItem(ev.claves.archivado, 'false');
   }
+  inscSyncVarsEvento();
   applyInscripcionesState();
 
   // Upsert using the authenticated Supabase client (requires RLS + authenticated_write policy)
@@ -11551,12 +11796,12 @@ async function toggleInscripciones() {
     const now = new Date().toISOString();
     const promises = [
       _supabase.from('app_settings')
-        .upsert({ key: 'inscripciones_open', value: String(inscripcionesOpen), updated_at: now },
+        .upsert({ key: ev.claves.open, value: String(st.open), updated_at: now },
                  { onConflict: 'key' })
     ];
     if (willUnarchive) {
       promises.push(_supabase.from('app_settings')
-        .upsert({ key: 'torneo_archivado', value: 'false', updated_at: now },
+        .upsert({ key: ev.claves.archivado, value: 'false', updated_at: now },
                  { onConflict: 'key' }));
     }
     const results = await Promise.all(promises);
@@ -11574,19 +11819,29 @@ async function toggleInscripciones() {
 // ══════════════════════════════════════════
 // TORNEO ARCHIVO (archive / past tournaments)
 // ══════════════════════════════════════════
-let torneoArchivado = true; // Ceiba Open 2026 ha concluido — TA Open próximamente
+// Espejo del evento en pantalla (ver INSC_ESTADO). El valor de arranque de
+// cada torneo está en EVENTOS[].archivadoPorDefecto.
+let torneoArchivado = inscEstado().archivado;
 
 async function loadTorneoArchivoConfig() {
-  // Default is true (archived) — only override if DB explicitly says false
+  // Por evento: cada torneo se archiva por su cuenta. Sin fila en la base se
+  // queda con su valor por defecto.
+  EVENTOS.forEach(ev => {
+    const cache = localStorage.getItem(ev.claves.archivado);
+    if (cache !== null) INSC_ESTADO[ev.id].archivado = cache === 'true';
+  });
+  inscSyncVarsEvento();
   applyInscripcionesState();
   try {
-    const data = await sbGet('app_settings', '?key=eq.torneo_archivado&select=value');
-    if (data && data.length) {
-      torneoArchivado = data[0].value === 'true';
+    for (const ev of EVENTOS) {
+      const data = await sbGet('app_settings', `?key=eq.${ev.claves.archivado}&select=value`);
+      if (data && data.length) {
+        INSC_ESTADO[ev.id].archivado = data[0].value === 'true';
+      }
+      localStorage.setItem(ev.claves.archivado, String(INSC_ESTADO[ev.id].archivado));
     }
-    // else: no DB entry → keep default true
   } catch(e) { console.warn('loadTorneoArchivoConfig:', e.message); }
-  localStorage.setItem('torneo_archivado', String(torneoArchivado));
+  inscSyncVarsEvento();
   applyInscripcionesState();
 }
 
@@ -11601,24 +11856,29 @@ function applyTorneoArchivoAdminCards() {
   const cardArchivarIcon  = document.getElementById('adminCardArchivarIcon');
   const cardArchivar      = document.getElementById('adminCardArchivar');
 
+  // Estas tarjetas leen insc_registro, así que dependen del torneo individual
+  // y no del que se esté mirando en la página de Inscripciones.
+  const indivArchivado = inscEstado(eventoIndividual().id).archivado;
+
+  const verIndiv = indivArchivado ? 'none' : '';
+  if (cardGestionar)  cardGestionar.style.display  = verIndiv;
+  if (cardExportar)   cardExportar.style.display   = verIndiv;
+  if (cardReporte)    cardReporte.style.display    = verIndiv;
+  if (cardLogistica)  cardLogistica.style.display  = verIndiv;
+  if (cardPast)       cardPast.style.display       = indivArchivado ? '' : 'none';
+
+  // Archivar actúa sobre el torneo SELECCIONADO, así que su texto sale de ahí
+  // y lo nombra: archivar la Copa desde el selector no es lo mismo que
+  // archivar el Lares Open.
+  const ev = eventoActual();
   if (torneoArchivado) {
-    if (cardGestionar)  cardGestionar.style.display  = 'none';
-    if (cardExportar)   cardExportar.style.display   = 'none';
-    if (cardReporte)    cardReporte.style.display    = 'none';
-    if (cardLogistica)  cardLogistica.style.display  = 'none';
-    if (cardPast)       cardPast.style.display        = '';
     if (cardArchivarTitle) cardArchivarTitle.textContent = 'Reactivar Torneo';
-    if (cardArchivarDesc)  cardArchivarDesc.textContent  = 'Volver a abrir inscripciones';
+    if (cardArchivarDesc)  cardArchivarDesc.textContent  = `${ev.nombre} · volver a abrir inscripciones`;
     if (cardArchivarIcon)  cardArchivarIcon.textContent  = '🔓';
     if (cardArchivar)      cardArchivar.style.borderColor = 'rgba(34,197,94,0.4)';
   } else {
-    if (cardGestionar)  cardGestionar.style.display  = '';
-    if (cardExportar)   cardExportar.style.display   = '';
-    if (cardReporte)    cardReporte.style.display    = '';
-    if (cardLogistica)  cardLogistica.style.display  = '';
-    if (cardPast)       cardPast.style.display        = 'none';
     if (cardArchivarTitle) cardArchivarTitle.textContent = 'Archivar Torneo';
-    if (cardArchivarDesc)  cardArchivarDesc.textContent  = 'Mover inscripciones a historial';
+    if (cardArchivarDesc)  cardArchivarDesc.textContent  = `${ev.nombre} · mover inscripciones a historial`;
     if (cardArchivarIcon)  cardArchivarIcon.textContent  = '🗃️';
     if (cardArchivar)      cardArchivar.style.borderColor = 'var(--border)';
   }
@@ -11627,32 +11887,35 @@ function applyTorneoArchivoAdminCards() {
 async function toggleTorneoArchivado() {
   if (!isAdmin()) { showLogin(); return; }
 
-  const willArchive = !torneoArchivado;
+  const ev = eventoActual();
+  const st = inscEstado();
+  const willArchive = !st.archivado;
   const confirmMsg = willArchive
-    ? '¿Archivar el torneo? Esto ocultará el formulario de inscripción al público y moverá los datos a Past Tournaments.'
-    : '¿Reactivar el torneo? Esto restaurará la vista de inscripciones.';
+    ? `¿Archivar ${ev.nombre}? Esto ocultará su formulario de inscripción al público y moverá los datos a Past Tournaments.`
+    : `¿Reactivar ${ev.nombre}? Esto restaurará la vista de inscripciones.`;
   if (!confirm(confirmMsg)) return;
 
-  torneoArchivado = willArchive;
+  st.archivado = willArchive;
   // Also close inscriptions when archiving
-  if (torneoArchivado) {
-    inscripcionesOpen = false;
-    localStorage.setItem('inscripciones_open', 'false');
+  if (st.archivado) {
+    st.open = false;
+    localStorage.setItem(ev.claves.open, 'false');
   }
-  localStorage.setItem('torneo_archivado', String(torneoArchivado));
+  localStorage.setItem(ev.claves.archivado, String(st.archivado));
+  inscSyncVarsEvento();
   applyInscripcionesState();
 
   try {
     const now = new Date().toISOString();
     const promises = [
       _supabase.from('app_settings').upsert(
-        { key: 'torneo_archivado', value: String(torneoArchivado), updated_at: now },
+        { key: ev.claves.archivado, value: String(st.archivado), updated_at: now },
         { onConflict: 'key' }
       )
     ];
-    if (torneoArchivado) {
+    if (st.archivado) {
       promises.push(_supabase.from('app_settings').upsert(
-        { key: 'inscripciones_open', value: 'false', updated_at: now },
+        { key: ev.claves.open, value: 'false', updated_at: now },
         { onConflict: 'key' }
       ));
     }
@@ -12176,7 +12439,7 @@ const COPA_ROLES = { cap: 'Jugador 1', comp: 'Jugador 2' };
 async function copaCargarConfig() {
   try {
     const rows = await sbGet('insc_divisiones',
-      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=orden.asc`);
+      `?torneo=eq.${encodeURIComponent(COPA_TORNEO)}&order=orden.asc`);
     if (rows && rows.length) {
       // Los premios son texto de la convocatoria y no viven en la tabla:
       // se conservan del arreglo local emparejando por división.
@@ -12205,7 +12468,7 @@ async function copaCargarConfig() {
 async function copaCargarCupos() {
   try {
     const rows = await sbGet('insc_equipos_cupos',
-      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=orden.asc`);
+      `?torneo=eq.${encodeURIComponent(COPA_TORNEO)}&order=orden.asc`);
     copaState.cupos = Object.fromEntries((rows || []).map(r => [r.division, r]));
   } catch (e) {
     copaState.cupos = null;   // sin datos: la pantalla no promete cupos que no puede verificar
@@ -12215,7 +12478,7 @@ async function copaCargarCupos() {
   // cuando vuelve al formulario a nombrar a su pareja.
   try {
     const solos = await sbGet('insc_equipos_publico',
-      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&estado=eq.esperando_companero`
+      `?torneo=eq.${encodeURIComponent(COPA_TORNEO)}&estado=eq.esperando_companero`
       + `&select=id,division,cap_member_id,cap_nombre,cap_rating`);
     copaState.cuposSolos = Object.fromEntries(
       (solos || []).filter(r => r.cap_member_id != null)
@@ -12715,7 +12978,7 @@ async function copaInscribirEquipo() {
 
   try {
     const { data, error } = await _supabase.rpc('inscribir_equipo', {
-      p_torneo:         TORNEO_ACTIVO,
+      p_torneo:         COPA_TORNEO,
       p_cap_member_id:  cap.player?.id ?? null,
       p_cap_nombre:     cap.player?.name ?? cap.invitado,
       p_cap_rating:     cap.player?.rating ?? null,
@@ -12771,7 +13034,7 @@ async function copaReservarCupo() {
 
   try {
     const { data, error } = await _supabase.rpc('reservar_cupo_solo', {
-      p_torneo:        TORNEO_ACTIVO,
+      p_torneo:        COPA_TORNEO,
       p_member_id:     copaState.cap.player.id,
       p_nombre:        copaState.cap.player.name,
       p_division:      d.division,
@@ -12814,7 +13077,7 @@ async function copaConfirmarCompanero() {
   try {
     const { data, error } = await _supabase.rpc('nombrar_companero', {
       p_equipo_id:      copaState.cupoPropio.id,
-      p_torneo:         TORNEO_ACTIVO,
+      p_torneo:         COPA_TORNEO,
       p_comp_member_id: comp.player?.id ?? null,
       p_comp_nombre:    comp.player?.name ?? comp.invitado,
       p_comp_invitado:  !comp.player,
@@ -13055,6 +13318,12 @@ function copaIrAlFormulario() {
   document.getElementById('inscEquiposPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// Lo mismo para el torneo individual: el botón de la tarjeta baja al formulario.
+function laresIrAlFormulario() {
+  inscSwitchTab('form');
+  document.getElementById('inscTabFormContent')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 // ── Modo equipos: qué se muestra y qué se apaga ────────────────────────────
 // El flujo individual sigue en el DOM pero no se dibuja: apagarlo aquí, en un
 // solo sitio, evita tener que tocar cada función del flujo viejo.
@@ -13113,14 +13382,14 @@ async function loadEquiposSection() {
   if (!content) return;
 
   const sub = document.getElementById('inscritosSubtitulo');
-  if (sub) sub.textContent = TORNEO_ACTIVO;
+  if (sub) sub.textContent = COPA_TORNEO;
   content.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--muted);font-size:14px;">Cargando equipos...</div>';
   if (tabsEl) tabsEl.innerHTML = '';
   if (badge)  badge.style.display = 'none';
 
   try {
     const rows = await sbGet('insc_equipos_publico',
-      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=created_at.asc`);
+      `?torneo=eq.${encodeURIComponent(COPA_TORNEO)}&order=created_at.asc`);
 
     if (!rows || !rows.length) {
       content.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--muted);font-size:14px;line-height:1.6;">
@@ -13201,7 +13470,10 @@ async function loadEquiposSection() {
 // ── Arranque ───────────────────────────────────────────────────────────────
 let _copaInit = false;
 async function copaInit() {
-  if (!esTorneoEquipos() || _copaInit) return;
+  if (_copaInit) return;
+  // Arranca aunque en pantalla se esté mirando el otro torneo: el panel de la
+  // Copa (cupos, insignia de admin, listado de equipos) tiene que estar al día
+  // desde que carga la página, no solo cuando alguien la selecciona.
   _copaInit = true;
 
   // Datalist de clubes para el campo del equipo
@@ -13246,7 +13518,7 @@ async function copaAdminCargar() {
   const lista = document.getElementById('copaAdminLista');
   try {
     const { data, error } = await _supabase.from('insc_equipos').select('*')
-      .eq('torneo', TORNEO_ACTIVO).order('created_at', { ascending: true });
+      .eq('torneo', COPA_TORNEO).order('created_at', { ascending: true });
     if (error) throw new Error(error.message);
     _copaAdminData = data || [];
     await copaCargarCupos();
@@ -13475,7 +13747,7 @@ async function copaAdminRevision(id, accion) {
 
   try {
     const { data, error } = await _supabase.rpc('resolver_revision_tecnica',
-      { p_equipo_id: id, p_torneo: TORNEO_ACTIVO, p_accion: accion });
+      { p_equipo_id: id, p_torneo: COPA_TORNEO, p_accion: accion });
     if (error) throw new Error(error.message);
     if (!data?.ok) { copaAdminMsg(data?.error || 'No se pudo resolver.', false); return; }
     await copaAdminCargar();
@@ -13498,7 +13770,7 @@ async function copaAdminCredito(id) {
   if (!confirm(`¿Liberar el cupo de ${r.cap_nombre} y dejarle $${pag.toFixed(2)} como crédito?\n\nEl cupo pasa al primero de la lista de espera.`)) return;
   try {
     const { data, error } = await _supabase.rpc('liberar_cupo_con_credito',
-      { p_equipo_id: id, p_torneo: TORNEO_ACTIVO });
+      { p_equipo_id: id, p_torneo: COPA_TORNEO });
     if (error) throw new Error(error.message);
     if (!data?.ok) { copaAdminMsg(data?.error || 'No se pudo liberar.', false); return; }
     await copaAdminCargar();
@@ -13563,7 +13835,7 @@ async function copaAdminReactivar(id) {
 // reserva vencida conserva su cupo hasta que una persona decida soltarlo.
 async function copaAdminLiberar(silencioso = false) {
   try {
-    const { data, error } = await _supabase.rpc('insc_equipos_liberar', { p_torneo: TORNEO_ACTIVO });
+    const { data, error } = await _supabase.rpc('insc_equipos_liberar', { p_torneo: COPA_TORNEO });
     if (error) throw new Error(error.message);
     await copaAdminCargar();
     if (!silencioso) {
@@ -13805,7 +14077,7 @@ async function copaEditGuardar() {
   try {
     const { data, error } = await _supabase.rpc('editar_equipo', {
       p_equipo_id:      r.id,
-      p_torneo:         TORNEO_ACTIVO,
+      p_torneo:         COPA_TORNEO,
       p_cap_member_id:  copaEdit.cap.player?.id ?? null,
       p_cap_nombre:     copaEdit.cap.player?.name ?? copaEdit.cap.invitado,
       p_comp_member_id: copaEdit.comp.player?.id ?? null,
@@ -13859,7 +14131,7 @@ async function buscaAdminCargar() {
   if (!host) return;
   try {
     const { data, error } = await _supabase.from('insc_busca_companero').select('*')
-      .eq('torneo', TORNEO_ACTIVO).order('created_at', { ascending: false });
+      .eq('torneo', COPA_TORNEO).order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
     _buscaAdminData = data || [];
     buscaAdminRender();
@@ -13917,18 +14189,14 @@ async function buscaAdminEstado(id, estado) {
   }
 }
 
-// Modo equipos: las tarjetas del flujo individual leerían insc_registro para
-// un torneo que no tiene inscripciones ahí, así que mostrarían cero. Se
-// apagan para no dar un dato falso, y se enciende la de equipos.
+// La tarjeta "Gestionar Equipos" es de la Copa y las demás del torneo
+// individual. Con los dos torneos vivos a la vez, las dos cosas hacen falta:
+// la de equipos se enseña mientras la Copa no esté archivada, y las del flujo
+// individual las gobierna applyTorneoArchivoAdminCards() con el estado del
+// torneo individual.
 function copaAplicarAdminCards() {
-  if (!esTorneoEquipos()) return;
   const eq = document.getElementById('adminCardEquipos');
-  if (eq) eq.style.display = torneoArchivado ? 'none' : '';
-  ['adminCardGestionar', 'adminCardExportar', 'adminCardReporte',
-   'adminCardFinanciero', 'adminCardLogistica'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
+  if (eq) eq.style.display = inscEstado('copa').archivado ? 'none' : '';
 }
 
 // ══════════════════════════════════════════
@@ -13953,13 +14221,13 @@ const buscaState = {
 async function loadBuscaSection() {
   const host  = document.getElementById('buscaLista');
   const sub   = document.getElementById('buscaSubtitulo');
-  if (sub) sub.textContent = TORNEO_ACTIVO;
+  if (sub) sub.textContent = COPA_TORNEO;
   if (!host) return;
   host.innerHTML = '<div style="text-align:center;padding:36px 0;color:var(--muted);font-size:14px;">Cargando...</div>';
 
   try {
     const rows = await sbGet('insc_busca_companero_publico',
-      `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=created_at.desc`);
+      `?torneo=eq.${encodeURIComponent(COPA_TORNEO)}&order=created_at.desc`);
     buscaState.anuncios = rows || [];
     buscaRenderPicker('yo', 'buscaYoSlot');
     buscaRenderLista();
@@ -14263,7 +14531,7 @@ async function buscaPublicar() {
   const p = buscaState.publicador.player;
   try {
     const { data, error } = await _supabase.rpc('publicar_busca_companero', {
-      p_torneo:           TORNEO_ACTIVO,
+      p_torneo:           COPA_TORNEO,
       p_member_id:        p.id,
       p_nombre:           p.name,
       p_rating:           p.rating ?? null,
@@ -14299,7 +14567,7 @@ async function buscaRetirar(id) {
   if (!confirm(`¿Retirar el anuncio de ${a.nombre} del tablón?\n\nHazlo solo si es tuyo y ya conseguiste compañero.`)) return;
   try {
     const { error } = await _supabase.rpc('retirar_busca_companero',
-      { p_id: id, p_torneo: TORNEO_ACTIVO });
+      { p_id: id, p_torneo: COPA_TORNEO });
     if (error) throw new Error(error.message);
     await loadBuscaSection();
   } catch (e) {
@@ -14680,11 +14948,11 @@ function inscRenderCategories() {
     </div>`;
   }
 
-  const _pn = inscParteAbiertaNum();
+  const _pn = TORNEO_TIENE_PARTES ? inscParteAbiertaNum() : null;
   if (_pn) {
     html += `<div style="margin-bottom:10px;padding:9px 13px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);border-radius:8px;font-size:12px;color:var(--text);line-height:1.5;">
       🗓 <strong>Inscripciones abiertas — Parte ${_pn}</strong>
-      <span style="color:var(--muted);">· ${_pn === 1 ? '15 y 16' : '22 y 23'} de agosto.
+      <span style="color:var(--muted);">· ${INSC_DAYS.filter(d => d.parte === _pn).map(d => d.short).join(' y ')}.
       Las categorías del otro fin de semana no están disponibles.</span>
     </div>`;
   }
@@ -14692,31 +14960,40 @@ function inscRenderCategories() {
     ⚠ Máx. 2 categorías por día, sin coincidir en horario · Para subir de categoría debes estar inscrito también en tu categoría natural.
   </div>`;
 
-  // One block per competition day, grouped by weekend (Parte 1 / Parte 2).
+  // One block per competition day. En un torneo de dos fines de semana (Cidra)
+  // los días van agrupados por parte; en uno de un solo fin de semana (Lares
+  // Open) no hay partes y los días van en un bloque único.
   // Doubles is pulled out into its own block — it needs a partner.
   const parteAbierta = inscParteAbiertaNum();
-  [1, 2].forEach(parte => {
-    // Una parte cerrada sólo se muestra si el jugador ya tiene algo inscrito ahí
-    const cerrada = parteAbierta !== null && parteAbierta !== parte;
-    const inscritasEnParte = INSC_CATEGORIES.filter(c =>
-      existingIds.has(c.id) && INSC_DAY_BY_KEY[catDayKey(c)]?.parte === parte);
-    if (cerrada && !inscritasEnParte.length) return;
-    if (cerrada) {
-      html += `<div style="margin:18px 0 8px;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:9px;">
-        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:5px;">
-          Parte ${parte} — cerrada · ya inscrito
-        </div>
-        <div style="font-size:11.5px;color:var(--muted);line-height:1.5;">
-          ${inscritasEnParte.map(c => c.name).join(' · ')}
-        </div>
-      </div>`;
-      return;
+  const partes = TORNEO_TIENE_PARTES
+    ? [...new Set(INSC_DAYS.map(d => d.parte))].sort((a, b) => a - b)
+    : [null];
+  partes.forEach((parte, idx) => {
+    if (parte !== null) {
+      // Una parte cerrada sólo se muestra si el jugador ya tiene algo inscrito ahí
+      const cerrada = parteAbierta !== null && parteAbierta !== parte;
+      const inscritasEnParte = INSC_CATEGORIES.filter(c =>
+        existingIds.has(c.id) && INSC_DAY_BY_KEY[catDayKey(c)]?.parte === parte);
+      if (cerrada && !inscritasEnParte.length) return;
+      if (cerrada) {
+        html += `<div style="margin:18px 0 8px;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:9px;">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:5px;">
+            Parte ${parte} — cerrada · ya inscrito
+          </div>
+          <div style="font-size:11.5px;color:var(--muted);line-height:1.5;">
+            ${inscritasEnParte.map(c => c.name).join(' · ')}
+          </div>
+        </div>`;
+        return;
+      }
+      const diasParte = INSC_DAYS.filter(d => d.parte === parte);
+      const etq = diasParte.map(d => d.short.replace(/^\w+\s/, '')).join(' y ');
+      html += `<div style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.12em;margin:${idx === 0 ? '0' : '18px'} 0 8px;">
+          Parte ${parte} — ${etq}
+        </div>`;
     }
-    const days = INSC_DAYS.filter(d => d.parte === parte);
-    html += `<div style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.12em;margin:${parte === 1 ? '0' : '18px'} 0 8px;">
-        Parte ${parte} — ${parte === 1 ? '15 y 16 de agosto' : '22 y 23 de agosto'}
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;">`;
+    const days = parte === null ? INSC_DAYS : INSC_DAYS.filter(d => d.parte === parte);
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;">`;
     days.forEach(d => {
       const cats = INSC_CATEGORIES.filter(c => catDayKey(c) === d.key && !c.dobles);
       html += `<div>
@@ -15644,7 +15921,7 @@ async function exportInscripcionesStadium(parte = null) {
     URL.revokeObjectURL(url);
 
     const omitidos = rows.length - exportRows.length;
-    const dias = parte === 1 ? '15 y 16 de agosto' : parte === 2 ? '22 y 23 de agosto' : null;
+    const dias = parte ? INSC_DAYS.filter(d => d.parte === parte).map(d => d.short).join(' y ') : null;
     alert(`\u2705 CSV generado${dias ? ` \u2014 Parte ${parte} (${dias})` : ' \u2014 todas las categor\u00edas'}\n\n`
       + `\u2022 ${exportRows.length} jugador(es) exportado(s)\n`
       + (omitidos ? `\u2022 ${omitidos} jugador(es) sin eventos exportables\n` : '')
@@ -15660,6 +15937,21 @@ async function exportInscripcionesStadium(parte = null) {
 // Elige qu\u00e9 fin de semana subir a Stadium antes de generar el CSV
 function showExportStadiumModal() {
   if (!currentUser) { showLogin(); return; }
+  // Las opciones que el torneo no tiene (partes, dobles) no se enseñan: en un
+  // torneo de un solo fin de semana pedirían un archivo que saldría vacío.
+  const hayDobles = INSC_CATEGORIES.some(c => c.dobles);
+  [1, 2].forEach(n => {
+    const b = document.getElementById('expStadiumParte' + n);
+    if (b) b.style.display = TORNEO_TIENE_PARTES ? '' : 'none';
+    const d = document.getElementById(`expStadiumParte${n}Dias`);
+    if (d) d.textContent = INSC_DAYS.filter(x => x.parte === n).map(x => x.label).join(' y ');
+  });
+  const bd = document.getElementById('expStadiumDobles');
+  if (bd) bd.style.display = hayDobles ? '' : 'none';
+  const nota = document.getElementById('expStadiumNota');
+  if (nota) nota.textContent = TORNEO_TIENE_PARTES
+    ? 'Cada archivo incluye solo las categorías que el jugador juega en ese fin de semana. Quien no compita en la parte elegida no aparece en el archivo.'
+    : `Un solo archivo con todos los inscritos del ${TORNEO_ACTIVO}.`;
   document.getElementById('exportStadiumModal').style.display = 'flex';
 }
 function exportStadiumParte(parte) {
@@ -18074,30 +18366,30 @@ async function submitPublicReg() {
       <button onclick="document.getElementById('exportStadiumModal').style.display='none'"
         aria-label="Cerrar" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">&times;</button>
     </div>
-    <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0 0 18px;">
+    <p id="expStadiumNota" style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0 0 18px;">
       Cada archivo incluye solo las categorías que el jugador juega en ese fin de semana.
       Quien no compita en la parte elegida no aparece en el archivo.
     </p>
     <div style="display:flex;flex-direction:column;gap:9px;">
-      <button onclick="exportStadiumParte(1)"
+      <button id="expStadiumParte1" onclick="exportStadiumParte(1)"
         style="display:flex;align-items:center;gap:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
         <span style="font-size:20px;">1&#65039;&#8419;</span>
         <span style="flex:1;">
           <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Parte 1</span>
-          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">S&aacute;bado 15 y domingo 16 de agosto</span>
+          <span id="expStadiumParte1Dias" style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">&mdash;</span>
         </span>
         <span style="color:var(--accent);font-size:13px;font-weight:700;">&darr; CSV</span>
       </button>
-      <button onclick="exportStadiumParte(2)"
+      <button id="expStadiumParte2" onclick="exportStadiumParte(2)"
         style="display:flex;align-items:center;gap:12px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.3);border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
         <span style="font-size:20px;">2&#65039;&#8419;</span>
         <span style="flex:1;">
           <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Parte 2</span>
-          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">S&aacute;bado 22 y domingo 23 de agosto</span>
+          <span id="expStadiumParte2Dias" style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">&mdash;</span>
         </span>
         <span style="color:#34d399;font-size:13px;font-weight:700;">&darr; CSV</span>
       </button>
-      <button onclick="document.getElementById('exportStadiumModal').style.display='none';exportDoblesStadium()"
+      <button id="expStadiumDobles" onclick="document.getElementById('exportStadiumModal').style.display='none';exportDoblesStadium()"
         style="display:flex;align-items:center;gap:12px;background:rgba(204,0,12,0.07);border:1px solid rgba(204,0,12,0.3);border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
         <span style="font-size:20px;">&#128101;</span>
         <span style="flex:1;">
@@ -18111,7 +18403,7 @@ async function submitPublicReg() {
         <span style="font-size:18px;">&#128203;</span>
         <span style="flex:1;">
           <span style="display:block;font-size:13px;font-weight:600;color:var(--muted);">Todo el torneo</span>
-          <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px;">Las 4 fechas en un solo archivo</span>
+          <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px;">Todas las fechas en un solo archivo</span>
         </span>
         <span style="color:var(--muted);font-size:12px;font-weight:700;">&darr; CSV</span>
       </button>

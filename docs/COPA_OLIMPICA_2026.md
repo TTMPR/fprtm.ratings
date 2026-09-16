@@ -328,16 +328,43 @@ anuncio abusivo o duplicado, y reactivarlo.
 
 ---
 
-## 8. Volver a un torneo individual
+## 8. Convivir con un torneo individual
 
-El flujo individual por categorías (Cidra, Morovis) sigue intacto en el
-código, solo apagado. Para el próximo torneo de ese tipo:
+Desde el Lares Open 2026, la página de Inscripciones sirve a **dos torneos a
+la vez**: la Copa (por equipos) y el torneo individual por categorías. Arriba
+hay un selector con un chip por torneo y todo lo demás sale de ahí.
 
-1. Cambiar `TORNEO_MODO` a `'individual'` en `index.html`. La pestaña
-   "Busco Compañero" se oculta sola — en un torneo individual nadie busca
-   compañero.
-2. Actualizar las constantes del torneo (`TORNEO_ACTIVO`, sede, fechas,
-   logo) y `INSC_CATEGORIES`.
+**Nada de la Copa depende del torneo individual.** Las dos cosas están
+separadas a propósito:
 
-No hay que deshacer nada de la Copa: sus datos quedan en `insc_equipos`
-guardados bajo el nombre del torneo.
+| | Copa Olímpica | Torneo individual |
+|---|---|---|
+| Datos | `insc_equipos` bajo `'Copa Olímpica 2026'` | `insc_registro` bajo el nombre del torneo |
+| Nombre en el código | `COPA_TORNEO` | `TORNEO_ACTIVO` |
+| Abrir / cerrar | `inscripciones_open` | `inscripciones_open_lares` |
+| Prórroga | `insc_ignorar_deadline` | `insc_ignorar_deadline_lares` |
+| Archivar | `torneo_archivado` | `torneo_archivado_lares` |
+| Panel de admin | Gestionar Equipos | Gestionar Inscritos, Exportar, Reportes, Logística |
+
+La Copa conserva **las claves originales** de `app_settings`, así que lo que
+ya estaba guardado sigue mandando igual que antes de que existiera el
+selector. El botón "Inscripciones" del panel abre y cierra **el torneo que
+esté seleccionado en los chips** — la tarjeta lo dice con su nombre, para que
+nadie cierre la Copa creyendo que cierra el otro.
+
+### Para el próximo torneo individual
+
+1. Actualizar las constantes del torneo (`TORNEO_ACTIVO`, sede, fechas, logo,
+   `INSC_DEADLINE`) y `INSC_CATEGORIES`, `INSC_DAYS` e `INSC_SLOT_LABELS` en
+   `index.html`.
+2. Cambiar la entrada `'lares'` de `EVENTOS` (nombre, fechas y claves de
+   `app_settings`) por la del torneo nuevo.
+3. Si el torneo se juega en dos fines de semana, darle `parte: 1 | 2` a cada
+   día de `INSC_DAYS`: `TORNEO_TIENE_PARTES` se enciende solo y vuelven el
+   selector de partes y el export por fin de semana.
+
+### Cuando la Copa termine
+
+Archivar la Copa desde el panel (con su chip seleccionado) la saca de la vista
+pública sin tocar sus datos: quedan en `insc_equipos` bajo su nombre. Si más
+adelante sobra el selector, basta con quitar su entrada de `EVENTOS`.
