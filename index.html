@@ -3915,13 +3915,14 @@ Maria Lopez,Ana Torres,B</code>
       <div class="lares-dia">Domingo 27 de septiembre</div>
       <div class="lares-ev"><span class="lares-ev-h">9:00 am</span><span class="lares-ev-n">Rating 1800 o menos</span><span class="lares-ev-p">$70 · $60 · $50</span></div>
       <div class="lares-ev"><span class="lares-ev-h">9:00 am</span><span class="lares-ev-n">Rating 1600 o menos</span><span class="lares-ev-p">$55 · $45 · $35</span></div>
+      <div class="lares-ev"><span class="lares-ev-h">12:00 pm</span><span class="lares-ev-n">Abierto (Open) &middot; <span style="color:var(--muted)">$25</span></span><span class="lares-ev-p">$100 · $75 · $65</span></div>
       <div class="lares-ev"><span class="lares-ev-h">12:00 pm</span><span class="lares-ev-n">Seniors: 40 años o más (Mixto)</span><span class="lares-ev-p">$35 · $25 · $20</span></div>
       <div class="lares-ev"><span class="lares-ev-h">12:00 pm</span><span class="lares-ev-n">7 o menos Abierto &middot; <span style="color:var(--muted)">$11</span></span><span class="lares-ev-p">Trofeos</span></div>
       <div class="lares-ev"><span class="lares-ev-h">12:00 pm</span><span class="lares-ev-n">9 o menos Femenino &middot; Masculino</span><span class="lares-ev-p">Trofeos</span></div>
       <div class="lares-ev"><span class="lares-ev-h">2:00 pm</span><span class="lares-ev-n">13 o menos Femenino &middot; Masculino</span><span class="lares-ev-p">$35 · $30 · $25</span></div>
 
       <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;text-align:left;">
-        $20 por categoría ($11 la de 7 o menos). No se juega el 3er y 4to lugar: se premian
+        $20 por categoría ($25 la Abierta, $11 la de 7 o menos). No se juega el 3er y 4to lugar: se premian
         <strong style="color:var(--text)">dos terceros lugares</strong>. Las categorías de 7 y 9 o menos
         llevan trofeo del 1° al 4° y medalla del 5° al 8°.
       </div>
@@ -4377,7 +4378,7 @@ Maria Lopez,Ana Torres,B</code>
           <div style="font-size:15px;font-weight:700;color:var(--text);">Categorías</div>
           <button onclick="openReglamentoModal()" style="background:none;border:none;color:var(--accent);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;">📋 Ver reglamento</button>
         </div>
-        <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:14px;">Máx. 2 categorías por día · Sin coincidir en horario · $20 por categoría ($11 la de 7 o menos).</p>
+        <p style="font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:14px;">Máx. 2 categorías por día · Sin coincidir en horario · $20 por categoría ($25 la Abierta, $11 la de 7 o menos).</p>
         <div id="inscCatList" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
 
@@ -4886,6 +4887,7 @@ Maria Lopez,Ana Torres,B</code>
           <ol style="padding-left:18px;color:var(--muted);font-size:13px;line-height:2;">
             <li>Rating 1600 o menos – 9:00 a.m.</li>
             <li>Rating 1800 o menos – 9:00 a.m.</li>
+            <li>Abierto (Open Individual) – 12:00 p.m. | todos los niveles</li>
             <li>Seniors: 40 años o más (Mixto) – 12:00 p.m.</li>
             <li>7 años o menos Abierto – 12:00 p.m. | menores de 8 al 31-dic-2026 · Trofeos</li>
             <li>9 años o menos Femenino – 12:00 p.m. | menores de 10 al 31-dic-2026 · Trofeos</li>
@@ -4985,6 +4987,7 @@ Maria Lopez,Ana Torres,B</code>
           <div style="color:var(--text);font-weight:600;margin:10px 0 4px;">Domingo 27 de septiembre</div>
           Rating 1600 o menos — 1ro: $55 | 2do: $45 | 3ro: $35 (x2)<br>
           Rating 1800 o menos — 1ro: $70 | 2do: $60 | 3ro: $50 (x2)<br>
+          Abierto (Open Individual) — 1ro: $100 | 2do: $75 | 3ro: $65 (x2)<br>
           Seniors 40 años o más — 1ro: $35 | 2do: $25 | 3ro: $20 (x2)<br>
           7 o menos Abierto — Trofeo 1° al 4° + Medalla 5°-8°<br>
           9 o menos Femenino — Trofeo 1° al 4° + Medalla 5°-8°<br>
@@ -4992,7 +4995,7 @@ Maria Lopez,Ana Torres,B</code>
           13 o menos Femenino — 1ro: $35 | 2do: $30 | 3ro: $25 (x2)<br>
           13 o menos Masculino — 1ro: $35 | 2do: $30 | 3ro: $25 (x2)
         </div>
-        <div style="font-size:12px;color:var(--muted);margin-top:10px;">Costo por categoría: $20.00 · 7 años o menos: $11.00</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:10px;">Costo por categoría: $20.00 · Abierta (Open): $25.00 · 7 años o menos: $11.00</div>
       </div>
 
       <div style="margin-bottom:18px;">
@@ -11072,6 +11075,7 @@ const INSC_CATEGORIES = [
   // ── Domingo 27 de septiembre ──
   { id: 'ev8',  name: '1600 o Menos',            desc: 'Premiación: $55 · $45 · $35 (x2)',                            price: 20, slot: 'D27-900',  maxRating: 1600, ratingGroup: 'rating' },
   { id: 'ev9',  name: '1800 o Menos',            desc: 'Premiación: $70 · $60 · $50 (x2)',                            price: 20, slot: 'D27-900',  maxRating: 1800, ratingGroup: 'rating' },
+  { id: 'ev16', name: 'Abierto (Open Individual)', desc: 'Premiación: $100 · $75 · $65 (x2) · Todos los niveles',    price: 25, slot: 'D27-1200', openDivision: true },
   { id: 'ev10', name: 'Seniors – 40 años o más', desc: 'Premiación: $35 · $25 · $20 (x2) · Mixto',                    price: 20, slot: 'D27-1200', minAge: 40 },
   { id: 'ev11', name: '7 o Menos Abierto',       desc: 'Trofeo 1° al 4° · Medalla 5°-8° · menores de 8 al 31-dic',   price: 11, slot: 'D27-1200', maxAge: 7 },
   { id: 'ev12', name: '9 o Menos Femenino',      desc: 'Trofeo 1° al 4° · Medalla 5°-8° · menores de 10 al 31-dic',  price: 20, slot: 'D27-1200', maxAge: 9,  sex: 'F' },
