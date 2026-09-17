@@ -61,7 +61,7 @@ el aviso *"Vista previa"* para poder probarlo sin que entre nadie más.
 | **Política de ascenso** | Para subir de categoría hay que estar inscrito en la natural. El sistema la exige y la ofrece. Si las dos caen a la misma hora la regla no aplica, porque sería imposible cumplirla. |
 | **Edad por año natural** | Al 31 de diciembre de 2026, como dice el reglamento. |
 | **Cuota de no miembro** | $10.00 de cargo base a quien no sea miembro activo; $0 al miembro. |
-| **Precio** | $20.00 por categoría; $11.00 la de 7 años o menos. |
+| **Precio** | $20.00 por categoría; $25.00 la Abierta (Open); $11.00 la de 7 años o menos. |
 | **Multas por no arbitrar** | Se cobran una sola vez, en la primera inscripción del torneo (`INSC_MULTAS`). |
 | **Créditos** | Un crédito aprobado de una cancelación anterior se aplica solo al total. |
 
@@ -132,12 +132,18 @@ botones "Parte 1 / Parte 2" ni el de dobles: va todo en un archivo.
 | 7 | 11 o menos Masculino | Sáb 26 | 2:00 p.m. | $20 | $30 · $25 · $20 (x2) |
 | 8 | Rating 1600 o menos | Dom 27 | 9:00 a.m. | $20 | $55 · $45 · $35 (x2) |
 | 9 | Rating 1800 o menos | Dom 27 | 9:00 a.m. | $20 | $70 · $60 · $50 (x2) |
-| 10 | Seniors 40 años o más (Mixto) | Dom 27 | 12:00 p.m. | $20 | $35 · $25 · $20 (x2) |
-| 11 | 7 o menos Abierto | Dom 27 | 12:00 p.m. | $11 | Trofeo 1°-4° · Medalla 5°-8° |
-| 12 | 9 o menos Femenino | Dom 27 | 12:00 p.m. | $20 | Trofeo 1°-4° · Medalla 5°-8° |
-| 13 | 9 o menos Masculino | Dom 27 | 12:00 p.m. | $20 | Trofeo 1°-4° · Medalla 5°-8° |
-| 14 | 13 o menos Femenino | Dom 27 | 2:00 p.m. | $20 | $35 · $30 · $25 (x2) |
-| 15 | 13 o menos Masculino | Dom 27 | 2:00 p.m. | $20 | $35 · $30 · $25 (x2) |
+| 10 | Abierto (Open Individual) | Dom 27 | 12:00 p.m. | $25 | $100 · $75 · $65 (x2) |
+| 11 | Seniors 40 años o más (Mixto) | Dom 27 | 12:00 p.m. | $20 | $35 · $25 · $20 (x2) |
+| 12 | 7 o menos Abierto | Dom 27 | 12:00 p.m. | $11 | Trofeo 1°-4° · Medalla 5°-8° |
+| 13 | 9 o menos Femenino | Dom 27 | 12:00 p.m. | $20 | Trofeo 1°-4° · Medalla 5°-8° |
+| 14 | 9 o menos Masculino | Dom 27 | 12:00 p.m. | $20 | Trofeo 1°-4° · Medalla 5°-8° |
+| 15 | 13 o menos Femenino | Dom 27 | 2:00 p.m. | $20 | $35 · $30 · $25 (x2) |
+| 16 | 13 o menos Masculino | Dom 27 | 2:00 p.m. | $20 | $35 · $30 · $25 (x2) |
 
 No se juegan partidos por el 3er y 4to lugar: se premian **dos terceros
 lugares** en todas las categorías.
+
+> La **Abierta (Open)** queda fuera de la escalera de ascenso: es para todos
+> los niveles, así que no exige ninguna categoría natural previa. Comparte
+> horario con Seniors y con las de 7 y 9 o menos (domingo 12:00 p.m.), así
+> que quien juegue la Abierta no puede jugar ninguna de esas.
