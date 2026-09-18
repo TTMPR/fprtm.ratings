@@ -16003,6 +16003,11 @@ function renderExportModal() {
     if (ev.modo === 'equipos') {
       botones = btn(`exportEquiposCSV('${ev.id}')`, '&#128101;', 'Equipos inscritos',
                     'Parejas, división, pagos y contacto', '#38bdf8');
+      // Stadium arma el equipo por id de jugador, así que van en ese orden.
+      botones += btn(`exportEquiposStadium('${ev.id}','jugadores')`, '1&#65039;&#8419;',
+                     'Stadium · Jugadores', 'Import Players — súbelo primero', '#34d399');
+      botones += btn(`exportEquiposStadium('${ev.id}','equipos')`, '2&#65039;&#8419;',
+                     'Stadium · Equipos', 'Import Teams — parejas por id', '#34d399');
     } else {
       botones = btn(`exportInscritosCSV('${ev.id}')`, '&#129534;', 'Inscritos',
                     'Jugador, categorías, total y pagos', '#38bdf8');
@@ -16144,6 +16149,141 @@ async function exportEquiposCSV(eventoId) {
     const n = filas.length;
     alert(`${ev.nombre}: ${n} equipo${n === 1 ? '' : 's'} exportado${n === 1 ? '' : 's'}.`
         + (fuera ? `\n${fuera} equipo${fuera === 1 ? '' : 's'} cancelado${fuera === 1 ? '' : 's'} / expirado${fuera === 1 ? '' : 's'} quedaron fuera.` : ''));
+  } catch (e) {
+    alert('Error al exportar: ' + e.message);
+  }
+}
+
+// ── EQUIPOS → PLANTILLA "IMPORT TEAMS" DE STADIUM ─────────────────────────
+// Stadium no importa nombres: arma el equipo con los ids de jugador que ya
+// tiene cargados. Así que el archivo de equipos solo sirve si antes entraron
+// los jugadores con ESE mismo id. Por eso son dos archivos: primero jugadores
+// (Import Players), después equipos (Import Teams), ambos con el Member ID de
+// la FPRTM como id — igual que el export de inscritos individuales.
+//
+// Columnas exactas de la plantilla "STADIUM_ Import Templates - Import Teams".
+const STADIUM_TEAMS_HEADERS =
+  ['id','name','players','captain','homeClub','city','state','country','events','archived'];
+
+// Evento de Stadium al que entra cada división. Vacío = todavía no está creado
+// allá; el CSV sale sin evento y el equipo se asigna en Stadium. Es preferible
+// a mandar un id inventado: con un id que no existe Stadium mete al equipo
+// donde no va.
+const STADIUM_COPA_EVENTS = { div1: '', div2: '', div3: '' };
+
+// Los dos jugadores de un equipo, el capitán primero — que es el orden en que
+// Stadium espera la columna `players`.
+const copaJugadoresDe = r => [
+  { id: r.cap_member_id,  nombre: r.cap_nombre,  rating: r.cap_rating,  invitado: !!r.cap_invitado },
+  { id: r.comp_member_id, nombre: r.comp_nombre, rating: r.comp_rating, invitado: !!r.comp_invitado },
+];
+
+const copaNombreEquipoCSV = r =>
+  (r.nombre_equipo || '').trim()
+  || [r.cap_nombre, r.comp_nombre].filter(Boolean).join(' / ')
+  || `Equipo ${r.id}`;
+
+// que: 'equipos' | 'jugadores'
+async function exportEquiposStadium(eventoId, que = 'equipos') {
+  if (!currentUser) { showLogin(); return; }
+  const ev = EVENTOS.find(e => e.id === eventoId);
+  if (!ev) return;
+  try {
+    const { data, error } = await _supabase
+      .from('insc_equipos').select('*')
+      .eq('torneo', ev.torneo)
+      .order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+
+    // Solo el listado oficial. Un equipo cancelado no se sube a Stadium.
+    const oficiales = (data || []).filter(copaEsOficial);
+    if (!oficiales.length) { alert(`No hay equipos activos en ${ev.nombre}.`); return; }
+
+    // Sin Member ID no hay a quién referenciar: ese equipo se entra a mano.
+    const listos = [], incompletos = [];
+    oficiales.forEach(r => (copaJugadoresDe(r).every(j => j.id) ? listos : incompletos).push(r));
+    if (!listos.length) {
+      alert(`${ev.nombre}: ningún equipo tiene los dos jugadores con número FPRTM.\n`
+          + `Stadium referencia a cada jugador por id, así que estos ${oficiales.length} `
+          + `equipo(s) hay que entrarlos a mano.`);
+      return;
+    }
+
+    const slug  = torneoSlug(ev.torneo);
+    const hoy   = new Date().toISOString().split('T')[0];
+    const aviso = [];
+
+    if (que === 'jugadores') {
+      // Datos personales: la fila del equipo solo guarda nombre y rating.
+      const ids = [...new Set(listos.flatMap(r => copaJugadoresDe(r).map(j => j.id)))];
+      const { data: pl, error: plErr } = await _supabase
+        .from('Base de Datos')
+        .select('"Member ID","First Name","Last Name","Rating","New Rating","Sex","Email","Date of Birth","Club"')
+        .in('"Member ID"', ids);
+      if (plErr) throw new Error(plErr.message);
+      const porId = {};
+      (pl || []).forEach(x => { porId[x['Member ID']] = x; });
+
+      const cab = ['id','firstName','lastName','rating','sex','dob','email',
+                   'country','membershipIds','clubId'];
+      const vistos = new Set();
+      const filas = [];
+      listos.forEach(r => copaJugadoresDe(r).forEach(j => {
+        if (vistos.has(j.id)) return;          // un jugador no se sube dos veces
+        vistos.add(j.id);
+        const b     = porId[j.id] || {};
+        const parts = (j.nombre || '').trim().split(/\s+/);
+        filas.push([
+          j.id,
+          b['First Name'] || parts[0] || '',
+          b['Last Name']  || parts.slice(1).join(' ') || '',
+          b['New Rating'] ?? b['Rating'] ?? j.rating ?? '',
+          normSexForForm(b['Sex']) || '',
+          normDobForInput(b['Date of Birth']) || '',
+          b['Email'] || '',
+          'US',
+          `fptm|${j.id}`,
+          matchClubId(r.club || b['Club'] || ''),
+        ]);
+      }));
+      descargarCSV(`stadium_jugadores_${slug}_${hoy}.csv`, cab, filas);
+      aviso.push(`${filas.length} jugador${filas.length === 1 ? '' : 'es'} en formato Import Players.`);
+    } else {
+      const sinEvento = new Set();
+      const filas = listos.map(r => {
+        const evStadium = STADIUM_COPA_EVENTS[r.division] || '';
+        if (!evStadium) sinEvento.add(r.division || 'sin división');
+        return [
+          r.id,
+          copaNombreEquipoCSV(r),
+          copaJugadoresDe(r).map(j => j.id).join(','),   // "123,456"
+          r.cap_member_id,
+          matchClubId(r.club),                            // Stadium pide el UUID del club
+          '', '', 'US',
+          evStadium,
+          '',
+        ];
+      });
+      descargarCSV(`stadium_equipos_${slug}_${hoy}.csv`, STADIUM_TEAMS_HEADERS, filas);
+      aviso.push(`${filas.length} equipo${filas.length === 1 ? '' : 's'} en formato Import Teams.`);
+      aviso.push('Sube primero el CSV de jugadores: Stadium arma el equipo por id.');
+      if (sinEvento.size) {
+        aviso.push(`⚠ Sin evento de Stadium (columna events vacía): ${[...sinEvento].join(', ')}.`
+                 + ' Asigna la división en Stadium o llena STADIUM_COPA_EVENTS.');
+      }
+    }
+
+    const sinClub = listos.filter(r => !matchClubId(r.club)).length;
+    if (sinClub) aviso.push(`${sinClub} equipo(s) sin club reconocido — esa columna va vacía.`);
+    if (incompletos.length) {
+      aviso.push(`\n${incompletos.length} equipo(s) quedaron fuera por no tener los dos `
+               + `números FPRTM (invitado o compañero por definir):\n• `
+               + incompletos.map(copaNombreEquipoCSV).join('\n• '));
+    }
+
+    const modal = document.getElementById('exportStadiumModal');
+    if (modal) modal.style.display = 'none';
+    alert(`${ev.nombre} — Stadium\n\n${aviso.join('\n')}`);
   } catch (e) {
     alert('Error al exportar: ' + e.message);
   }
