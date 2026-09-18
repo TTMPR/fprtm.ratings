@@ -61,6 +61,9 @@
     --border: rgba(255,255,255,0.08);
     --card: rgba(255,255,255,0.04);
     --card2: rgba(255,255,255,0.07);
+    /* Fondo opaco de los modales. Varios lo usaban sin que existiera, así que
+       se veían transparentes y la página de detrás se leía a través de ellos. */
+    --bg: #111118;
   }
 
   /* ─── TAREA 2: Reset global — App Feel ─── */
@@ -2733,7 +2736,7 @@ Maria Lopez,Ana Torres,B</code>
           <div class="adm-ico">📤</div>
           <div>
             <div class="adm-title">Exportar Inscritos</div>
-            <div class="adm-desc">CSV para Stadium</div>
+            <div class="adm-desc">CSV de todos los torneos corriendo</div>
           </div>
         </div>
         <div id="adminCardReporte" class="adm-card" onclick="showInscReporteModal()">
@@ -11866,7 +11869,9 @@ function applyTorneoArchivoAdminCards() {
 
   const verIndiv = indivArchivado ? 'none' : '';
   if (cardGestionar)  cardGestionar.style.display  = verIndiv;
-  if (cardExportar)   cardExportar.style.display   = verIndiv;
+  // Exportar cubre todos los torneos, no solo el individual: se queda a la
+  // vista aunque ese esté archivado, porque el otro puede seguir vivo.
+  if (cardExportar)   cardExportar.style.display   = '';
   if (cardReporte)    cardReporte.style.display    = verIndiv;
   if (cardLogistica)  cardLogistica.style.display  = verIndiv;
   if (cardPast)       cardPast.style.display       = indivArchivado ? '' : 'none';
@@ -13868,11 +13873,14 @@ function copaAdminBadge() {
   b.textContent = String(n);
 }
 
-function copaAdminExportarCSV() {
+// El mismo archivo lo piden dos sitios: el botón de "Gestionar Equipos" (con
+// los equipos ya cargados en pantalla) y el modal de exportar (que los trae
+// él mismo). Por eso el armado vive aparte de quién se los da.
+function equiposFilasACSV(filas, torneo) {
   const cab = ['id','estado','division','nombre_equipo','club',
                'jugador_1','fptm_1','rating_1','jugador_2','fptm_2','rating_2',
                'rating_combinado','costo','monto_pagado','credito','referencia','email','telefono','inscrito','notas'];
-  const filas = _copaAdminData.map(r => [
+  const datos = filas.map(r => [
     r.id, r.estado, r.division || '', r.nombre_equipo || '', r.club || '',
     r.cap_nombre, r.cap_member_id ?? '', r.cap_rating ?? '',
     r.comp_nombre || 'POR DEFINIR', r.comp_member_id ?? '', r.comp_rating ?? '',
@@ -13880,16 +13888,11 @@ function copaAdminExportarCSV() {
     r.cap_email || '', r.cap_tel || '',
     (r.created_at || '').split('T')[0], r.notas || '',
   ]);
-  const csv = [cab, ...filas]
-    .map(f => f.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
-    .join('\n');
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `equipos_copa_olimpica_${new Date().toISOString().split('T')[0]}.csv`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  descargarCSV(`equipos_${torneoSlug(torneo)}_${new Date().toISOString().split('T')[0]}.csv`, cab, datos);
+}
+
+function copaAdminExportarCSV() {
+  equiposFilasACSV(_copaAdminData, COPA_TORNEO);
 }
 
 
@@ -15918,7 +15921,7 @@ async function exportInscripcionesStadium(parte = null) {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url;
-    a.download = `inscritos_${slug}${sufijo}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `stadium_${slug}${sufijo}_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -15939,28 +15942,183 @@ async function exportInscripcionesStadium(parte = null) {
 }
 
 // Elige qu\u00e9 fin de semana subir a Stadium antes de generar el CSV
+// ── EXPORTAR: TODOS LOS TORNEOS CORRIENDO ─────────────────────────────────
+// La página sirve a varios torneos a la vez, así que el export también. El
+// modal se dibuja desde EVENTOS: un bloque por torneo, y cada uno ofrece solo
+// los archivos que sabe dar (el individual, sus inscritos y el CSV de
+// Stadium; el de equipos, sus equipos). No depende de cuál se esté mirando.
 function showExportStadiumModal() {
   if (!currentUser) { showLogin(); return; }
-  // Las opciones que el torneo no tiene (partes, dobles) no se enseñan: en un
-  // torneo de un solo fin de semana pedirían un archivo que saldría vacío.
-  const hayDobles = INSC_CATEGORIES.some(c => c.dobles);
-  [1, 2].forEach(n => {
-    const b = document.getElementById('expStadiumParte' + n);
-    if (b) b.style.display = TORNEO_TIENE_PARTES ? '' : 'none';
-    const d = document.getElementById(`expStadiumParte${n}Dias`);
-    if (d) d.textContent = INSC_DAYS.filter(x => x.parte === n).map(x => x.label).join(' y ');
-  });
-  const bd = document.getElementById('expStadiumDobles');
-  if (bd) bd.style.display = hayDobles ? '' : 'none';
-  const nota = document.getElementById('expStadiumNota');
-  if (nota) nota.textContent = TORNEO_TIENE_PARTES
-    ? 'Cada archivo incluye solo las categorías que el jugador juega en ese fin de semana. Quien no compita en la parte elegida no aparece en el archivo.'
-    : `Un solo archivo con todos los inscritos del ${TORNEO_ACTIVO}.`;
+  renderExportModal();
   document.getElementById('exportStadiumModal').style.display = 'flex';
 }
+
+// Torneos que tiene sentido exportar: los que no están archivados. Si alguien
+// archivó todo, se enseñan igual — mejor un archivo de más que un panel vacío.
+function eventosExportables() {
+  const vivos = EVENTOS.filter(ev => !inscEstado(ev.id).archivado);
+  return vivos.length ? vivos : EVENTOS;
+}
+
+function renderExportModal() {
+  const cont = document.getElementById('expTorneosLista');
+  if (!cont) return;
+
+  const btn = (onclick, icono, titulo, sub, color) => `
+    <button onclick="${onclick}"
+      style="display:flex;align-items:center;gap:12px;background:${color ? color + '14' : 'none'};
+             border:1px solid ${color ? color + '4d' : 'var(--border)'};border-radius:11px;padding:12px 15px;
+             cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
+      <span style="font-size:19px;">${icono}</span>
+      <span style="flex:1;min-width:0;">
+        <span style="display:block;font-size:13.5px;font-weight:700;color:var(--text);">${titulo}</span>
+        <span style="display:block;font-size:11.5px;color:var(--muted);margin-top:1px;">${sub}</span>
+      </span>
+      <span style="color:${color || 'var(--muted)'};font-size:12px;font-weight:700;white-space:nowrap;">&darr; CSV</span>
+    </button>`;
+
+  cont.innerHTML = eventosExportables().map(ev => {
+    const esteEs = ev.id === EVENTO_VISTA ? ' · en pantalla' : '';
+    let botones = '';
+
+    if (ev.modo === 'equipos') {
+      botones = btn(`exportEquiposCSV('${ev.id}')`, '&#128101;', 'Equipos inscritos',
+                    'Parejas, división, pagos y contacto', '#38bdf8');
+    } else {
+      botones = btn(`exportInscritosCSV('${ev.id}')`, '&#129534;', 'Inscritos',
+                    'Jugador, categorías, total y pagos', '#38bdf8');
+      // El CSV de Stadium solo sirve si las categorías están verificadas
+      // contra el evento de Stadium; si no, el propio export avisa.
+      if (TORNEO_TIENE_PARTES) {
+        [1, 2].forEach(n => {
+          const dias = INSC_DAYS.filter(d => d.parte === n).map(d => d.label).join(' y ');
+          botones += btn(`exportStadiumParte(${n})`, `${n}&#65039;&#8419;`, `Stadium · Parte ${n}`, dias, '#34d399');
+        });
+      } else {
+        botones += btn('exportStadiumParte(null)', '&#128203;', 'Stadium Compete',
+                       'Formato de importación de Stadium', '#34d399');
+      }
+      if (INSC_CATEGORIES.some(c => c.dobles)) {
+        botones += btn('document.getElementById(\'exportStadiumModal\').style.display=\'none\';exportDoblesStadium()',
+                       '&#128107;', 'Dobles', 'Una fila por pareja, con nombre corto', '#f87171');
+      }
+    }
+
+    return `<div>
+      <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:.11em;
+                  text-transform:uppercase;color:var(--accent);margin-bottom:8px;">
+        ${ev.nombre}<span style="color:var(--muted);font-weight:600;letter-spacing:0;text-transform:none;">${esteEs}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">${botones}</div>
+    </div>`;
+  }).join('');
+}
+
 function exportStadiumParte(parte) {
   document.getElementById('exportStadiumModal').style.display = 'none';
   exportInscripcionesStadium(parte);
+}
+
+// Un CSV se arma siempre igual: cabecera, filas, comillas dobles escapadas y
+// BOM para que Excel respete los acentos.
+function descargarCSV(nombreArchivo, cabecera, filas) {
+  const csv = [cabecera, ...filas]
+    .map(f => f.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = nombreArchivo;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+const torneoSlug = t => String(t).toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
+// ── Inscritos de un torneo individual ─────────────────────────────────────
+// El CSV de Stadium omite las categorías que no estén verificadas contra su
+// evento, así que no sirve para tener la lista en la mano. Este sí: sale tal
+// cual de insc_registro, con el rating y el email traídos de la base.
+async function exportInscritosCSV(eventoId) {
+  if (!currentUser) { showLogin(); return; }
+  const ev = EVENTOS.find(e => e.id === eventoId);
+  if (!ev) return;
+  try {
+    const { data: inscs, error } = await _supabase
+      .from('insc_registro').select('*')
+      .eq('torneo', ev.torneo)
+      .order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+    if (!inscs || !inscs.length) { alert(`No hay inscritos en ${ev.nombre}.`); return; }
+
+    // Rating y email salen de la base, no de la inscripción: así el archivo
+    // lleva el dato de hoy aunque el jugador se inscribiera hace semanas.
+    const ids = [...new Set(inscs.map(i => i.member_id).filter(Boolean))];
+    let porId = {};
+    if (ids.length) {
+      const { data: pl } = await _supabase
+        .from('Base de Datos')
+        .select('"Member ID","Rating","New Rating","Email"')
+        .in('"Member ID"', ids);
+      (pl || []).forEach(p => { porId[p['Member ID']] = p; });
+    }
+
+    const cab = ['#', 'nombre', 'fptm_id', 'member_id', 'rating', 'email', 'club', 'sexo',
+                 'fecha_nac', 'categorias', 'num_categorias', 'base', 'total',
+                 'monto_pagado', 'pagado', 'referencia', 'cancelacion', 'inscrito'];
+    const filas = inscs.map((r, i) => {
+      const cats = Array.isArray(r.categorias) ? r.categorias : [];
+      const p = porId[r.member_id] || {};
+      const cancel = r.cancel_status
+        ? `${r.cancel_status}${r.cancel_tipo ? ' · ' + r.cancel_tipo : ''}`
+        : (r.cancel_requested ? 'pendiente' : '');
+      return [
+        i + 1, r.nombre || '', r.fptm_id || '', r.member_id ?? '',
+        p['New Rating'] ?? p['Rating'] ?? '', p['Email'] || '',
+        r.club || '', r.sex || '', r.dob || '',
+        cats.map(c => c.name + (c.pareja ? ` (pareja: ${c.pareja})` : '')).join(' | '),
+        cats.length, r.base ?? 0, r.total ?? 0, r.monto_pagado ?? 0,
+        r.pagado ? 'SI' : 'NO', r.referencia || '', cancel,
+        (r.created_at || '').split('T')[0],
+      ];
+    });
+
+    const pagados = inscs.filter(r => r.pagado).length;
+    const cobrado = inscs.reduce((a, r) => a + (Number(r.monto_pagado) || 0), 0);
+    descargarCSV(`inscritos_${torneoSlug(ev.torneo)}_${new Date().toISOString().split('T')[0]}.csv`, cab, filas);
+    document.getElementById('exportStadiumModal').style.display = 'none';
+    const n = inscs.length;
+    alert(`${ev.nombre}: ${n} inscripci${n === 1 ? 'ón' : 'ones'} `
+        + `(${pagados} pagada${pagados === 1 ? '' : 's'} · $${cobrado.toFixed(2)} cobrados).`);
+  } catch (e) {
+    alert('Error al exportar: ' + e.message);
+  }
+}
+
+// ── Equipos de un torneo por equipos ──────────────────────────────────────
+// Trae los equipos él mismo, así que funciona sin haber abierto antes el
+// panel "Gestionar Equipos".
+async function exportEquiposCSV(eventoId) {
+  if (!currentUser) { showLogin(); return; }
+  const ev = EVENTOS.find(e => e.id === eventoId);
+  if (!ev) return;
+  try {
+    const { data, error } = await _supabase
+      .from('insc_equipos').select('*')
+      .eq('torneo', ev.torneo)
+      .order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+    if (!data || !data.length) { alert(`No hay equipos inscritos en ${ev.nombre}.`); return; }
+    equiposFilasACSV(data, ev.torneo);
+    document.getElementById('exportStadiumModal').style.display = 'none';
+    const n = data.length;
+    alert(`${ev.nombre}: ${n} equipo${n === 1 ? '' : 's'} exportado${n === 1 ? '' : 's'}.`);
+  } catch (e) {
+    alert('Error al exportar: ' + e.message);
+  }
 }
 
 // Doubles CSV: one row per pair. Stadium has no team import, so each pair goes
@@ -18358,60 +18516,24 @@ async function submitPublicReg() {
 </div>
 
 <!-- ══════════════════════════════════════════
-     EXPORTAR A STADIUM — ELEGIR PARTE
+     EXPORTAR INSCRITOS — TODOS LOS TORNEOS CORRIENDO
+     El cuerpo lo dibuja renderExportModal() desde EVENTOS: un bloque por
+     torneo, con los archivos que ese torneo sabe dar.
 ═══════════════════════════════════════════ -->
 <div id="exportStadiumModal" role="dialog" aria-modal="true" aria-labelledby="expStadiumTitle"
   style="display:none;position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,0.82);
-         align-items:center;justify-content:center;padding:16px;">
+         align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
   <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;
-              max-width:420px;width:100%;padding:24px;">
+              max-width:460px;width:100%;padding:24px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,0.55);">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-      <div id="expStadiumTitle" style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px;">Exportar a Stadium</div>
+      <div id="expStadiumTitle" style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:1px;">Exportar inscritos</div>
       <button onclick="document.getElementById('exportStadiumModal').style.display='none'"
         aria-label="Cerrar" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">&times;</button>
     </div>
-    <p id="expStadiumNota" style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0 0 18px;">
-      Cada archivo incluye solo las categorías que el jugador juega en ese fin de semana.
-      Quien no compita en la parte elegida no aparece en el archivo.
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin:0 0 18px;">
+      Un bloque por torneo con inscripciones abiertas o sin archivar.
     </p>
-    <div style="display:flex;flex-direction:column;gap:9px;">
-      <button id="expStadiumParte1" onclick="exportStadiumParte(1)"
-        style="display:flex;align-items:center;gap:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
-        <span style="font-size:20px;">1&#65039;&#8419;</span>
-        <span style="flex:1;">
-          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Parte 1</span>
-          <span id="expStadiumParte1Dias" style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">&mdash;</span>
-        </span>
-        <span style="color:var(--accent);font-size:13px;font-weight:700;">&darr; CSV</span>
-      </button>
-      <button id="expStadiumParte2" onclick="exportStadiumParte(2)"
-        style="display:flex;align-items:center;gap:12px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.3);border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
-        <span style="font-size:20px;">2&#65039;&#8419;</span>
-        <span style="flex:1;">
-          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Parte 2</span>
-          <span id="expStadiumParte2Dias" style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">&mdash;</span>
-        </span>
-        <span style="color:#34d399;font-size:13px;font-weight:700;">&darr; CSV</span>
-      </button>
-      <button id="expStadiumDobles" onclick="document.getElementById('exportStadiumModal').style.display='none';exportDoblesStadium()"
-        style="display:flex;align-items:center;gap:12px;background:rgba(204,0,12,0.07);border:1px solid rgba(204,0,12,0.3);border-radius:11px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
-        <span style="font-size:20px;">&#128101;</span>
-        <span style="flex:1;">
-          <span style="display:block;font-size:14px;font-weight:700;color:var(--text);">Dobles Abierto</span>
-          <span style="display:block;font-size:12px;color:var(--muted);margin-top:1px;">Una fila por pareja, con nombre corto</span>
-        </span>
-        <span style="color:#f87171;font-size:13px;font-weight:700;">&darr; CSV</span>
-      </button>
-      <button onclick="exportStadiumParte(null)"
-        style="display:flex;align-items:center;gap:12px;background:none;border:1px solid var(--border);border-radius:11px;padding:12px 16px;cursor:pointer;text-align:left;width:100%;font-family:'Inter',sans-serif;">
-        <span style="font-size:18px;">&#128203;</span>
-        <span style="flex:1;">
-          <span style="display:block;font-size:13px;font-weight:600;color:var(--muted);">Todo el torneo</span>
-          <span style="display:block;font-size:11px;color:var(--muted);margin-top:1px;">Todas las fechas en un solo archivo</span>
-        </span>
-        <span style="color:var(--muted);font-size:12px;font-weight:700;">&darr; CSV</span>
-      </button>
-    </div>
+    <div id="expTorneosLista" style="display:flex;flex-direction:column;gap:18px;"></div>
   </div>
 </div>
 

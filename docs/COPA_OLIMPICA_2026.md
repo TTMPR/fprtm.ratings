@@ -137,7 +137,7 @@ venciendo en menos de 24 horas**. Ese es el número que hay que atender.
 | **⚖️ Aprobar / ⬇ Bajar** | Solo en equipos en revisión técnica: la Dirección Técnica decide si acepta la excepción o baja al equipo ajustando el costo. |
 | **🎫 Liberar y dar crédito** | Para el que compró cupo y nunca nombró compañero: libera el cupo y registra el dinero como crédito. |
 | **⟳ Promover lista de espera** | Mueve la espera a los cupos que hayan quedado libres. **No cancela a nadie.** Corre sola en cada inscripción nueva; el botón es para forzarla tras una cancelación. |
-| **⬇ CSV** | Todos los equipos con contacto, montos y referencias. |
+| **⬇ CSV** | Todos los equipos con contacto, montos y referencias. El mismo archivo sale de **Exportar Inscritos** en el panel, sin tener que abrir esta pantalla. |
 
 ### A quién perseguir
 
