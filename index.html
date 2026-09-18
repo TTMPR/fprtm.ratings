@@ -13555,6 +13555,11 @@ const COPA_ESTADOS = {
 
 const COPA_INACTIVOS = ['expirado', 'cancelado', 'credito'];
 
+// Un equipo cuenta para el torneo mientras no esté cancelado, expirado o
+// convertido en crédito. Los que aún deben algo (reserva sin pagar, sin
+// compañero, división por asignar, lista de espera) siguen siendo oficiales.
+const copaEsOficial = r => !COPA_INACTIVOS.includes(r.estado);
+
 const copaHorasRestantes = row => row.reserva_expira
   ? (new Date(row.reserva_expira) - Date.now()) / 3600000 : null;
 
@@ -13565,6 +13570,32 @@ function copaVencidaSinPago(row) {
   return ['reservado', 'esperando_companero'].includes(row.estado)
       && h !== null && h <= 0
       && (Number(row.monto_pagado) || 0) === 0;
+}
+
+// Los equipos que hay en pantalla ahora mismo: el filtro de estado y la
+// búsqueda. Sin filtro esto es el listado oficial — los cancelados, expirados
+// y los de crédito quedan fuera. Lo usan la lista y el CSV, para que exportar
+// dé exactamente lo que se está viendo.
+function copaAdminFilas() {
+  const q      = (document.getElementById('copaAdminBuscar')?.value || '').trim().toLowerCase();
+  const filtro = document.getElementById('copaAdminFiltro')?.value || '';
+
+  let filas = _copaAdminData.filter(r => {
+    if (filtro === 'vencida') return copaVencidaSinPago(r);
+    if (filtro === 'vence') {
+      const h = copaHorasRestantes(r);
+      return ['reservado', 'esperando_companero'].includes(r.estado) && h !== null && h > 0 && h <= 24;
+    }
+    if (filtro === 'expirado') return COPA_INACTIVOS.includes(r.estado);
+    if (filtro)                return r.estado === filtro;
+    return copaEsOficial(r);
+  });
+
+  if (q) {
+    filas = filas.filter(r => [r.cap_nombre, r.comp_nombre, r.nombre_equipo, r.club, r.referencia]
+      .some(v => (v || '').toLowerCase().includes(q)));
+  }
+  return filas;
 }
 
 function copaAdminRender() {
@@ -13603,24 +13634,7 @@ function copaAdminRender() {
   }
 
   // ── Filtros ──
-  const q      = (document.getElementById('copaAdminBuscar')?.value || '').trim().toLowerCase();
-  const filtro = document.getElementById('copaAdminFiltro')?.value || '';
-
-  let filas = _copaAdminData.filter(r => {
-    if (filtro === 'vencida') return copaVencidaSinPago(r);
-    if (filtro === 'vence') {
-      const h = copaHorasRestantes(r);
-      return ['reservado', 'esperando_companero'].includes(r.estado) && h !== null && h > 0 && h <= 24;
-    }
-    if (filtro === 'expirado') return COPA_INACTIVOS.includes(r.estado);
-    if (filtro)                return r.estado === filtro;
-    return !COPA_INACTIVOS.includes(r.estado);
-  });
-
-  if (q) {
-    filas = filas.filter(r => [r.cap_nombre, r.comp_nombre, r.nombre_equipo, r.club, r.referencia]
-      .some(v => (v || '').toLowerCase().includes(q)));
-  }
+  const filas = copaAdminFilas();
 
   if (!filas.length) {
     lista.innerHTML = '<div style="padding:36px 0;color:var(--muted);font-size:13.5px;">Ningún equipo coincide con el filtro.</div>';
@@ -13892,7 +13906,12 @@ function equiposFilasACSV(filas, torneo) {
 }
 
 function copaAdminExportarCSV() {
-  equiposFilasACSV(_copaAdminData, COPA_TORNEO);
+  const filas = copaAdminFilas();
+  if (!filas.length) { copaAdminMsg('No hay equipos que exportar con este filtro.', false); return; }
+  const fuera = _copaAdminData.length - filas.length;
+  equiposFilasACSV(filas, COPA_TORNEO);
+  copaAdminMsg(`${filas.length} equipo${filas.length === 1 ? '' : 's'} exportado${filas.length === 1 ? '' : 's'}`
+    + (fuera ? ` · ${fuera} fuera del listado` : ''));
 }
 
 
@@ -16112,10 +16131,19 @@ async function exportEquiposCSV(eventoId) {
       .order('created_at', { ascending: true });
     if (error) throw new Error(error.message);
     if (!data || !data.length) { alert(`No hay equipos inscritos en ${ev.nombre}.`); return; }
-    equiposFilasACSV(data, ev.torneo);
+    // Solo el listado oficial: quien canceló, expiró o se fue con crédito ya no
+    // juega y no debe aparecer en el archivo que se usa para armar el torneo.
+    const filas = data.filter(copaEsOficial);
+    const fuera = data.length - filas.length;
+    if (!filas.length) {
+      alert(`${ev.nombre}: no queda ningún equipo activo (${fuera} cancelado${fuera === 1 ? '' : 's'} o expirado${fuera === 1 ? '' : 's'}).`);
+      return;
+    }
+    equiposFilasACSV(filas, ev.torneo);
     document.getElementById('exportStadiumModal').style.display = 'none';
-    const n = data.length;
-    alert(`${ev.nombre}: ${n} equipo${n === 1 ? '' : 's'} exportado${n === 1 ? '' : 's'}.`);
+    const n = filas.length;
+    alert(`${ev.nombre}: ${n} equipo${n === 1 ? '' : 's'} exportado${n === 1 ? '' : 's'}.`
+        + (fuera ? `\n${fuera} equipo${fuera === 1 ? '' : 's'} cancelado${fuera === 1 ? '' : 's'} / expirado${fuera === 1 ? '' : 's'} quedaron fuera.` : ''));
   } catch (e) {
     alert('Error al exportar: ' + e.message);
   }
