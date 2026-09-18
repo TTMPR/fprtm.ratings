@@ -103,19 +103,38 @@ código usa una tentativa: **jueves 24 de septiembre, 10:00 p.m. AST**
 
 ---
 
-## 5. Export a Stadium Compete
+## 5. Exportar — todos los torneos desde un sitio
+
+La tarjeta **Exportar Inscritos** del panel abre un modal con **un bloque por
+torneo que no esté archivado**, y cada uno ofrece los archivos que sabe dar.
+No depende de cuál esté seleccionado en los chips: si hay dos torneos
+corriendo, salen los dos.
+
+| Torneo | Archivo | Qué lleva |
+|---|---|---|
+| Lares Open (individual) | **Inscritos** | Jugador, FPTM ID, rating y email de la base, club, sexo, fecha de nacimiento, categorías, base, total, monto pagado, referencia, estado de cancelación y fecha |
+| Lares Open (individual) | **Stadium Compete** | El formato de importación de Stadium |
+| Copa Olímpica (equipos) | **Equipos inscritos** | Los dos jugadores, división, rating combinado, costo, pagos, referencia y contacto |
+
+El de **Equipos** es el mismo archivo que da el botón ⬇ CSV de *Gestionar
+Equipos*, pero desde aquí se trae los equipos él solo: no hace falta abrir
+antes ese panel.
+
+El torneo individual enseña además los botones "Parte 1 / Parte 2" si se
+juega en dos fines de semana, y el de dobles si tiene esa categoría. El Lares
+Open no tiene ninguna de las dos, así que no aparecen.
+
+### Ojo con el CSV de Stadium
 
 El evento del Lares Open todavía **no existe en Stadium**, así que las
-categorías no llevan `stadiumId` verificado y el export avisa que las omite
-en vez de generar un CSV que Stadium rechazaría.
+categorías no llevan `stadiumId` verificado y ese export avisa que las omite
+en vez de generar un CSV que Stadium rechazaría. Para tener la lista de
+inscritos en la mano, el archivo que sirve hoy es **Inscritos**.
 
 Cuando se cree el torneo en Stadium: copiar de *Admin → Edit Event Settings*
 el nombre de cada evento y añadir a cada categoría de `INSC_CATEGORIES`
 `stadiumId: '<slug>'` y `stadiumVerified: true`. Lares tampoco está en
 `STADIUM_CLUB_IDS`; si hace falta el club, se añade ahí su UUID.
-
-Como el torneo es de un solo fin de semana, el modal de export no enseña los
-botones "Parte 1 / Parte 2" ni el de dobles: va todo en un archivo.
 
 ---
 
