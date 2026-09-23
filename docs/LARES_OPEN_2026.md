@@ -58,22 +58,18 @@ el aviso *"Vista previa"* para poder probarlo sin que entre nadie más.
 |---|---|
 | **Máx. 2 categorías por día** | La tercera del mismo día se rechaza al seleccionarla. |
 | **Sin coincidir en horario** | Dos categorías a la misma hora no se pueden escoger juntas. |
-| **Política de ascenso** | Para subir de categoría hay que estar inscrito en la natural. El sistema la exige y la ofrece. Si las dos caen a la misma hora la regla no aplica, porque sería imposible cumplirla. |
+| **Sin política de ascenso** | El jugador se inscribe en su categoría o en cualquiera de mayor rating (o edad) para la que sea elegible. No se le exige inscribirse también en su categoría natural. |
 | **Edad por año natural** | Al 31 de diciembre de 2026, como dice el reglamento. |
 | **Cuota de no miembro** | $10.00 de cargo base a quien no sea miembro activo; $0 al miembro. |
 | **Precio** | $20.00 por categoría; $25.00 la Abierta (Open); $11.00 la de 7 años o menos. |
 | **Multas por no arbitrar** | Se cobran una sola vez, en la primera inscripción del torneo (`INSC_MULTAS`). |
 | **Créditos** | Un crédito aprobado de una cancelación anterior se aplica solo al total. |
 
-### Ascenso, con un ejemplo real del itinerario
+### Subir de categoría, con un ejemplo
 
-Un jugador de 1450 que quiera jugar **Rating 1600** (domingo 9:00 a.m.) tiene
-que inscribirse también en **Rating 1500** (sábado 9:00 a.m.), que es su
-categoría natural. El formulario se lo dice con el candado y el texto
-*"Requiere: 1500 o Menos"*.
-
-En cambio **1900** y **1500** caen los dos el sábado a las 9:00 a.m.: ahí no
-se exige nada, porque no se pueden jugar ambas.
+Un jugador de 1450 puede inscribirse directamente en **Rating 1600** (domingo
+9:00 a.m.) sin inscribirse en **Rating 1500**. Solo aplican el límite de 2
+categorías por día y que no coincidan en horario.
 
 ---
 
@@ -162,7 +158,6 @@ el nombre de cada evento y añadir a cada categoría de `INSC_CATEGORIES`
 No se juegan partidos por el 3er y 4to lugar: se premian **dos terceros
 lugares** en todas las categorías.
 
-> La **Abierta (Open)** queda fuera de la escalera de ascenso: es para todos
-> los niveles, así que no exige ninguna categoría natural previa. Comparte
+> La **Abierta (Open)** es para todos los niveles. Comparte
 > horario con Seniors y con las de 7 y 9 o menos (domingo 12:00 p.m.), así
 > que quien juegue la Abierta no puede jugar ninguna de esas.

@@ -4929,14 +4929,9 @@ Maria Lopez,Ana Torres,B</code>
         <p style="margin:10px 0 0;">Se recomienda revisar el itinerario antes de inscribirse en múltiples categorías.</p>
       </div>
 
-      <div style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.22);border-radius:10px;padding:14px 18px;margin-bottom:18px;">
-        <strong style="color:var(--purple);">9. POLÍTICA DE ASCENSO</strong><br>
-        Para participar en una categoría superior a la natural del jugador, este debe estar inscrito en su categoría natural primero.
-        <ul style="padding-left:18px;margin:8px 0 0;font-size:13px;color:var(--muted);line-height:1.8;">
-          <li><strong style="color:var(--text);">Rating:</strong> un jugador de 1705 pts (categoría natural: Rating 1800) puede inscribirse en Rating 1900, siempre que también esté inscrito en Rating 1800.</li>
-          <li><strong style="color:var(--text);">Edad:</strong> un jugador de 13 años que desee participar en 15 años o menos debe estar inscrito en 13 años o menos también.</li>
-        </ul>
-        <div style="font-size:12px;color:var(--muted);margin-top:8px;">El sistema de inscripción aplica esta regla automáticamente y te ofrecerá añadir tu categoría natural. Cuando las dos categorías caen a la misma hora la regla no aplica, porque sería imposible cumplirla.</div>
+      <div style="margin-bottom:18px;">
+        <strong style="color:var(--accent);">9. SELECCIÓN DE CATEGORÍAS</strong><br>
+        Cada jugador puede inscribirse en su categoría o en cualquier categoría de mayor rating (o de mayor edad) para la que sea elegible, sin necesidad de inscribirse también en su categoría natural.
       </div>
 
       <div style="margin-bottom:18px;">
@@ -11062,7 +11057,6 @@ function catDayKey(cat)   { return String(cat?.slot || '').split('-')[0]; }
 function catDayLabel(cat) { return INSC_DAY_BY_KEY[catDayKey(cat)]?.label || ''; }
 
 // Rule: max 2 categories per day · no same-slot conflicts
-// ratingGroup: identifies rating-capped categories for the ascenso policy
 // Sin stadiumId/stadiumVerified: el evento del Lares Open todavía no existe en
 // Stadium Compete. Hasta que se cree y se verifiquen los nombres, el export a
 // Stadium avisa que las omite en vez de generar un CSV que Stadium rechace.
@@ -11087,43 +11081,8 @@ const INSC_CATEGORIES = [
   { id: 'ev15', name: '13 o Menos Masculino',    desc: 'Premiación: $35 · $30 · $25 (x2) · menores de 14 al 31-dic', price: 20, slot: 'D27-1400', maxAge: 13, sex: 'M' },
 ];
 
-// ── POLÍTICA DE ASCENSO ────────────────────────────────────────────────────
-// To enter a category above your natural one you must also be registered in
-// your natural category. Natural = the tightest category you still qualify
-// for (lowest rating cap ≥ your rating; lowest age cap you still fit).
-// The Open division and Seniors sit outside the ladder and are exempt.
-// Candidatas para "categoría natural": las que el jugador YA tiene inscritas
-// (aunque su parte esté cerrada) más las que puede inscribir ahora. Así la regla
-// se mantiene entre partes: quien jugó su natural en la Parte 1 puede ascender
-// en la Parte 2, y a quien nunca pudo inscribirla no se le exige lo imposible.
-function inscCandidatasNaturales(yaInscritas = []) {
-  const inscritas = new Set(yaInscritas);
-  return INSC_CATEGORIES.filter(c => inscritas.has(c.id) || catParteAbierta(c));
-}
-function inscNaturalRatingCat(rating, yaInscritas) {
-  if (rating === null || rating === undefined) return null;
-  return inscCandidatasNaturales(yaInscritas)
-    .filter(c => c.maxRating && c.maxRating >= rating)
-    .sort((a, b) => a.maxRating - b.maxRating)[0] || null;
-}
-function inscNaturalAgeCat(dob, sex, yaInscritas) {
-  if (!dob) return null;
-  const s = (sex || '').toUpperCase();
-  return inscCandidatasNaturales(yaInscritas)
-    .filter(c => c.maxAge && inscCatEligibleStatic(c, { rating: null, sex: s, dob }))
-    .sort((a, b) => a.maxAge - b.maxAge)[0] || null;
-}
-// Returns the category that must accompany `cat`, or null when none applies.
-function inscAscensoRequirement(cat, { rating, dob, sex, yaInscritas }) {
-  if (!cat || cat.openDivision || cat.minAge) return null;
-  let natural = null;
-  if (cat.maxRating)  natural = inscNaturalRatingCat(rating, yaInscritas);
-  else if (cat.maxAge) natural = inscNaturalAgeCat(dob, sex, yaInscritas);
-  if (!natural || natural.id === cat.id) return null;
-  // Same time slot ⇒ impossible to satisfy, so the rule cannot apply.
-  if (natural.slot === cat.slot) return null;
-  return natural;
-}
+// Sin política de ascenso: el jugador se inscribe en su categoría o en
+// cualquiera de mayor rating/edad para la que sea elegible, sin requisitos.
 
 const INSC_SLOT_LABELS = {
   'S26-900':  'Sáb 26 septiembre · 9:00 a.m.',
@@ -14888,31 +14847,7 @@ function inscCatEligible(cat) {
     }
   }
 
-  // Política de ascenso — locked until the natural category is taken
-  const missing = inscAscensoMissing(cat);
-  if (missing) {
-    return { ok: false, reason: `Primero selecciona tu categoría natural: ${missing.name}.`, ascensoLock: missing };
-  }
-
   return { ok: true };
-}
-
-// Is the ascenso requirement for `cat` already satisfied by the player's
-// existing registrations plus what they have selected in this session?
-function inscAscensoMissing(cat) {
-  const p = inscState.player;
-  if (!p) return null;
-  const yaInscritas = (inscState.existingInsc?.categorias || []).map(c => c.id);
-  const req = inscAscensoRequirement(cat, {
-    rating: p.rating,
-    dob: inscState.dob,
-    sex: (inscState.sex || p.sex || '').toUpperCase(),
-    yaInscritas,
-  });
-  if (!req) return null;
-  const has = (inscState.existingInsc?.categorias || []).some(c => c.id === req.id)
-           || inscState.selectedCats.has(req.id);
-  return has ? null : req;
 }
 
 // ══════════════════════════════════════════
@@ -14930,18 +14865,13 @@ function inscRenderCategories() {
     const elig       = isExisting ? { ok: true } : inscCatEligible(cat);
     const disabled   = isExisting || !elig.ok;
 
-    // Locked by the ascenso policy → reads as "do this first", not "you don't qualify"
-    const locked = !isExisting && !elig.ok && !!elig.ascensoLock;
-
-    const border  = isExisting ? '#22c55e' : sel ? 'var(--accent)' : locked ? 'rgba(129,140,248,0.35)' : !elig.ok ? 'rgba(255,255,255,0.05)' : 'var(--border)';
-    const bg      = isExisting ? 'rgba(34,197,94,0.07)' : sel ? 'rgba(56,189,248,0.08)' : locked ? 'rgba(129,140,248,0.05)' : !elig.ok ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)';
-    const opacity = !elig.ok && !isExisting ? (locked ? '0.8' : '0.45') : '1';
+    const border  = isExisting ? '#22c55e' : sel ? 'var(--accent)' : !elig.ok ? 'rgba(255,255,255,0.05)' : 'var(--border)';
+    const bg      = isExisting ? 'rgba(34,197,94,0.07)' : sel ? 'rgba(56,189,248,0.08)' : !elig.ok ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)';
+    const opacity = !elig.ok && !isExisting ? '0.45' : '1';
     const cursor  = disabled ? 'default' : 'pointer';
 
     const checkEl = isExisting
       ? `<span style="font-size:14px;flex-shrink:0;">✅</span>`
-      : locked
-      ? `<span style="font-size:13px;flex-shrink:0;line-height:1.35;">🔒</span>`
       : `<div style="width:18px;height:18px;border-radius:4px;border:1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'};background:${sel ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           ${sel ? '<span style="color:#fff;font-size:11px;font-weight:700">✓</span>' : ''}
         </div>`;
@@ -14949,15 +14879,12 @@ function inscRenderCategories() {
     const count    = _catCounts[cat.id] || 0;
     const capBadge = cat.maxPlayers && !cat.capPrivado && !isExisting
       ? ` <span style="color:${count >= cat.maxPlayers ? '#ef4444' : 'var(--muted)'};">(${count}/${cat.maxPlayers})</span>` : '';
-    const nameColor = isExisting ? '#86efac' : locked ? 'var(--text)' : !elig.ok ? 'var(--muted)' : 'var(--text)';
+    const nameColor = isExisting ? '#86efac' : !elig.ok ? 'var(--muted)' : 'var(--text)';
     const subText  = isExisting
       ? `<span style="color:#4ade80;font-size:10px;font-weight:600;">Ya inscrito · $${cat.price}</span>`
-      : locked
-      ? `<span style="color:#a5b4fc;font-size:10px;font-weight:600;">Requiere: ${elig.ascensoLock.name}</span>
-         <span style="color:var(--muted);font-size:10px;"> · $${cat.price} · ${(INSC_SLOT_LABELS[cat.slot] || cat.slot).split('·').pop().trim()}</span>`
       : `<span style="color:var(--muted);font-size:10px;">${!elig.ok ? elig.reason : cat.desc} · $${cat.price}${capBadge} · ${(INSC_SLOT_LABELS[cat.slot] || cat.slot).split('·').pop().trim()}</span>`;
 
-    return `<div onclick="${disabled ? '' : `inscToggleCat('${cat.id}')`}"${locked ? ` title="Política de ascenso: primero debes seleccionar ${elig.ascensoLock.name}."` : ''}
+    return `<div onclick="${disabled ? '' : `inscToggleCat('${cat.id}')`}"
       style="display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border-radius:9px;border:1.5px solid ${border};background:${bg};cursor:${cursor};opacity:${opacity};transition:all .15s;margin-bottom:5px;">
       <div style="margin-top:1px;">${checkEl}</div>
       <div style="flex:1;min-width:0;">
@@ -14983,7 +14910,7 @@ function inscRenderCategories() {
     </div>`;
   }
   html += `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;font-size:11.5px;color:#f59e0b;line-height:1.5;">
-    ⚠ Máx. 2 categorías por día, sin coincidir en horario · Para subir de categoría debes estar inscrito también en tu categoría natural.
+    ⚠ Máx. 2 categorías por día, sin coincidir en horario · Puedes inscribirte en tu categoría o en una de mayor rating.
   </div>`;
 
   // One block per competition day. En un torneo de dos fines de semana (Cidra)
@@ -15172,19 +15099,6 @@ function inscToggleCat(id) {
   }
 
   if (inscState.selectedCats.has(id)) {
-    // Removing a category that another selected one depends on? Warn first.
-    const dependents = [...inscState.selectedCats]
-      .map(selId => INSC_CATEGORIES.find(c => c.id === selId))
-      .filter(c => c && c.id !== id && inscAscensoRequirement(c, {
-        rating: inscState.player?.rating,
-        dob: inscState.dob,
-        sex: (inscState.sex || inscState.player?.sex || '').toUpperCase(),
-        yaInscritas: (inscState.existingInsc?.categorias || []).map(x => x.id),
-      })?.id === id);
-    if (dependents.length) {
-      alert(`No puedes quitar "${cat.name}": es tu categoría natural y la necesitas para participar en ${dependents.map(d => `"${d.name}"`).join(', ')}.`);
-      return;
-    }
     inscState.selectedCats.delete(id);
   } else {
     const day = catDayKey(cat);
