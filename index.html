@@ -11057,28 +11057,29 @@ function catDayKey(cat)   { return String(cat?.slot || '').split('-')[0]; }
 function catDayLabel(cat) { return INSC_DAY_BY_KEY[catDayKey(cat)]?.label || ''; }
 
 // Rule: max 2 categories per day · no same-slot conflicts
-// Sin stadiumId/stadiumVerified: el evento del Lares Open todavía no existe en
-// Stadium Compete. Hasta que se cree y se verifiquen los nombres, el export a
-// Stadium avisa que las omite en vez de generar un CSV que Stadium rechace.
+// stadiumId = slug del evento en Stadium Compete ("1500U" → '1500u',
+// "13U - Masculino" → '13u---masculino'). Seniors y 9 o Menos Masculino no
+// tienen evento en Stadium todavía: sin stadiumVerified el export las omite
+// y lo avisa, en vez de generar un CSV que Stadium asigne mal.
 const INSC_CATEGORIES = [
   // ── Sábado 26 de septiembre ──
-  { id: 'ev1',  name: '1900 o Menos',            desc: 'Premiación: $80 · $70 · $60 (x2)',                            price: 20, slot: 'S26-900',  maxRating: 1900, ratingGroup: 'rating' },
-  { id: 'ev2',  name: '1500 o Menos',            desc: 'Premiación: $50 · $40 · $30 (x2)',                            price: 20, slot: 'S26-900',  maxRating: 1500, ratingGroup: 'rating' },
-  { id: 'ev3',  name: '1700 o Menos',            desc: 'Premiación: $60 · $50 · $40 (x2)',                            price: 20, slot: 'S26-1200', maxRating: 1700, ratingGroup: 'rating' },
-  { id: 'ev4',  name: '15 o Menos Femenino',     desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 15, sex: 'F' },
-  { id: 'ev5',  name: '15 o Menos Masculino',    desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 15, sex: 'M' },
-  { id: 'ev6',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 11, sex: 'F' },
-  { id: 'ev7',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 11, sex: 'M' },
+  { id: 'ev1',  name: '1900 o Menos',            desc: 'Premiación: $80 · $70 · $60 (x2)',                            price: 20, slot: 'S26-900',  maxRating: 1900, ratingGroup: 'rating', stadiumId: '1900u', stadiumVerified: true },
+  { id: 'ev2',  name: '1500 o Menos',            desc: 'Premiación: $50 · $40 · $30 (x2)',                            price: 20, slot: 'S26-900',  maxRating: 1500, ratingGroup: 'rating', stadiumId: '1500u', stadiumVerified: true },
+  { id: 'ev3',  name: '1700 o Menos',            desc: 'Premiación: $60 · $50 · $40 (x2)',                            price: 20, slot: 'S26-1200', maxRating: 1700, ratingGroup: 'rating', stadiumId: '1700u', stadiumVerified: true },
+  { id: 'ev4',  name: '15 o Menos Femenino',     desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 15, sex: 'F', stadiumId: '15u---femenino', stadiumVerified: true },
+  { id: 'ev5',  name: '15 o Menos Masculino',    desc: 'Premiación: $40 · $35 · $30 (x2) · menores de 16 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 15, sex: 'M', stadiumId: '15u---masculino', stadiumVerified: true },
+  { id: 'ev6',  name: '11 o Menos Femenino',     desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 11, sex: 'F', stadiumId: '11u---femenino', stadiumVerified: true },
+  { id: 'ev7',  name: '11 o Menos Masculino',    desc: 'Premiación: $30 · $25 · $20 (x2) · menores de 12 al 31-dic', price: 20, slot: 'S26-1400', maxAge: 11, sex: 'M', stadiumId: '11u---masculino', stadiumVerified: true },
   // ── Domingo 27 de septiembre ──
-  { id: 'ev8',  name: '1600 o Menos',            desc: 'Premiación: $55 · $45 · $35 (x2)',                            price: 20, slot: 'D27-900',  maxRating: 1600, ratingGroup: 'rating' },
-  { id: 'ev9',  name: '1800 o Menos',            desc: 'Premiación: $70 · $60 · $50 (x2)',                            price: 20, slot: 'D27-900',  maxRating: 1800, ratingGroup: 'rating' },
-  { id: 'ev16', name: 'Abierto (Open Individual)', desc: 'Premiación: $100 · $75 · $65 (x2) · Todos los niveles',    price: 25, slot: 'D27-1200', openDivision: true },
+  { id: 'ev8',  name: '1600 o Menos',            desc: 'Premiación: $55 · $45 · $35 (x2)',                            price: 20, slot: 'D27-900',  maxRating: 1600, ratingGroup: 'rating', stadiumId: '1600u', stadiumVerified: true },
+  { id: 'ev9',  name: '1800 o Menos',            desc: 'Premiación: $70 · $60 · $50 (x2)',                            price: 20, slot: 'D27-900',  maxRating: 1800, ratingGroup: 'rating', stadiumId: '1800u', stadiumVerified: true },
+  { id: 'ev16', name: 'Abierto (Open Individual)', desc: 'Premiación: $100 · $75 · $65 (x2) · Todos los niveles',    price: 25, slot: 'D27-1200', openDivision: true, stadiumId: 'abierto', stadiumVerified: true },
   { id: 'ev10', name: 'Seniors – 40 años o más', desc: 'Premiación: $35 · $25 · $20 (x2) · Mixto',                    price: 20, slot: 'D27-1200', minAge: 40 },
-  { id: 'ev11', name: '7 o Menos Abierto',       desc: 'Trofeo 1° al 4° · Medalla 5°-8° · menores de 8 al 31-dic',   price: 11, slot: 'D27-1200', maxAge: 7 },
-  { id: 'ev12', name: '9 o Menos Femenino',      desc: 'Trofeo 1° al 4° · Medalla 5°-8° · menores de 10 al 31-dic',  price: 20, slot: 'D27-1200', maxAge: 9,  sex: 'F' },
+  { id: 'ev11', name: '7 o Menos Abierto',       desc: 'Trofeo 1° al 4° · Medalla 5°-8° · menores de 8 al 31-dic',   price: 11, slot: 'D27-1200', maxAge: 7, stadiumId: '7u---abierto', stadiumVerified: true },
+  { id: 'ev12', name: '9 o Menos Femenino',      desc: 'Trofeo 1° al 4° · Medalla 5°-8° · menores de 10 al 31-dic',  price: 20, slot: 'D27-1200', maxAge: 9,  sex: 'F', stadiumId: '9u---femenino', stadiumVerified: true },
   { id: 'ev13', name: '9 o Menos Masculino',     desc: 'Trofeo 1° al 4° · Medalla 5°-8° · menores de 10 al 31-dic',  price: 20, slot: 'D27-1200', maxAge: 9,  sex: 'M' },
-  { id: 'ev14', name: '13 o Menos Femenino',     desc: 'Premiación: $35 · $30 · $25 (x2) · menores de 14 al 31-dic', price: 20, slot: 'D27-1400', maxAge: 13, sex: 'F' },
-  { id: 'ev15', name: '13 o Menos Masculino',    desc: 'Premiación: $35 · $30 · $25 (x2) · menores de 14 al 31-dic', price: 20, slot: 'D27-1400', maxAge: 13, sex: 'M' },
+  { id: 'ev14', name: '13 o Menos Femenino',     desc: 'Premiación: $35 · $30 · $25 (x2) · menores de 14 al 31-dic', price: 20, slot: 'D27-1400', maxAge: 13, sex: 'F', stadiumId: '13u---femenino', stadiumVerified: true },
+  { id: 'ev15', name: '13 o Menos Masculino',    desc: 'Premiación: $35 · $30 · $25 (x2) · menores de 14 al 31-dic', price: 20, slot: 'D27-1400', maxAge: 13, sex: 'M', stadiumId: '13u---masculino', stadiumVerified: true },
 ];
 
 // Sin política de ascenso: el jugador se inscribe en su categoría o en
