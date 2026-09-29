@@ -7,23 +7,21 @@ individuales que el rating puede usar, y qué quedó fuera.
 
 ## 1. Qué subir y cómo
 
-Archivo: **`copa_olimpica_2026_individuales.csv`** (347 partidos de sencillos).
+Archivo: **`copa_olimpica_2026_individuales.csv`** (361 partidos de sencillos).
 
 En el sitio: **Subir resultados**
 
 1. **Nombre del torneo:** `Copa Olímpica 2026`
 2. **Fecha:** `2026-09-19` (primer día)
 3. **Categoría:** vacía (el archivo trae la división de cada partido)
-4. Subir el CSV → debe decir *"347 partidos detectados"* y 4 categorías:
-   Division 3 (138), Division 2 (134), Division 1 (51),
-   Division 3 - Consolación (24). **Sin partidos omitidos.**
+4. Subir el CSV → debe decir *"361 partidos detectados"* y 4 categorías:
+   Division 3 (146), Division 2 (134), Division 1 (51),
+   Division 3 - Consolación (30). **Sin partidos omitidos.**
 5. **Procesar** → revisar la vista previa → Guardar borrador → Publicar.
 
 Súbelo **una sola vez y completo**. El rating de cada partido se calcula
 contra el rating con que el jugador llegó al torneo, así que no se puede
 subir por partes.
-
-`copa_olimpica_2026_pendientes.csv` **no se sube** tal como está (ver §3).
 
 ---
 
@@ -77,33 +75,19 @@ Cambios de nombre, para que el sitio lo muestre bien:
 | Partidos de equipo por **default**: *Best friends* (equipo 49) vs. Las Bravas, Los Noris y Los Handymen, grupo 6 de la D3 | 3 partidos |
 | Individual con retiro `(RET)` (era un dobles) | 1 |
 | Tercer lugar de Consolación D3 (Puntos Largos SS vs. Ping y Pong): *Not Submitted*, no se jugó | 1 partido |
-| Individuales con un jugador **sin Member ID de la FPTM** | 14 (en `pendientes`) |
 
 ### Jugadores que Stadium tenía sin Member ID
 
 Cuatro jugadores se crearon directamente en Stadium, sin el número de la
-FPTM. El admin confirmó el de dos con su perfil en el sitio, y sus partidos
-ya están en el archivo principal:
+FPTM. El admin confirmó el de los cuatro con su perfil en el sitio, y sus
+29 individuales están en el archivo principal:
 
 | Jugador | Equipo | Member ID | Individuales |
 |---|---|---|---|
-| Arroyo, Victor | Los Arroyo (D3, Morovis) | 93424 | 6 |
+| Pagan Diaz, Keilymar | Los Proceres (D3) | 40982 | 9 |
 | Colon, Fernando | Los Proceres (D3) | 48067 | 9 |
-
-Siguen sin número:
-
-| Jugador | Equipo | Individuales |
-|---|---|---|
-| Pagan Diaz, Keilymar | Los Proceres (D3) | 9 |
-| Arroyo Martinez, Kennuel | Los Arroyo (D3, Morovis) | 5 |
-
-Sus 14 individuales (ganaron 13) están en
-`copa_olimpica_2026_pendientes.csv`, con la columna de membresía vacía del
-lado de ellos. Si tienen número en la base de datos, se pone
-`fptm|<Member ID>` en esa celda y se sube **junto** con el archivo principal
-(se pueden arrastrar los dos a la vez; el sitio los une en un solo lote). Si
-no son miembros, esos partidos no cuentan, tampoco para sus 14 rivales que
-sí son miembros.
+| Arroyo, Victor | Los Arroyo (D3, Morovis) | 93424 | 6 |
+| Arroyo Martinez, Kennuel | Los Arroyo (D3, Morovis) | 83000 | 5 |
 
 ### Marcadores borrados
 
@@ -120,7 +104,7 @@ rating; solo se dejó el marcador en blanco:
 
 El archivo se pasó por el importador oficial del sitio (el de
 `index.html`, con el arnés de `tests/harness`) usando jugadores de prueba:
-347 partidos leídos, 0 omitidos, 0 marcados como retiro, con la categoría,
+361 partidos leídos, 0 omitidos, 0 marcados como retiro, con la categoría,
 fase, grupo y ronda correctos en cada uno. Eso comprueba el **formato**, no
 los ratings: los puntos reales los calcula el sitio con los ratings de la
 base de datos cuando se procesa.
