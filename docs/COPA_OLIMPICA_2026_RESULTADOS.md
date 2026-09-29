@@ -89,6 +89,12 @@ FPTM. El admin confirmó el de los cuatro con su perfil en el sitio, y sus
 | Arroyo, Victor | Los Arroyo (D3, Morovis) | 93424 | 6 |
 | Arroyo Martinez, Kennuel | Los Arroyo (D3, Morovis) | 83000 | 5 |
 
+### Member ID corregido
+
+Stadium tenía a **Dereck Ramos Dipiní** (Los Caballitos, D3) con el número
+69735. Su perfil en el sitio dice **98960**; sus 5 individuales van con
+98960.
+
 ### Marcadores borrados
 
 Dos individuales de D1 · Grupo 1 (A vs. C) tienen games imposibles en
