@@ -1003,9 +1003,10 @@
   }
 
   /* ─── TARJETA DE PORTADA DE UN TORNEO ─── */
-  /* La usan la Copa Olímpica (divisiones) y el Lares Open (categorías). Los
-     colores salen del arte de cada torneo: --cn azul, --cr rojo. */
-  .copa-prev, .lares-prev {
+  /* La usan la Copa Olímpica (divisiones), el Lares Open (categorías) y el
+     anuncio de los Campeonatos Nacionales. Los colores salen del arte de cada
+     torneo: --cn azul, --cr rojo. */
+  .copa-prev, .lares-prev, .nac-prev {
     --cn: #0d2a5c;  --cr: #cc1122;
     position: relative; overflow: hidden;
     background: linear-gradient(160deg, #0f1a2e 0%, #101725 100%);
@@ -1014,24 +1015,28 @@
     margin-bottom: 18px; text-align: center;
   }
   .lares-prev { --cn: #123b73;  --cr: #d32030; }
-  .copa-prev::before, .lares-prev::before {
+  .copa-prev::before, .lares-prev::before, .nac-prev::before {
     content: ''; position: absolute; inset: 0 0 auto 0; height: 3px;
     background: linear-gradient(90deg, var(--cn), var(--cr), var(--cn));
   }
-  .copa-chip, .lares-chip {
+  .copa-chip, .lares-chip, .nac-chip {
     display: inline-block; background: rgba(204,17,34,0.14);
     border: 1px solid rgba(204,17,34,0.45); border-radius: 20px;
     padding: 3px 13px; font-size: 10.5px; font-weight: 800;
     letter-spacing: .12em; color: #f87171; margin-bottom: 12px;
   }
   .lares-chip { background: rgba(34,197,94,0.13); border-color: rgba(34,197,94,0.45); color: #4ade80; }
-  .copa-logo, .lares-logo { width: 100%; max-width: 190px; height: auto; margin: 0 auto 12px; display: block; }
-  .lares-logo { max-width: 230px; }
-  .copa-name, .lares-name {
+  .nac-chip   { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.45); color: #fbbf24; }
+  .copa-logo, .lares-logo, .nac-logo { width: 100%; max-width: 190px; height: auto; margin: 0 auto 12px; display: block; }
+  .lares-logo, .nac-logo { max-width: 230px; }
+  /* Arte hecho para fondo blanco (raqueta y texto azul marino que se pierden
+     en la tarjeta oscura): va sobre una placa blanca. */
+  .logo-placa { background: #fff; border-radius: 14px; padding: 10px 12px; }
+  .copa-name, .lares-name, .nac-name {
     font-family: 'Orbitron', monospace; font-size: clamp(20px, 5.5vw, 27px);
     font-weight: 800; letter-spacing: 1px; line-height: 1.15; color: var(--text);
   }
-  .copa-meta, .lares-meta { font-size: 13.5px; color: var(--muted); margin-top: 7px; line-height: 1.6; }
+  .copa-meta, .lares-meta, .nac-meta { font-size: 13.5px; color: var(--muted); margin-top: 7px; line-height: 1.6; }
 
   /* Itinerario del torneo individual: una fila por categoría, agrupadas por día */
   .lares-dia {
@@ -1070,7 +1075,7 @@
     color: var(--accent); white-space: nowrap;
   }
   @media (max-width: 430px) {
-    .copa-prev { padding: 20px 16px 18px; }
+    .copa-prev, .nac-prev { padding: 20px 16px 18px; }
     .copa-div { gap: 6px 10px; }
     .copa-div-n { min-width: 100%; }
   }
@@ -3880,6 +3885,35 @@ Maria Lopez,Ana Torres,B</code>
 
   <div class="container" style="max-width:580px;padding-top:0">
 
+    <!-- ── PRÓXIMO EVENTO: CAMPEONATOS NACIONALES 2026 ──
+         Solo anuncio: aún no hay sede, categorías ni formulario. Va arriba de
+         los torneos ya jugados para que sea lo primero que se vea. El logo es
+         opcional: sin el archivo en la raíz se muestra el nombre en texto. -->
+    <div id="inscProximo_nacionales" class="nac-prev">
+      <div class="nac-chip">PRÓXIMAMENTE</div>
+      <img id="nacLogo" class="nac-logo logo-placa" src="Logo_Campeonatos_Nacionales_2026.png" alt="Campeonatos Nacionales 2026">
+      <div id="nacTextHead" style="display:none">
+        <div class="nac-name">CAMPEONATOS<br>NACIONALES <span style="color:#fbbf24">2026</span></div>
+      </div>
+      <div class="nac-meta">
+        Dos fines de semana en diciembre<br>
+        <span style="font-size:12px">Federación Puertorriqueña de Tenis de Mesa</span>
+      </div>
+
+      <div class="lares-dia">Diciembre 2026</div>
+      <div class="lares-ev"><span class="lares-ev-h">Parte 1</span><span class="lares-ev-n">Sábado 12 y domingo 13 de diciembre</span></div>
+      <div class="lares-ev"><span class="lares-ev-h">Parte 2</span><span class="lares-ev-n">Sábado 19 y domingo 20 de diciembre</span></div>
+
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;text-align:left;">
+        Sede, categorías y costos por anunciar. Los campeonatos nacionales son
+        <strong style="color:var(--text)">solo para miembros activos</strong> de la FPTM.
+      </div>
+
+      <div style="margin-top:16px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:11px 14px;font-size:12.5px;color:#f59e0b;font-weight:600;">
+        ⏳ Inscripciones próximamente &middot; síguenos en redes para enterarte cuando abran
+      </div>
+    </div>
+
     <!-- ── ¿QUÉ TORNEO? ──────────────────────────────────────────────────
          Dos a la vez: el Lares Open (individual, inscribiéndose) y la Copa
          Olímpica (por equipos, ya cerrada pero con su panel vivo hasta que
@@ -3888,7 +3922,7 @@ Maria Lopez,Ana Torres,B</code>
 
     <!-- ── TORNEO INDIVIDUAL: 6TO LARES OPEN 2026 ── -->
     <div id="inscPreview_lares" class="lares-prev">
-      <div class="lares-chip">INSCRIPCIONES</div>
+      <div id="inscChip_lares" class="lares-chip" data-chip="INSCRIPCIONES">INSCRIPCIONES</div>
       <img id="laresLogo" class="lares-logo" src="Logo_Lares_Open_2026.png" alt="6to Lares Open de Tenis de Mesa 2026">
       <div id="laresTextHead" style="display:none">
         <div class="lares-name">6<span style="font-size:.6em">TO</span> LARES OPEN<br><span style="color:#f87171">2026</span></div>
@@ -3947,7 +3981,7 @@ Maria Lopez,Ana Torres,B</code>
 
     <!-- ── PRÓXIMO EVENTO: COPA OLÍMPICA 2026 ── -->
     <div id="inscPreview_copa" class="copa-prev">
-      <div class="copa-chip">PRÓXIMO EVENTO</div>
+      <div id="inscChip_copa" class="copa-chip" data-chip="PRÓXIMO EVENTO">PRÓXIMO EVENTO</div>
       <img id="copaLogo" class="copa-logo" src="Logo_Copa_Olimpica_2026.png" alt="Copa Olímpica 2026">
       <div id="copaTextHead" style="display:none">
         <div class="copa-name">COPA OLÍMPICA<br><span style="color:#f87171">2026</span></div>
@@ -10855,6 +10889,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Logos de torneo (con respaldo tipográfico si falta el archivo) ──
   montarLogoTorneo('laresLogo', 'laresTextHead');
   montarLogoTorneo('copaLogo',  'copaTextHead');
+  montarLogoTorneo('nacLogo',   'nacTextHead');
 
   // ── Aviso del canal de WhatsApp ──
   document.querySelectorAll('[data-stadium-link]')
@@ -10995,6 +11030,7 @@ const COPA_TORNEO = 'Copa Olímpica 2026';
 const EVENTOS = [
   { id: 'lares', torneo: TORNEO_ACTIVO, modo: 'individual',
     nombre: 'Lares Open 2026', corto: 'Lares Open', fechas: 'Sáb 26 & Dom 27 sept',
+    fin: new Date('2026-09-27T23:59:59-04:00'),
     claves: { open: 'inscripciones_open_lares',
               prorroga: 'insc_ignorar_deadline_lares',
               archivado: 'torneo_archivado_lares' },
@@ -11003,6 +11039,7 @@ const EVENTOS = [
   // sigue leyendo y escribiendo igual que antes de que existiera el selector.
   { id: 'copa',  torneo: COPA_TORNEO, modo: 'equipos',
     nombre: 'Copa Olímpica 2026', corto: 'Copa Olímpica', fechas: 'Sáb 19 & Dom 20 sept',
+    fin: new Date('2026-09-20T23:59:59-04:00'),
     claves: { open: 'inscripciones_open',
               prorroga: 'insc_ignorar_deadline',
               archivado: 'torneo_archivado' },
@@ -11011,6 +11048,8 @@ const EVENTOS = [
 let EVENTO_VISTA = 'lares';
 const eventoActual    = () => EVENTOS.find(e => e.id === EVENTO_VISTA) || EVENTOS[0];
 const esTorneoEquipos = () => eventoActual().modo === 'equipos';
+// ¿Ya se jugó? Pasado `fin` la tarjeta deja de anunciarlo como próximo.
+const eventoJugado    = (ev = eventoActual()) => !!ev.fin && Date.now() > ev.fin.getTime();
 
 // ── COPA OLÍMPICA 2026 — DIVISIONES ────────────────────────────────────────
 // Espejo de public.insc_divisiones (sql/create_insc_equipos.sql). Esto es
@@ -11431,13 +11470,15 @@ function inscAplicarEvento() {
   EVENTOS.forEach(ev => {
     ver('inscPreview_' + ev.id,    ev.id === EVENTO_VISTA);
     ver('inscTorneoCard_' + ev.id, ev.id === EVENTO_VISTA, 'flex');
+    const chip = document.getElementById('inscChip_' + ev.id);
+    if (chip) chip.textContent = eventoJugado(ev) ? 'FINALIZADO' : chip.dataset.chip;
   });
   // CTA de la tarjeta del torneo individual: solo cuando de verdad se puede
   // inscribir ahora mismo.
   const abierto = inscripcionesOpen && !torneoArchivado &&
     (Date.now() <= inscDeadlineActual().getTime() || INSC_IGNORAR_DEADLINE);
   ver('laresCtaWrap',      !esTorneoEquipos() &&  abierto);
-  ver('laresProximamente', !esTorneoEquipos() && !abierto);
+  ver('laresProximamente', !esTorneoEquipos() && !abierto && !eventoJugado());
   // Las estadísticas por categoría son del flujo individual.
   const stats = document.getElementById('inscStatsCard');
   if (stats) stats.style.display = esTorneoEquipos() ? 'none' : '';
@@ -11601,15 +11642,17 @@ function applyInscripcionesState() {
 // ── UPCOMING EVENTS COUNTDOWN ──────────────────────────────────────────────
 // Cada evento: target = inicio, end = fin real del evento (torneos de fin de
 // semana duran dos días). logo y mapsUrl son opcionales — si faltan, no se
-// muestra logo ni el enlace "¿Cómo llegar?" del estado HOY.
+// muestra logo ni el enlace "¿Cómo llegar?" del estado HOY. logoPlaca: true
+// pone el logo sobre placa blanca, para arte hecho para fondo blanco.
+// Campeonatos Nacionales: dos fines de semana, uno por entrada, igual que
+// Cidra. Sede por anunciar, así que todavía no llevan mapsUrl.
 const UPCOMING_EVENTS = [
-  { name: 'Copa Olímpica 2026', dateLabel: 'Sábado 19 & Domingo 20 de septiembre · Centro de Convenciones, PR',
-    target: new Date('2026-09-19T09:00:00'), end: new Date('2026-09-20T23:59:59'),
-    logo: 'Logo_Copa_Olimpica_2026.png',
-    mapsUrl: 'https://maps.google.com/?q=Centro+de+Convenciones+de+Puerto+Rico' },
-  { name: 'Lares Open 2026', dateLabel: 'Sábado 26 & Domingo 27 de septiembre · Coliseo Félix Méndez Acevedo, Lares',
-    target: new Date('2026-09-26T09:00:00'), end: new Date('2026-09-27T23:59:59'),
-    logo: TORNEO_LOGO, mapsUrl: TORNEO_MAPS_URL },
+  { name: 'Campeonatos Nacionales 2026 · Parte 1', dateLabel: 'Sábado 12 & Domingo 13 de diciembre',
+    target: new Date('2026-12-12T09:00:00'), end: new Date('2026-12-13T23:59:59'),
+    logo: 'Logo_Campeonatos_Nacionales_2026.png', logoPlaca: true },
+  { name: 'Campeonatos Nacionales 2026 · Parte 2', dateLabel: 'Sábado 19 & Domingo 20 de diciembre',
+    target: new Date('2026-12-19T09:00:00'), end: new Date('2026-12-20T23:59:59'),
+    logo: 'Logo_Campeonatos_Nacionales_2026.png', logoPlaca: true },
 ];
 const FINISHED_BADGE_DAYS = 7; // días que se muestra "Torneo finalizado" tras el evento
 
@@ -11641,6 +11684,7 @@ function initNextEventCountdown() {
     if (logoEl) {
       logoEl.style.display = ev?.logo ? '' : 'none';
       if (ev?.logo) { logoEl.src = ev.logo; logoEl.alt = ev.name; }
+      logoEl.classList.toggle('logo-placa', !!ev?.logoPlaca);
     }
   }
 
@@ -13329,7 +13373,7 @@ function copaAplicarEstado() {
   if (cerrado) cerrado.style.display = mostrarForm ? 'none' : '';
   if (previa)  previa.style.display  = (admin && !effectivelyOpen) ? 'flex' : 'none';
   if (cta)     cta.style.display     = effectivelyOpen ? '' : 'none';
-  if (prox)    prox.style.display    = effectivelyOpen ? 'none' : '';
+  if (prox)    prox.style.display    = (effectivelyOpen || eventoJugado()) ? 'none' : '';
 
   const cm = document.getElementById('copaCerradasMsg');
   if (cm) {
