@@ -1029,6 +1029,9 @@
   .nac-chip   { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.45); color: #fbbf24; }
   .copa-logo, .lares-logo, .nac-logo { width: 100%; max-width: 190px; height: auto; margin: 0 auto 12px; display: block; }
   .lares-logo, .nac-logo { max-width: 230px; }
+  /* Arte hecho para fondo blanco (raqueta y texto azul marino que se pierden
+     en la tarjeta oscura): va sobre una placa blanca. */
+  .logo-placa { background: #fff; border-radius: 14px; padding: 10px 12px; }
   .copa-name, .lares-name, .nac-name {
     font-family: 'Orbitron', monospace; font-size: clamp(20px, 5.5vw, 27px);
     font-weight: 800; letter-spacing: 1px; line-height: 1.15; color: var(--text);
@@ -3888,7 +3891,7 @@ Maria Lopez,Ana Torres,B</code>
          opcional: sin el archivo en la raíz se muestra el nombre en texto. -->
     <div id="inscProximo_nacionales" class="nac-prev">
       <div class="nac-chip">PRÓXIMAMENTE</div>
-      <img id="nacLogo" class="nac-logo" src="Logo_Campeonatos_Nacionales_2026.png" alt="Campeonatos Nacionales 2026">
+      <img id="nacLogo" class="nac-logo logo-placa" src="Logo_Campeonatos_Nacionales_2026.png" alt="Campeonatos Nacionales 2026">
       <div id="nacTextHead" style="display:none">
         <div class="nac-name">CAMPEONATOS<br>NACIONALES <span style="color:#fbbf24">2026</span></div>
       </div>
@@ -11639,16 +11642,17 @@ function applyInscripcionesState() {
 // ── UPCOMING EVENTS COUNTDOWN ──────────────────────────────────────────────
 // Cada evento: target = inicio, end = fin real del evento (torneos de fin de
 // semana duran dos días). logo y mapsUrl son opcionales — si faltan, no se
-// muestra logo ni el enlace "¿Cómo llegar?" del estado HOY.
+// muestra logo ni el enlace "¿Cómo llegar?" del estado HOY. logoPlaca: true
+// pone el logo sobre placa blanca, para arte hecho para fondo blanco.
 // Campeonatos Nacionales: dos fines de semana, uno por entrada, igual que
 // Cidra. Sede por anunciar, así que todavía no llevan mapsUrl.
 const UPCOMING_EVENTS = [
   { name: 'Campeonatos Nacionales 2026 · Parte 1', dateLabel: 'Sábado 12 & Domingo 13 de diciembre',
     target: new Date('2026-12-12T09:00:00'), end: new Date('2026-12-13T23:59:59'),
-    logo: 'Logo_Campeonatos_Nacionales_2026.png' },
+    logo: 'Logo_Campeonatos_Nacionales_2026.png', logoPlaca: true },
   { name: 'Campeonatos Nacionales 2026 · Parte 2', dateLabel: 'Sábado 19 & Domingo 20 de diciembre',
     target: new Date('2026-12-19T09:00:00'), end: new Date('2026-12-20T23:59:59'),
-    logo: 'Logo_Campeonatos_Nacionales_2026.png' },
+    logo: 'Logo_Campeonatos_Nacionales_2026.png', logoPlaca: true },
 ];
 const FINISHED_BADGE_DAYS = 7; // días que se muestra "Torneo finalizado" tras el evento
 
@@ -11680,6 +11684,7 @@ function initNextEventCountdown() {
     if (logoEl) {
       logoEl.style.display = ev?.logo ? '' : 'none';
       if (ev?.logo) { logoEl.src = ev.logo; logoEl.alt = ev.name; }
+      logoEl.classList.toggle('logo-placa', !!ev?.logoPlaca);
     }
   }
 
