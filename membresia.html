@@ -116,7 +116,7 @@ footer{margin-top:30px;color:var(--muted);font-size:11px;display:flex;justify-co
       <div class="payment-top">
         <div>
           <div class="payment-title">Pago de membresía</div>
-          <div class="payment-sub" id="paymentDescription">Completa el pago en ATH Móvil y luego ingresa la referencia.</div>
+          <div class="payment-sub" id="paymentDescription">Completa el pago en ATH Móvil y envía la confirmación a Joel Vega.</div>
           <div class="payment-sub" id="paymentDestination" style="margin-top:6px;font-weight:800;color:#f7f8fb"></div>
         </div>
         <div class="payment-amount" id="paymentAmount">Por confirmar</div>
@@ -125,14 +125,19 @@ footer{margin-top:30px;color:var(--muted);font-size:11px;display:flex;justify-co
         <a id="payLink" class="pay-link disabled" href="#" target="_blank" rel="noopener">Pagar con ATH Móvil</a>
         <span id="paymentDisabled" class="payment-disabled">Pago aún no habilitado</span>
       </div>
-      <div id="paymentRefWrap" class="field payment-ref">
-        <label for="athConfirmation">Referencia / confirmación de ATH Móvil *</label>
-        <input id="athConfirmation" autocomplete="off" placeholder="Ej. ABC12">
-        <span class="hint">Ingresa la referencia que recibiste después de completar el pago.</span>
+      <div id="paymentRefWrap" class="payment-ref show">
+        <div class="payment-actions">
+          <a class="pay-link" href="https://wa.me/17872483994?text=Hola%20Joel%2C%20envio%20la%20confirmacion%20del%20pago%20de%20membresia%20TTM%20PR%20por%20%2420." target="_blank" rel="noopener">Enviar confirmación a Joel Vega</a>
+        </div>
+        <span class="hint">Envía por WhatsApp la captura o evidencia del pago a Joel Vega · 787-248-3994.</span>
+        <div class="check" style="margin-top:12px">
+          <input id="proofSentToJoel" type="checkbox">
+          <label for="proofSentToJoel">Confirmo que ya envié la evidencia del pago a Joel Vega.</label>
+        </div>
       </div>
     </div>
 
-    <div class="notice">La solicitud se envía para revisión de la Federación. Si el pago está habilitado, la referencia queda ligada a esta solicitud para facilitar la verificación.</div>
+    <div class="notice">La solicitud se envía para revisión de la Federación. El pago de $20 se realiza a /FPRTM y la evidencia se envía directamente a Joel Vega para verificación.</div>
     <button id="submitBtn" type="submit">Enviar solicitud</button>
     <div id="status" class="status"></div>
   </form>
@@ -196,7 +201,7 @@ $('paymentAmount').textContent=money(CFG.annualFee);
 $('paymentDestination').textContent=CFG.athMovilDisplay?'Destino: '+CFG.athMovilDisplay:'';
 
 if(paymentEnabled){
-  $('paymentDescription').textContent='Paga la membresía en ATH Móvil y luego ingresa la referencia de la transacción.';
+  $('paymentDescription').textContent='Paga $20 a /FPRTM y envía la confirmación del pago a Joel Vega por WhatsApp.';
   if(CFG.athMovilPayUrl){
     $('payLink').href=CFG.athMovilPayUrl;
     $('payLink').classList.remove('disabled');
@@ -209,7 +214,6 @@ if(paymentEnabled){
   }
   if(paymentReferenceRequired){
     $('paymentRefWrap').classList.add('show');
-    $('athConfirmation').required=true;
   }
 }else{
   $('payLink').classList.add('disabled');
@@ -279,8 +283,8 @@ $('membershipForm').addEventListener('submit',async e=>{
     status.className='status err show';
     return;
   }
-  if(paymentReferenceRequired&&!val('athConfirmation')){
-    status.textContent='Completa el pago e ingresa la referencia de ATH Móvil.';
+  if(paymentEnabled&&!$('proofSentToJoel').checked){
+    status.textContent='Antes de enviar, confirma que ya enviaste la evidencia del pago a Joel Vega por WhatsApp.';
     status.className='status err show';
     return;
   }
@@ -302,7 +306,7 @@ $('membershipForm').addEventListener('submit',async e=>{
     is_minor:$('isMinor').checked,
     guardian_name:val('guardianName'),
     guardian_relation:val('guardianRelation'),
-    ath_confirmation:val('athConfirmation')||'pending',
+    ath_confirmation:paymentEnabled?'sent_to_joel':'pending',
     notes:val('notes'),
     status:'pending'
   };
@@ -317,7 +321,7 @@ $('membershipForm').addEventListener('submit',async e=>{
     });
     if(!res.ok) throw new Error('No se pudo enviar la solicitud. Intenta nuevamente o contacta a Joel por WhatsApp.');
     status.textContent=paymentEnabled
-      ? (type==='renewal'?'Renovación y referencia de pago enviadas correctamente.':'Solicitud y referencia de pago enviadas correctamente.')
+      ? (type==='renewal'?'Renovación enviada. La evidencia de pago será verificada por Joel Vega.':'Solicitud enviada. La evidencia de pago será verificada por Joel Vega.')
       : (type==='renewal'?'Renovación enviada correctamente. El pago queda pendiente.':'Solicitud de membresía enviada correctamente. El pago queda pendiente.');
     status.className='status ok show';
     $('membershipForm').reset();
