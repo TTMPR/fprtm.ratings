@@ -6576,9 +6576,15 @@ function _cirFmtDate(iso) {
 }
 
 function _cirCardHTML(r, isHistory) {
-  const hasLogo = !!r.logo_url;
+  const logoCandidate = String(r.logo_url || '').trim();
+  // Remote/tracked images require HTTPS; inline logos permit raster formats only.
+  // Never allow SVG/javascript schemes or unescaped attributes in admin review cards.
+  const logoSrc = /^https:\/\//i.test(logoCandidate) ||
+    /^data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/=]+$/i.test(logoCandidate)
+    ? logoCandidate : '';
+  const hasLogo = !!logoSrc;
   const hasInfo = r.encargado || r.telefono || r.direccion || r.descripcion;
-  const safeClub = (r.club_name || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const safeClub = escHTML(r.club_name || '');
   const footer = isHistory
     ? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         ${r.status === 'approved'
@@ -6599,18 +6605,18 @@ function _cirCardHTML(r, isHistory) {
   return `
     <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px${isHistory && r.status === 'rejected' ? ';opacity:0.65' : ''}" id="cir_${r.id}">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-        ${hasLogo ? `<img src="${r.logo_url}" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">` : ''}
+        ${hasLogo ? `<img src="${escHTML(logoSrc)}" style="width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">` : ''}
         <div>
-          <div style="font-weight:700;font-size:15px">${r.club_name}</div>
-          ${r.solicitante ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">Por: ${r.solicitante}</div>` : ''}
+          <div style="font-weight:700;font-size:15px">${escHTML(r.club_name)}</div>
+          ${r.solicitante ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">Por: ${escHTML(r.solicitante)}</div>` : ''}
           ${hasLogo && !hasInfo ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">Propuesta de logo</div>` : ''}
         </div>
       </div>
       ${hasInfo ? `<div style="display:flex;flex-direction:column;gap:4px;font-size:13px;margin-bottom:12px">
-        ${r.encargado  ? `<div>👤 <strong>Encargado:</strong> ${r.encargado}</div>` : ''}
-        ${r.telefono   ? `<div>📞 <strong>Teléfono:</strong> ${r.telefono}</div>` : ''}
-        ${r.direccion  ? `<div>📍 <strong>Dirección:</strong> ${r.direccion}</div>` : ''}
-        ${r.descripcion? `<div>📝 <strong>Descripción:</strong> ${r.descripcion}</div>` : ''}
+        ${r.encargado  ? `<div>👤 <strong>Encargado:</strong> ${escHTML(r.encargado)}</div>` : ''}
+        ${r.telefono   ? `<div>📞 <strong>Teléfono:</strong> ${escHTML(r.telefono)}</div>` : ''}
+        ${r.direccion  ? `<div>📍 <strong>Dirección:</strong> ${escHTML(r.direccion)}</div>` : ''}
+        ${r.descripcion? `<div>📝 <strong>Descripción:</strong> ${escHTML(r.descripcion)}</div>` : ''}
       </div>` : ''}
       ${footer}
     </div>`;
@@ -9968,7 +9974,7 @@ function renderPendingRequests(reqs) {
     return;
   }
   grid.innerHTML = reqs.map(r => {
-    const name  = `${r.first_name} ${r.last_name}`;
+    const name  = `${escHTML(r.first_name)} ${escHTML(r.last_name)}`;
     const date  = new Date(r.created_at).toLocaleDateString('es-PR', { year:'numeric', month:'short', day:'numeric' });
     const typeLabel = r.type === 'renewal' ? 'Renovación' : 'Nuevo';
     const existingInfo = r.existing_player_id
@@ -9978,19 +9984,19 @@ function renderPendingRequests(reqs) {
         <div>
           <div class="request-card-name">${name}</div>
           <div class="request-card-meta">
-            ${r.email || '—'} · ${r.phone || '—'} · ${r.sex || '—'}<br>
-            Club: ${r.club || '—'} · Solicitado: ${date}
+            ${escHTML(r.email || '—')} · ${escHTML(r.phone || '—')} · ${escHTML(r.sex || '—')}<br>
+            Club: ${escHTML(r.club || '—')} · Solicitado: ${date}
           </div>
         </div>
         <span class="request-card-type ${r.type}">${typeLabel}</span>
       </div>
       <div class="request-card-details">
-        <div class="req-field"><label>Dirección</label><span>${r.city || '—'}${r.state ? ', '+r.state : ''}, ${r.country || '—'}</span></div>
-        <div class="req-field"><label>Confirmación ATH</label><span class="req-ath">${r.ath_confirmation}</span></div>
+        <div class="req-field"><label>Dirección</label><span>${escHTML(r.city || '—')}${r.state ? ', ' + escHTML(r.state) : ''}, ${escHTML(r.country || '—')}</span></div>
+        <div class="req-field"><label>Confirmación ATH</label><span class="req-ath">${escHTML(r.ath_confirmation)}</span></div>
         ${existingInfo}
-        ${r.is_minor ? `<div class="req-field"><label>Menor · Guardián</label><span>${r.guardian_name || '—'} (${r.guardian_relation || '—'})</span></div>` : ''}
+        ${r.is_minor ? `<div class="req-field"><label>Menor · Guardián</label><span>${escHTML(r.guardian_name || '—')} (${escHTML(r.guardian_relation || '—')})</span></div>` : ''}
         ${r.type === 'new' ? (r.dob
-          ? `<div class="req-field"><label>Fecha de Nacimiento</label><span>${r.dob}</span></div>`
+          ? `<div class="req-field"><label>Fecha de Nacimiento</label><span>${escHTML(r.dob)}</span></div>`
           : `<div class="req-field" style="align-items:center;gap:8px">
                <label style="color:#f59e0b;white-space:nowrap">⚠ Fecha de Nacimiento</label>
                <input type="date" id="reqDob${r.id}" style="background:rgba(255,255,255,0.06);border:1px solid #f59e0b;border-radius:6px;padding:5px 8px;color:var(--text);font-size:13px;flex:1" required>
@@ -10630,14 +10636,14 @@ async function showPendingPhotosModal() {
         ? `<div style="font-size:11px;color:var(--accent);margin-top:3px">⚠️ Tutor autorizó publicación</div>`
         : '';
       return `<div class="pending-photo-item">
-        <img class="pending-photo-thumb" src="${r.photo_url}" alt="" onerror="this.style.opacity='0.3'">
+        <img class="pending-photo-thumb" src="${escHTML(r.photo_url)}" alt="" onerror="this.style.opacity='0.3'">
         <div style="flex:1;min-width:0">
-          <div style="font-weight:600">${name}${menorBadge}</div>
+          <div style="font-weight:600">${escHTML(name)}${menorBadge}</div>
           <div style="font-size:12px;color:var(--muted)">ID ${r.member_id} · ${fecha}</div>
           ${menorNote}
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
-          <button class="btn-primary" style="padding:6px 12px;font-size:12px" onclick="approvePhoto(${r.id},${r.member_id},'${r.photo_url}',${!!r.is_minor})">✓ Aprobar</button>
+          <button class="btn-primary" style="padding:6px 12px;font-size:12px" onclick="approvePhoto(${r.id},${r.member_id},'',${!!r.is_minor})">✓ Aprobar</button>
           <button class="btn-cancel"  style="padding:6px 12px;font-size:12px" onclick="rejectPhoto(${r.id})">✕ Rechazar</button>
         </div>
       </div>`;
@@ -10765,17 +10771,17 @@ async function showPendingClubChangesModal() {
       const fecha  = new Date(r.created_at).toLocaleDateString('es-PR');
       return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)">
         <div style="flex:1;min-width:0">
-          <div style="font-weight:600">${name}</div>
+          <div style="font-weight:600">${escHTML(name)}</div>
           <div style="font-size:12px;color:var(--muted)">ID ${r.member_id} · ${fecha}</div>
           <div style="font-size:13px;margin-top:4px">
-            <span style="color:var(--muted)">${r.current_club || 'Sin club'}</span>
+            <span style="color:var(--muted)">${escHTML(r.current_club || 'Sin club')}</span>
             <span style="color:var(--accent);margin:0 6px">→</span>
-            <span style="font-weight:600">${r.new_club}</span>
+            <span style="font-weight:600">${escHTML(r.new_club)}</span>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
           <button class="btn-primary" style="padding:6px 12px;font-size:12px"
-            onclick="approveClubChange(${r.id},${r.member_id},'${r.new_club.replace(/'/g,"\\'")}')">✓ Aprobar</button>
+            data-new-club="${escHTML(r.new_club)}" onclick="approveClubChange(${r.id},${r.member_id},this.dataset.newClub)">✓ Aprobar</button>
           <button class="btn-cancel" style="padding:6px 12px;font-size:12px"
             onclick="rejectClubChange(${r.id})">✕ Rechazar</button>
         </div>
@@ -18124,10 +18130,10 @@ async function loadRegSubmissions() {
         <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.15s;"
              onclick="openRegSubmissionDetail(${r.id})" onmouseover="this.style.background='rgba(56,189,248,0.04)'" onmouseout="this.style.background='transparent'">
           <div style="flex:1;">
-            <div style="font-weight:600;color:var(--text);font-size:14px;">${r.nombre} ${r.apellidos}</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px;">${r.email || '—'} · ${fecha}</div>
+            <div style="font-weight:600;color:var(--text);font-size:14px;">${escHTML(r.nombre)} ${escHTML(r.apellidos)}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">${escHTML(r.email || '—')} · ${fecha}</div>
           </div>
-          <span style="color:${sc};font-size:12px;font-weight:600;white-space:nowrap;">${sl}</span>
+          <span style="color:${sc};font-size:12px;font-weight:600;white-space:nowrap;">${escHTML(sl)}</span>
           <span style="color:var(--muted);font-size:16px;">›</span>
         </div>`;
     }).join('');
@@ -18156,7 +18162,7 @@ async function openRegSubmissionDetail(id) {
     subEl.textContent = `Recibido el ${fecha} · ${r.status === 'pending' ? 'Pendiente de revisión' : r.status === 'approved' ? 'Aprobado' : 'Rechazado'}`;
 
     const row = (label, val) => val
-      ? `<div style="display:flex;gap:12px;margin-bottom:8px;"><span style="min-width:140px;color:var(--muted);font-size:13px;">${label}</span><span style="color:var(--text);font-size:13px;font-weight:500;">${val}</span></div>`
+      ? `<div style="display:flex;gap:12px;margin-bottom:8px;"><span style="min-width:140px;color:var(--muted);font-size:13px;">${escHTML(label)}</span><span style="color:var(--text);font-size:13px;font-weight:500;">${escHTML(val)}</span></div>`
       : '';
 
     bodyEl.innerHTML = `
