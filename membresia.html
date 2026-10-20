@@ -142,8 +142,31 @@ footer{margin-top:30px;color:var(--muted);font-size:11px;display:flex;justify-co
 
 <script>
 const SUPABASE_URL='https://qrvyfdpwtearfpjruwja.supabase.co';
-const SUPABASE_KEY='sb_publishable_mM59efPqpcgrR3g3_6F_Ww_h1jg4PyV';
-const HEAD={apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'};
+let SUPABASE_KEY='';
+let HEAD={'Content-Type':'application/json'};
+let configPromise=null;
+
+async function ensureSupabaseConfig(){
+  if(SUPABASE_KEY) return;
+  if(!configPromise){
+    configPromise=fetch('legacy.html',{cache:'no-store'})
+      .then(r=>{
+        if(!r.ok) throw new Error('No se pudo cargar la configuración pública.');
+        return r.text();
+      })
+      .then(html=>{
+        const match=html.match(/const\s+SUPABASE_KEY\s*=\s*['"]([^'"]+)['"]/);
+        if(!match) throw new Error('No se encontró la configuración pública.');
+        SUPABASE_KEY=match[1];
+        HEAD={
+          apikey:SUPABASE_KEY,
+          Authorization:'Bearer '+SUPABASE_KEY,
+          'Content-Type':'application/json'
+        };
+      });
+  }
+  return configPromise;
+}
 const CFG=window.TTMPR_MEMBERSHIP_CONFIG||{};
 const paymentEnabled=CFG.paymentEnabled===true;
 const paymentReferenceRequired=paymentEnabled&&CFG.referenceRequired===true;
@@ -162,8 +185,36 @@ $('formHeading').textContent=type==='renewal'?'Confirma tus datos':'Datos del at
 
 function money(v){
   if(typeof v!=='number'||!Number.isFinite(v)) return 'Por confirmar';
-  try{return new Intl.NumberFormat('es-PR',{style:'currency',currency:CFG.currency||'USD'}).format(v)}
-  catch{return '
+  try{
+    return new Intl.NumberFormat('es-PR',{style:'currency',currency:CFG.currency||'USD'}).format(v);
+  }catch{
+    return '$'+v.toFixed(2);
+  }
+}
+
+$('paymentAmount').textContent=money(CFG.annualFee);
+$('paymentDestination').textContent=CFG.athMovilDisplay?'Destino: '+CFG.athMovilDisplay:'';
+
+if(paymentEnabled){
+  $('paymentDescription').textContent='Paga la membresía en ATH Móvil y luego ingresa la referencia de la transacción.';
+  if(CFG.athMovilPayUrl){
+    $('payLink').href=CFG.athMovilPayUrl;
+    $('payLink').classList.remove('disabled');
+    $('paymentDisabled').style.display='none';
+  }else{
+    $('payLink').style.display='none';
+    $('paymentDisabled').textContent=CFG.athMovilDisplay
+      ? 'Abre ATH Móvil y envía el pago a '+CFG.athMovilDisplay
+      : 'Completa el pago en ATH Móvil';
+  }
+  if(paymentReferenceRequired){
+    $('paymentRefWrap').classList.add('show');
+    $('athConfirmation').required=true;
+  }
+}else{
+  $('payLink').classList.add('disabled');
+  $('payLink').setAttribute('aria-disabled','true');
+}
 
 $('isMinor').addEventListener('change',()=>{
   $('guardian').classList.toggle('show',$('isMinor').checked);
@@ -180,6 +231,7 @@ $('playerSearch').addEventListener('input',()=>{
 
 async function searchPlayers(q){
   $('results').innerHTML='<div class="hint">Buscando...</div>';
+  await ensureSupabaseConfig();
   try{
     const url=SUPABASE_URL+'/rest/v1/api_jugadores?select=member_id,nombre,apellido,nombre_completo,club,rating,membresia_activa,membresia_vence&nombre_completo=ilike.*'+encodeURIComponent(q)+'*&order=nombre_completo.asc&limit=10';
     const res=await fetch(url,{headers:HEAD});
@@ -257,6 +309,7 @@ $('membershipForm').addEventListener('submit',async e=>{
   $('submitBtn').disabled=true;
   $('submitBtn').textContent='Enviando...';
   try{
+    await ensureSupabaseConfig();
     const res=await fetch(SUPABASE_URL+'/rest/v1/membership_requests',{
       method:'POST',
       headers:{...HEAD,Prefer:'return=minimal'},
