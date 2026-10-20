@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="800" height="220">
+<defs><style>.wm{font-family:Arial Black,Arial,sans-serif;font-weight:900}</style></defs>
+<circle cx="110" cy="110" r="80" fill="#00E5C0"/>
+<circle cx="110" cy="110" r="59.2" fill="#0D0D0F"/>
+<rect x="86" y="77.2" width="12.8" height="65.6" fill="#00E5C0"/>
+<polygon points="98.8,110 132.4,77.2 143.9,77.2 98.8,110" fill="#00E5C0"/>
+<polygon points="98.8,110 132.4,142.8 143.9,142.8 98.8,110" fill="#00E5C0"/>
+<circle cx="175.6" cy="52.4" r="15.2" fill="#FF3E6C"/>
+<text x="220" y="142" class="wm" font-size="96" fill="#00E5C0">K</text>
+<text x="279.5" y="142" class="wm" font-size="96" fill="#FFFFFF">ileaaa</text>
+</svg>
