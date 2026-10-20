@@ -5110,7 +5110,7 @@ async function sbGet(table, params = '') {
   const timer = setTimeout(() => ctrl.abort(), SB_TIMEOUT_MS);
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
-      headers: { ...SB_HEADERS, 'Cache-Control': 'no-cache' },
+      headers: await sbWriteHeaders({ 'Cache-Control': 'no-cache' }),
       signal: ctrl.signal
     });
     if (!res.ok) {
@@ -5248,17 +5248,17 @@ async function sbDelete(table, query) {
   }
 }
 
-async function sbPost(table, body) {
+async function sbPost(table, body, { returning = 'representation' } = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
     method: 'POST',
-    headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+    headers: await sbWriteHeaders({ 'Prefer': `return=${returning}` }),
     body: JSON.stringify(body)
   });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Supabase POST ${table} (${res.status}): ${err}`);
   }
-  return res.json();
+  return returning === 'minimal' ? [] : res.json();
 }
 
 // ══════════════════════════════════════════
@@ -10381,11 +10381,11 @@ async function submitMembershipRequest(e) {
     guardian_name:       isMinor ? guardName : null,
     guardian_relation:   isMinor ? guardRel  : null,
     existing_player_id:  existingId ? Number(existingId) : null,
-    ath_confirmation:    'captura-enviada'
+    ath_confirmation:    'sent_to_joel'
   };
 
   try {
-    await sbPost('membership_requests', body);
+    await sbPost('membership_requests', body, { returning: 'minimal' });
     msgEl.style.color = 'var(--green)';
     msgEl.textContent = '✅ ¡Solicitud enviada! El administrador la revisará y te contactará.';
     btn.textContent = '✓ Solicitud Enviada';
@@ -10412,7 +10412,7 @@ async function loadApprovedPhotos() {
   if (!isAdmin()) {
     const data=await sbGet('api_jugadores','?select=member_id,foto_url,es_menor&foto_url=not.is.null&limit=1000');
     PHOTO_MAP={};
-    for(const r of data){if(r.foto_url)PHOTO_MAP[r.member_id]={url:r.foto_url,isMinor:!!r.es_menor};}
+    for(const r of data){if(r.foto_url)PHOTO_MAP[r.member_id]={url:r.foto_url,is_minor:!!r.es_menor};}
     return;
   }
   try {
