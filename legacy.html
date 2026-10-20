@@ -6541,7 +6541,7 @@ async function submitClubInfoRequest() {
   }
   msgEl.textContent = 'Enviando…'; msgEl.style.color = 'var(--muted)';
   try {
-    await sbPost('club_info_requests', body);
+    await sbPost('club_info_requests', body, { returning: 'minimal' });
     msgEl.textContent = '✓ Solicitud enviada. Gracias.'; msgEl.style.color = 'var(--green)';
     setTimeout(() => { modal.style.display = 'none'; }, 1800);
   } catch (e) {
@@ -10409,19 +10409,9 @@ let _photoUploadFile   = null;
 let _photoUploadPlayer = null;
 
 async function loadApprovedPhotos() {
-  if (!isAdmin()) {
-    const data=await sbGet('api_jugadores','?select=member_id,foto_url,es_menor&foto_url=not.is.null&limit=1000');
-    PHOTO_MAP={};
-    for(const r of data){if(r.foto_url)PHOTO_MAP[r.member_id]={url:r.foto_url,is_minor:!!r.es_menor};}
-    return;
-  }
-  try {
-    const data = await sbGet('photo_requests', '?status=eq.approved&select=member_id,photo_url,is_minor&order=created_at.desc');
-    PHOTO_MAP = {};
-    data.forEach(r => { if (!PHOTO_MAP[r.member_id]) PHOTO_MAP[r.member_id] = { url: r.photo_url, is_minor: !!r.is_minor }; });
-  } catch (e) {
-    console.warn('loadApprovedPhotos:', e.message);
-  }
+  // Photos are quarantined in a private bucket while approved portraits are
+  // migrated to a separate public bucket. Show avatar initials in the meantime.
+  PHOTO_MAP = {};
 }
 
 async function loadClubData() {
@@ -10574,20 +10564,7 @@ async function verificarEditarPerfil() {
 }
 
 function showPhotoUploadModal() {
-  if (!_photoUploadPlayer) return;
-  _photoUploadFile = null;
-  document.getElementById('photoSubmitBtn').disabled = true;
-  document.getElementById('photoSubmitBtn').textContent = 'Enviar para aprobación';
-  document.getElementById('photoUploadMsg').textContent = '';
-  document.getElementById('photoUploadMsg').style.color = '';
-  document.getElementById('photoDropLabel').textContent = 'Haz clic para seleccionar imagen';
-  document.getElementById('photoPreviewWrap').innerHTML = `<div class="photo-preview-initials">${initials(_photoUploadPlayer.name)}</div>`;
-  document.getElementById('photoModalSubtitle').textContent = `Para: ${_photoUploadPlayer.name} · Será revisada antes de publicarse`;
-  document.getElementById('photoFileInput').value = '';
-  document.getElementById('photoIsMinor').checked = false;
-  document.getElementById('photoMinorConsent').style.display = 'none';
-  document.getElementById('photoMinorConsentCheck').checked = false;
-  document.getElementById('photoUploadModal').classList.add('open');
+  alert("Por seguridad, la recepción de fotos está pausada mientras migramos las imágenes aprobadas a un almacenamiento público separado. Ninguna foto ha sido eliminada.");
 }
 
 function photoMinorToggle() {
@@ -10627,32 +10604,8 @@ function photoFileSelected(e) {
 }
 
 async function submitPhotoRequest() {
-  if (!_photoUploadFile || !_photoUploadPlayer) return;
-  const btn   = document.getElementById('photoSubmitBtn');
-  const msgEl = document.getElementById('photoUploadMsg');
-  btn.disabled = true;
-  msgEl.style.color = '';
-  msgEl.textContent = 'Subiendo…';
-  try {
-    const ext  = (_photoUploadFile.name.split('.').pop() || 'jpg').toLowerCase();
-    const path = `pending/${Date.now()}_${_photoUploadPlayer.id}.${ext}`;
-    const { error: upErr } = await _supabase.storage
-      .from('player-photos')
-      .upload(path, _photoUploadFile, { contentType: _photoUploadFile.type || 'image/jpeg', upsert: false });
-    if (upErr) throw new Error(upErr.message);
-    const { data: { publicUrl } } = _supabase.storage.from('player-photos').getPublicUrl(path);
-    const photoUrl = publicUrl;
-    const isMinor = document.getElementById('photoIsMinor').checked;
-    await sbPost('photo_requests', { member_id: _photoUploadPlayer.id, photo_url: photoUrl, status: 'pending', is_minor: isMinor });
-    msgEl.style.color = 'var(--green)';
-    msgEl.textContent = '✓ Foto enviada. Será revisada pronto.';
-    btn.textContent = '✓ Enviado';
-    setTimeout(closePhotoModal, 2200);
-  } catch (err) {
-    msgEl.style.color = 'var(--red)';
-    msgEl.textContent = 'Error: ' + err.message;
-    btn.disabled = false;
-  }
+  const el = document.getElementById('photoUploadMsg');
+  if (el) { el.textContent = "Por seguridad, la recepción de fotos está pausada mientras migramos las imágenes aprobadas a un almacenamiento público separado. Ninguna foto ha sido eliminada."; el.style.color = 'var(--muted)'; }
 }
 
 async function showPendingPhotosModal() {
@@ -10698,21 +10651,8 @@ function closePendingPhotosModal() {
   document.getElementById('pendingPhotosModal').style.display = 'none';
 }
 
-async function approvePhoto(id, memberId, photoUrl, isMinor = false) {
-  try {
-    const { data, error: e1 } = await _supabase.from('photo_requests').update({ status: 'approved' }).eq('id', id).select();
-    if (e1) throw new Error(e1.message);
-    if (!data || data.length === 0) throw new Error('Sin permiso para actualizar. Corre el SQL de fix de policies en Supabase.');
-    await _supabase.from('photo_requests').update({ status: 'rejected' }).eq('member_id', memberId).eq('status', 'pending').neq('id', id);
-    PHOTO_MAP[memberId] = { url: photoUrl, is_minor: isMinor };
-    // Update avatar live if that player's profile is open
-    if (_photoUploadPlayer?.id === memberId) {
-      const el = document.getElementById('profileAvatar');
-      if (el) el.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    }
-    await updatePendingBadge();
-    await showPendingPhotosModal();
-  } catch (e) { alert('Error: ' + e.message); }
+async function approvePhoto(_id, _memberId, _photoUrl, _isMinor = false) {
+  alert('Las aprobaciones de fotografías están pausadas hasta separar las imágenes aprobadas de las privadas.');
 }
 
 async function rejectPhoto(id) {
@@ -10795,7 +10735,7 @@ async function submitClubChangeRequest() {
       current_club: _clubChangePlayer.club || '',
       new_club:     newClub,
       status:       'pending'
-    });
+    }, { returning: 'minimal' });
     msgEl.style.color = 'var(--green)';
     msgEl.textContent = '¡Solicitud enviada! El administrador la revisará pronto.';
     setTimeout(closeClubChangeModal, 2000);
