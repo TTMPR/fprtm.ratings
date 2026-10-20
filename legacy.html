@@ -18064,9 +18064,12 @@ async function loadRegTokenList() {
 
     listEl.innerHTML = data.map(t => {
       const fecha = new Date(t.created_at).toLocaleDateString('es-PR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const expired = !t.used && (!t.expires_at || new Date(t.expires_at).getTime() <= Date.now());
       const statusBadge = t.used
         ? '<span style="color:#4ade80;font-size:11px;font-weight:600;">● Usado</span>'
-        : '<span style="color:var(--accent);font-size:11px;font-weight:600;">● Activo</span>';
+        : expired
+          ? '<span style="color:var(--muted);font-size:11px;font-weight:600;">● Expirado</span>'
+          : '<span style="color:var(--accent);font-size:11px;font-weight:600;">● Activo (7 días)</span>';
       const base = window.location.origin + window.location.pathname;
       const url  = `${base}?registro=${t.token}`;
       return `
@@ -18076,7 +18079,7 @@ async function loadRegTokenList() {
             <div style="font-size:11px;color:var(--muted);margin-top:1px;">${fecha}</div>
           </div>
           <div>${statusBadge}</div>
-          ${!t.used ? `<button onclick="navigator.clipboard.writeText('${url}')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">Copiar</button>` : ''}
+          ${!t.used && !expired ? `<button onclick="navigator.clipboard.writeText('${url}')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">Copiar</button>` : ''}
         </div>`;
     }).join('');
   } catch(e) {
