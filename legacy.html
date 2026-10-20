@@ -5419,6 +5419,19 @@ function showError(msg) {
 }
 
 async function loadPlayers(filter = {}) {
+  // Public users must read only the approved directory projection.
+  if (!isAdmin()) {
+    let params='?select=member_id,nombre,apellido,sexo,club,escuela,rating,rating_inicio,membresia_vence,foto_url,es_menor&order=rating.desc.nullslast&limit=600';
+    if (filter.sexoAny?.length) params += '&sexo=in.(' + filter.sexoAny.map(x => encodeURIComponent(x)).join(',') + ')';
+    else if (filter.sexo) params += '&sexo=eq.' + encodeURIComponent(filter.sexo);
+    const data=await sbGet('api_jugadores',params);
+    return data.map((p,i)=>({
+      id:p.member_id,rank:i+1,name:[p.nombre,p.apellido].filter(Boolean).join(' '),
+      sex:p.sexo||'',gender:p.sexo||'',age:null,cat:null,
+      club:p.club||null,escuela:p.escuela||null,member:true,
+      expDate:p.membresia_vence||null,rating:p.rating,ratingStart:p.rating_inicio
+    }));
+  }
   // Only fetch non-sensitive columns — never request Email, Home Address, or Date of Birth
   let params = '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Rating%22,%22New%20Rating%22,%22Sex%22,%22Club%22,%22Escuela%22,%22Expiration%20Date%22&order=%22New%20Rating%22.desc.nullslast,Rating.desc&limit=600';
   if (filter.sexoAny?.length) {
@@ -5450,6 +5463,21 @@ async function loadPlayers(filter = {}) {
 }
 
 async function loadMembers() {
+  if (!isAdmin()) {
+    const data=await sbGet('api_jugadores','?select=member_id,nombre,apellido,club,escuela,sexo,membresia_vence&order=member_id.asc&limit=300');
+    const now=new Date();
+    return data.map(m=>{
+      const exp=m.membresia_vence?new Date(m.membresia_vence+'T12:00:00Z'):null;
+      const days=exp?Math.floor((exp-now)/86400000):null;
+      return {
+        id:m.member_id,name:[m.nombre,m.apellido].filter(Boolean).join(' '),
+        club:m.club||'—',escuela:m.escuela||null,sex:m.sexo||'—',
+        age:'—',date:'—',expDate:m.membresia_vence||'—',
+        daysUntilExp:days,status:days===null?'no':days<0?'expired':days<=30?'warning':'active',
+        email:'',tel:'',pueblo:'',ath:''
+      };
+    });
+  }
   // Only fetch non-sensitive columns — never request Home Address or Date of Birth
   const data = await sbGet('Base%20de%20Datos', '?select=%22Member%20ID%22,%22First%20Name%22,%22Last%20Name%22,%22Club%22,%22Escuela%22,%22Sex%22,%22Email%22,%22Expiration%20Date%22&order=%22Member%20ID%22.asc&limit=300');
   const now = new Date();
@@ -10381,6 +10409,12 @@ let _photoUploadFile   = null;
 let _photoUploadPlayer = null;
 
 async function loadApprovedPhotos() {
+  if (!isAdmin()) {
+    const data=await sbGet('api_jugadores','?select=member_id,foto_url,es_menor&foto_url=not.is.null&limit=1000');
+    PHOTO_MAP={};
+    for(const r of data){if(r.foto_url)PHOTO_MAP[r.member_id]={url:r.foto_url,isMinor:!!r.es_menor};}
+    return;
+  }
   try {
     const data = await sbGet('photo_requests', '?status=eq.approved&select=member_id,photo_url,is_minor&order=created_at.desc');
     PHOTO_MAP = {};
@@ -14620,7 +14654,7 @@ async function fetchPlayerDob(memberId) {
 
 async function fetchExistingInscripcion(memberId) {
   try {
-    const data = await sbGet('insc_registro',
+    const data = await sbGet('insc_registro_publico',
       `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&member_id=eq.${memberId}&select=*&limit=1`);
     return data?.[0] || null;
   } catch(e) { return null; }
@@ -14637,7 +14671,7 @@ let _doblesTaken = {};
 
 async function loadCatCounts() {
   try {
-    const data = await sbGet('insc_registro',
+    const data = await sbGet('insc_registro_publico',
       `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&select=member_id,categorias`);
     _catCounts = {};
     _doblesTaken = {};
@@ -14689,7 +14723,7 @@ async function loadInscStats() {
   if (loadingEl) loadingEl.style.display = '';
   if (errorEl)   errorEl.style.display   = 'none';
   try {
-    const rows = await sbGet('insc_registro',
+    const rows = await sbGet('insc_registro_publico',
       `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&select=member_id,categorias`);
 
     const counts      = {};   // catId → número de inscritos
@@ -15590,7 +15624,7 @@ async function loadInscritosSection() {
   if (badge) badge.style.display = 'none';
 
   try {
-    const data = await sbGet('insc_registro', `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=created_at.asc`);
+    const data = await sbGet('insc_registro_publico', `?torneo=eq.${encodeURIComponent(TORNEO_ACTIVO)}&order=created_at.asc`);
     if (!data || !data.length) {
       content.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--muted);font-size:14px;">Aún no hay inscritos.</div>';
       return;
