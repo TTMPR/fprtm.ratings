@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Membresía · TTM PR</title>
 <link rel="icon" href="ttm_pr_favicon_32x32.png">
+<script src="membership-config.js"></script>
 <style>
 :root{--bg:#070b13;--panel:#0d121d;--line:#202838;--text:#f7f8fb;--muted:#9aa5b6;--aqua:#00e5c0;--danger:#ff6b7a;--ok:#65d99a}
 *{box-sizing:border-box}
@@ -36,6 +37,16 @@ textarea{min-height:85px;resize:vertical}
 .check{display:flex;gap:10px;align-items:flex-start}.check input{width:auto;margin-top:3px}
 .guardian{display:none}.guardian.show{display:grid}
 .notice{font-size:12px;color:var(--muted);line-height:1.55;border-left:2px solid var(--aqua);padding-left:12px;margin:18px 0}
+.payment-card{margin-top:18px;border:1px solid var(--line);border-radius:14px;padding:17px;background:#09101a}
+.payment-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.payment-title{font-size:14px;font-weight:800}
+.payment-sub{font-size:11px;color:var(--muted);line-height:1.45;margin-top:4px}
+.payment-amount{font-size:18px;font-weight:850;color:var(--aqua);white-space:nowrap}
+.payment-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.pay-link{display:inline-flex;align-items:center;justify-content:center;border-radius:10px;padding:11px 14px;background:var(--aqua);color:#04110f;text-decoration:none;font-size:12px;font-weight:850}
+.pay-link.disabled{opacity:.45;pointer-events:none}
+.payment-disabled{font-size:11px;color:var(--muted)}
+.payment-ref{display:none;margin-top:14px}.payment-ref.show{display:block}
 button{width:100%;border:none;border-radius:12px;background:var(--aqua);color:#04110f;padding:14px;font-weight:850;font-size:15px;cursor:pointer;margin-top:20px}
 button:disabled{opacity:.55;cursor:not-allowed}
 .status{display:none;padding:13px;border-radius:10px;margin-top:14px;font-size:13px}.status.show{display:block}.status.ok{background:rgba(101,217,154,.1);color:var(--ok);border:1px solid rgba(101,217,154,.25)}.status.err{background:rgba(255,107,122,.1);color:var(--danger);border:1px solid rgba(255,107,122,.25)}
@@ -101,7 +112,26 @@ footer{margin-top:30px;color:var(--muted);font-size:11px;display:flex;justify-co
       <textarea id="notes" placeholder="Alguna información que debamos conocer"></textarea>
     </div>
 
-    <div class="notice">La solicitud se envía para revisión de la Federación. La confirmación de pago se manejará según el proceso vigente de membresía.</div>
+    <div class="payment-card">
+      <div class="payment-top">
+        <div>
+          <div class="payment-title">Pago de membresía</div>
+          <div class="payment-sub" id="paymentDescription">El pago se habilitará aquí cuando la Federación confirme el monto y destino oficial.</div>
+        </div>
+        <div class="payment-amount" id="paymentAmount">Por confirmar</div>
+      </div>
+      <div class="payment-actions">
+        <a id="payLink" class="pay-link disabled" href="#" target="_blank" rel="noopener">Pagar con ATH Móvil</a>
+        <span id="paymentDisabled" class="payment-disabled">Pago aún no habilitado</span>
+      </div>
+      <div id="paymentRefWrap" class="field payment-ref">
+        <label for="athConfirmation">Referencia / confirmación de ATH Móvil *</label>
+        <input id="athConfirmation" autocomplete="off" placeholder="Ej. ABC12">
+        <span class="hint">Ingresa la referencia que recibiste después de completar el pago.</span>
+      </div>
+    </div>
+
+    <div class="notice">La solicitud se envía para revisión de la Federación. Si el pago está habilitado, la referencia queda ligada a esta solicitud para facilitar la verificación.</div>
     <button id="submitBtn" type="submit">Enviar solicitud</button>
     <div id="status" class="status"></div>
   </form>
@@ -113,6 +143,9 @@ footer{margin-top:30px;color:var(--muted);font-size:11px;display:flex;justify-co
 const SUPABASE_URL='https://qrvyfdpwtearfpjruwja.supabase.co';
 const SUPABASE_KEY='sb_publishable_mM59efPqpcgrR3g3_6F_Ww_h1jg4PyV';
 const HEAD={apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'};
+const CFG=window.TTMPR_MEMBERSHIP_CONFIG||{};
+const paymentEnabled=CFG.paymentEnabled===true;
+const paymentReferenceRequired=paymentEnabled&&CFG.referenceRequired===true;
 const params=new URLSearchParams(location.search);
 const type=params.get('type')==='renewal'?'renewal':'new';
 const $=id=>document.getElementById(id);
@@ -125,6 +158,146 @@ $('intro').textContent=type==='renewal'
   ?'Busca tu perfil actual y confirma tus datos para renovar tu membresía.'
   :'Completa los datos del atleta para solicitar una membresía federativa.';
 $('formHeading').textContent=type==='renewal'?'Confirma tus datos':'Datos del atleta';
+
+function money(v){
+  if(typeof v!=='number'||!Number.isFinite(v)) return 'Por confirmar';
+  try{return new Intl.NumberFormat('es-PR',{style:'currency',currency:CFG.currency||'USD'}).format(v)}
+  catch{return '
+
+$('isMinor').addEventListener('change',()=>{
+  $('guardian').classList.toggle('show',$('isMinor').checked);
+  $('guardianName').required=$('isMinor').checked;
+});
+
+let searchTimer=null;
+$('playerSearch').addEventListener('input',()=>{
+  clearTimeout(searchTimer);
+  const q=$('playerSearch').value.trim();
+  if(q.length<3){$('results').innerHTML='';return}
+  searchTimer=setTimeout(()=>searchPlayers(q),300);
+});
+
+async function searchPlayers(q){
+  $('results').innerHTML='<div class="hint">Buscando...</div>';
+  try{
+    const url=SUPABASE_URL+'/rest/v1/api_jugadores?select=member_id,nombre,apellido,nombre_completo,club,rating,membresia_activa,membresia_vence&nombre_completo=ilike.*'+encodeURIComponent(q)+'*&order=nombre_completo.asc&limit=10';
+    const res=await fetch(url,{headers:HEAD});
+    if(!res.ok) throw new Error('No se pudo consultar el directorio.');
+    const rows=await res.json();
+    if(!rows.length){$('results').innerHTML='<div class="hint">No encontramos coincidencias.</div>';return}
+    $('results').innerHTML='';
+    rows.forEach(p=>{
+      const el=document.createElement('div');
+      el.className='player';
+      const status=p.membresia_activa?'Activa':'No activa';
+      el.innerHTML='<div><div class="player-name"></div><div class="player-meta"></div></div><div class="player-rating"></div>';
+      el.querySelector('.player-name').textContent=p.nombre_completo;
+      el.querySelector('.player-meta').textContent=(p.club||'Sin club')+' · Membresía '+status+(p.membresia_vence?' · vence '+p.membresia_vence:'');
+      el.querySelector('.player-rating').textContent=p.rating||'—';
+      el.addEventListener('click',()=>selectPlayer(p,el));
+      $('results').appendChild(el);
+    });
+  }catch(e){$('results').innerHTML='<div class="status err show">'+escapeHtml(e.message)+'</div>'}
+}
+function selectPlayer(p,el){
+  document.querySelectorAll('.player').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  $('existingPlayerId').value=p.member_id;
+  $('firstName').value=p.nombre||'';
+  $('lastName').value=p.apellido||'';
+  $('club').value=p.club||'';
+  $('selectedBox').classList.add('show');
+  $('selectedBox').textContent='Perfil seleccionado: '+p.nombre_completo+' · ID '+p.member_id;
+}
+function val(id){return $(id).value.trim()||null}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+$('membershipForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const status=$('status');
+  status.className='status';
+  if(type==='renewal'&&!$('existingPlayerId').value){
+    status.textContent='Selecciona primero tu perfil actual.';
+    status.className='status err show';
+    return;
+  }
+  if($('isMinor').checked&&!val('guardianName')){
+    status.textContent='Para un menor, necesitamos el nombre del padre, madre o tutor.';
+    status.className='status err show';
+    return;
+  }
+  if(paymentReferenceRequired&&!val('athConfirmation')){
+    status.textContent='Completa el pago e ingresa la referencia de ATH Móvil.';
+    status.className='status err show';
+    return;
+  }
+  const payload={
+    type,
+    existing_player_id:type==='renewal'?Number($('existingPlayerId').value):null,
+    first_name:val('firstName'),
+    last_name:val('lastName'),
+    email:val('email'),
+    phone:val('phone'),
+    dob:val('dob'),
+    sex:val('sex'),
+    club:val('club'),
+    address:val('address'),
+    city:val('city'),
+    state:'Puerto Rico',
+    country:'Puerto Rico',
+    zipcode:val('zipcode'),
+    is_minor:$('isMinor').checked,
+    guardian_name:val('guardianName'),
+    guardian_relation:val('guardianRelation'),
+    ath_confirmation:val('athConfirmation')||'pending',
+    notes:val('notes'),
+    status:'pending'
+  };
+  $('submitBtn').disabled=true;
+  $('submitBtn').textContent='Enviando...';
+  try{
+    const res=await fetch(SUPABASE_URL+'/rest/v1/membership_requests',{
+      method:'POST',
+      headers:{...HEAD,Prefer:'return=minimal'},
+      body:JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('No se pudo enviar la solicitud. Intenta nuevamente o contacta a Joel por WhatsApp.');
+    status.textContent=paymentEnabled
+      ? (type==='renewal'?'Renovación y referencia de pago enviadas correctamente.':'Solicitud y referencia de pago enviadas correctamente.')
+      : (type==='renewal'?'Renovación enviada correctamente. El pago queda pendiente.':'Solicitud de membresía enviada correctamente. El pago queda pendiente.');
+    status.className='status ok show';
+    $('membershipForm').reset();
+    $('existingPlayerId').value='';
+    $('guardian').classList.remove('show');
+    $('selectedBox').classList.remove('show');
+    $('results').innerHTML='';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(err){
+    status.textContent=err.message;
+    status.className='status err show';
+  }finally{
+    $('submitBtn').disabled=false;
+    $('submitBtn').textContent='Enviar solicitud';
+  }
+});
+</script>
+</body>
+</html>+v.toFixed(2)}
+}
+$('paymentAmount').textContent=money(CFG.annualFee);
+if(paymentEnabled&&CFG.athMovilPayUrl){
+  $('payLink').href=CFG.athMovilPayUrl;
+  $('payLink').classList.remove('disabled');
+  $('paymentDisabled').style.display='none';
+  $('paymentDescription').textContent='Completa el pago y luego envía tu solicitud.';
+  if(paymentReferenceRequired){
+    $('paymentRefWrap').classList.add('show');
+    $('athConfirmation').required=true;
+  }
+}else{
+  $('payLink').classList.add('disabled');
+  $('payLink').setAttribute('aria-disabled','true');
+}
 
 $('isMinor').addEventListener('change',()=>{
   $('guardian').classList.toggle('show',$('isMinor').checked);
