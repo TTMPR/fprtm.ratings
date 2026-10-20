@@ -10567,6 +10567,16 @@ function showPhotoUploadModal() {
   alert("Por seguridad, la recepción de fotos está pausada mientras migramos las imágenes aprobadas a un almacenamiento público separado. Ninguna foto ha sido eliminada.");
 }
 
+function photoMinorToggle() {
+  const isMinor = document.getElementById('photoIsMinor').checked;
+  const consentDiv   = document.getElementById('photoMinorConsent');
+  const consentCheck = document.getElementById('photoMinorConsentCheck');
+  consentDiv.style.display = isMinor ? '' : 'none';
+  if (!isMinor) consentCheck.checked = false;
+  const consentOk = !isMinor || consentCheck.checked;
+  document.getElementById('photoSubmitBtn').disabled = !(_photoUploadFile && consentOk);
+}
+
 function closePhotoModal() {
   document.getElementById('photoUploadModal').classList.remove('open');
   _photoUploadFile = null;
