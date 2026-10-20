@@ -5083,9 +5083,7 @@ const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 
 // Single admin account (Joel). Any authenticated session = admin.
-function isAdmin() {
-  return currentUser !== null;
-}
+function isAdmin() { return currentUser?.id === 'b1c91ed0-edc2-42ea-b64e-346a0659dcad'; }
 
 const SB_HEADERS = {
   'apikey': SUPABASE_KEY,
@@ -18324,18 +18322,9 @@ async function initPublicRegForm() {
   const msgEl = document.getElementById('regFormTokenMsg');
 
   try {
-    const { data: tok, error } = await _supabase
-      .from('player_reg_tokens')
-      .select('token, used, label')
-      .eq('token', token)
-      .maybeSingle();
-
-    if (error || !tok) {
-      msgEl.innerHTML = '<div style="color:#ef4444;font-size:16px;">❌ Enlace inválido o expirado.<br><small style="font-size:13px;color:var(--muted);">Comunícate con el administrador de la FPTM.</small></div>';
-      return;
-    }
-    if (tok.used) {
-      msgEl.innerHTML = '<div style="color:#ef4444;font-size:16px;">❌ Este enlace ya fue utilizado.<br><small style="font-size:13px;color:var(--muted);">Cada enlace es de un solo uso. Solicita uno nuevo al administrador.</small></div>';
+    const { data: valid, error } = await _supabase.rpc('verificar_enlace_registro', { p_token: token });
+    if (error || valid !== true) {
+      msgEl.innerHTML = '<div style="color:#ef4444;font-size:16px;">Enlace inválido, expirado o ya utilizado.<br><small style="font-size:13px;color:var(--muted);">Comunícate con el administrador de la FPTM.</small></div>';
       return;
     }
 
@@ -18376,31 +18365,24 @@ async function submitPublicReg() {
   btn.textContent = 'Enviando...';
 
   try {
-    const { error: subErr } = await _supabase
-      .from('player_reg_submissions')
-      .insert({
-        token,
-        nombre,
-        apellidos,
-        email,
-        telefono:          document.getElementById('regFTelefono').value.trim() || null,
-        dob,
-        sex,
-        club:              document.getElementById('regFClub').value.trim() || null,
-        address:           document.getElementById('regFAddress').value.trim() || null,
-        city:              document.getElementById('regFCity').value.trim() || null,
-        state:             document.getElementById('regFState').value.trim() || null,
-        zip:               document.getElementById('regFZip').value.trim() || null,
-        is_minor:          isMinor,
-        guardian_name:     isMinor ? document.getElementById('regFGuardianName').value.trim() : null,
+    const { data: result, error: subErr } = await _supabase.rpc('enviar_solicitud_registro', {
+      p_request: {
+        token, nombre, apellidos, email, dob, sex,
+        telefono: document.getElementById('regFTelefono').value.trim() || null,
+        club: document.getElementById('regFClub').value.trim() || null,
+        address: document.getElementById('regFAddress').value.trim() || null,
+        city: document.getElementById('regFCity').value.trim() || null,
+        state: document.getElementById('regFState').value.trim() || null,
+        zip: document.getElementById('regFZip').value.trim() || null,
+        is_minor: isMinor,
+        guardian_name: isMinor ? document.getElementById('regFGuardianName').value.trim() : null,
         guardian_relation: isMinor ? document.getElementById('regFGuardianRelation').value.trim() : null,
-      });
-    if (subErr) throw new Error(subErr.message);
+      },
+    });
+    if (subErr || !result?.ok) {
+      throw new Error(result?.error || 'No fue posible completar el registro. Solicita un enlace nuevo si ya fue utilizado.');
+    }
 
-    // Mark token as used
-    await _supabase.from('player_reg_tokens')
-      .update({ used: true, used_at: new Date().toISOString() })
-      .eq('token', token);
 
     document.getElementById('regFormBody').style.display    = 'none';
     document.getElementById('regFormSuccess').style.display = '';
