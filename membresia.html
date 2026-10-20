@@ -116,7 +116,8 @@ footer{margin-top:30px;color:var(--muted);font-size:11px;display:flex;justify-co
       <div class="payment-top">
         <div>
           <div class="payment-title">Pago de membresía</div>
-          <div class="payment-sub" id="paymentDescription">El pago se habilitará aquí cuando la Federación confirme el monto y destino oficial.</div>
+          <div class="payment-sub" id="paymentDescription">Completa el pago en ATH Móvil y luego ingresa la referencia.</div>
+          <div class="payment-sub" id="paymentDestination" style="margin-top:6px;font-weight:800;color:#f7f8fb"></div>
         </div>
         <div class="payment-amount" id="paymentAmount">Por confirmar</div>
       </div>
@@ -285,11 +286,19 @@ $('membershipForm').addEventListener('submit',async e=>{
 </html>+v.toFixed(2)}
 }
 $('paymentAmount').textContent=money(CFG.annualFee);
-if(paymentEnabled&&CFG.athMovilPayUrl){
-  $('payLink').href=CFG.athMovilPayUrl;
-  $('payLink').classList.remove('disabled');
-  $('paymentDisabled').style.display='none';
-  $('paymentDescription').textContent='Completa el pago y luego envía tu solicitud.';
+$('paymentDestination').textContent=CFG.athMovilDisplay?'Destino: '+CFG.athMovilDisplay:'';
+if(paymentEnabled){
+  $('paymentDescription').textContent='Paga la membresía en ATH Móvil y luego ingresa la referencia de la transacción.';
+  if(CFG.athMovilPayUrl){
+    $('payLink').href=CFG.athMovilPayUrl;
+    $('payLink').classList.remove('disabled');
+    $('paymentDisabled').style.display='none';
+  }else{
+    $('payLink').style.display='none';
+    $('paymentDisabled').textContent=CFG.athMovilDisplay
+      ? 'Abre ATH Móvil y envía el pago a '+CFG.athMovilDisplay
+      : 'Completa el pago en ATH Móvil';
+  }
   if(paymentReferenceRequired){
     $('paymentRefWrap').classList.add('show');
     $('athConfirmation').required=true;
