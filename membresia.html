@@ -347,11 +347,6 @@ $('membershipForm').addEventListener('submit',async e=>{
     status.className='status err show';
     return;
   }
-  if(paymentEnabled&&!$('proofSentToJoel').checked){
-    status.textContent='Antes de enviar, confirma que ya enviaste la evidencia del pago a Joel Vega por WhatsApp.';
-    status.className='status err show';
-    return;
-  }
   // Prevent a new membership request when this official name already has a
   // Member ID. Namesakes require manual verification rather than duplication.
   if(type==='new'){
@@ -374,6 +369,11 @@ $('membershipForm').addEventListener('submit',async e=>{
       $('submitBtn').disabled=false;
       $('submitBtn').textContent='Enviar solicitud';
     }
+  }
+  if(paymentEnabled&&!$('proofSentToJoel').checked){
+    status.textContent='Antes de enviar, confirma que ya enviaste la evidencia del pago a Joel Vega por WhatsApp.';
+    status.className='status err show';
+    return;
   }
   const payload={
     type,
