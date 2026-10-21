@@ -25,3 +25,5 @@ jobs:
           node-version: '22'
       - name: Reject unescaped user-submitted admin HTML
         run: node --test tests/security-admin-html.node.cjs
+      - name: Validate membership renewal form and secure directory contract
+        run: node --test tests/membership-renewal.node.cjs
