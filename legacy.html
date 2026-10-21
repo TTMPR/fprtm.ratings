@@ -10041,6 +10041,24 @@ async function approveMembershipRequest(reqId) {
         if (msgEl) { msgEl.style.color = '#f59e0b'; msgEl.textContent = 'Ingresa la fecha de nacimiento antes de aprobar.'; }
         return;
       }
+      // An official Member ID is permanent, even when the player's membership
+      // expired or was never activated. Do not approve a duplicate by name.
+      const normalizedApplicant=(req.first_name+' '+req.last_name)
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .toLowerCase().replace(/\s+/g,' ').trim();
+      const {data: possibleExisting,error: duplicateLookupError} = await _supabase
+        .from('api_busqueda_membresia')
+        .select('member_id,nombre_completo')
+        .eq('nombre_busqueda',normalizedApplicant)
+        .limit(5);
+      if(duplicateLookupError) throw new Error('No se pudo verificar el registro oficial antes de aprobar.');
+      if(possibleExisting?.length){
+        if(msgEl){
+          msgEl.style.color='#f59e0b';
+          msgEl.textContent='Posible jugador ya existente (Member ID '+possibleExisting[0].member_id+'). Verifica si corresponde a una renovación antes de aprobar. No se creó ningún duplicado.';
+        }
+        return;
+      }
       const newId  = await generateMemberId();
       const body = {
         'Member ID':       newId,
@@ -10137,15 +10155,16 @@ async function rejectMembershipRequest(reqId) {
 // ID GENERATOR
 // ══════════════════════════════════════════
 async function generateMemberId() {
-  const existing = new Set(ALL_PLAYERS.map(p => p.id));
-  let id;
-  let attempts = 0;
-  do {
-    id = Math.floor(10000 + Math.random() * 90000); // 5-digit: 10000–99999
-    attempts++;
-    if (attempts > 500) throw new Error('No se pudo generar un ID único. Intenta de nuevo.');
-  } while (existing.has(id));
-  return id;
+  // Check all official Member IDs, not only active players currently in ALL_PLAYERS.
+  // A unique database index also enforces this under concurrent operations.
+  for(let attempt=0;attempt<100;attempt++){
+    const candidate=Math.floor(10000+Math.random()*90000);
+    const {data,error}=await _supabase.from('api_busqueda_membresia')
+      .select('member_id').eq('member_id',candidate).limit(1);
+    if(error) throw new Error('No se pudo validar el Member ID nuevo.');
+    if(!data?.length)return candidate;
+  }
+  throw new Error('No se pudo generar un Member ID único. Intenta nuevamente.');
 }
 
 // ══════════════════════════════════════════

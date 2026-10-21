@@ -28,7 +28,7 @@ input,select,textarea{width:100%;background:#080d16;border:1px solid var(--line)
 input:focus,select:focus,textarea:focus{border-color:var(--aqua)}
 textarea{min-height:85px;resize:vertical}
 .hint{color:var(--muted);font-size:11px;line-height:1.45}
-.renew-search{display:none}.renew-search.show{display:block}
+.renew-search{display:block}.renew-search.show{display:block}
 .results{display:grid;gap:8px;margin-top:12px}
 .player{border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;background:#0a101a;display:flex;justify-content:space-between;gap:12px}
 .player:hover,.player.selected{border-color:var(--aqua)}
@@ -73,11 +73,11 @@ footer{margin-top:30px;color:var(--muted);font-size:11px;display:flex;justify-co
   </div>
 
   <div id="renewSearch" class="panel renew-search">
-    <h2>Busca tu perfil actual</h2>
+    <h2 id="searchHeading">Busca tu perfil en los registros oficiales</h2>
     <div class="field">
-      <label for="playerSearch">Nombre del jugador</label>
-      <input id="playerSearch" autocomplete="off" placeholder="Escribe al menos 3 letras">
-      <span class="hint">Selecciona tu perfil existente para renovar sin crear un jugador duplicado.</span>
+      <label for="playerSearch">Nombre, apellidos o Member ID</label>
+      <input id="playerSearch" autocomplete="off" inputmode="search" placeholder="Nombre o número de jugador" aria-describedby="searchHint">
+      <span id="searchHint" class="hint">Incluye jugadores con Member ID, aunque nunca hayan tenido una membresía activa.</span>
     </div>
     <div id="results" class="results"></div>
     <div id="selectedBox" class="selected-box"></div>
@@ -146,33 +146,17 @@ footer{margin-top:30px;color:var(--muted);font-size:11px;display:flex;justify-co
 </div>
 
 <script>
-const SUPABASE_URL='https://qrvyfdpwtearfpjruwja.supabase.co';
-let SUPABASE_KEY='';
-let HEAD={'Content-Type':'application/json'};
-let configPromise=null;
-
-async function ensureSupabaseConfig(){
-  if(SUPABASE_KEY) return;
-  if(!configPromise){
-    configPromise=fetch('legacy.html',{cache:'no-store'})
-      .then(r=>{
-        if(!r.ok) throw new Error('No se pudo cargar la configuración pública.');
-        return r.text();
-      })
-      .then(html=>{
-        const match=html.match(/const\s+SUPABASE_KEY\s*=\s*['"]([^'"]+)['"]/);
-        if(!match) throw new Error('No se encontró la configuración pública.');
-        SUPABASE_KEY=match[1];
-        HEAD={
-          apikey:SUPABASE_KEY,
-          Authorization:'Bearer '+SUPABASE_KEY,
-          'Content-Type':'application/json'
-        };
-      });
-  }
-  return configPromise;
-}
 const CFG=window.TTMPR_MEMBERSHIP_CONFIG||{};
+const SUPABASE_URL=CFG.supabaseUrl||'';
+const SUPABASE_KEY=CFG.supabasePublishableKey||'';
+const HEAD={
+  apikey:SUPABASE_KEY,
+  Authorization:'Bearer '+SUPABASE_KEY,
+  'Content-Type':'application/json'
+};
+function ensureSupabaseConfig(){
+  if(!SUPABASE_URL||!SUPABASE_KEY) throw new Error('La configuración pública de membresía no está disponible.');
+}
 const paymentEnabled=CFG.paymentEnabled===true;
 const paymentReferenceRequired=paymentEnabled&&CFG.referenceRequired===true;
 const params=new URLSearchParams(location.search);
@@ -181,7 +165,13 @@ const $=id=>document.getElementById(id);
 $('requestType').value=type;
 $('newTab').classList.toggle('active',type==='new');
 $('renewTab').classList.toggle('active',type==='renewal');
-$('renewSearch').classList.toggle('show',type==='renewal');
+$('renewSearch').classList.add('show');
+$('searchHeading').textContent=type==='renewal'
+  ?'Busca tu perfil en el registro oficial'
+  :'¿Ya tienes Member ID o has jugado torneos?';
+$('searchHint').textContent=type==='renewal'
+  ?'Encuentra tu jugador por nombre, apellidos o Member ID. Incluye perfiles con membresía vencida o sin membresía previa.'
+  :'Si ya tienes Member ID o rating, selecciona tu perfil existente y renueva, para no crear otro registro.';
 $('title').textContent=type==='renewal'?'Renovar membresía':'Nueva membresía';
 $('intro').textContent=type==='renewal'
   ?'Busca tu perfil actual y confirma tus datos para renovar tu membresía.'
@@ -225,38 +215,106 @@ $('isMinor').addEventListener('change',()=>{
   $('guardianName').required=$('isMinor').checked;
 });
 
+// Shared renewal lookup: all official Member IDs, not only currently active memberships.
+function normalizeName(text){
+  return String(text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().trim().replace(/\s+/g,' ');
+}
+function normalizeQuery(text){
+  return normalizeName(text).replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+}
+async function findOfficialPlayers(text){
+  ensureSupabaseConfig();
+  const q=normalizeQuery(text);
+  if(q.length<2) return [];
+  const url=new URL(SUPABASE_URL+'/rest/v1/api_busqueda_membresia');
+  url.searchParams.set('select','member_id,member_id_text,nombre,apellido,nombre_completo,club,rating,membresia_activa,membresia_vence,nombre_busqueda');
+  url.searchParams.set('order','nombre_completo.asc');
+  url.searchParams.set('limit','25');
+  if(/^\d+$/.test(q)){
+    url.searchParams.set('member_id_text','like.*'+q+'*');
+  }else{
+    const terms=q.split(' ').filter(Boolean);
+    if(terms.length===1){
+      url.searchParams.set('nombre_busqueda','like.*'+terms[0]+'*');
+    }else{
+      url.searchParams.set('and','('+terms.map(t=>'nombre_busqueda.like.*'+t+'*').join(',')+')');
+    }
+  }
+  const res=await fetch(url.toString(),{headers:HEAD,cache:'no-store'});
+  if(!res.ok) throw new Error('No pudimos buscar los perfiles oficiales. Intenta nuevamente.');
+  return res.json();
+}
+async function findExactOfficialPlayer(first,last){
+  ensureSupabaseConfig();
+  const url=new URL(SUPABASE_URL+'/rest/v1/api_busqueda_membresia');
+  url.searchParams.set('select','member_id,nombre_completo');
+  url.searchParams.set('nombre_busqueda','eq.'+normalizeName(first+' '+last));
+  url.searchParams.set('limit','1');
+  const res=await fetch(url.toString(),{headers:HEAD,cache:'no-store'});
+  if(!res.ok) throw new Error('No fue posible verificar que el jugador no existe ya.');
+  const rows=await res.json();
+  return rows.length?rows[0]:null;
+}
 let searchTimer=null;
+let searchGeneration=0;
 $('playerSearch').addEventListener('input',()=>{
   clearTimeout(searchTimer);
-  const q=$('playerSearch').value.trim();
-  if(q.length<3){$('results').innerHTML='';return}
-  searchTimer=setTimeout(()=>searchPlayers(q),300);
+  const id=++searchGeneration;
+  $('existingPlayerId').value='';
+  $('selectedBox').classList.remove('show');
+  $('selectedBox').textContent='';
+  const q=$('playerSearch').value;
+  if(normalizeQuery(q).length<2){
+    $('results').textContent='Escribe al menos 2 caracteres para buscar.';
+    return;
+  }
+  searchTimer=setTimeout(()=>searchPlayers(q,id),300);
 });
-
-async function searchPlayers(q){
-  $('results').innerHTML='<div class="hint">Buscando...</div>';
-  await ensureSupabaseConfig();
+async function searchPlayers(q,requestId){
+  $('results').textContent='Buscando en el registro oficial...';
   try{
-    const url=SUPABASE_URL+'/rest/v1/api_jugadores?select=member_id,nombre,apellido,nombre_completo,club,rating,membresia_activa,membresia_vence&nombre_completo=ilike.*'+encodeURIComponent(q)+'*&order=nombre_completo.asc&limit=10';
-    const res=await fetch(url,{headers:HEAD});
-    if(!res.ok) throw new Error('No se pudo consultar el directorio.');
-    const rows=await res.json();
-    if(!rows.length){$('results').innerHTML='<div class="hint">No encontramos coincidencias.</div>';return}
-    $('results').innerHTML='';
+    const rows=await findOfficialPlayers(q);
+    if(requestId!==searchGeneration)return;
+    $('results').replaceChildren();
+    if(rows.length===0){
+      const empty=document.createElement('div');
+      empty.className='hint';
+      empty.textContent='No encontramos coincidencias. Si el jugador ya tiene Member ID, contacta a la Federación antes de crear otro perfil.';
+      $('results').appendChild(empty);
+      return;
+    }
     rows.forEach(p=>{
       const el=document.createElement('div');
       el.className='player';
-      const status=p.membresia_activa?'Activa':'No activa';
       el.innerHTML='<div><div class="player-name"></div><div class="player-meta"></div></div><div class="player-rating"></div>';
-      el.querySelector('.player-name').textContent=p.nombre_completo;
-      el.querySelector('.player-meta').textContent=(p.club||'Sin club')+' · Membresía '+status+(p.membresia_vence?' · vence '+p.membresia_vence:'');
-      el.querySelector('.player-rating').textContent=p.rating||'—';
+      const membershipStatus=p.membresia_activa?'Membresía vigente':'Sin membresía vigente';
+      el.querySelector('.player-name').textContent=p.nombre_completo||'Jugador';
+      el.querySelector('.player-meta').textContent='Member ID '+p.member_id+' · '+(p.club||'Sin club')+' · '+membershipStatus;
+      el.querySelector('.player-rating').textContent=p.rating==null?'—':String(p.rating);
+      el.setAttribute('role','button');
+      el.setAttribute('tabindex','0');
+      el.setAttribute('aria-label','Seleccionar '+p.nombre_completo+', Member ID '+p.member_id);
       el.addEventListener('click',()=>selectPlayer(p,el));
+      el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPlayer(p,el);}});
       $('results').appendChild(el);
     });
-  }catch(e){$('results').innerHTML='<div class="status err show">'+escapeHtml(e.message)+'</div>'}
+    if(rows.length===25){
+      const hint=document.createElement('div');
+      hint.className='hint';
+      hint.textContent='Hay muchos resultados. Escribe más letras o utiliza el Member ID para precisar.';
+      $('results').appendChild(hint);
+    }
+  }catch(e){
+    if(requestId!==searchGeneration)return;
+    $('results').textContent=e.message;
+  }
 }
 function selectPlayer(p,el){
+  if(type==='new'){
+    location.href='membresia.html?type=renewal&member_id='+encodeURIComponent(p.member_id);
+    return;
+  }
   document.querySelectorAll('.player').forEach(x=>x.classList.remove('selected'));
   el.classList.add('selected');
   $('existingPlayerId').value=p.member_id;
@@ -264,7 +322,13 @@ function selectPlayer(p,el){
   $('lastName').value=p.apellido||'';
   $('club').value=p.club||'';
   $('selectedBox').classList.add('show');
-  $('selectedBox').textContent='Perfil seleccionado: '+p.nombre_completo+' · ID '+p.member_id;
+  $('selectedBox').textContent='Renovación vinculada al perfil existente: '+p.nombre_completo+' · Member ID '+p.member_id;
+}
+// If a player was selected in the "new" flow, load their existing Member ID here.
+const requestedMemberId=params.get('member_id');
+if(type==='renewal'&&requestedMemberId&&/^\d{2,8}$/.test(requestedMemberId)){
+  $('playerSearch').value=requestedMemberId;
+  searchPlayers(requestedMemberId,++searchGeneration);
 }
 function val(id){return $(id).value.trim()||null}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
@@ -282,6 +346,29 @@ $('membershipForm').addEventListener('submit',async e=>{
     status.textContent='Para un menor, necesitamos el nombre del padre, madre o tutor.';
     status.className='status err show';
     return;
+  }
+  // Prevent a new membership request when this official name already has a
+  // Member ID. Namesakes require manual verification rather than duplication.
+  if(type==='new'){
+    $('submitBtn').disabled=true;
+    $('submitBtn').textContent='Verificando jugador...';
+    try{
+      const duplicate=await findExactOfficialPlayer(val('firstName'),val('lastName'));
+      if(duplicate){
+        status.textContent='Ya existe un perfil con ese nombre (Member ID '+duplicate.member_id+'). Utiliza Renovar membresía o contacta a la Federación si se trata de otra persona.';
+        status.className='status err show';
+        $('playerSearch').value=val('firstName')+' '+val('lastName');
+        searchPlayers($('playerSearch').value,++searchGeneration);
+        return;
+      }
+    }catch(err){
+      status.textContent=err.message||'No pudimos verificar el registro oficial.';
+      status.className='status err show';
+      return;
+    }finally{
+      $('submitBtn').disabled=false;
+      $('submitBtn').textContent='Enviar solicitud';
+    }
   }
   if(paymentEnabled&&!$('proofSentToJoel').checked){
     status.textContent='Antes de enviar, confirma que ya enviaste la evidencia del pago a Joel Vega por WhatsApp.';
