@@ -5629,6 +5629,7 @@ function showPage(key) {
 
   const PROTECTED = ['membresia', 'admin', 'subir'];
   if (PROTECTED.includes(key) && !currentUser) { showLogin(); return; }
+  if (PROTECTED.includes(key) && !isAdmin()) { showPage('ratings'); return; }
 
   _currentPageKey = key;
   setDocTitle(key === 'ratings' ? '' : PAGE_TITLES[key]);
