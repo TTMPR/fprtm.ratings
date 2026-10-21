@@ -40,7 +40,8 @@ $function$;
 
 -- Internal function is callable only through the narrowly scoped public view.
 REVOKE ALL ON FUNCTION internal_security.safe_membership_directory() FROM PUBLIC;
-CREATE OR REPLACE VIEW public.api_busqueda_membresia AS
+GRANT EXECUTE ON FUNCTION internal_security.safe_membership_directory() TO anon, authenticated;
+CREATE OR REPLACE VIEW public.api_busqueda_membresia WITH (security_invoker=true) AS
   SELECT * FROM internal_security.safe_membership_directory();
 REVOKE ALL ON public.api_busqueda_membresia FROM PUBLIC;
 GRANT SELECT ON public.api_busqueda_membresia TO anon, authenticated, service_role;
