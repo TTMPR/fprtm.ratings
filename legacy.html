@@ -10026,6 +10026,7 @@ async function approveMembershipRequest(reqId) {
     expDate.setFullYear(expDate.getFullYear() + 1);
     const expStr = `${String(expDate.getMonth()+1).padStart(2,'0')}/${String(expDate.getDate()).padStart(2,'0')}/${expDate.getFullYear()}`;
 
+    let approvedMemberId = req.existing_player_id || null;
     if (req.type === 'renewal' && req.existing_player_id) {
       // Update existing player
       const patch = { 'Expiration Date': expStr };
@@ -10060,6 +10061,7 @@ async function approveMembershipRequest(reqId) {
         return;
       }
       const newId  = await generateMemberId();
+      approvedMemberId = newId;
       const body = {
         'Member ID':       newId,
         'First Name':      req.first_name,
@@ -10080,7 +10082,7 @@ async function approveMembershipRequest(reqId) {
 
     // Mark request as approved
     const { error: patchErr } = await _supabase.from('membership_requests')
-      .update({ status: 'approved', processed_at: new Date().toISOString() })
+      .update({ status: 'approved', processed_at: new Date().toISOString(), approved_member_id: approvedMemberId })
       .eq('id', reqId);
     if (patchErr) throw new Error(patchErr.message);
 
