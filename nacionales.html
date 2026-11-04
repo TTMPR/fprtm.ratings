@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Inscripciones · Campeonatos Nacionales 2026</title>
+<meta name="description" content="Inscripciones a los Campeonatos Nacionales de Tenis de Mesa 2026 · 12, 13, 19 y 20 de diciembre · Albergue Olímpico, Salinas.">
+<link rel="icon" href="ttm_pr_favicon_32x32.png">
+<script src="membership-config.js"></script>
+<style>
+/* Una columna de pasos (jugador → reglamento → categorías) con el resumen a la derecha; en teléfono el resumen baja al final. Mismo lenguaje visual que index.html y membresia.html. */
+:root{
+  --bg:#070b13; --panel:#0d121d; --soft:#131a27; --line:#202838; --line2:#2d3748;
+  --text:#f7f8fb; --muted:#9aa5b6; --dim:#6b7688;
+  --aqua:#00e5c0; --aqua-ink:#04110f; --aqua-soft:rgba(0,229,192,.10);
+  --ok:#3ddc84; --warn:#f5b84b; --warn-soft:rgba(245,184,75,.10); --bad:#ff7a8a; --bad-soft:rgba(255,122,138,.10);
+  --gold:#e8c66a;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+.shell{max-width:1120px;margin:0 auto}
+a{color:var(--aqua)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--aqua);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+
+.top{display:flex;align-items:center;justify-content:space-between;height:72px;border-bottom:1px solid var(--line)}
+.top img{width:130px;max-height:42px;object-fit:contain}
+.top a{color:var(--muted);text-decoration:none;font-size:12.5px}
+
+.hero{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;padding:28px 0 24px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-size:clamp(30px,5vw,48px);line-height:1.02;letter-spacing:-.045em;margin:8px 0 12px;text-wrap:balance}
+h1 span{color:var(--aqua)}
+.facts{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted);font-size:13px}
+.facts b{color:var(--text);font-weight:650}
+.deadline{display:inline-flex;gap:8px;align-items:center;margin-top:14px;padding:7px 12px;border-radius:999px;border:1px solid var(--line2);font-size:12.5px;color:#c9d0db}
+.deadline i{width:7px;height:7px;border-radius:50%;background:var(--dim);display:inline-block}
+.deadline.on i{background:var(--ok)}
+.deadline.off i{background:var(--bad)}
+.hero-logo{width:160px;height:160px;object-fit:contain;background:#fff;border-radius:14px;padding:6px}
+.closed{margin-top:16px;padding:12px 14px;border-radius:12px;border:1px solid var(--warn);background:var(--warn-soft);color:#ffe2ad;font-size:13px}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start;margin-top:22px}
+.steps{display:grid;gap:16px;min-width:0}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}
+.step-h{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+.step-n{font-size:11px;font-weight:800;color:var(--aqua-ink);background:var(--aqua);border-radius:6px;padding:2px 7px}
+.step-h h2{font-size:17px;margin:0;letter-spacing:-.01em}
+.step-h p{margin:0;color:var(--muted);font-size:12.5px;margin-left:auto}
+.step.off{opacity:.45;pointer-events:none}
+
+.search{display:flex;gap:8px}
+.search input,.fld input{flex:1;min-width:0;width:100%;background:#080d16;border:1px solid var(--line2);border-radius:10px;color:var(--text);padding:11px 12px;font:inherit}
+.btn{border:1px solid var(--line2);background:var(--soft);border-radius:10px;padding:10px 14px;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;color:var(--text)}
+.btn.primary{background:var(--aqua);border-color:var(--aqua);color:var(--aqua-ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.fld{display:grid;gap:5px;font-size:12px;color:#c8d0dc;font-weight:650;min-width:0}
+.hint{margin:8px 0 0;font-size:11.5px;color:var(--dim)}
+.err{margin-top:10px;font-size:12.5px;padding:9px 11px;border-radius:9px;background:var(--bad-soft);color:var(--bad)}
+.mlist{display:grid;gap:6px;margin-top:12px}
+.mrow{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 12px;border-radius:10px;border:1px solid var(--line2);background:transparent;cursor:pointer;text-align:left;width:100%}
+.mrow:hover{border-color:var(--aqua)}
+.mrow small{color:var(--dim)}
+.player{margin-top:14px;display:grid;grid-template-columns:auto 1fr;gap:14px;padding:14px;border-radius:12px;background:var(--soft);border:1px solid var(--line)}
+.avatar{width:46px;height:46px;border-radius:50%;background:#1d2636;display:grid;place-items:center;font-weight:800;color:var(--aqua)}
+.player h3{margin:0;font-size:16px}
+.kv{display:flex;flex-wrap:wrap;gap:4px 16px;color:var(--muted);font-size:12.5px;margin-top:4px}
+.kv b{color:var(--text);font-weight:600}
+.verify{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-top:12px}
+.verify .fld{flex:1 1 180px}
+.verify .btn{height:44px}
+.memb{margin-top:10px;font-size:12.5px;padding:9px 11px;border-radius:9px}
+.memb.ok{background:rgba(61,220,132,.08);color:var(--ok)}
+.memb.bad{background:var(--bad-soft);color:var(--bad)}
+.memb.bad p{margin:4px 0 8px;color:#f3c3ca}
+.natural-line{margin-top:10px;font-size:12.5px;color:var(--muted)}
+.natural-line b{color:var(--gold)}
+
+.rules{max-height:340px;overflow-y:auto;border:1px solid var(--line2);border-radius:12px;padding:4px 18px 14px;background:#080d16;margin-bottom:12px;font-size:13px;color:#c9d0db;overscroll-behavior:contain}
+.rules h4{margin:16px 0 6px;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
+.rules p{margin:6px 0}
+.rules ul{margin:6px 0;padding-left:20px}
+.rules li{margin:3px 0}
+.rules strong{color:var(--text)}
+.rules .rbox{border:1px solid var(--line2);border-radius:10px;padding:4px 12px;margin:8px 0}
+.rules .rend{text-align:center;color:var(--dim);font-size:11.5px;margin-top:18px}
+.check{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:10px;border:1px solid var(--line2);cursor:pointer}
+.check input{margin-top:3px;width:18px;height:18px;accent-color:var(--aqua);flex:none}
+.check.locked{opacity:.5;cursor:not-allowed}
+#rulesProg.done{color:var(--ok)}
+
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--muted);margin-bottom:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.day{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+.day:first-of-type{border-top:0;margin-top:0;padding-top:0}
+.day-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-bottom:8px}
+.day-h h3{margin:0;font-size:14.5px}
+.day-h small{color:var(--dim);font-size:12px}
+.slot{display:grid;grid-template-columns:74px minmax(0,1fr);gap:10px;padding:6px 0}
+.slot-t{font-size:12.5px;font-weight:700;color:#c9d0db;padding-top:11px}
+.evs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.ev{position:relative;text-align:left;border:1px solid var(--line2);background:var(--soft);border-radius:11px;padding:10px 12px;cursor:pointer;display:grid;gap:3px;width:100%}
+.ev:hover{border-color:#3b4760}
+.ev .t{display:flex;justify-content:space-between;gap:8px;font-weight:650;font-size:13.5px}
+.ev .t em{font-style:normal;color:var(--muted);font-weight:600;font-size:12.5px;white-space:nowrap}
+.ev .s{font-size:11.5px;color:var(--dim)}
+.ev .why{font-size:11.5px;color:var(--muted)}
+.ev.natural{border-color:rgba(232,198,106,.55)}
+.badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:5px;padding:1px 6px;margin-right:4px}
+.b-nat{background:rgba(232,198,106,.16);color:var(--gold)}
+.b-up{background:var(--aqua-soft);color:var(--aqua)}
+.b-sel{background:var(--aqua);color:var(--aqua-ink)}
+.b-ya{background:#26324a;color:#c9d0db}
+.ev.selected{border-color:var(--aqua);background:linear-gradient(0deg,var(--aqua-soft),var(--aqua-soft)),var(--soft)}
+.ev.ya{border-style:dashed;cursor:default}
+.ev.locked,.ev.conflict,.ev.no{cursor:not-allowed;background:transparent}
+.ev.locked .t,.ev.conflict .t,.ev.no .t{color:var(--muted)}
+.ev.conflict .why{color:var(--warn)}
+.ev.locked .why{color:#c9d0db}
+.ev.no{opacity:.55}
+.showall{margin-top:12px;font-size:12.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.showall input{accent-color:var(--aqua)}
+.empty{color:var(--dim);font-size:12.5px;margin:0}
+
+.partner{grid-column:1/-1;border:1px solid var(--aqua);border-radius:11px;padding:12px;background:#0a1a1a}
+.partner h4{margin:0 0 4px;font-size:13px}
+.partner p{margin:0 0 8px;font-size:12px;color:var(--muted)}
+.plist{display:grid;gap:6px;margin-top:8px}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:9px;background:var(--soft);font-size:12.5px}
+.prow small{display:block;color:var(--dim)}
+.prow .why{color:var(--warn);font-size:11.5px}
+.pair{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 11px;border-radius:9px;background:var(--aqua-soft);font-size:13px}
+
+.summary{position:sticky;top:calc(env(safe-area-inset-top,0px) + 14px);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:12px}
+.summary h2{margin:0;font-size:15px}
+.lines{display:grid;gap:8px;font-size:13px}
+.line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.line small{display:block;color:var(--dim);font-size:11.5px}
+.total{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);padding-top:12px}
+.total b{font-size:26px;letter-spacing:-.03em}
+.req{font-size:12px;color:var(--muted);display:grid;gap:4px}
+.req .no{color:var(--warn)}
+.req .yes{color:var(--ok)}
+.pay{border:1px solid var(--line2);border-radius:12px;padding:12px;display:grid;gap:8px;font-size:12.5px;color:#c9d0db;text-align:left}
+.pay ol{margin:0;padding-left:18px;display:grid;gap:6px}
+.pay code{background:#080d16;border:1px solid var(--line2);border-radius:7px;padding:2px 8px;font-size:12.5px;color:var(--text);user-select:all}
+.done{display:grid;gap:10px}
+.done .big{font-size:34px;color:var(--ok);text-align:center}
+.done p{margin:0;color:var(--muted);font-size:12.5px}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);max-width:min(520px,calc(100% - 32px));
+  background:#2a1d08;border:1px solid var(--warn);color:#ffe2ad;padding:11px 14px;border-radius:12px;font-size:13px;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);color:var(--dim);font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}.summary{position:static}}
+@media (max-width:560px){
+  .hero{grid-template-columns:1fr}.hero-logo{order:-1;width:110px;height:110px}
+  .slot{grid-template-columns:1fr;gap:4px}.slot-t{padding-top:0}
+  .step{padding:16px}.step-h{flex-wrap:wrap}.step-h p{margin-left:0;width:100%}
+}
+@media (prefers-reduced-motion:no-preference){.ev,.btn,.mrow{transition:border-color .15s,background .15s}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <a href="index.html"><img src="ttm_pr_logo_dark_transparent.png" alt="TTM PR"></a>
+    <a href="index.html">← Volver</a>
+  </div>
+
+  <header class="hero">
+    <div>
+      <div class="eyebrow">Inscripciones · FPTM</div>
+      <h1>Campeonatos Nacionales <span>2026</span></h1>
+      <div class="facts">
+        <span><b>12, 13, 19 y 20 de diciembre</b></span>
+        <span>Albergue Olímpico, Salinas</span>
+        <span>22 eventos</span>
+      </div>
+      <div class="deadline" id="deadline"><i></i><span>Cierra el viernes 4 de diciembre, 11:00 p.m.</span></div>
+    </div>
+    <img class="hero-logo" src="Logo_Campeonatos_Nacionales_2026.webp" alt="Campeonatos Nacionales 2026 · Tenis de Mesa · Puerto Rico">
+  </header>
+  <div class="closed" id="closedBanner" hidden></div>
+
+  <div class="layout">
+    <div class="steps">
+      <section class="step" id="step1">
+        <div class="step-h"><span class="step-n">1</span><h2>¿Quién juega?</h2><p>Busca y verifica con la fecha de nacimiento</p></div>
+        <form class="search" id="searchForm">
+          <input id="q" placeholder="Member ID o nombre" autocomplete="off" aria-label="Member ID o nombre">
+          <button class="btn" type="submit">Buscar</button>
+        </form>
+        <div id="matches"></div>
+        <div id="playerBox"></div>
+      </section>
+
+      <section class="step off" id="step2">
+        <div class="step-h"><span class="step-n">2</span><h2>Reglamento</h2><p id="rulesProg">Desliza hasta el final para poder aceptarlo</p></div>
+        <div class="rules" id="rules" tabindex="0" aria-label="Reglamento del torneo">
+<h4>1. FECHA:</h4>
+<p>Sábado 12, domingo 13, sábado 19 y domingo 20 de diciembre de 2026</p>
+<h4>2. ORGANIZA:</h4>
+<p>Federación Puertorriqueña de Tenis de Mesa (FPTM)</p>
+<h4>3. SEDE DEL EVENTO:</h4>
+<p>Albergue Olímpico — Salinas, Puerto Rico (Pabellón y Polivalente)</p>
+<p>12 y 13 de diciembre: 12 mesas (Pabellón)</p>
+<p>19 y 20 de diciembre: 24 mesas (Pabellón y Polivalente)</p>
+<h4>4. ELEGIBILIDAD:</h4>
+<p>Para participar en los Campeonatos Nacionales, el jugador o jugadora debe cumplir con los siguientes requisitos:</p>
+<ul>
+<li><strong>Ser ciudadano(a) de los Estados Unidos de América.</strong></li>
+<li><strong>Ser residente bona fide de Puerto Rico.</strong></li>
+<li><strong>Ser miembro activo de la FPTM.</strong></li>
+</ul>
+<h4>5. SELECCIONES NACIONALES DE ADULTOS:</h4>
+<div class="rbox">
+<p><strong>REQUISITO DE PARTICIPACIÓN</strong></p>
+<p>Todo jugador o jugadora que interese o aspire a ser considerado(a) para integrar <strong>de forma directa</strong> las <strong>Selecciones Nacionales de Adultos de Puerto Rico</strong> <strong>deberá participar en la categoría Individual Abierto de los Campeonatos Nacionales 2026.</strong></p>
+<p>El jugador o jugadora que opte por no participar en el Individual Abierto tendrá que competir en las <strong>clasificatorias</strong> al momento en que estas sean convocadas por la FPTM.</p>
+<p><strong>Excepción:</strong> <em>la atleta Adriana Díaz queda exenta de este requisito.</em></p>
+</div>
+<h4>6. EVENTOS:</h4>
+<p>La edad se considera por año natural (al 31 de diciembre de 2026).</p>
+<p><strong>Sábado, 12 de diciembre</strong></p>
+<ul>
+<li>9 años o menos Femenino – 9:00 a.m. | menores de 10 años</li>
+<li>9 años o menos Masculino – 9:00 a.m. | menores de 10 años</li>
+<li>13 años o menos Femenino – 9:00 a.m. | menores de 14 años</li>
+<li>13 años o menos Masculino – 9:00 a.m. | menores de 14 años</li>
+<li>15 años o menos Femenino – 9:00 a.m. | menores de 16 años</li>
+<li>15 años o menos Masculino – 9:00 a.m. | menores de 16 años</li>
+<li>Rating 1900 o menos – 1:00 p.m.</li>
+</ul>
+<p><strong>Domingo, 13 de diciembre</strong></p>
+<ul>
+<li>Rating 1800 o menos – 9:00 a.m.</li>
+<li>19 años o menos Femenino – 1:00 p.m. | menores de 20 años</li>
+<li>19 años o menos Masculino – 1:00 p.m. | menores de 20 años</li>
+<li>11 años o menos Femenino – 1:00 p.m. | menores de 12 años</li>
+<li>11 años o menos Masculino – 1:00 p.m. | menores de 12 años</li>
+</ul>
+<p><strong>Sábado, 19 de diciembre</strong></p>
+<ul>
+<li>Individual Abierto Masculino – 9:00 a.m. (Pabellón)</li>
+<li>Individual Abierto Femenino – 9:00 a.m. (Pabellón)</li>
+<li>Rating 1700 o menos – 9:00 a.m. (Polivalente)</li>
+<li>Rating 1500 o menos – 1:00 p.m. (Polivalente)</li>
+</ul>
+<p><strong>Domingo, 20 de diciembre</strong></p>
+<ul>
+<li>Dobles Masculino – 9:00 a.m. (Pabellón)</li>
+<li>Dobles Femenino – 9:00 a.m. (Pabellón)</li>
+<li>Rating 1600 o menos – 9:00 a.m. (Polivalente)</li>
+<li>Dobles Mixtos – 1:00 p.m. (Pabellón)</li>
+<li>Seniors: 40 años o más (Mixto) – 1:00 p.m. (Polivalente)</li>
+<li>7 años o menos Abierto – 1:00 p.m. (Polivalente) | menores de 8 años</li>
+</ul>
+<h4>7. REGLAS:</h4>
+<p>Es responsabilidad del jugador, padre, madre o entrenador inscribir al participante en la categoría correspondiente a su edad y nivel de rating.</p>
+<p>El evento se conducirá bajo el reglamento vigente de la Federación Internacional de Tenis de Mesa (ITTF) y normas federativas. Toda decisión del Comité Técnico será final.</p>
+<p>La elegibilidad para las categorías por rating y la siembra de todos los eventos estarán basadas en el rating oficial de la FPTM publicado en ratings.ttmpr.xyz a la fecha límite de inscripción. <strong>El rating no es el único criterio para determinar la siembra.</strong></p>
+<p>En caso de empate en la fase de grupos, se aplicarán los criterios de desempate establecidos por la ITTF y la FPTM.</p>
+<h4>8. FORMATO DE COMPETENCIA:</h4>
+<ul>
+<li><strong>Individuales:</strong> se jugará una fase de grupos de 2 o 3 jugadores en formato todos contra todos (round robin), asignando 1 mesa por grupo. Todos los jugadores avanzarán a una llave de eliminación sencilla.</li>
+<li><strong>Dobles:</strong> no habrá fase de grupos; los partidos se jugarán directamente en una llave de eliminación sencilla. La siembra de las parejas se determinará por la suma del rating de ambos jugadores.</li>
+<li><strong>Todos los partidos se jugarán al mejor de cinco (5) juegos.</strong></li>
+</ul>
+<h4>9. DOBLES:</h4>
+<ul>
+<li><strong>Un jugador inscribe a la pareja completa y paga la inscripción de ambos.</strong> Ambos integrantes deben cumplir con los requisitos de elegibilidad y tener membresía activa en la FPTM durante todo el torneo.</li>
+<li>Las parejas pueden estar compuestas por jugadores de clubes distintos. En Dobles Mixtos, cada pareja estará compuesta por un jugador masculino y una jugadora femenina.</li>
+<li>El costo de inscripción en Dobles es de $40.00 por pareja ($20.00 por jugador), pagado en su totalidad por el jugador que inscribe la pareja.</li>
+<li>Las parejas no llevan nombre: se identifican por el nombre de ambos jugadores.</li>
+<li>Un jugador puede participar en una sola pareja por evento de dobles. No se permitirán cambios de pareja después de la fecha límite de inscripción, salvo autorización del Comité Técnico.</li>
+</ul>
+<h4>10. PARTICIPACIÓN EN MÚLTIPLES CATEGORÍAS:</h4>
+<p><strong>El jugador que se inscriba en más de una categoría es responsable de cumplir con el itinerario oficial del torneo.</strong></p>
+<ul>
+<li>Debe estar presente y listo en su mesa a la hora indicada de CADA evento en que participe.</li>
+<li>El torneo no detendrá su programación para esperar a un jugador que se encuentre compitiendo en otra categoría.</li>
+<li>El Comité Técnico evaluará caso por caso cualquier situación de solapamiento de horarios y tomará la determinación que corresponda.</li>
+<li>Se recomienda revisar el itinerario antes de inscribirse en múltiples categorías.</li>
+<li><strong>No se permite inscribirse en dos eventos que se jueguen el mismo día a la misma hora, incluidos los eventos de Dobles.</strong> Ejemplo: Dobles Masculino y Rating 1600 o menos (domingo 20, 9:00 a.m.) no pueden escogerse juntos; el jugador debe escoger uno de los dos.</li>
+</ul>
+<h4>11. CATEGORÍAS PERMITIDAS POR JUGADOR:</h4>
+<p><strong>Para jugar en una categoría superior a su categoría natural, el jugador debe estar inscrito también en su categoría natural, y no podrá eliminar la natural mientras esté inscrito en una superior.</strong> En el sistema de inscripción, las categorías superiores se habilitan al escoger la categoría natural.</p>
+<p><strong>Categorías por edad</strong></p>
+<ul>
+<li>No se permite subir de categoría. Cada jugador participará únicamente en la categoría que le corresponde por su edad.</li>
+<li><strong>Excepción:</strong> los jugadores de las categorías 13 años o menos y 15 años o menos podrán participar, además, en 19 años o menos, siempre que estén inscritos en su categoría natural.</li>
+<li>Cualquier otra solicitud de excepción por edad debe hacerse al Director Técnico de la FPTM, Joel Vega, <strong>antes de la fecha límite de inscripción</strong>.</li>
+</ul>
+<p><strong>Categorías por rating</strong></p>
+<ul>
+<li>Cada jugador podrá participar en su categoría natural y hasta en dos (2) categorías superiores, siempre que no exista conflicto de horario entre ellas.</li>
+<li>Ejemplo: un jugador de 1550 pts (categoría natural: Rating 1600 o menos) puede inscribirse también en Rating 1700 o menos y Rating 1800 o menos, siempre que esté inscrito en Rating 1600 o menos.</li>
+<li><strong>Penalidad:</strong> el jugador que use su categoría natural para habilitar una categoría superior y luego no juegue la natural, porque la cancela o no se presenta, por cualquier razón, recibirá una penalidad de puntos de rating estimada por la Mesa Técnica y se le registrarán tres (3) W/O en la categoría natural. <strong>La inscripción en la natural es un compromiso de jugarla.</strong></li>
+</ul>
+<p><strong>Individual Abierto y Dobles</strong></p>
+<ul>
+<li>El Individual Abierto Masculino y Femenino y los eventos de Dobles están abiertos a todo jugador elegible que desee inscribirse, sin restricción de edad ni de rating.</li>
+</ul>
+<h4>12. ITINERARIO:</h4>
+<p>Los jugadores deben estar presentes 45 minutos antes de la hora de comienzo de su evento para verificación y registro, y listos en su mesa 20 minutos antes del comienzo de los partidos.</p>
+<h4>13. INSCRIPCIONES:</h4>
+<p>La inscripción será aceptada únicamente si se completa correctamente, se realiza el pago correspondiente y la FPTM verifica la evidencia del pago.</p>
+<p>Para inscribirse, el jugador se identifica con su Member ID y su fecha de nacimiento, que debe coincidir con el registro oficial de la FPTM. Antes de escoger categorías, debe leer y aceptar este reglamento.</p>
+<p>Inscripciones en: ratings.ttmpr.xyz</p>
+<h4>14. FECHA LÍMITE:</h4>
+<p><strong>La fecha límite de inscripción para todos los eventos es el viernes 4 de diciembre de 2026 a las 11:00 p.m.</strong> No se aceptarán inscripciones después de esa fecha y hora.</p>
+<h4>15. MÉTODO DE PAGO:</h4>
+<p><strong>Las inscripciones solo serán aceptadas a través de ATH Móvil Business / fprtm.</strong> La evidencia del pago (captura de ATH Móvil) debe enviarse al Director Técnico, Joel Vega (787-248-3994). La inscripción queda aprobada cuando la FPTM verifica el pago.</p>
+<h4>16. MEMBRESÍA FEDERATIVA:</h4>
+<p><strong>La membresía activa en la FPTM es requisito para participar en los Campeonatos Nacionales y debe estar vigente durante todo el torneo, hasta el 20 de diciembre de 2026.</strong> La membresía tiene validez de un (1) año a partir de su aprobación. El jugador cuya membresía venza antes de que termine el torneo debe renovarla antes de inscribirse. Los jugadores que aún no son miembros deben completar el proceso de membresía ($20.00) y esperar su aprobación antes de inscribirse.</p>
+<h4>17. CANCELACIONES Y REEMBOLSOS:</h4>
+<p><strong>No se realizarán reembolsos por concepto de cancelación de inscripción.</strong></p>
+<ul>
+<li>En caso de cancelación, se otorgará un crédito por el monto pagado, aplicable al próximo evento organizado por la FPTM.</li>
+<li>El crédito es personal e intransferible.</li>
+<li>Toda cancelación debe ser notificada al Comité Organizador antes de la fecha límite de inscripción.</li>
+</ul>
+<h4>18. ARBITRAJE:</h4>
+<p><strong>Para contribuir con el flujo del evento, los jugadores que le corresponda arbitrar y se nieguen a cumplir deben buscar un árbitro sustituto o pagar $2.00. Los jugadores que se vayan sin arbitrar o buscar sustituto tendrán una multa de $5.00 y no podrán participar en próximos torneos hasta que la paguen.</strong></p>
+<h4>19. PREMIACIÓN:</h4>
+<ul>
+<li>En las categorías individuales no se jugarán partidos para definir la 3ra. y 4ta. posición; se premiarán dos terceros lugares.</li>
+<li>Las categorías de 7 años o menos y 9 años o menos serán premiadas con trofeos para los primeros cuatro lugares y medallas del 5to al 8vo lugar.</li>
+<li>En los eventos de Dobles se premiarán únicamente el 1er. y 2do. lugar. El premio en metálico corresponde a la pareja.</li>
+<li>El Campeón y la Campeona del Individual Abierto Masculino y Femenino obtienen una posición en el Equipo Nacional para el periodo del 1 de enero de 2027 al 30 de junio de 2027.</li>
+<li>Los premios en metálico de cada categoría se detallan en el documento Itinerario de Eventos y Premiación.</li>
+</ul>
+<h4>20. RESPONSABILIDAD:</h4>
+<p>Cada jugador participará bajo su propia responsabilidad por cualquier lesión, accidente o daño que pudiera sufrir en relación con el torneo. La Federación Puertorriqueña de Tenis de Mesa, los miembros del Comité Organizador, el Albergue Olímpico y las Empresas Auspiciadoras quedan liberados de toda indemnización por demandas presentadas por tales causas.</p>
+<h4>21. IMPREVISTOS:</h4>
+<p>La Federación Puertorriqueña de Tenis de Mesa se reserva la facultad de realizar en cualquier momento las modificaciones necesarias, según el criterio del Comité Organizador.</p>
+<p><em>FPTM · ratings.ttmpr.xyz</em></p>
+        </div>
+        <label class="check locked" for="elig" id="eligLbl">
+          <input type="checkbox" id="elig" disabled>
+          <span><b>He leído el reglamento completo y lo acepto.</b> Confirmo que cumplo con los requisitos de elegibilidad y, si inscribo una pareja de dobles, que mi pareja también los cumple.</span>
+        </label>
+      </section>
+
+      <section class="step off" id="step3">
+        <div class="step-h"><span class="step-n">3</span><h2>Categorías</h2><p>Edad al 31 de diciembre de 2026</p></div>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--gold)"></i>Tu categoría natural</span>
+          <span><i class="sw" style="background:var(--aqua)"></i>Categoría superior</span>
+          <span><i class="sw" style="background:var(--warn)"></i>Coincide en horario</span>
+        </div>
+        <div id="days"><p class="empty">Busca y verifica al jugador para ver sus categorías.</p></div>
+        <label class="showall" for="showAll"><input type="checkbox" id="showAll"> Ver también las categorías en las que no puedes jugar</label>
+      </section>
+    </div>
+
+    <aside class="summary" id="summary"></aside>
+  </div>
+
+  <footer>
+    <span>Federación Puertorriqueña de Tenis de Mesa · ratings.ttmpr.xyz</span>
+    <span>¿Ayuda? Joel Vega · 787-248-3994</span>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+'use strict';
+const CFG = window.TTMPR_MEMBERSHIP_CONFIG || {};
+const SB_URL = CFG.supabaseUrl || '';
+const SB_KEY = CFG.supabasePublishableKey || '';
+const HEAD = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+const REGLAMENTO_VERSION = '2026-11-04';
+const WHATSAPP = CFG.supportWhatsApp || '17872483994';
+
+// Espejo de public.nac_eventos (sql/nacionales_2026.sql). Solo para pintar:
+// quien valida elegibilidad, horarios, parejas y total es el servidor.
+const DAYS = [
+  {k:'2026-12-12', label:'Sábado 12 de diciembre',  note:'12 mesas · Pabellón'},
+  {k:'2026-12-13', label:'Domingo 13 de diciembre', note:'12 mesas · Pabellón'},
+  {k:'2026-12-19', label:'Sábado 19 de diciembre',  note:'24 mesas · Pabellón y Polivalente'},
+  {k:'2026-12-20', label:'Domingo 20 de diciembre', note:'24 mesas · Pabellón y Polivalente'},
+];
+const T = {'09:00':'9:00 a.m.','13:00':'1:00 p.m.'};
+const EVENTS = [
+  {id:'u9f', n:'9 años o menos Femenino',  d:'2026-12-12',t:'09:00',a:'Pabellón',p:20,k:'edad',sex:'F',pr:'Trofeo 1°–4° · Medalla 5°–8°'},
+  {id:'u9m', n:'9 años o menos Masculino', d:'2026-12-12',t:'09:00',a:'Pabellón',p:20,k:'edad',sex:'M',pr:'Trofeo 1°–4° · Medalla 5°–8°'},
+  {id:'u13f',n:'13 años o menos Femenino', d:'2026-12-12',t:'09:00',a:'Pabellón',p:20,k:'edad',sex:'F',pr:'$45 · $30 · $25 (x2)'},
+  {id:'u13m',n:'13 años o menos Masculino',d:'2026-12-12',t:'09:00',a:'Pabellón',p:20,k:'edad',sex:'M',pr:'$45 · $30 · $25 (x2)'},
+  {id:'u15f',n:'15 años o menos Femenino', d:'2026-12-12',t:'09:00',a:'Pabellón',p:20,k:'edad',sex:'F',pr:'$55 · $30 · $25 (x2)'},
+  {id:'u15m',n:'15 años o menos Masculino',d:'2026-12-12',t:'09:00',a:'Pabellón',p:20,k:'edad',sex:'M',pr:'$55 · $30 · $25 (x2)'},
+  {id:'r1900',n:'Rating 1900 o menos',     d:'2026-12-12',t:'13:00',a:'Pabellón',p:20,k:'rating',max:1900,pr:'$100 · $75 · $50 (x2)'},
+  {id:'r1800',n:'Rating 1800 o menos',     d:'2026-12-13',t:'09:00',a:'Pabellón',p:20,k:'rating',max:1800,pr:'$90 · $65 · $45 (x2)'},
+  {id:'u19f',n:'19 años o menos Femenino', d:'2026-12-13',t:'13:00',a:'Pabellón',p:20,k:'edad',sex:'F',pr:'$85 · $75 · $65 (x2)'},
+  {id:'u19m',n:'19 años o menos Masculino',d:'2026-12-13',t:'13:00',a:'Pabellón',p:20,k:'edad',sex:'M',pr:'$85 · $75 · $65 (x2)'},
+  {id:'u11f',n:'11 años o menos Femenino', d:'2026-12-13',t:'13:00',a:'Pabellón',p:20,k:'edad',sex:'F',pr:'$35 · $30 · $25 (x2)'},
+  {id:'u11m',n:'11 años o menos Masculino',d:'2026-12-13',t:'13:00',a:'Pabellón',p:20,k:'edad',sex:'M',pr:'$35 · $30 · $25 (x2)'},
+  {id:'abm', n:'Individual Abierto Masculino',d:'2026-12-19',t:'09:00',a:'Pabellón',p:25,k:'abierto',sex:'M',pr:'$600 · $300 · $150 (x2)'},
+  {id:'abf', n:'Individual Abierto Femenino', d:'2026-12-19',t:'09:00',a:'Pabellón',p:25,k:'abierto',sex:'F',pr:'$600 · $300 · $150 (x2)'},
+  {id:'r1700',n:'Rating 1700 o menos',     d:'2026-12-19',t:'09:00',a:'Polivalente',p:20,k:'rating',max:1700,pr:'$80 · $60 · $40 (x2)'},
+  {id:'r1500',n:'Rating 1500 o menos',     d:'2026-12-19',t:'13:00',a:'Polivalente',p:20,k:'rating',max:1500,pr:'$60 · $40 · $30 (x2)'},
+  {id:'dm',  n:'Dobles Masculino',         d:'2026-12-20',t:'09:00',a:'Pabellón',p:40,k:'dobles',sex:'M',pr:'$150 · $80 por pareja'},
+  {id:'df',  n:'Dobles Femenino',          d:'2026-12-20',t:'09:00',a:'Pabellón',p:40,k:'dobles',sex:'F',pr:'$150 · $80 por pareja'},
+  {id:'r1600',n:'Rating 1600 o menos',     d:'2026-12-20',t:'09:00',a:'Polivalente',p:20,k:'rating',max:1600,pr:'$70 · $50 · $35 (x2)'},
+  {id:'dx',  n:'Dobles Mixtos',            d:'2026-12-20',t:'13:00',a:'Pabellón',p:40,k:'dobles',sex:'X',pr:'$150 · $80 por pareja'},
+  {id:'sen', n:'Seniors: 40 años o más (Mixto)',d:'2026-12-20',t:'13:00',a:'Polivalente',p:20,k:'senior',min:40,pr:'$50 · $40 · $30 (x2)'},
+  {id:'u7',  n:'7 años o menos Abierto',   d:'2026-12-20',t:'13:00',a:'Polivalente',p:11,k:'edad',pr:'Trofeo 1°–4° · Medalla 5°–8°'},
+];
+const EV = Object.fromEntries(EVENTS.map(e => [e.id, e]));
+const RATING_STEPS = [1500,1600,1700,1800,1900];
+
+const state = {
+  abiertas: null, cand: null, matches: [], dob: '', dobErr: '', verifying: false,
+  v: null,                 // respuesta de nac_verificar
+  rulesRead: false, elig: false, showAll: false,
+  sel: new Set(), partners: {}, pq: {}, pres: {}, presErr: {},
+  sending: false, sendErr: '', done: null,
+};
+
+// ── utilidades ──
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => '$' + Number(n || 0).toFixed(2);
+const fmtDate = s => s ? new Date(String(s).slice(0,10) + 'T12:00:00').toLocaleDateString('es-PR', {day:'numeric', month:'long', year:'numeric'}) : '';
+const initials = n => String(n || '').split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase();
+const slotKey = e => e.d + ' ' + e.t;
+const slotLabel = e => DAYS.find(d => d.k === e.d).label.replace(' de diciembre','') + ', ' + T[e.t];
+let toastT;
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 5000); }
+function normalizeQuery(text){
+  return String(text || '').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()
+    .replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+}
+async function rpc(name, body){
+  if (!SB_URL || !SB_KEY) throw new Error('La configuración del sitio no está disponible.');
+  const res = await fetch(SB_URL + '/rest/v1/rpc/' + name, { method:'POST', headers: HEAD, body: JSON.stringify(body || {}), cache:'no-store' });
+  if (!res.ok) throw new Error('No pudimos comunicarnos con el registro de la FPTM. Intenta otra vez en unos minutos.');
+  return res.json();
+}
+
+// ── reglas espejo (para pintar; el servidor decide) ──
+const J = () => state.v && state.v.jugador;
+function uppers(){
+  const j = J(), map = {};
+  if (!j) return map;
+  if (j.natural_rating){
+    const i = RATING_STEPS.indexOf(+j.natural_rating.slice(1));
+    RATING_STEPS.slice(i+1, i+3).forEach(x => map['r'+x] = j.natural_rating);
+  }
+  if (j.natural_edad && /^u1[35]/.test(j.natural_edad)) map['u19' + j.natural_edad.slice(-1)] = j.natural_edad;
+  return map;
+}
+const existing = () => (state.v && state.v.inscrito) || [];
+const existingCodes = () => existing().map(x => x.evento);
+function evaluate(e){
+  const j = J(), up = uppers();
+  const ex = existing().find(x => x.evento === e.id);
+  if (ex) return {st:'ya', ex};
+  let elig = false, tag = '';
+  if (e.k === 'edad' || e.k === 'rating'){
+    const nat = e.k === 'edad' ? j.natural_edad : j.natural_rating;
+    if (e.id === nat){ elig = true; tag = 'nat'; }
+    else if (up[e.id]){ elig = true; tag = 'up'; }
+  } else if (e.k === 'abierto') elig = e.sex === j.sexo;
+  else if (e.k === 'senior')   elig = j.edad != null && j.edad >= e.min;
+  else if (e.k === 'dobles')   elig = e.sex === 'X' ? (j.sexo === 'M' || j.sexo === 'F') : e.sex === j.sexo;
+  if (!elig) return {st:'no', why:'No elegible'};
+  if (state.sel.has(e.id)) return {st:'selected', tag};
+  const taken = [...state.sel, ...existingCodes()];
+  if (tag === 'up' && !taken.includes(up[e.id])) return {st:'locked', tag, why:'Escoge primero ' + EV[up[e.id]].n};
+  const clash = taken.map(id => EV[id]).find(o => o && o.id !== e.id && slotKey(o) === slotKey(e));
+  if (clash) return {st:'conflict', tag, why:'Coincide con ' + clash.n + ' (' + T[e.t] + ')'};
+  return {st:'available', tag};
+}
+
+// ── paso 1: buscar y verificar ──
+async function lookup(){
+  const raw = $('q').value, q = normalizeQuery(raw);
+  if (q.length < 2){ toast('Escribe el Member ID o al menos 2 letras del nombre.'); return; }
+  resetPlayer();
+  try {
+    const url = new URL(SB_URL + '/rest/v1/api_busqueda_membresia');
+    url.searchParams.set('select', 'member_id,nombre_completo,club');
+    url.searchParams.set('order', 'nombre_completo.asc');
+    url.searchParams.set('limit', '15');
+    if (/^\d+$/.test(q)) url.searchParams.set('member_id_text', 'eq.' + q);
+    else {
+      const terms = q.split(' ').filter(Boolean);
+      if (terms.length === 1) url.searchParams.set('nombre_busqueda', 'like.*' + terms[0] + '*');
+      else url.searchParams.set('and', '(' + terms.map(t => 'nombre_busqueda.like.*' + t + '*').join(',') + ')');
+    }
+    const res = await fetch(url.toString(), { headers: HEAD, cache:'no-store' });
+    if (!res.ok) throw new Error('No pudimos buscar en el registro oficial. Intenta otra vez.');
+    const rows = await res.json();
+    state.matches = rows;
+    if (rows.length === 1) return pickCand(rows[0]);
+    render();
+    if (!rows.length) toast('No encontramos ese Member ID o nombre en el registro de la FPTM.');
+  } catch (e) { toast(e.message); }
+}
+function resetPlayer(){
+  Object.assign(state, {elig:false, cand:null, matches:[], dob:'', dobErr:'', v:null, sel:new Set(), partners:{}, pq:{}, pres:{}, presErr:{}, sendErr:'', done:null});
+}
+function pickCand(p){
+  resetPlayer(); state.cand = p; render();
+  const d = $('dob'); if (d) d.focus();
+}
+async function verify(dob){
+  if (!dob){ state.dobErr = 'Escribe tu fecha de nacimiento.'; renderPlayer(); return; }
+  state.verifying = true; state.dobErr = ''; renderPlayer();
+  try {
+    const r = await rpc('nac_verificar', { p_member_id: state.cand.member_id, p_dob: dob });
+    if (!r.ok){ state.dobErr = r.mensaje; }
+    else { state.v = r; state.dob = dob; if (typeof r.abiertas === 'boolean') state.abiertas = r.abiertas; }
+  } catch (e) { state.dobErr = e.message; }
+  state.verifying = false;
+  render();
+  const d = $('dob'); if (d && !state.v){ d.value = dob; d.focus(); }
+}
+
+function renderPlayer(){
+  const box = $('playerBox'), c = state.cand, v = state.v;
+  $('matches').innerHTML = (!c && state.matches.length > 1)
+    ? '<div class="mlist">' + state.matches.map(m =>
+        `<button type="button" class="mrow" data-cand="${esc(m.member_id)}"><span><b>${esc(m.nombre_completo)}</b><br><small>${esc(m.club || 'Sin club')}</small></span><small class="num">ID ${esc(m.member_id)}</small></button>`).join('') + '</div>'
+    : '';
+  if (!c){ box.innerHTML = ''; return; }
+  if (!v){
+    box.innerHTML = `<div class="player">
+      <div class="avatar">${esc(initials(c.nombre_completo))}</div>
+      <div style="min-width:0">
+        <h3>${esc(c.nombre_completo)}</h3>
+        <div class="kv num"><span>Member ID <b>${esc(c.member_id)}</b></span><span>${esc(c.club || 'Sin club')}</span></div>
+        <form class="verify" id="dobForm">
+          <label class="fld" for="dob"><span>Fecha de nacimiento</span><input id="dob" type="date" min="1920-01-01" max="2026-12-31" required></label>
+          <button class="btn primary" type="submit" ${state.verifying ? 'disabled' : ''}>${state.verifying ? 'Verificando…' : 'Verificar'}</button>
+          <button class="btn" type="button" id="notMe">No soy yo</button>
+        </form>
+        ${state.dobErr ? `<div class="err">${esc(state.dobErr)}</div>` : ''}
+        <p class="hint">Para proteger los datos de los atletas, el rating, la membresía y las categorías se muestran solo cuando la fecha de nacimiento coincide con el registro de la FPTM.</p>
+      </div></div>`;
+    return;
+  }
+  const j = v.jugador;
+  let memb;
+  if (j.membresia_ok){
+    memb = `<div class="memb ok">✓ Membresía activa hasta el ${esc(fmtDate(j.membresia_vence))}. Cubre todo el torneo.</div>`;
+  } else {
+    const renew = new Date(); renew.setFullYear(renew.getFullYear() + 1);
+    const href = 'membresia.html?type=renewal&member_id=' + encodeURIComponent(j.member_id);
+    memb = j.membresia_vence
+      ? `<div class="memb bad"><b>Tu membresía vence el ${esc(fmtDate(j.membresia_vence))}, antes de que termine el torneo (20 de diciembre).</b>
+          <p>Para jugar los Nacionales la membresía tiene que estar vigente todos los días del torneo, aunque hoy aparezcas activo. La membresía dura un año desde que se aprueba: si renuevas ahora, quedará vigente hasta el ${esc(renew.toLocaleDateString('es-PR',{day:'numeric',month:'long',year:'numeric'}))}. Cuando se apruebe la renovación, vuelve aquí para inscribirte.</p>
+          <a class="btn primary" href="${href}">Renovar membresía</a></div>`
+      : `<div class="memb bad"><b>No tienes membresía activa en la FPTM.</b>
+          <p>La membresía es requisito para jugar los Nacionales. Completa primero el proceso de membresía ($20.00). Cuando se apruebe, vuelve aquí para inscribirte.</p>
+          <a class="btn primary" href="${href}">Solicitar membresía</a></div>`;
+  }
+  const nat = [j.natural_edad && EV[j.natural_edad].n, j.natural_rating && EV[j.natural_rating].n].filter(Boolean);
+  box.innerHTML = `<div class="player">
+    <div class="avatar">${esc(initials(j.nombre))}</div>
+    <div style="min-width:0">
+      <h3>${esc(j.nombre)}</h3>
+      <div class="kv num"><span>Member ID <b>${esc(j.member_id)}</b></span><span>Rating <b>${esc(j.rating ?? '—')}</b></span><span>Edad <b>${esc(j.edad ?? '—')}</b> al 31 dic</span><span>${j.sexo === 'F' ? 'Femenino' : j.sexo === 'M' ? 'Masculino' : 'Sexo no registrado'}</span><span>${esc(j.club || 'Sin club')}</span></div>
+      ${memb}
+      ${j.membresia_ok ? `<div class="natural-line">Tu categoría natural: ${nat.length ? '<b>' + nat.map(esc).join('</b> y <b>') + '</b>' : 'ninguna por edad ni por rating'}.</div>` : ''}
+      ${existing().length ? `<div class="natural-line">Ya tienes ${existing().length} categoría${existing().length > 1 ? 's' : ''} inscrita${existing().length > 1 ? 's' : ''}; las ves marcadas abajo.</div>` : ''}
+      <p class="hint"><button class="btn" type="button" id="notMe" style="padding:6px 10px;font-size:12px">Inscribir a otro jugador</button></p>
+    </div></div>`;
+}
+
+// ── paso 2: reglamento ──
+function rulesGate(){
+  const on = !!(J() && J().membresia_ok);
+  $('step2').classList.toggle('off', !on);
+  const chk = $('elig'), lbl = $('eligLbl'), prog = $('rulesProg');
+  chk.disabled = !state.rulesRead; chk.checked = state.elig;
+  lbl.classList.toggle('locked', !state.rulesRead);
+  prog.textContent = state.rulesRead ? '✓ Leído hasta el final' : 'Desliza hasta el final para poder aceptarlo';
+  prog.classList.toggle('done', state.rulesRead);
+}
+
+// ── paso 3: categorías ──
+function toggle(id){
+  if (!state.elig){ toast('Lee y acepta primero el reglamento (paso 2).'); return; }
+  const e = EV[id], r = evaluate(e);
+  if (r.st === 'selected'){
+    const deps = Object.entries(uppers()).filter(([u, n]) => n === id && state.sel.has(u)).map(([u]) => EV[u].n);
+    if (deps.length){ toast(`No puedes quitar ${e.n}: es tu categoría natural y escogiste ${deps.join(' y ')}. Quita primero ${deps.length > 1 ? 'esas categorías' : 'esa categoría'}.`); return; }
+    state.sel.delete(id); delete state.partners[id];
+  } else if (r.st === 'available'){
+    state.sel.add(id);
+  } else if (r.st === 'locked' || r.st === 'conflict'){ toast(r.why); return; }
+  else return;
+  state.sendErr = '';
+  render();
+}
+
+function renderDays(){
+  const host = $('days'), j = J();
+  const on = !!(j && j.membresia_ok && state.elig);
+  $('step3').classList.toggle('off', !on);
+  if (!j || !j.membresia_ok){ host.innerHTML = '<p class="empty">Busca y verifica al jugador para ver sus categorías.</p>'; return; }
+  if (!state.elig){ host.innerHTML = '<p class="empty">Lee y acepta el reglamento (paso 2) para escoger categorías.</p>'; return; }
+  host.innerHTML = DAYS.map(d => {
+    const slots = ['09:00','13:00'].map(t => {
+      const evs = EVENTS.filter(e => e.d === d.k && e.t === t).map(e => ({e, r: evaluate(e)}))
+        .filter(x => state.showAll || x.r.st !== 'no');
+      if (!evs.length) return '';
+      return `<div class="slot"><div class="slot-t">${T[t]}</div><div class="evs">${evs.map(({e, r}) => {
+        const tag = r.tag === 'nat' ? '<span class="badge b-nat">Natural</span>' : r.tag === 'up' ? '<span class="badge b-up">Superior</span>' : '';
+        let badge = '', why = r.why || '';
+        if (r.st === 'selected') badge = '<span class="badge b-sel">Escogida</span>';
+        if (r.st === 'ya'){
+          badge = `<span class="badge b-ya">${r.ex.estado_inscripcion === 'aprobada' ? 'Inscrito' : 'Pago pendiente'}</span>`;
+          why = r.ex.pareja ? 'Con ' + r.ex.pareja.nombre : '';
+        }
+        const price = e.k === 'dobles' ? `$${e.p} pareja` : `$${e.p}`;
+        let html = `<button type="button" class="ev ${r.st} ${r.tag === 'nat' ? 'natural' : ''}" data-id="${e.id}" aria-pressed="${r.st === 'selected'}" ${['no','ya'].includes(r.st) ? 'aria-disabled="true"' : ''}>
+          <span class="t"><span>${esc(e.n)}</span><em class="num">${price}</em></span>
+          <span class="s">${tag}${badge}${esc(e.a)} · ${esc(e.pr)}</span>
+          ${why ? `<span class="why">${esc(why)}</span>` : ''}</button>`;
+        if (r.st === 'selected' && e.k === 'dobles') html += partnerPanel(e);
+        return html;
+      }).join('')}</div></div>`;
+    }).join('');
+    return slots ? `<div class="day"><div class="day-h"><h3>${d.label}</h3><small>${d.note}</small></div>${slots}</div>` : '';
+  }).join('');
+}
+
+function partnerPanel(e){
+  const cur = state.partners[e.id];
+  if (cur){
+    return `<div class="partner"><h4>Pareja · ${esc(e.n)}</h4>
+      <div class="pair"><span><b>${esc(J().nombre)}</b> y <b>${esc(cur.nombre)}</b><br><small style="color:var(--muted)" class="num">Siembra por suma de rating: ${(J().rating || 0) + (cur.rating || 0)}</small></span>
+      <button class="btn" type="button" data-unpair="${e.id}">Cambiar</button></div></div>`;
+  }
+  const list = state.pres[e.id];
+  const q = state.pq[e.id] || '';
+  let body;
+  if (state.presErr[e.id]) body = `<p class="empty" style="color:var(--bad)">${esc(state.presErr[e.id])}</p>`;
+  else if (normalizeQuery(q).length < 2) body = '<p class="empty">Escribe al menos 2 letras o el Member ID.</p>';
+  else if (!list) body = '<p class="empty">Buscando…</p>';
+  else if (!list.length) body = '<p class="empty">No encontramos a nadie elegible con esa búsqueda.</p>';
+  else body = list.map(c => `<div class="prow"><div><b>${esc(c.nombre)}</b><small class="num">ID ${esc(c.member_id)} · Rating ${esc(c.rating ?? '—')} · ${esc(c.club || 'Sin club')}</small>${c.motivo ? `<div class="why">${esc(c.motivo)}</div>` : ''}</div>
+      <button class="btn ${c.motivo ? '' : 'primary'}" type="button" data-pick="${e.id}:${esc(c.member_id)}" ${c.motivo ? 'disabled' : ''}>Escoger</button></div>`).join('');
+  return `<div class="partner"><h4>¿Con quién juegas ${esc(e.n)}?</h4>
+    <p>Busca a tu pareja por Member ID o nombre. Pagas la inscripción de ambos: $${e.p}.</p>
+    <div class="search"><input data-pq="${e.id}" value="${esc(q)}" placeholder="Member ID o nombre de tu pareja" autocomplete="off" aria-label="Buscar pareja para ${esc(e.n)}"></div>
+    <div class="plist">${body}</div></div>`;
+}
+const pTimers = {};
+function searchPartner(evId){
+  clearTimeout(pTimers[evId]);
+  const q = state.pq[evId] || '';
+  delete state.pres[evId]; delete state.presErr[evId];
+  if (normalizeQuery(q).length < 2) return;
+  pTimers[evId] = setTimeout(async () => {
+    try {
+      const r = await rpc('nac_parejas', { p_member_id: J().member_id, p_dob: state.dob, p_evento: evId, p_q: q });
+      if ((state.pq[evId] || '') !== q) return;
+      if (!r.ok) state.presErr[evId] = r.mensaje; else state.pres[evId] = r.parejas || [];
+    } catch (e) { state.presErr[evId] = e.message; }
+    rerenderKeepingFocus();
+  }, 300);
+}
+function rerenderKeepingFocus(){
+  const a = document.activeElement, key = a && a.dataset ? a.dataset.pq : null, pos = a && a.selectionStart;
+  renderDays(); renderSummary();
+  if (key){ const n = document.querySelector(`[data-pq="${key}"]`); if (n){ n.focus(); try { n.setSelectionRange(pos, pos); } catch(_){} } }
+}
+
+// ── resumen y envío ──
+function renderSummary(){
+  const s = $('summary'), j = J();
+  if (state.done){
+    const d = state.done;
+    const msg = `Hola Joel, envío la evidencia del pago de la inscripción #${d.inscripcion_id} a los Campeonatos Nacionales 2026 de ${j.nombre} (Member ID ${j.member_id}) por ${money(d.total)}.`;
+    s.innerHTML = `<div class="done"><div class="big">✓</div><h2 style="text-align:center">Inscripción #${esc(d.inscripcion_id)} recibida</h2>
+      <div class="lines">${(d.eventos || []).map(e => `<div class="line"><div>${esc(e.nombre)}</div><span class="num">${money(e.precio)}</span></div>`).join('')}</div>
+      <div class="total"><span>Total a pagar</span><b class="num">${money(d.total)}</b></div>
+      <div class="pay"><b>Para completar tu inscripción</b><ol>
+        <li>En ATH Móvil, envía <b class="num">${money(d.total)}</b> a <code>/fprtm</code> (ATH Móvil Business).</li>
+        <li>Envía la evidencia del pago (captura de ATH Móvil) a Joel Vega por WhatsApp: <code>787-248-3994</code></li></ol>
+        <a class="btn primary" href="https://wa.me/${esc(WHATSAPP)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar evidencia por WhatsApp</a></div>
+      <p>La inscripción queda <b>pendiente</b> hasta que la FPTM verifique el pago. Cuando se apruebe, quedas inscrito en tus categorías.</p>
+      <p>Cancelaciones antes del 4 de diciembre reciben crédito para el próximo evento de la FPTM. No hay reembolsos.</p>
+      <button class="btn" type="button" id="again">Inscribir a otro jugador</button></div>`;
+    return;
+  }
+  const sel = EVENTS.filter(e => state.sel.has(e.id));
+  const total = sel.reduce((t, e) => t + e.p, 0);
+  const missing = sel.filter(e => e.k === 'dobles' && !state.partners[e.id]);
+  const okPlayer = !!(j && j.membresia_ok);
+  const open = state.abiertas === true;
+  const ready = open && okPlayer && state.elig && sel.length && !missing.length && !state.sending;
+  s.innerHTML = `<h2>Resumen${j ? ' · ' + esc(j.nombre.split(' ')[0]) : ''}</h2>
+    <div class="lines">${sel.length ? sel.map(e => `<div class="line"><div>${esc(e.n)}<small>${slotLabel(e)}${e.k === 'dobles' ? ' · ' + (state.partners[e.id] ? 'con ' + esc(state.partners[e.id].nombre) : '<span style="color:var(--warn)">falta pareja</span>') : ''}</small></div><span class="num">${money(e.p)}</span></div>`).join('') : '<p class="empty">Todavía no has escogido categorías.</p>'}</div>
+    <div class="total"><span>Total</span><b class="num">${money(total)}</b></div>
+    <div class="req">
+      <span class="${okPlayer ? 'yes' : 'no'}">${okPlayer ? '✓' : '•'} Miembro activo durante el torneo</span>
+      <span class="${state.elig ? 'yes' : 'no'}">${state.elig ? '✓' : '•'} Reglamento aceptado</span>
+      <span class="${sel.length ? 'yes' : 'no'}">${sel.length ? '✓' : '•'} Al menos una categoría</span>
+      ${missing.length ? `<span class="no">• Escoge pareja para ${missing.map(e => esc(e.n)).join(', ')}</span>` : ''}
+      ${state.abiertas === false ? '<span class="no">• Las inscripciones están cerradas</span>' : ''}
+    </div>
+    ${state.sendErr ? `<div class="err">${esc(state.sendErr)}</div>` : ''}
+    <button class="btn primary" type="button" id="send" ${ready ? '' : 'disabled'}>${state.sending ? 'Enviando…' : 'Enviar inscripción'}</button>
+    <p class="hint" style="margin:0">Después de enviar verás el total y cómo pagar por ATH Móvil.</p>`;
+}
+
+async function send(){
+  const j = J();
+  const eventos = EVENTS.filter(e => state.sel.has(e.id)).map(e => e.k === 'dobles'
+    ? { evento: e.id, pareja: state.partners[e.id].member_id } : { evento: e.id });
+  state.sending = true; state.sendErr = ''; renderSummary();
+  try {
+    const r = await rpc('nac_inscribir', { p_member_id: j.member_id, p_dob: state.dob, p_eventos: eventos, p_acepta: state.elig, p_reglamento: REGLAMENTO_VERSION });
+    if (!r.ok) state.sendErr = r.mensaje || 'No se pudo completar la inscripción.';
+    else {
+      state.done = r; state.sel = new Set(); state.partners = {}; state.pq = {}; state.pres = {};
+      // Refresca lo inscrito para que las categorías salgan como "Pago pendiente"
+      try { const v = await rpc('nac_verificar', { p_member_id: j.member_id, p_dob: state.dob }); if (v.ok) state.v = v; } catch (_) {}
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+  } catch (e) { state.sendErr = e.message; }
+  state.sending = false;
+  render();
+}
+
+function renderBanner(){
+  const d = $('deadline'), b = $('closedBanner');
+  d.classList.toggle('on', state.abiertas === true);
+  d.classList.toggle('off', state.abiertas === false);
+  d.querySelector('span').textContent = state.abiertas === false
+    ? 'Inscripciones cerradas'
+    : 'Abiertas hasta el viernes 4 de diciembre, 11:00 p.m.';
+  b.hidden = state.abiertas !== false;
+  b.textContent = 'Las inscripciones no están abiertas en este momento. Puedes verificar tus datos y revisar el reglamento; para dudas, contacta a Joel Vega (787-248-3994).';
+}
+
+function render(){ renderBanner(); renderPlayer(); rulesGate(); renderDays(); renderSummary(); }
+
+// ── eventos ──
+$('searchForm').addEventListener('submit', ev => { ev.preventDefault(); lookup(); });
+$('matches').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-cand]'); if (!b) return;
+  pickCand(state.matches.find(m => String(m.member_id) === b.dataset.cand));
+});
+$('playerBox').addEventListener('submit', ev => { if (ev.target.id !== 'dobForm') return; ev.preventDefault(); verify($('dob').value); });
+$('playerBox').addEventListener('click', ev => {
+  if (ev.target.id === 'notMe'){ resetPlayer(); $('q').value = ''; render(); $('q').focus(); }
+});
+$('rules').addEventListener('scroll', ev => {
+  const el = ev.target;
+  if (!state.rulesRead && el.scrollTop + el.clientHeight >= el.scrollHeight - 8){ state.rulesRead = true; rulesGate(); }
+});
+$('eligLbl').addEventListener('click', ev => { if (!state.rulesRead){ ev.preventDefault(); toast('Desliza el reglamento hasta el final para poder aceptarlo.'); } });
+$('elig').addEventListener('change', ev => {
+  state.elig = ev.target.checked;
+  if (!state.elig){ state.sel = new Set(); state.partners = {}; }
+  render();
+});
+$('showAll').addEventListener('change', ev => { state.showAll = ev.target.checked; renderDays(); });
+$('days').addEventListener('click', ev => {
+  const pick = ev.target.closest('[data-pick]');
+  if (pick){
+    const [eid, cid] = pick.dataset.pick.split(':');
+    const c = (state.pres[eid] || []).find(x => String(x.member_id) === cid);
+    if (c){ state.partners[eid] = c; render(); }
+    return;
+  }
+  const un = ev.target.closest('[data-unpair]');
+  if (un){ delete state.partners[un.dataset.unpair]; render(); return; }
+  const b = ev.target.closest('.ev'); if (b) toggle(b.dataset.id);
+});
+$('days').addEventListener('input', ev => {
+  const i = ev.target.closest('[data-pq]'); if (!i) return;
+  state.pq[i.dataset.pq] = i.value; searchPartner(i.dataset.pq); rerenderKeepingFocus();
+});
+$('summary').addEventListener('click', ev => {
+  if (ev.target.id === 'send') send();
+  if (ev.target.id === 'again'){ resetPlayer(); state.elig = false; state.rulesRead = false; $('rules').scrollTop = 0; $('q').value = ''; render(); window.scrollTo({top: 0}); }
+});
+
+(async () => {
+  render();
+  try { const r = await rpc('nac_estado', {}); state.abiertas = !!r.abiertas; }
+  catch (_) { state.abiertas = null; }
+  render();
+  const mid = new URLSearchParams(location.search).get('member_id');
+  if (mid && /^\d{2,8}$/.test(mid)){ $('q').value = mid; lookup(); }
+})();
+</script>
+</body>
+</html>

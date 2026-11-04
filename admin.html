@@ -40,7 +40,9 @@ const supabaseClient=window.supabase.createClient(
  'sb_publishable_mM59efPqpcgrR3g3_6F_Ww_h1jg4PyV'
 );
 const ADMIN_UID='b1c91ed0-edc2-42ea-b64e-346a0659dcad';
-const goToMemberships=()=>location.replace('legacy.html#membresia');
+// ?next=nacionales vuelve al panel de los Nacionales; cualquier otro valor se ignora.
+const NEXT_PAGES={nacionales:'nacionales-admin.html'};
+const goToMemberships=()=>location.replace(NEXT_PAGES[new URLSearchParams(location.search).get('next')]||'legacy.html#membresia');
 (async()=>{
  try{
   const {data,error}=await supabaseClient.auth.getUser();
