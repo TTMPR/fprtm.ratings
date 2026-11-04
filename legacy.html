@@ -2697,6 +2697,15 @@ Maria Lopez,Ana Torres,B</code>
     <div class="adm-section">
       <div class="adm-section-title">🏓 Torneo & Inscripciones</div>
       <div class="adm-grid">
+        <!-- Campeonatos Nacionales 2026: tienen su propio panel y sus propias
+             tablas (sql/nacionales_2026.sql). Este interruptor de abajo no los toca. -->
+        <a class="adm-card" href="nacionales-admin.html" style="text-decoration:none;color:inherit;border-color:rgba(0,229,192,0.45)">
+          <div class="adm-ico">🏆</div>
+          <div>
+            <div class="adm-title">Nacionales 2026</div>
+            <div class="adm-desc">Abrir/cerrar inscripciones, aprobar pagos, cancelar y CSV de Stadium</div>
+          </div>
+        </a>
         <!-- Abre y cierra el torneo SELECCIONADO en los chips: hay dos vivos a
              la vez y cada uno tiene su propio interruptor. -->
         <div id="inscAdminCard" class="adm-card" style="align-items:flex-start;" onclick="toggleInscripciones()">

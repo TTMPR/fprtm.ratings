@@ -37,6 +37,11 @@ BEGIN
   END IF;
 END $req$;
 
+-- El panel de admin entra como 'authenticated' y llega a internal_security
+-- por las envolturas. anon ya tiene USAGE (comprobado arriba), así que dárselo
+-- a authenticated no expone nada nuevo; las nac_admin_* siguen exigiendo el UID.
+GRANT USAGE ON SCHEMA internal_security TO authenticated;
+
 
 -- ── 1. Catálogo de eventos ─────────────────────────────────────────────────
 -- Espejo del documento "Itinerario de Eventos y Premiación". La página lo
