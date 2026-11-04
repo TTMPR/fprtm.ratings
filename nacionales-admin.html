@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin · Nacionales 2026</title>
+<link rel="icon" href="ttm_pr_favicon_32x32.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="membership-config.js"></script>
+<style>
+:root{
+  --bg:#070b13; --panel:#0d121d; --soft:#131a27; --line:#202838; --line2:#2d3748;
+  --text:#f7f8fb; --muted:#9aa5b6; --dim:#6b7688;
+  --aqua:#00e5c0; --aqua-ink:#04110f; --aqua-soft:rgba(0,229,192,.10);
+  --ok:#3ddc84; --warn:#f5b84b; --warn-soft:rgba(245,184,75,.10); --bad:#ff7a8a; --bad-soft:rgba(255,122,138,.10);
+  --gold:#e8c66a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+.shell{max-width:1240px;margin:0 auto}
+a{color:var(--aqua)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--aqua);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:18px 0;border-bottom:1px solid var(--line)}
+.top h1{margin:0;font-size:22px;letter-spacing:-.02em}
+.top h1 span{color:var(--aqua)}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line2);background:var(--soft);border-radius:9px;padding:8px 12px;font-weight:700;font-size:12.5px;cursor:pointer;text-decoration:none;color:var(--text);display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--aqua);border-color:var(--aqua);color:var(--aqua-ink)}
+.btn.danger{border-color:rgba(255,122,138,.5);color:var(--bad);background:transparent}
+.btn.small{padding:4px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:8px;align-content:start;min-width:0}
+.card h2{margin:0;font-size:14px}
+.card p{margin:0;color:var(--muted);font-size:12.5px}
+.stat b{font-size:26px;letter-spacing:-.03em;display:block}
+.stat small{color:var(--muted)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700}
+.pill.ok{background:rgba(61,220,132,.12);color:var(--ok)}
+.pill.pe{background:var(--warn-soft);color:var(--warn)}
+.pill.ca{background:var(--bad-soft);color:var(--bad)}
+.pill.pen{background:var(--bad);color:#2a0710}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:22px 0 10px}
+.chip{border:1px solid var(--line2);background:transparent;border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer;color:#c9d0db}
+.chip[aria-pressed="true"]{border-color:var(--aqua);color:var(--aqua);background:var(--aqua-soft)}
+.toolbar input{background:#080d16;border:1px solid var(--line2);border-radius:9px;padding:7px 10px;min-width:0;flex:1 1 200px;max-width:320px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:9px 11px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--dim);font-weight:650;font-size:11px;text-transform:uppercase;letter-spacing:.06em;background:#0a0f18;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.list{min-width:860px}
+.evrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:3px 0}
+.evrow .n{font-weight:600}
+.evrow .x{color:var(--dim);font-size:11.5px}
+.evrow.off .n{text-decoration:line-through;color:var(--dim)}
+.tag{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:1px 5px}
+.tag.nat{background:rgba(232,198,106,.16);color:var(--gold)}
+.tag.up{background:var(--aqua-soft);color:var(--aqua)}
+.actions{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.muted{color:var(--muted)}
+.dim{color:var(--dim);font-size:11.5px}
+.slug{background:#080d16;border:1px solid var(--line2);border-radius:7px;padding:4px 7px;width:150px;font-size:12px}
+.msg{margin-top:14px;padding:10px 12px;border-radius:10px;font-size:13px;white-space:pre-line}
+.msg.err{background:var(--bad-soft);color:var(--bad)}
+.msg.ok{background:rgba(61,220,132,.08);color:var(--ok)}
+.msg.warn{background:var(--warn-soft);color:var(--warn)}
+h3.sec{margin:28px 0 10px;font-size:15px}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <h1>Nacionales 2026 · <span>Admin</span></h1>
+    <div class="links">
+      <a class="btn" href="nacionales.html" target="_blank" rel="noopener">Página pública</a>
+      <a class="btn" href="legacy.html#membresia">Membresías</a>
+      <button class="btn" id="reload" type="button">Actualizar</button>
+      <button class="btn" id="logout" type="button">Salir</button>
+    </div>
+  </div>
+  <div id="msg" class="msg" hidden></div>
+
+  <div id="app" hidden>
+    <div class="grid">
+      <div class="card">
+        <div class="toggle"><h2>Inscripciones</h2><span id="openPill" class="pill"></span></div>
+        <p id="openDesc"></p>
+        <button class="btn primary" id="toggleOpen" type="button"></button>
+      </div>
+      <div class="card">
+        <div class="toggle"><h2>Prórroga</h2><span id="prPill" class="pill"></span></div>
+        <p>Permite inscribirse después del cierre del viernes 4 de diciembre, 11:00 p.m. Solo funciona con las inscripciones abiertas.</p>
+        <button class="btn" id="toggleProrroga" type="button"></button>
+      </div>
+      <div class="card stat"><small>Pago por verificar</small><b id="stPend" class="num">—</b><small id="stPendM" class="num"></small></div>
+      <div class="card stat"><small>Aprobadas</small><b id="stAp" class="num">—</b><small id="stApM" class="num"></small></div>
+      <div class="card stat"><small>Canceladas</small><b id="stCa" class="num">—</b><small id="stPen"></small></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="chip" data-f="pendiente" aria-pressed="true">Pago por verificar</button>
+      <button class="chip" data-f="aprobada" aria-pressed="false">Aprobadas</button>
+      <button class="chip" data-f="cancelada" aria-pressed="false">Canceladas</button>
+      <button class="chip" data-f="todas" aria-pressed="false">Todas</button>
+      <input id="search" placeholder="Buscar jugador, pareja o Member ID" aria-label="Buscar">
+    </div>
+    <div class="tablewrap">
+      <table class="list">
+        <thead><tr><th>#</th><th>Jugador</th><th>Categorías</th><th class="num">Total</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <h3 class="sec">Exportar</h3>
+    <div class="grid" style="margin-top:0">
+      <div class="card">
+        <h2>Inscritos (CSV)</h2>
+        <p>Todas las inscripciones no canceladas, una fila por jugador y categoría, con estado de pago. Para revisar y para Kileaaa.</p>
+        <button class="btn" id="csvInscritos" type="button">Descargar inscritos</button>
+      </div>
+      <div class="card">
+        <h2>Stadium · jugadores (CSV)</h2>
+        <p>Solo aprobadas. Formato de importación de jugadores de Stadium, con la columna <i>events</i>. Las categorías sin slug de Stadium se omiten (llénalos abajo).</p>
+        <button class="btn" id="csvStadium" type="button">Descargar Stadium jugadores</button>
+      </div>
+      <div class="card">
+        <h2>Stadium · dobles (CSV)</h2>
+        <p>Solo aprobadas. Una fila por pareja ("Nombre / Nombre"), sembrada por la suma de rating.</p>
+        <button class="btn" id="csvDobles" type="button">Descargar Stadium dobles</button>
+      </div>
+    </div>
+
+    <h3 class="sec">Por categoría</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Categoría</th><th>Día y hora</th><th class="num">Aprobados</th><th class="num">Por verificar</th><th>Slug de Stadium</th></tr></thead>
+        <tbody id="evRows"></tbody>
+      </table>
+    </div>
+    <p class="dim" style="margin-top:8px">Kileaaa lee las aprobadas de la vista <code>public.nac_inscritos_aprobados</code> (por Member ID). Ver docs/NACIONALES_2026.md.</p>
+  </div>
+</div>
+
+<script>
+'use strict';
+const CFG = window.TTMPR_MEMBERSHIP_CONFIG || {};
+const ADMIN_UID = 'b1c91ed0-edc2-42ea-b64e-346a0659dcad';
+const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabasePublishableKey);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => '$' + Number(n || 0).toFixed(2);
+const fmt = s => s ? new Date(s).toLocaleString('es-PR', {day:'numeric', month:'short', hour:'numeric', minute:'2-digit'}) : '';
+const T = {'09:00:00':'9:00 a.m.','13:00:00':'1:00 p.m.'};
+
+const S = { list: [], eventos: [], cfg: null, filtro: 'pendiente', q: '' };
+const EVN = () => Object.fromEntries(S.eventos.map(e => [e.codigo, e]));
+
+function msg(text, kind = 'err'){ const m = $('msg'); m.textContent = text; m.className = 'msg ' + kind; m.hidden = !text; }
+
+async function call(fn, args){
+  const { data, error } = await sb.rpc(fn, args || {});
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+async function load(){
+  try {
+    const [list, ev, cfg] = await Promise.all([
+      call('nac_admin_listar'),
+      sb.from('nac_eventos').select('*').order('orden'),
+      call('nac_admin_config', {}),
+    ]);
+    if (ev.error) throw new Error(ev.error.message);
+    S.list = list || []; S.eventos = ev.data || []; S.cfg = cfg;
+    render();
+  } catch (e) {
+    msg('No se pudo cargar: ' + e.message + '\n¿Se corrió sql/nacionales_2026.sql en Supabase?');
+  }
+}
+
+function render(){
+  const c = S.cfg || {};
+  const on = c.interruptor === 'true', pr = c.prorroga === 'true';
+  $('openPill').textContent = c.abiertas ? 'Abiertas' : 'Cerradas';
+  $('openPill').className = 'pill ' + (c.abiertas ? 'ok' : 'ca');
+  $('openDesc').textContent = on
+    ? (c.abiertas ? 'El público puede inscribirse.' : 'El interruptor está encendido, pero pasó la fecha límite (4 dic, 11:00 p.m.). Activa la prórroga para seguir.')
+    : 'Cerradas: nadie puede inscribirse. La página pública lo avisa.';
+  $('toggleOpen').textContent = on ? 'Cerrar inscripciones' : 'Abrir inscripciones';
+  $('prPill').textContent = pr ? 'Activa' : 'Apagada';
+  $('prPill').className = 'pill ' + (pr ? 'pe' : 'ca');
+  $('toggleProrroga').textContent = pr ? 'Quitar prórroga' : 'Activar prórroga';
+
+  const by = st => S.list.filter(i => i.estado === st);
+  const sum = arr => arr.reduce((t, i) => t + Number(i.total || 0), 0);
+  $('stPend').textContent = by('pendiente').length; $('stPendM').textContent = money(sum(by('pendiente')));
+  $('stAp').textContent = by('aprobada').length;    $('stApM').textContent = money(sum(by('aprobada')));
+  $('stCa').textContent = by('cancelada').length;
+  const pens = S.list.flatMap(i => i.eventos).filter(e => e.estado === 'cancelada_penalidad').length;
+  $('stPen').textContent = pens ? pens + ' con penalidad (3 W/O)' : '';
+
+  document.querySelectorAll('.chip').forEach(ch => ch.setAttribute('aria-pressed', String(ch.dataset.f === S.filtro)));
+  renderRows(); renderEventos();
+}
+
+function nombrePareja(p){ return p ? `${p.first_name || ''} ${p.last_name || ''}`.trim() : ''; }
+
+function renderRows(){
+  const evn = EVN(), q = S.q.trim().toLowerCase();
+  const rows = S.list.filter(i => S.filtro === 'todas' || i.estado === S.filtro).filter(i => {
+    if (!q) return true;
+    const hay = [i.nombre, i.member_id, i.id, ...i.eventos.map(e => e.pareja ? nombrePareja(e.pareja) + ' ' + e.pareja.member_id : '')].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+  $('rows').innerHTML = rows.length ? rows.map(i => {
+    const j = i.jugador || {};
+    const pill = i.estado === 'aprobada' ? '<span class="pill ok">Aprobada</span>' : i.estado === 'pendiente' ? '<span class="pill pe">Pago por verificar</span>' : '<span class="pill ca">Cancelada</span>';
+    const evs = i.eventos.map(e => {
+      const d = evn[e.evento] || {};
+      const off = e.estado !== 'activa';
+      const st = e.estado === 'cancelada_penalidad' ? ' <span class="pill pen">Cancelada · penalidad (3 W/O)</span>' : e.estado === 'cancelada' ? ' <span class="pill ca">Cancelada</span>' : '';
+      const tag = e.es_natural ? '<span class="tag nat">Natural</span>' : e.requiere ? '<span class="tag up">Superior</span>' : '';
+      const par = e.pareja ? ` <span class="x">con ${esc(nombrePareja(e.pareja))} (${esc(e.pareja.member_id)})</span>` : '';
+      const btn = !off && i.estado !== 'cancelada' && i.eventos.filter(x => x.estado === 'activa').length > 1
+        ? ` <button class="btn small danger" data-cancel-fila="${i.id}:${e.fila_id}" type="button">Cancelar</button>` : '';
+      return `<div class="evrow ${off ? 'off' : ''}">${tag}<span class="n">${esc(d.nombre || e.evento)}</span><span class="x num">${money(e.precio)}</span>${par}${st}${btn}</div>`;
+    }).join('');
+    const actions = [
+      i.estado === 'pendiente' ? `<button class="btn primary small" data-aprobar="${i.id}" type="button">Aprobar pago</button>` : '',
+      i.estado !== 'cancelada' ? `<button class="btn danger small" data-cancel="${i.id}" type="button">Cancelar inscripción</button>` : '',
+    ].join('');
+    return `<tr>
+      <td class="num">${i.id}<div class="dim">${esc(fmt(i.created_at))}</div></td>
+      <td><b>${esc(i.nombre)}</b><div class="dim num">ID ${esc(i.member_id)} · Rating ${esc(j.rating ?? '—')} · ${esc(j.club || 'Sin club')}</div>${i.nota_admin ? `<div class="dim">Nota: ${esc(i.nota_admin)}</div>` : ''}</td>
+      <td>${evs}</td>
+      <td class="num"><b>${money(i.total)}</b></td>
+      <td>${pill}${i.aprobada_at ? `<div class="dim">${esc(fmt(i.aprobada_at))}</div>` : ''}</td>
+      <td><div class="actions">${actions}</div></td></tr>`;
+  }).join('') : `<tr><td colspan="6" class="muted">No hay inscripciones en esta vista.</td></tr>`;
+}
+
+function renderEventos(){
+  const cnt = {};
+  S.list.forEach(i => i.eventos.forEach(e => {
+    if (e.estado !== 'activa' || i.estado === 'cancelada') return;
+    cnt[e.evento] = cnt[e.evento] || {ap:0, pe:0};
+    cnt[e.evento][i.estado === 'aprobada' ? 'ap' : 'pe']++;
+  }));
+  $('evRows').innerHTML = S.eventos.map(e => {
+    const c = cnt[e.codigo] || {ap:0, pe:0};
+    const dia = new Date(e.fecha + 'T12:00:00').toLocaleDateString('es-PR', {weekday:'short', day:'numeric'});
+    return `<tr><td>${esc(e.nombre)}${e.tipo === 'dobles' ? ' <span class="dim">(parejas)</span>' : ''}</td><td class="dim">${esc(dia)} · ${T[e.hora] || esc(e.hora)}</td>
+      <td class="num">${c.ap}</td><td class="num dim">${c.pe}</td>
+      <td><input class="slug" data-slug="${esc(e.codigo)}" value="${esc(e.stadium_slug || '')}" placeholder="sin slug" aria-label="Slug de Stadium para ${esc(e.nombre)}"></td></tr>`;
+  }).join('');
+}
+
+// ── acciones ──
+async function aprobar(id){
+  const i = S.list.find(x => x.id === id);
+  if (!confirm(`¿Aprobar el pago de la inscripción #${id} de ${i.nombre} por ${money(i.total)}?\n\nHazlo solo después de verificar la evidencia de ATH Móvil.`)) return;
+  try { const r = await call('nac_admin_aprobar', { p_id: id, p_nota: null }); if (!r.ok) return msg(r.mensaje); await load(); msg(`Inscripción #${id} aprobada.`, 'ok'); }
+  catch (e) { msg(e.message); }
+}
+async function cancelar(id, fila){
+  const i = S.list.find(x => x.id === id);
+  const que = fila ? 'esta categoría' : `toda la inscripción #${id}`;
+  const nota = prompt(`Cancelar ${que} de ${i.nombre}.\n\nNota (opcional, p. ej. "crédito para el próximo evento"):`, '');
+  if (nota === null) return;
+  try {
+    let r = await call('nac_admin_cancelar', { p_id: id, p_fila_id: fila || null, p_confirmar: false, p_nota: nota });
+    if (!r.ok && r.requiere_confirmacion){
+      if (!confirm('⚠ ' + r.mensaje + '\n\nReglamento §11: penalidad de puntos de rating estimada por la Mesa Técnica y 3 W/O en la natural.\n\n¿Cancelar con penalidad?')) return;
+      r = await call('nac_admin_cancelar', { p_id: id, p_fila_id: fila || null, p_confirmar: true, p_nota: nota });
+    }
+    if (!r.ok) return msg(r.mensaje);
+    await load();
+    msg(r.penalidades ? `Cancelado. ${r.penalidades} categoría(s) natural(es) quedaron con penalidad (3 W/O).` : 'Cancelado.', r.penalidades ? 'warn' : 'ok');
+  } catch (e) { msg(e.message); }
+}
+async function config(abiertas, prorroga){
+  try { S.cfg = await call('nac_admin_config', { p_abiertas: abiertas, p_prorroga: prorroga }); render(); }
+  catch (e) { msg(e.message); }
+}
+async function saveSlug(codigo, slug){
+  try { const r = await call('nac_admin_slug', { p_evento: codigo, p_slug: slug }); if (!r.ok) return msg(r.mensaje);
+    const e = S.eventos.find(x => x.codigo === codigo); if (e) e.stadium_slug = slug.trim() || null; msg(`Slug guardado para ${e ? e.nombre : codigo}.`, 'ok'); }
+  catch (e) { msg(e.message); }
+}
+
+// ── CSV ──
+function descargar(nombre, headers, rows){
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+  const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' }));
+  const a = document.createElement('a'); a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+const hoy = () => new Date().toISOString().slice(0, 10);
+
+// UUID de club en Stadium (mismo mapa que legacy.html → STADIUM_CLUB_IDS)
+const STADIUM_CLUB_IDS = [
+  ['trujillo alto','f88d69ca-4c65-4273-ae60-e76e3e398ed7'],['vega alta','65f36aed-9723-4759-a5c6-57c11471b837'],
+  ['vega baja','c5512815-1f1e-4925-9606-fa56c21ad60d'],['san juan','81c2ed14-00c2-4cb3-8c2c-20e3713c1a4f'],
+  ['anasco','d0b16798-f779-4c95-8dbc-8b5ce187b929'],['bayamon','3412c426-03c7-4a22-931a-19a7b365b412'],
+  ['cayey','d9df033f-0828-4152-8d61-22198d4f8b6b'],['ceiba','1c81c48a-818c-4d43-885c-e76d8321446d'],
+  ['cidra','37063efa-08ec-4fa4-a187-e54559502069'],['corozal','792b51ec-548f-4418-8ee9-0a04b6cad925'],
+  ['florida','2ebe4251-e490-4cd9-b3dd-1e86706f6dc8'],['guaynabo','a8e1da73-0c6f-40ae-b79b-61cf5ea9e63c'],
+  ['humacao','70838caf-98b2-43c4-bd48-90b95825358c'],['mayaguez','190690c2-be86-4154-948d-bff943bbdec7'],
+  ['morovis','37ef6be4-6696-4e75-8997-7dae33d02a03'],['naguabo','1b9447e4-1051-428b-8aa4-ee213098ac0c'],
+  ['salinas','ce28f134-9d0b-416f-b7d3-934d85e453a1'],['utuado','6a0a9eee-4b72-46f7-8115-9b6415d61674'],
+  ['villalba','be0aba41-7b0a-429c-b3d5-1011c21ff58d'],
+];
+function clubId(name){
+  const n = String(name || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const hit = STADIUM_CLUB_IDS.find(([k]) => n.includes(k)); return hit ? hit[1] : '';
+}
+function parseAddress(raw){
+  if (!raw) return { address:'', city:'', state:'', zip:'' };
+  const zm = raw.match(/\b(\d{5}(?:-\d{4})?)\s*$/), zip = zm ? zm[1] : '';
+  const parts = raw.replace(/,?\s*\d{5}(?:-\d{4})?\s*$/, '').trim().split(',').map(s => s.trim());
+  const cityRaw = parts[1] || '', st = cityRaw.match(/^(.*?)\s+([A-Z]{2})$/);
+  return { address: parts[0] || '', city: st ? st[1] : cityRaw, state: st ? st[2] : (parts[2] || ''), zip };
+}
+
+function csvInscritos(){
+  const evn = EVN(), rows = [];
+  S.list.filter(i => i.estado !== 'cancelada').forEach(i => i.eventos.filter(e => e.estado === 'activa').forEach(e => {
+    const j = i.jugador || {};
+    rows.push([i.id, i.estado, i.member_id, j.first_name, j.last_name, j.sexo, j.dob, j.rating, j.club, j.email,
+      evn[e.evento]?.nombre || e.evento, e.es_natural ? 'natural' : e.requiere ? 'superior' : '',
+      e.pareja ? e.pareja.member_id : '', nombrePareja(e.pareja), e.precio, i.total, i.created_at, i.aprobada_at || '']);
+  }));
+  if (!rows.length) return msg('No hay inscripciones activas para exportar.', 'warn');
+  descargar(`nacionales_2026_inscritos_${hoy()}.csv`,
+    ['inscripcion','estado','member_id','nombre','apellido','sexo','fecha_nacimiento','rating','club','email','categoria','tipo','pareja_member_id','pareja','precio','total_inscripcion','creada','aprobada'], rows);
+  msg(`${rows.length} fila(s) exportadas.`, 'ok');
+}
+
+function csvStadium(){
+  const evn = EVN(), porJugador = new Map(), omitidas = new Set();
+  S.list.filter(i => i.estado === 'aprobada').forEach(i => i.eventos.filter(e => e.estado === 'activa').forEach(e => {
+    const d = evn[e.evento]; if (!d || d.tipo === 'dobles') return;
+    if (!d.stadium_slug){ omitidas.add(d.nombre); return; }
+    const p = porJugador.get(i.member_id) || { j: i.jugador || {}, id: i.member_id, ev: [] };
+    p.ev.push(d.stadium_slug); porJugador.set(i.member_id, p);
+  }));
+  const rows = [...porJugador.values()].map(({ j, id, ev }) => {
+    const a = parseAddress(j.home_address);
+    return [id, j.first_name, j.last_name, j.rating, j.sexo, j.dob, j.email, a.address, a.city, a.state, 'US', a.zip, `fptm|${id}`, clubId(j.club), ev.join(',')];
+  });
+  const aviso = omitidas.size ? `\nSin slug de Stadium (omitidas): ${[...omitidas].join(', ')}.` : '';
+  if (!rows.length) return msg('Nada que exportar a Stadium todavía.' + aviso, 'warn');
+  descargar(`stadium_nacionales_2026_jugadores_${hoy()}.csv`,
+    ['id','firstName','lastName','rating','sex','dob','email','address','city','state','country','zipCode','membershipIds','clubId','events'], rows);
+  msg(`${rows.length} jugador(es) exportados a Stadium.` + aviso, omitidas.size ? 'warn' : 'ok');
+}
+
+function csvDobles(){
+  const evn = EVN(), rows = [], omitidas = new Set();
+  S.list.filter(i => i.estado === 'aprobada').forEach(i => i.eventos.filter(e => e.estado === 'activa' && e.pareja).forEach(e => {
+    const d = evn[e.evento]; if (!d) return;
+    if (!d.stadium_slug){ omitidas.add(d.nombre); return; }
+    const j = i.jugador || {};
+    const n1 = `${j.first_name || ''} ${j.last_name || ''}`.trim(), n2 = nombrePareja(e.pareja);
+    rows.push(['', n1, `/ ${n2}`, (j.rating || 0) + (e.pareja.rating || 0), '', '', '', '', '', '', '', '', '', '', d.stadium_slug]);
+  }));
+  const aviso = omitidas.size ? `\nSin slug de Stadium (omitidas): ${[...omitidas].join(', ')}.` : '';
+  if (!rows.length) return msg('No hay parejas aprobadas para exportar.' + aviso, 'warn');
+  descargar(`stadium_nacionales_2026_dobles_${hoy()}.csv`,
+    ['id','firstName','lastName','rating','sex','dob','email','address','city','state','country','zipCode','membershipIds','clubId','events'], rows);
+  msg(`${rows.length} pareja(s) exportadas.` + aviso, omitidas.size ? 'warn' : 'ok');
+}
+
+// ── eventos ──
+$('rows').addEventListener('click', ev => {
+  const a = ev.target.closest('[data-aprobar]'); if (a) return aprobar(+a.dataset.aprobar);
+  const c = ev.target.closest('[data-cancel]'); if (c) return cancelar(+c.dataset.cancel, null);
+  const f = ev.target.closest('[data-cancel-fila]'); if (f){ const [i, fila] = f.dataset.cancelFila.split(':'); return cancelar(+i, +fila); }
+});
+$('evRows').addEventListener('change', ev => { const s = ev.target.closest('[data-slug]'); if (s) saveSlug(s.dataset.slug, s.value); });
+document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', () => { S.filtro = ch.dataset.f; render(); }));
+$('search').addEventListener('input', ev => { S.q = ev.target.value; renderRows(); });
+$('toggleOpen').addEventListener('click', () => config(!(S.cfg && S.cfg.interruptor === 'true'), null));
+$('toggleProrroga').addEventListener('click', () => config(null, !(S.cfg && S.cfg.prorroga === 'true')));
+$('csvInscritos').addEventListener('click', csvInscritos);
+$('csvStadium').addEventListener('click', csvStadium);
+$('csvDobles').addEventListener('click', csvDobles);
+$('reload').addEventListener('click', () => { msg(''); load(); });
+$('logout').addEventListener('click', async () => { await sb.auth.signOut(); location.replace('admin.html?next=nacionales'); });
+
+(async () => {
+  const { data, error } = await sb.auth.getUser();
+  if (error || !data.user || data.user.id !== ADMIN_UID){ location.replace('admin.html?next=nacionales'); return; }
+  $('app').hidden = false;
+  load();
+})();
+</script>
+</body>
+</html>
