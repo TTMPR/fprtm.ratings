@@ -1,0 +1,35 @@
+name: Kileaaa certified-results offline verification
+
+on:
+  push:
+    branches:
+      - feature/kileaaa-certified-results-offline-validator-20261119
+  pull_request:
+    paths:
+      - "integrations/kileaaa/**"
+      - "tests/kileaaa-certified-results.test.mjs"
+      - ".github/workflows/kileaaa-certified-results-offline.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout reviewed commit only
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up isolated Node runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax-check zero-dependency importer
+        run: node --check integrations/kileaaa/certified-results.mjs
+      - name: Certified results validation and official formula parity
+        run: node --test tests/kileaaa-certified-results.test.mjs tests/rating-core.test.mjs
+      - name: Existing official pipeline characterization tests
+        run: node --test tests/*.test.mjs
