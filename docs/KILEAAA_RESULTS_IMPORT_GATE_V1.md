@@ -5,7 +5,7 @@
 ## Separación de responsabilidades
 
 - **Kileaaa:** administrar torneos, inscripciones, grupos, llaves, resultados, certificación de Mesa Técnica y exportar un JSON de sólo resultados.
-- **ratings.ttmpr.xyz:** resolver identidad de cada Member ID contra el padrón canónico, calcular diferencias usando **su propio código** de index.html (getPoints y POINT_TABLE), aprobar, aplicar, auditar y publicar los ratings oficiales.
+- **ratings.ttmpr.xyz:** resolver identidad de cada Member ID contra el padrón canónico, calcular diferencias usando **su propio código** de legacy.html (getPoints y POINT_TABLE), aprobar, aplicar, auditar y publicar los ratings oficiales.
 - **Kileaaa** recuperará únicamente el rating oficial publicado y un recibo de estado (API de lectura aún pendiente).
 
 ## Qué implementa este PR
@@ -16,7 +16,7 @@ El módulo integrations/kileaaa/certified-results.mjs exporta **sólo funciones 
 2. **previewKileaaaRatingChanges(validated, officialRoster, officialGetPoints)**: requiere snapshot del padrón suministrado por FPTM; usa la **función oficial existente** getPoints() inyectada. Calcula simulación del lote con rating congelado para comparación, no escribe. Se excluyen BYE/W/O/retirados/dobles; Default puntúa conforme al algoritmo existente.
 3. **assessKileaaaReplay(validated, priorReceipt)**: clasificación **sin cambios de base** de paquete nuevo, repetido o versión que requiere revisión manual. No sustituye una restricción de unicidad SQL.
 
-Las pruebas tests/kileaaa-certified-results.test.mjs comprueban contrato y proyección contra la función real que el arnés de Fase 0 extrae de index.html.
+Las pruebas tests/kileaaa-certified-results.test.mjs comprueban contrato y proyección contra la función real que el arnés de Fase 0 extrae de legacy.html.
 
 ### Pruebas locales
 
@@ -48,4 +48,4 @@ Usar Node 22 o posterior. No hacen falta paquetes externos.
 
 El JSON kileaaa-certified-results-v1 **no es un CSV de Stadium Compete**. No debe subirse a la herramienta CSV histórica ni reinterpretarse por columnas del CSV sin un adaptador validado.
 
-**No-Go:** este PR no hace deploy, no crea ruta en index.html, no crea secretos y no modifica Supabase, membresías, rating histórico ni políticas RLS.
+**No-Go:** este PR no hace deploy, no crea ruta en legacy.html, no crea secretos y no modifica Supabase, membresías, rating histórico ni políticas RLS.
