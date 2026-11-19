@@ -17,8 +17,8 @@ corrección.** No debe citarse como tal.
 ## Autoridad
 
 `ratings.ttmpr.xyz` contiene la única implementación oficial del rating FPTM:
-`POINT_TABLE` y `getPoints()` (`index.html:6771-6791`), aplicados en lote por
-`subirApplyRatings()` (`index.html:7699`).
+`POINT_TABLE` y `getPoints()` (`legacy.html:6771-6791`), aplicados en lote por
+`subirApplyRatings()` (`legacy.html:7699`).
 
 No se consulta, importa ni compara ninguna implementación de rating del
 repositorio antiguo `kileaaa.com`.
@@ -34,18 +34,18 @@ Sin dependencias: sólo `node:test`, `node:assert` y `node:vm`. No hay
 
 ## Cómo funcionan
 
-`index.html` es un fichero único sin módulos, así que los tests **no** copian
+`legacy.html` es un fichero único sin módulos, así que los tests **no** copian
 el código: lo extraen.
 
 - `harness/extract.mjs` — recorta declaraciones de nivel superior de
-  `index.html` por nombre. Si alguien las renombra o mueve, falla ruidosamente.
+  `legacy.html` por nombre. Si alguien las renombra o mueve, falla ruidosamente.
 - `harness/sandbox.mjs` — evalúa esas declaraciones en un contexto `vm` con un
   DOM mínimo de mentira y stubs de red que **registran** lo que se escribiría
   en `partidos`, `resultados_evento` y `Base de Datos` sin escribir nada.
 - `harness/fixtures.mjs` — carga los datos históricos oficiales del repositorio.
 - `harness/generate-golden.mjs` — regenera los ficheros golden del replay.
 
-`index.html` nunca se modifica. No hay red. No se toca Supabase.
+`legacy.html` nunca se modifica. No hay red. No se toca Supabase.
 
 ## Ficheros
 
