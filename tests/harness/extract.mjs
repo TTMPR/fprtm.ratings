@@ -1,15 +1,15 @@
 /**
- * FPTM · Fase 0 — Extractor de declaraciones de index.html
+ * FPTM · Fase 0 — Extractor de declaraciones de legacy.html
  *
  * Los tests de caracterización tienen que ejercitar EL CÓDIGO DE PRODUCCIÓN,
- * no una copia. index.html es un archivo único sin módulos, así que este
+ * no una copia. legacy.html es un archivo único sin módulos, así que este
  * extractor recorta declaraciones de nivel superior por nombre y las devuelve
  * como texto fuente, listo para evaluarse en un sandbox (ver sandbox.mjs).
  *
- * index.html NO se modifica. Si alguien mueve o renombra una función, la
+ * legacy.html NO se modifica. Si alguien mueve o renombra una función, la
  * extracción falla ruidosamente en vez de pasar en silencio.
  *
- * Cómo encuentra el final: el <script> de index.html mantiene las
+ * Cómo encuentra el final: el <script> de legacy.html mantiene las
  * declaraciones de nivel superior en la columna 0 y sus cuerpos indentados,
  * así que el cierre es la primera línea posterior que sea exactamente
  * "}", "};", "]" o "];" en la columna 0. Es deliberadamente tonto — contar
@@ -21,7 +21,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-export const INDEX_PATH = path.resolve(HERE, '..', '..', 'index.html');
+export const INDEX_PATH = path.resolve(HERE, '..', '..', 'legacy.html');
 
 let _lines = null;
 
@@ -52,14 +52,14 @@ export async function extract(name) {
 
   if (starts.length === 0) {
     throw new Error(
-      `extract("${name}"): no se encontró una declaración de nivel superior con ese nombre en index.html. ` +
+      `extract("${name}"): no se encontró una declaración de nivel superior con ese nombre en legacy.html. ` +
       `¿Se renombró o se movió? Los tests de caracterización dependen de este nombre.`
     );
   }
   if (starts.length > 1) {
     throw new Error(
       `extract("${name}"): hay ${starts.length} declaraciones con ese nombre ` +
-      `(líneas ${starts.map(i => i + 1).join(', ')}). Ambiguo — revisa index.html.`
+      `(líneas ${starts.map(i => i + 1).join(', ')}). Ambiguo — revisa legacy.html.`
     );
   }
 
