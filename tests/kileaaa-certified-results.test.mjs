@@ -184,7 +184,7 @@ test('rejects invalid Member IDs, duplicate athletes in singles, invalid winner'
 
 test('rejects result scores that disagree with certified winner or have invalid sets', () => {
   for (const mutate of [
-    p => { p.matches[0].sets[1].player1 = 4; },
+    p => { p.matches[0].sets[1].player1 = 4; p.matches[0].sets[2].player1 = 4; },
     p => { p.matches[0].sets = []; },
     p => { p.matches[0].sets[0].player2 = 11; },
     p => { p.matches[0].sets[0].player2 = -1; },
@@ -244,6 +244,16 @@ test('replay classification requires independent recorded fingerprint and digest
     'revision_requires_manual_review');
   errorCode(() => assessKileaaaReplay(checked,
     { ...receipt, sourceTournamentId: 'different' }), 'LEDGER_CONFLICT');
+});
+
+test('validated package and nested matches cannot be mutated before federation preview', () => {
+  const checked = validateKileaaaCertifiedResults(valid());
+  assert.ok(Object.isFrozen(checked));
+  assert.ok(Object.isFrozen(checked.tournament));
+  assert.ok(Object.isFrozen(checked.matches[0].sets[0]));
+  assert.throws(() => { checked.matches[0].winnerMemberId = '10002'; }, TypeError);
+  assert.throws(() => { checked.matches.push({}); }, TypeError);
+  assert.equal(previewKileaaaRatingChanges(checked, roster, official.ctx.getPoints).ratedMatches, 2);
 });
 
 test('engine preview cannot operate with raw unvalidated input', () => {
