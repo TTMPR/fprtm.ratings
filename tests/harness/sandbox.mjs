@@ -1,12 +1,12 @@
 /**
  * FPTM · Fase 0 — Sandbox para el pipeline oficial de ratings
  *
- * Carga las funciones REALES de index.html en un contexto vm, con lo mínimo
+ * Carga las funciones REALES de legacy.html en un contexto vm, con lo mínimo
  * imprescindible alrededor: un DOM de mentira y stubs de red que registran
  * las llamadas en vez de hacerlas.
  *
  * Regla del sandbox: NO reimplementa nada del pipeline oficial. Todo lo que
- * calcula un rating viene textualmente de index.html. Los stubs solo cubren
+ * calcula un rating viene textualmente de legacy.html. Los stubs solo cubren
  * el entorno del navegador (document, alert) y la capa de red (sbPost,
  * sbPatch), para poder observar QUÉ se escribiría sin escribir nada.
  *
@@ -16,7 +16,7 @@
 import vm from 'node:vm';
 import { extractAll } from './extract.mjs';
 
-/** Declaraciones de index.html que forman el pipeline oficial de ratings. */
+/** Declaraciones de legacy.html que forman el pipeline oficial de ratings. */
 export const PIPELINE_DECLS = [
   'INSC_CATEGORIES',   // catálogo de categorías (dobles, stadiumId, …)
   'POINT_TABLE',       // tabla oficial de puntos por diferencia de rating
@@ -124,17 +124,17 @@ export async function loadPipeline({ players = [] } = {}) {
 
   const context = vm.createContext(ctx);
 
-  // Un solo script, no uno por declaración: en index.html todas comparten el
+  // Un solo script, no uno por declaración: en legacy.html todas comparten el
   // mismo ámbito, y `const` no se propaga entre scripts distintos de vm
   // (esCategoriaDobles no vería INSC_CATEGORIES). El epílogo publica los
   // `const` en globalThis para que los tests puedan leerlos.
   const epilogo = decls.map(d => `globalThis.${d.name} = ${d.name};`).join('\n');
-  const script = decls.map(d => `/* index.html:${d.line} */\n${d.source}`).join('\n\n') + '\n\n' + epilogo;
+  const script = decls.map(d => `/* legacy.html:${d.line} */\n${d.source}`).join('\n\n') + '\n\n' + epilogo;
 
   try {
-    vm.runInContext(script, context, { filename: 'index.html (pipeline oficial)' });
+    vm.runInContext(script, context, { filename: 'legacy.html (pipeline oficial)' });
   } catch (e) {
-    throw new Error(`No se pudo evaluar el pipeline oficial extraído de index.html: ${e.message}`);
+    throw new Error(`No se pudo evaluar el pipeline oficial extraído de legacy.html: ${e.message}`);
   }
 
   return { ctx: context, calls, el, decls };
@@ -142,7 +142,7 @@ export async function loadPipeline({ players = [] } = {}) {
 
 /**
  * Corre un lote completo: CSV(s) → parseo → deltas → aplicación,
- * usando exclusivamente las funciones de index.html.
+ * usando exclusivamente las funciones de legacy.html.
  *
  * Devuelve lo que el pipeline oficial ESCRIBIRÍA, sin escribirlo.
  */
