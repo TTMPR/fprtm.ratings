@@ -61,6 +61,14 @@ function optionalMemberId(value, label) {
   return value === null ? null : memberId(value, label);
 }
 
+function freezePackage(value) {
+  if (value && typeof value === 'object') {
+    for (const item of Object.values(value)) freezePackage(item);
+    Object.freeze(value);
+  }
+  return value;
+}
+
 function rating(value, label) {
   if (!Number.isSafeInteger(value) || value < 0 || value > 5000) {
     fail('INVALID_RATING', label + ' debe ser un entero entre 0 y 5000');
@@ -228,8 +236,8 @@ export function validateKileaaaCertifiedResults(raw, opts = {}) {
   // The package was validated, NOT authenticated: any actor can construct a
   // self-consistent SHA-256 digest. A protected FPTM endpoint must verify who
   // supplied it and whether these are genuinely approved Kileaaa results.
-  return { ...pkg, playerMemberIds: [...allIds].sort((a, b) => Number(a) - Number(b)),
-    importStatus: 'validation_only', publicationAuthorized: false };
+  return freezePackage({ ...pkg, playerMemberIds: [...allIds].sort((a, b) => Number(a) - Number(b)),
+    importStatus: 'validation_only', publicationAuthorized: false });
 }
 
 /**
